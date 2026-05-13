@@ -294,7 +294,7 @@ tr:hover td{background:#fafaf8}
         <div class="card">
           <div class="card-header"><span class="card-title">新規契約店舗を入力</span></div>
           <div style="font-size:12px;color:var(--text3);margin-bottom:14px;padding:8px 12px;background:var(--bg3);border-radius:var(--r)">営業担当が入力する簡易フォームです。入力後はSNS局に通知されます。</div>
-          <div class="fr"><div class="field"><label>店舗名 *</label><input id="sl-name" type="text" placeholder="例: 炭火焼 竹山 渋谷店"></div><div class="field"><label>法人名（個人名）</label><input id="sl-corp" type="text" placeholder="例: 株式会社竹山"></div></div>
+          <div class="fr"><div class="field"><label>店舗名 *</label><input id="sl-name" type="text" placeholder="例: 炭火焼 竹山 渋谷店"></div><div class="field"><label>法人名（個人名）</label><div style="display:flex;gap:5px"><select id="sl-corp-select" onchange="onSlCorpSelect()" style="flex:1"><option value="">新規法人 / 個人</option></select></div><input id="sl-corp" type="text" placeholder="法人名を入力（新規の場合）" style="margin-top:5px"></div></div>
           <div class="fr"><div class="field"><label>業種</label><input id="sl-genre" type="text" list="genreList" placeholder="例: 焼肉"></div><div class="field"></div></div>
           <div class="fr1 field"><label>郵便番号 <span style="color:var(--text3);font-weight:400"></span></label><div style="display:flex;gap:6px"><input id="sl-zip" type="text" placeholder="例: 150-0043" maxlength="8" style="max-width:160px" oninput="autoFillAddress(this.value,'sl-pref','sl-area')"><span style="font-size:12px;color:var(--text3);align-self:center" id="sl-zip-status"></span></div></div>
           <div class="fr"><div class="field"><label>都道府県</label><input id="sl-pref" type="text" placeholder="東京都"></div><div class="field"><label>市区町村・番地</label><input id="sl-area" type="text" placeholder="渋谷区道玄坂1-1-1"></div></div>
@@ -305,6 +305,7 @@ tr:hover td{background:#fafaf8}
             <div class="fr"><div class="field"><label>電話番号 <span style="color:var(--text3);font-weight:400">※どちらか必須</span></label><input id="sl-tel" type="tel" placeholder="090-XXXX-XXXX"></div><div class="field"><label>メール <span style="color:var(--text3);font-weight:400">※どちらか必須</span></label><input id="sl-email" type="email" placeholder="tanaka@example.com"></div></div>
           </div>
           <div class="fr1 field"><label>備考・メモ</label><textarea id="sl-memo" placeholder="特記事項、経緯など..." style="min-height:52px"></textarea></div>
+          <div class="fr1 field"><label>要望 <span style="font-size:10px;color:var(--text3);font-weight:400">店舗からの要望・特記事項</span></label><textarea id="sl-request" placeholder="例: 夜の雰囲気重視、料理写真は明るく、など..." style="min-height:52px"></textarea></div>
           <div class="fr1 field"><label>営業担当者名 *</label><div style="display:flex;gap:8px"><select id="sl-sales" style="flex:1"><option value="">選択...</option></select><button type="button" class="btn btn-sm" onclick="openSalesPersonModal()" style="white-space:nowrap;flex-shrink:0">＋ 管理</button></div></div>
           <div style="display:flex;justify-content:flex-end;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
             <button class="btn btn-primary" onclick="submitSalesForm()">登録してSNS局に通知</button>
@@ -327,7 +328,7 @@ tr:hover td{background:#fafaf8}
             <option value="">全ステータス</option><option value="active">稼働中</option><option value="pending">準備中</option><option value="ended">終了</option>
           </select>
         </div>
-        <div class="table-wrap"><table><thead><tr><th>店舗名</th><th>業種</th><th>契約プラン</th><th>契約期間</th><th>担当者</th><th>SNS</th><th>初期設定</th><th>Meta経験</th><th>ステータス</th><th></th></tr></thead><tbody id="storeTableBody"></tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>店舗名</th><th>業種</th><th>契約プラン</th><th>契約期間</th><th>店舗担当</th><th>弊社担当</th><th>SNS</th><th>初期設定</th><th>ステータス</th><th></th></tr></thead><tbody id="storeTableBody"></tbody></table></div>
       </div>
     </div>
 
@@ -442,10 +443,6 @@ tr:hover td{background:#fafaf8}
           <div style="border-top:1px solid var(--border);padding-top:14px;margin-bottom:14px">
             <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px">📋 CS — タスク作成（楽々販売登録依頼）</div>
             <div class="fr1 field"><label>ルームID</label><input id="cwCsRoomId" type="text" placeholder="例: 987654321"></div>
-            <div class="fr1 field">
-              <label>担当者アカウントID <span style="font-size:10px;color:var(--text3);font-weight:400">タスクのアサイン先</span></label>
-              <input id="cwIwaId" type="text" placeholder="例: 1234567">
-            </div>
           </div>
           <div style="display:flex;gap:8px;justify-content:flex-end">
             <button class="btn" onclick="testChatwork()">テスト送信</button>
@@ -462,6 +459,24 @@ tr:hover td{background:#fafaf8}
           <div class="card-header"><span class="card-title">通知プレビュー</span></div>
           <div style="font-size:12px;color:var(--text2);margin-bottom:10px">営業入力時に送信されるメッセージ</div>
           <div style="background:var(--bg3);border-radius:var(--r);padding:12px;font-size:12px;line-height:1.8;color:var(--text);white-space:pre-wrap" id="cwPreview"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CORPORATIONS -->
+    <div class="page" id="page-corporations">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">法人管理</span>
+          <button class="btn btn-primary btn-sm" onclick="openCorpModal()">＋ 追加</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>法人名</th><th>代表者</th><th>連絡先</th><th>店舗数</th><th>稼働中</th><th>月次売上</th><th></th>
+            </tr></thead>
+            <tbody id="corpTableBody"></tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -491,9 +506,11 @@ tr:hover td{background:#fafaf8}
       <button class="tab-btn" onclick="switchStoreTab(1)">SNS / HP</button>
       <button class="tab-btn" onclick="switchStoreTab(2)">契約・担当</button>
       <button class="tab-btn" onclick="switchStoreTab(3)">初期設定</button>
+      <button class="tab-btn" onclick="switchStoreTab(4)">ヒアリング</button>
     </div>
     <div class="tab-pane active" id="stab0">
       <div class="fr"><div class="field"><label>店舗名 *</label><input id="sName" type="text" placeholder="例: 炭火焼 竹山 渋谷店"></div><div class="field"><label>業種 <button type="button" onclick="openGenreModal()" style="font-size:10px;padding:2px 7px;margin-left:6px;background:var(--bg3);border:1px solid var(--border2);border-radius:4px;cursor:pointer;color:var(--text2)">＋ 編集</button></label><input id="sGenre" type="text" list="genreList" placeholder="例: 焼肉"><datalist id="genreList"></datalist></div></div>
+      <div class="fr1 field"><label>法人 <span style="font-size:10px;color:var(--text3);font-weight:400">選択すると連絡先が自動入力されます</span></label><div style="display:flex;gap:6px"><select id="sCorpId" onchange="onCorpSelect()" style="flex:1"><option value="">選択しない（個人・未設定）</option></select><button type="button" class="btn btn-sm" onclick="openCorpModal()" style="white-space:nowrap;flex-shrink:0">＋ 新規法人</button></div></div>
       <div class="fr1 field"><label>郵便番号 <span style="color:var(--text3);font-weight:400"></span></label><div style="display:flex;gap:6px"><input id="sZip" type="text" placeholder="例: 150-0043" maxlength="8" style="max-width:160px" oninput="autoFillAddress(this.value,'sPref','sArea')"><span style="font-size:12px;color:var(--text3);align-self:center" id="sZip-status"></span></div></div>
       <div class="fr"><div class="field"><label>都道府県</label><input id="sPref" type="text" placeholder="東京都"></div><div class="field"><label>市区町村・番地</label><input id="sArea" type="text" placeholder="渋谷区道玄坂..."></div></div>
       <!-- 営業時間・定休日 統合UI -->
@@ -549,7 +566,17 @@ tr:hover td{background:#fafaf8}
       </div>
       <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px">
         <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:10px">弊社情報</div>
-        <div class="fr"><div class="field"><label>営業担当者</label><select id="sOurManager"><option value="">選択...</option></select></div><div class="field"><label>成果振り返り頻度</label><select id="sReviewCycle"><option value="monthly">毎月</option><option value="bimonthly">2ヶ月ごと</option><option value="quarterly">四半期</option></select></div></div>
+        <div class="fr">
+          <div class="field">
+            <label>営業担当者</label>
+            <div style="display:flex;gap:6px;align-items:center">
+              <select id="sOurManager" style="flex:1"><option value="">選択...</option></select>
+              <span id="sOurManagerRetired" style="display:none;font-size:11px;color:var(--text3);padding:4px 8px;background:var(--bg4);border-radius:var(--r)">担当なし</span>
+            </div>
+            <div id="sManagerHistory" style="font-size:10px;color:var(--text3);margin-top:4px"></div>
+          </div>
+          <div class="field"><label>成果振り返り頻度</label><select id="sReviewCycle"><option value="monthly">毎月</option><option value="bimonthly">2ヶ月ごと</option><option value="quarterly">四半期</option></select></div>
+        </div>
       </div>
     </div>
     <div class="tab-pane" id="stab3">
@@ -567,6 +594,60 @@ tr:hover td{background:#fafaf8}
       </div>
       <div class="fr1 field" style="margin-top:10px"><label>初期設定メモ</label><textarea id="sSetupMemo" placeholder="特記事項、注意点など..."></textarea></div>
     </div>
+    <!-- Tab 4: ヒアリングシート -->
+    <div class="tab-pane" id="stab4">
+      <div style="font-size:12px;color:var(--text3);margin-bottom:12px;padding:8px 10px;background:var(--bg3);border-radius:var(--r)">基本情報（店舗名・担当者・SNSアカウント）は「基本情報」「SNS/HP」「契約・担当」タブから参照してください。</div>
+
+      <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:10px">運用目的</div>
+      <div class="fr1 field"><label>現状の課題</label><textarea id="hIssue" placeholder="" style="min-height:44px"></textarea></div>
+      <div class="fr"><div class="field"><label>集客したい層</label><input id="hTargetWant" type="text"></div><div class="field"><label>現在来ている層</label><input id="hTargetNow" type="text"></div></div>
+      <div class="fr1 field"><label>どのようなタイミングでの利用を増やしたいか</label><input id="hTiming" type="text"></div>
+      <div class="fr1 field"><label>どんな人に来てほしいか</label><input id="hIdealCustomer" type="text"></div>
+      <div class="fr"><div class="field"><label>自社が考える強み</label><input id="hStrength" type="text"></div><div class="field"><label>商圏</label><input id="hArea" type="text"></div></div>
+      <div class="fr1 field"><label>Instagram運用の目的</label><input id="hIgPurpose" type="text"></div>
+      <div class="fr"><div class="field"><label>売りたいメニュー</label><input id="hMenu" type="text"></div><div class="field"><label>重視したいKPI</label><input id="hKpi" type="text"></div></div>
+      <div class="fr"><div class="field"><label>ターゲット年齢</label><input id="hTargetAge" type="text" placeholder="20〜35歳"></div><div class="field"><label>ターゲット性別</label><select id="hTargetGender"><option value="">—</option><option>男性</option><option>女性</option><option>男女問わず</option></select></div></div>
+      <div class="fr"><div class="field"><label>ターゲット地域</label><input id="hTargetRegion" type="text"></div><div class="field"><label>ターゲット興味関心</label><input id="hTargetInterest" type="text"></div></div>
+      <div class="fr1 field"><label>参考アカウント</label><input id="hRefAccount" type="text"></div>
+      <div class="fr1 field"><label>NG表現・避けたい雰囲気</label><textarea id="hNg" style="min-height:44px"></textarea></div>
+      <div class="fr1 field"><label>過去広告などやっていれば結果</label><textarea id="hPastAd" style="min-height:44px"></textarea></div>
+
+      <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:10px;padding-top:10px;border-top:1px solid var(--border)">アカウント管理</div>
+      <div class="fr"><div class="field"><label>現在の管理者</label><input id="hAccMgr" type="text"></div><div class="field"><label>ログイン情報共有可否</label><select id="hLoginShare"><option value="">—</option><option>可</option><option>否</option></select></div></div>
+      <div class="fr"><div class="field"><label>Facebookページがあるか</label><select id="hFbPage"><option value="">—</option><option>有</option><option>無</option></select></div><div class="field"><label>社内投稿対応可否</label><select id="hInPost"><option value="">—</option><option>可</option><option>否</option></select></div></div>
+      <div class="fr1 field"><label>コメント・DM対応担当</label><input id="hDmMgr" type="text"></div>
+
+      <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:10px;padding-top:10px;border-top:1px solid var(--border)">投稿運用</div>
+      <div class="fr1 field"><label>投稿したい内容</label><textarea id="hPostContent" style="min-height:44px"></textarea></div>
+      <div class="fr"><div class="field"><label>投稿確認フロー</label><input id="hPostFlow" type="text"></div><div class="field"><label>投稿承認日数</label><input id="hApprovalDays" type="text" placeholder="例: 2営業日"></div></div>
+
+      <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:10px;padding-top:10px;border-top:1px solid var(--border)">素材について</div>
+      <div class="grid3" style="margin-bottom:10px">
+        <div class="field"><label>写真素材</label><select id="hPhotoAsset"><option value="">—</option><option>有</option><option>無</option></select></div>
+        <div class="field"><label>動画素材</label><select id="hVideoAsset"><option value="">—</option><option>有</option><option>無</option></select></div>
+        <div class="field"><label>新規撮影</label><select id="hNewShoot"><option value="">—</option><option>必要</option><option>不要</option></select></div>
+        <div class="field"><label>ロゴデータ共有</label><select id="hLogo"><option value="">—</option><option>可</option><option>否</option></select></div>
+        <div class="field"><label>過去素材利用</label><select id="hPastAsset"><option value="">—</option><option>可</option><option>否</option></select></div>
+      </div>
+      <div class="fr1 field"><label>投稿文トンマナ希望</label><textarea id="hTonmana" style="min-height:44px"></textarea></div>
+
+      <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:10px;padding-top:10px;border-top:1px solid var(--border)">広告配信</div>
+      <div class="fr"><div class="field"><label>Instagram広告実施</label><select id="hAdIg"><option value="">—</option><option>有</option><option>無</option></select></div><div class="field"><label>広告開始希望日</label><input id="hAdStart" type="date"></div></div>
+      <div class="fr"><div class="field"><label>月額広告予算（円）</label><input id="hAdBudget" type="number" placeholder="50000"></div><div class="field"><label>LP・誘導先URL</label><input id="hLpUrl" type="url"></div></div>
+
+      <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:10px;padding-top:10px;border-top:1px solid var(--border)">インフルエンサー施策</div>
+      <div class="fr"><div class="field"><label>実施希望時期（開始）</label><input id="hInfStart" type="date"></div><div class="field"><label>実施希望時期（終了）</label><input id="hInfEnd" type="date"></div></div>
+      <div class="fr"><div class="field"><label>想定人数</label><input id="hInfCount" type="text" placeholder="例: 3〜5名"></div><div class="field"><label>希望ジャンル</label><input id="hInfGenre" type="text"></div></div>
+      <div class="fr"><div class="field"><label>希望フォロワー帯</label><input id="hInfFollowers" type="text" placeholder="例: 1万〜5万"></div><div class="field"><label>投稿必須内容</label><input id="hInfMust" type="text"></div></div>
+      <div class="fr1 field"><label>ハッシュタグ指定</label><input id="hHashtag" type="text"></div>
+
+      <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:10px;padding-top:10px;border-top:1px solid var(--border)">スケジュール</div>
+      <div class="fr"><div class="field"><label>運用開始希望日</label><input id="hOpStart" type="date"></div><div class="field"><label>撮影希望日</label><input id="hShootDate" type="date"></div></div>
+      <div class="fr"><div class="field"><label>投稿開始希望日</label><input id="hPostStart" type="date"></div><div class="field"><label>広告開始希望日</label><input id="hAdStart2" type="date"></div></div>
+      <div class="fr1 field"><label>インフルエンサー投稿日希望</label><input id="hInfPostDate" type="date"></div>
+      <div class="fr1 field"><label>その他要望</label><textarea id="hOther" style="min-height:52px"></textarea></div>
+    </div>
+
     <div class="form-actions"><button class="btn" onclick="closeModal('storeModal')">キャンセル</button><button class="btn btn-primary" onclick="saveStore()">保存</button></div>
   </div>
 </div>
@@ -744,13 +825,12 @@ function loadChatworkSettings(){
       set('cwGhPat',s.ghPat);
       set('cwSnsRoomId',s.snsRoomId);
       set('cwCsRoomId',s.csRoomId);
-      set('cwIwaId',s.iwaId);
     }
   }catch(e){}
 }
 function saveChatworkSettings(){
   var get=function(id){var el=document.getElementById(id);return el?el.value.trim():'';};
-  var s={ghPat:get('cwGhPat'),snsRoomId:get('cwSnsRoomId'),csRoomId:get('cwCsRoomId'),iwaId:get('cwIwaId')};
+  var s={ghPat:get('cwGhPat'),snsRoomId:get('cwSnsRoomId'),csRoomId:get('cwCsRoomId')};
   try{localStorage.setItem('gc_cw_settings',JSON.stringify(s));}catch(e){}
   var statusEl=document.getElementById('cwStatus');
   if(statusEl)statusEl.innerHTML='<span style="color:var(--green)">✓ 保存しました</span>';
@@ -898,12 +978,14 @@ function updateSalesPersonSelects(){
   var salesOpts='<option value="">選択...</option>'+salesOnly.map(function(p){return'<option value="'+esc(p.name)+'">'+esc(p.name)+'</option>';}).join('');
   var sl=document.getElementById('sl-sales');
   if(sl){var pv=sl.value;sl.innerHTML=salesOpts;if(pv)sl.value=pv;}
-  var allActive=getActiveStaff();
-  var allOpts='<option value="">選択...</option>'+allActive.map(function(p){return'<option value="'+esc(p.name)+'">'+esc(p.name)+'</option>';}).join('');
+  var salesActive=getActiveStaff('sales');
+  var salesOpts2='<option value="">選択...</option>'+salesActive.map(function(p){return'<option value="'+esc(p.name)+'">'+esc(p.name)+'</option>';}).join('');
   var om=document.getElementById('sOurManager');
-  if(om){var pv2=om.value;om.innerHTML=allOpts;if(pv2)om.value=pv2;}
+  if(om){var pv2=om.value;om.innerHTML=salesOpts2;if(pv2)om.value=pv2;}
+  /* 退職済み担当者の表示更新 */
+  refreshManagerDisplay();
   var ci=document.getElementById('crInterviewer');
-  if(ci){var pv3=ci.value;ci.innerHTML='<option value="">選択...</option>'+allActive.map(function(p){return'<option value="'+esc(p.name)+'">'+esc(p.name)+'</option>';}).join('');if(pv3)ci.value=pv3;}
+  if(ci){var pv3=ci.value;ci.innerHTML='<option value="">選択...</option>'+getActiveStaff().map(function(p){return'<option value="'+esc(p.name)+'">'+esc(p.name)+'</option>';}).join('');if(pv3)ci.value=pv3;}
 }
 function openSalesPersonModal(){renderStaffList();openModal('salesPersonModal');}
 function renderSalesPersonList(){renderStaffList();}
@@ -930,6 +1012,66 @@ function renderStaffList(){
       +'</div>';
   }).join(''):'<div style="font-size:12px;color:var(--text3)">退職済みなし</div>';
 }
+
+/* ============================================================
+   担当者管理ヘルパー
+   ============================================================ */
+function isRetiredStaff(name){
+  if(!name)return false;
+  var p=STAFF_MEMBERS.find(function(x){return x.name===name;});
+  return p?p.retired:false;
+}
+function refreshManagerDisplay(storeData){
+  var sel=document.getElementById('sOurManager');
+  var retiredSpan=document.getElementById('sOurManagerRetired');
+  var histEl=document.getElementById('sManagerHistory');
+  if(!sel||!retiredSpan)return;
+  var curVal=storeData?storeData.ourManager:sel.value;
+  /* 退職済みチェック */
+  if(curVal&&isRetiredStaff(curVal)){
+    sel.style.display='none';
+    retiredSpan.style.display='';
+    retiredSpan.textContent='担当なし（'+curVal+' 退職済み）';
+    if(!sel.querySelector('option[value="'+curVal+'"]')){
+      /* 退職済み選択肢を一時追加 */
+      var opt=document.createElement('option');
+      opt.value=curVal;opt.textContent=curVal;
+      sel.appendChild(opt);
+    }
+    sel.value=curVal;
+  }else{
+    sel.style.display='';
+    retiredSpan.style.display='none';
+  }
+  /* 履歴表示 */
+  if(histEl){
+    var log=(storeData&&storeData.managerLog)||[];
+    if(log.length){
+      histEl.innerHTML='履歴: '+log.map(function(l){return esc(l.from)+'→'+esc(l.to)+'('+fmtD(l.at)+')';}).join(' / ');
+    }else{histEl.textContent='';}
+  }
+}
+function assignManagerFromRetired(storeId){
+  var s=DB.stores.find(function(x){return x.id===storeId;});
+  if(!s)return;
+  /* 営業ロールの在籍メンバーをpromptで選ばせる */
+  var active=getActiveStaff('sales');
+  if(!active.length){alert('在籍中の営業担当者がいません');return;}
+  var names=active.map(function(p,i){return (i+1)+'. '+p.name;}).join('\n');
+  var input=prompt('担当者を選んでください（番号を入力）:\n'+names);
+  var idx=parseInt(input)-1;
+  if(isNaN(idx)||idx<0||idx>=active.length)return;
+  var newMgr=active[idx].name;
+  var oldMgr=s.ourManager;
+  s.managerLog=s.managerLog||[];
+  if(oldMgr&&oldMgr!==newMgr){
+    s.managerLog.push({from:oldMgr,to:newMgr,at:new Date().toISOString()});
+  }
+  s.ourManager=newMgr;
+  saveItem('stores',s);
+  refreshAll();
+}
+
 function changeStaffRole(id,role){
   var p=STAFF_MEMBERS.find(function(x){return x.id===id;});
   if(p){p.role=role;saveSalesPersons();renderStaffList();updateSalesPersonSelects();}
@@ -1005,7 +1147,7 @@ loadSalesPersons();
 updateSalesPersonSelects();
 var GENRES=['焼肉','居酒屋','ラーメン','イタリアン','フレンチ','カフェ','寿司','焼き鳥','中華','その他'];
 loadGenres();
-var DB={stores:[],posts:[],influencers:[],castings:[],plans:[]};
+var DB={stores:[],posts:[],influencers:[],castings:[],plans:[],corporations:[]};
 var NOW=new Date();
 var calYear=NOW.getFullYear(),calMonth=NOW.getMonth();
 var calActiveStores={};
@@ -1018,7 +1160,7 @@ var currentPage='dashboard';
    ============================================================ */
 var SUPA_URL='https://vwtcshwzetxnaedjhoej.supabase.co';
 var SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3dGNzaHd6ZXR4bmFlZGpob2VqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2MzM3MTgsImV4cCI6MjA5NDIwOTcxOH0.S10RHDE7wvKUMa2SxeoNvkgg6TtiMInw7ax6J5ZuMZk';
-var TABLES=['stores','posts','influencers','castings','plans','salesnotifs','creators'];
+var TABLES=['stores','posts','influencers','castings','plans','salesnotifs','creators','corporations'];
 
 /* ============================================================
    APIレイヤー（ここを将来書き換えると別サーバーに移行できる）
@@ -1136,20 +1278,21 @@ function navigate(page){
     if(item.getAttribute('onclick')==="navigate('"+page+"')")item.classList.add('active');
   });
   currentPage=page;
-  var titles={dashboard:'ダッシュボード',sales:'営業入力',stores:'店舗管理',schedule:'投稿スケジュール',check:'事前チェック',plans:'プラン管理',influencers:'インフルエンサー管理',casting:'キャスティング履歴',creators:'クリエイター管理',settings:'設定'};
+  var titles={dashboard:'ダッシュボード',sales:'営業入力',stores:'店舗管理',schedule:'投稿スケジュール',check:'事前チェック',plans:'プラン管理',influencers:'インフルエンサー管理',casting:'キャスティング履歴',creators:'クリエイター管理',corporations:'法人管理',settings:'設定'};
   document.getElementById('page-title').textContent=titles[page]||page;
-  var btnLabels={dashboard:'＋ 店舗追加',sales:'＋ 店舗入力',stores:'＋ 店舗追加',schedule:'＋ 追加',check:'＋ 店舗追加',plans:'＋ プラン追加',influencers:'＋ インフルエンサー追加',casting:'＋ キャスティング記録',creators:'＋ クリエイター追加',settings:''};
+  var btnLabels={dashboard:'＋ 店舗追加',sales:'＋ 店舗入力',stores:'＋ 店舗追加',schedule:'＋ 追加',check:'＋ 店舗追加',plans:'＋ プラン追加',influencers:'＋ インフルエンサー追加',casting:'＋ キャスティング記録',creators:'＋ クリエイター追加',corporations:'＋ 法人追加',settings:''};
   document.getElementById('addBtn').textContent=btnLabels[page]||'＋ 新規追加';
   document.getElementById('addBtn').style.display=page==='settings'?'none':'';
   if(page==='settings'){loadChatworkSettings();renderCwPreview();}
   if(page==='sales'){updateSalesPlanSelect();updateSalesPersonSelects();renderSalesNotifs();updateSalesNotifBadge();}
   if(page==='dashboard')renderDashboard();
-  if(page==='stores')renderStoreTable();
+  if(page==='stores'){renderStoreTable();updateCorpSelects();}
   if(page==='schedule'){renderSchedFilter();renderSchedule();renderCalendar();}
   if(page==='influencers'){
     renderInfluencers();
   }
   if(page==='casting')renderCasting();
+  if(page==='corporations')renderCorps();
   if(page==='creators')renderCreators();
   if(page==='plans'){renderPlans();renderRevSummary();}
 }
@@ -1163,6 +1306,7 @@ function topAddBtn(){
     check:openStoreModal,
     influencers:openInfluencerModal,
     casting:openCastingModal,
+    corporations:openCorpModal,
     creators:openCreatorModal,
     plans:function(){document.getElementById('plName').focus();openModal&&document.getElementById('plName').scrollIntoView();}
   };
@@ -1172,7 +1316,7 @@ function topAddBtn(){
 
 function switchStoreTab(idx){
   document.querySelectorAll('#storeTabBtns .tab-btn').forEach(function(b,i){b.classList.toggle('active',i===idx);});
-  [0,1,2,3].forEach(function(i){document.getElementById('stab'+i).classList.toggle('active',i===idx);});
+  [0,1,2,3,4].forEach(function(i){var el=document.getElementById('stab'+i);if(el)el.classList.toggle('active',i===idx);});
 }
 function toggleCheck(el){el.classList.toggle('done');el.querySelector('.check-box').textContent=el.classList.contains('done')?'✓':'';}
 
@@ -1347,6 +1491,7 @@ function formatHoursSummary(hoursVal){
 function clearStoreForm(){
   ['sName','sPref','sArea','sSeats','sTabelog','sHp','sMemo','sIg','sIgFollowers','sFb','sTw','sTt','sYt','sMetaId','sCreator','sContractStart','sMonthlyFee','sContactName','sContactRole','sContactTel','sContactEmail','sContactLine','sSetupMemo'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('sGenre').value='';
+  var scorp=document.getElementById('sCorpId');if(scorp)scorp.value='';
   document.getElementById('sHours').value='';
   document.getElementById('sHoliday').value='';
   document.getElementById('sHoursFrom').value='';
@@ -1362,6 +1507,7 @@ function clearStoreForm(){
   document.getElementById('sPlanId').value='';
   document.getElementById('sPlanPreview').textContent='';
   document.querySelectorAll('#setupChecklist .check-item').forEach(function(el){el.classList.remove('done');el.querySelector('.check-box').textContent='';});
+  ['hIssue','hTargetWant','hTargetNow','hTiming','hIdealCustomer','hStrength','hArea','hIgPurpose','hMenu','hKpi','hTargetAge','hTargetGender','hTargetRegion','hTargetInterest','hRefAccount','hNg','hPastAd','hAccMgr','hLoginShare','hFbPage','hInPost','hDmMgr','hPostContent','hPostFlow','hApprovalDays','hPhotoAsset','hVideoAsset','hNewShoot','hLogo','hPastAsset','hTonmana','hAdIg','hAdStart','hAdBudget','hLpUrl','hInfStart','hInfEnd','hInfCount','hInfGenre','hInfFollowers','hInfMust','hHashtag','hOpStart','hShootDate','hPostStart','hAdStart2','hInfPostDate','hOther'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';}); 
 }
 
 function openStoreModal(id){
@@ -1374,15 +1520,18 @@ function openStoreModal(id){
   if(id){
     var s=DB.stores.find(function(x){return x.id===id;});
     if(s){
-      var map={sName:'name',sPref:'pref',sArea:'area',sSeats:'seats',sTabelog:'tabelog',sHp:'hp',sMemo:'memo',sIg:'ig',sIgFollowers:'igFollowers',sFb:'fb',sTw:'tw',sTt:'tt',sYt:'yt',sMetaId:'metaId',sMetaExp:'metaExp',sCreator:'creator',sContractStart:'contractStart',sContractTerm:'contractTerm',sMonthlyFee:'monthlyFee',sStatus:'status',sContactName:'contactName',sContactRole:'contactRole',sContactTel:'contactTel',sContactEmail:'contactEmail',sContactLine:'contactLine',sOurManager:'ourManager',sReviewCycle:'reviewCycle',sVideos:'videos',sAdDelivery:'adDelivery',sSetupMemo:'setupMemo',sPlanId:'planId'};
+      var map={sName:'name',sCorpId:'corpId',sPref:'pref',sArea:'area',sSeats:'seats',sTabelog:'tabelog',sHp:'hp',sMemo:'memo',sIg:'ig',sIgFollowers:'igFollowers',sFb:'fb',sTw:'tw',sTt:'tt',sYt:'yt',sMetaId:'metaId',sMetaExp:'metaExp',sCreator:'creator',sContractStart:'contractStart',sContractTerm:'contractTerm',sMonthlyFee:'monthlyFee',sStatus:'status',sContactName:'contactName',sContactRole:'contactRole',sContactTel:'contactTel',sContactEmail:'contactEmail',sContactLine:'contactLine',sOurManager:'ourManager',sReviewCycle:'reviewCycle',sVideos:'videos',sAdDelivery:'adDelivery',sSetupMemo:'setupMemo',sPlanId:'planId'};
       Object.keys(map).forEach(function(elId){var el=document.getElementById(elId);if(el&&s[map[elId]]!==undefined)el.value=s[map[elId]];});
       if(document.getElementById('sOurManager')&&!document.getElementById('sOurManager').value&&s.salesBy){
         document.getElementById('sOurManager').value=s.salesBy;
       }
+      /* 退職済み担当者の表示 */
+      refreshManagerDisplay(s);
       /* 営業時間・定休日を復元 */
       restoreHoursUI(s.hours||'');
       showPlanPreview();
       if(s.setupChecks){var items=document.querySelectorAll('#setupChecklist .check-item');s.setupChecks.forEach(function(v,i){if(items[i]&&v){items[i].classList.add('done');items[i].querySelector('.check-box').textContent='✓';}});}
+      if(s.hearing){Object.keys(s.hearing).forEach(function(k){var el=document.getElementById(k);if(el)el.value=s.hearing[k]||'';});}
     }
   }
   switchStoreTab(0);
@@ -1395,6 +1544,12 @@ function saveStore(){
   var isEdit=!!editingStoreId;
   var id=isEdit?editingStoreId:uid();
   var existing=isEdit?DB.stores.find(function(x){return x.id===id;}):null;
+  /* 担当者変更履歴を記録 */
+  var newManager=document.getElementById('sOurManager').value;
+  var managerLog=existing?existing.managerLog||[]:[];
+  if(isEdit&&existing&&existing.ourManager&&existing.ourManager!==newManager&&newManager){
+    managerLog.push({from:existing.ourManager,to:newManager,at:new Date().toISOString()});
+  }
   var colorIdx=isEdit?(DB.stores.findIndex(function(x){return x.id===id;})):(DB.stores.length);
   if(colorIdx<0)colorIdx=DB.stores.length;
   var color=existing?existing.color:COLORS[colorIdx%COLORS.length];
@@ -1402,6 +1557,7 @@ function saveStore(){
   var s={
     id:id,color:color,setupChecks:checks,
     name:name,
+    corpId:document.getElementById('sCorpId')?document.getElementById('sCorpId').value:'',
     genre:document.getElementById('sGenre').value,
     pref:document.getElementById('sPref').value,
     area:document.getElementById('sArea').value,
@@ -1435,7 +1591,10 @@ function saveStore(){
     adDelivery:document.getElementById('sAdDelivery').value,
     setupMemo:document.getElementById('sSetupMemo').value,
     planId:document.getElementById('sPlanId').value,
-    rakurakuRegistered:existing?existing.rakurakuRegistered:false
+    rakurakuRegistered:existing?existing.rakurakuRegistered:false,
+    hearing:{hIssue:(function(){var e=document.getElementById('hIssue');return e?e.value:'';})(),hTargetWant:(function(){var e=document.getElementById('hTargetWant');return e?e.value:'';})(),hTargetNow:(function(){var e=document.getElementById('hTargetNow');return e?e.value:'';})(),hTiming:(function(){var e=document.getElementById('hTiming');return e?e.value:'';})(),hIdealCustomer:(function(){var e=document.getElementById('hIdealCustomer');return e?e.value:'';})(),hStrength:(function(){var e=document.getElementById('hStrength');return e?e.value:'';})(),hArea:(function(){var e=document.getElementById('hArea');return e?e.value:'';})(),hIgPurpose:(function(){var e=document.getElementById('hIgPurpose');return e?e.value:'';})(),hMenu:(function(){var e=document.getElementById('hMenu');return e?e.value:'';})(),hKpi:(function(){var e=document.getElementById('hKpi');return e?e.value:'';})(),hTargetAge:(function(){var e=document.getElementById('hTargetAge');return e?e.value:'';})(),hTargetGender:(function(){var e=document.getElementById('hTargetGender');return e?e.value:'';})(),hTargetRegion:(function(){var e=document.getElementById('hTargetRegion');return e?e.value:'';})(),hTargetInterest:(function(){var e=document.getElementById('hTargetInterest');return e?e.value:'';})(),hRefAccount:(function(){var e=document.getElementById('hRefAccount');return e?e.value:'';})(),hNg:(function(){var e=document.getElementById('hNg');return e?e.value:'';})(),hPastAd:(function(){var e=document.getElementById('hPastAd');return e?e.value:'';})(),hAccMgr:(function(){var e=document.getElementById('hAccMgr');return e?e.value:'';})(),hLoginShare:(function(){var e=document.getElementById('hLoginShare');return e?e.value:'';})(),hFbPage:(function(){var e=document.getElementById('hFbPage');return e?e.value:'';})(),hInPost:(function(){var e=document.getElementById('hInPost');return e?e.value:'';})(),hDmMgr:(function(){var e=document.getElementById('hDmMgr');return e?e.value:'';})(),hPostContent:(function(){var e=document.getElementById('hPostContent');return e?e.value:'';})(),hPostFlow:(function(){var e=document.getElementById('hPostFlow');return e?e.value:'';})(),hApprovalDays:(function(){var e=document.getElementById('hApprovalDays');return e?e.value:'';})(),hPhotoAsset:(function(){var e=document.getElementById('hPhotoAsset');return e?e.value:'';})(),hVideoAsset:(function(){var e=document.getElementById('hVideoAsset');return e?e.value:'';})(),hNewShoot:(function(){var e=document.getElementById('hNewShoot');return e?e.value:'';})(),hLogo:(function(){var e=document.getElementById('hLogo');return e?e.value:'';})(),hPastAsset:(function(){var e=document.getElementById('hPastAsset');return e?e.value:'';})(),hTonmana:(function(){var e=document.getElementById('hTonmana');return e?e.value:'';})(),hAdIg:(function(){var e=document.getElementById('hAdIg');return e?e.value:'';})(),hAdStart:(function(){var e=document.getElementById('hAdStart');return e?e.value:'';})(),hAdBudget:(function(){var e=document.getElementById('hAdBudget');return e?e.value:'';})(),hLpUrl:(function(){var e=document.getElementById('hLpUrl');return e?e.value:'';})(),hInfStart:(function(){var e=document.getElementById('hInfStart');return e?e.value:'';})(),hInfEnd:(function(){var e=document.getElementById('hInfEnd');return e?e.value:'';})(),hInfCount:(function(){var e=document.getElementById('hInfCount');return e?e.value:'';})(),hInfGenre:(function(){var e=document.getElementById('hInfGenre');return e?e.value:'';})(),hInfFollowers:(function(){var e=document.getElementById('hInfFollowers');return e?e.value:'';})(),hInfMust:(function(){var e=document.getElementById('hInfMust');return e?e.value:'';})(),hHashtag:(function(){var e=document.getElementById('hHashtag');return e?e.value:'';})(),hOpStart:(function(){var e=document.getElementById('hOpStart');return e?e.value:'';})(),hShootDate:(function(){var e=document.getElementById('hShootDate');return e?e.value:'';})(),hPostStart:(function(){var e=document.getElementById('hPostStart');return e?e.value:'';})(),hAdStart2:(function(){var e=document.getElementById('hAdStart2');return e?e.value:'';})(),hInfPostDate:(function(){var e=document.getElementById('hInfPostDate');return e?e.value:'';})(),hOther:(function(){var e=document.getElementById('hOther');return e?e.value:'';})()},
+    managerLog:managerLog,
+    prevManagers:existing?existing.prevManagers||[]:[]
   };
   if(isEdit){
     var idx=DB.stores.findIndex(function(x){return x.id===id;});
@@ -1778,6 +1937,7 @@ function submitSalesForm(){
     contactTel:document.getElementById('sl-tel').value,
     contactEmail:document.getElementById('sl-email').value,
     memo:document.getElementById('sl-memo').value,
+    request:document.getElementById('sl-request').value,
     status:'pending',
     color:COLORS[DB.stores.length%COLORS.length],
     setupChecks:[],
@@ -1805,7 +1965,7 @@ function submitSalesForm(){
       }
     }
   });
-  ['sl-name','sl-corp','sl-genre','sl-pref','sl-area','sl-contact','sl-role','sl-tel','sl-email','sl-memo','sl-sales'].forEach(function(id){document.getElementById(id).value='';});
+  ['sl-name','sl-corp','sl-genre','sl-pref','sl-area','sl-contact','sl-role','sl-tel','sl-email','sl-memo','sl-request','sl-sales'].forEach(function(id){document.getElementById(id).value='';});
   document.getElementById('sl-plan').value='';
   updateSalesNotifBadge();
   renderSalesNotifs();
@@ -2073,7 +2233,26 @@ function renderStoreTable(){
     if(s.tt)sns+='<span style="font-size:10px;color:#010101;margin-right:3px;font-weight:500">TT</span>';
     var plan=s.planId?DB.plans.find(function(x){return x.id===s.planId;}):null;
     var planCell=plan?'<div style="font-size:12px;font-weight:400">'+esc(plan.name)+'</div><div style="font-size:11px;color:var(--text3)">'+fmtMoney(plan.price)+'</div>':'<span style="color:var(--text3)">—</span>';
-    return'<tr><td><div style="display:flex;align-items:center;gap:7px"><div style="width:6px;height:6px;border-radius:50%;background:'+s.color+';flex-shrink:0"></div><span style="cursor:pointer;color:var(--accent);font-weight:400" onclick="showDetail(\''+s.id+'\')">'+esc(s.name)+'</span></div><div style="font-size:10px;color:var(--text3);margin-top:1px">'+esc(s.pref||'')+' '+esc((s.area||'').slice(0,16))+'</div></td><td>'+esc(s.genre||'—')+'</td><td>'+planCell+'</td><td class="td-mono">'+(s.contractStart||'—')+'<div style="font-size:10px;color:var(--text3)">'+(s.contractTerm?s.contractTerm+'ヶ月':'')+'</div></td><td>'+esc(s.contactName||'—')+'</td><td>'+sns+'</td><td><div style="display:flex;align-items:center;gap:6px"><div class="pbar-wrap" style="width:52px"><div class="pbar" style="background:'+(pct===100?'var(--green)':'var(--accent)')+';width:'+pct+'%"></div></div><span style="font-size:10px;color:var(--text3)">'+pct+'%</span></div></td><td>'+(metaLabels[s.metaExp]||'—')+'</td><td>'+statusBadge(s.status)+'</td><td style="white-space:nowrap"><button class="btn btn-sm" onclick="openStoreModal(\''+s.id+'\')" style="margin-right:4px">編集</button><button class="btn-ghost-danger" onclick="deleteStore(\''+s.id+'\')">削除</button></td></tr>';
+    var mgr=s.ourManager||'';
+    var mgrRetired=mgr&&isRetiredStaff(mgr);
+    var mgrCell=mgr
+      ?(mgrRetired
+        ?'<span style="color:var(--text3);font-size:11px">担当なし</span><button class="btn btn-sm" onclick="event.stopPropagation();assignManagerFromRetired(\''+s.id+'\');" style="font-size:10px;margin-left:4px;padding:2px 6px">追加</button>'
+        :'<span style="font-size:12px">'+esc(mgr)+'</span>'
+      )
+      :'<span style="color:var(--text3);font-size:11px">—</span>';
+    return'<tr>'
+      +'<td><div style="display:flex;align-items:center;gap:7px"><div style="width:6px;height:6px;border-radius:50%;background:'+s.color+';flex-shrink:0"></div><span style="cursor:pointer;color:var(--accent);font-weight:400" onclick="showDetail(\''+s.id+'\')">'+esc(s.name)+'</span></div><div style="font-size:10px;color:var(--text3);margin-top:1px">'+esc(s.pref||'')+' '+esc((s.area||'').slice(0,16))+'</div></td>'
+      +'<td>'+esc(s.genre||'—')+'</td>'
+      +'<td>'+planCell+'</td>'
+      +'<td class="td-mono">'+(s.contractStart||'—')+'<div style="font-size:10px;color:var(--text3)">'+(s.contractTerm?s.contractTerm+'ヶ月':'')+'</div></td>'
+      +'<td>'+esc(s.contactName||'—')+'</td>'
+      +'<td>'+mgrCell+'</td>'
+      +'<td>'+sns+'</td>'
+      +'<td><div style="display:flex;align-items:center;gap:6px"><div class="pbar-wrap" style="width:52px"><div class="pbar" style="background:'+(pct===100?'var(--green)':'var(--accent)')+';width:'+pct+'%"></div></div><span style="font-size:10px;color:var(--text3)">'+pct+'%</span></div></td>'
+      +'<td>'+statusBadge(s.status)+'</td>'
+      +'<td style="white-space:nowrap"><button class="btn btn-sm" onclick="openStoreModal(\''+s.id+'\')" style="margin-right:4px">編集</button><button class="btn-ghost-danger" onclick="deleteStore(\''+s.id+'\')">削除</button></td>'
+      +'</tr>';
   }).join('');
 }
 
@@ -2615,6 +2794,216 @@ function renderCreators(){
 }
 
 
+/* ============================================================
+   法人管理（Corporations）
+   ============================================================ */
+var editingCorpId=null;
+
+function openCorpModal(id){
+  editingCorpId=id||null;
+  var titleEl=document.getElementById('corpModalTitle');
+  if(titleEl)titleEl.textContent=id?'法人を編集':'法人を追加';
+  ['coName','coRep','coTel','coEmail','coAddress','coGenre','coMemo'].forEach(function(fid){
+    var el=document.getElementById(fid);if(el)el.value='';
+  });
+  var ct=document.getElementById('coContractType');if(ct)ct.value='';
+  if(id){
+    var corp=DB.corporations.find(function(x){return x.id===id;});
+    if(corp){
+      var map={coName:'name',coRep:'rep',coTel:'tel',coEmail:'email',coAddress:'address',coGenre:'genre',coMemo:'memo',coContractType:'contractType'};
+      Object.keys(map).forEach(function(fid){var el=document.getElementById(fid);if(el&&corp[map[fid]]!==undefined)el.value=corp[map[fid]]||'';});
+    }
+  }
+  openModal('corpModal');
+}
+
+function saveCorp(){
+  var name=document.getElementById('coName').value.trim();
+  if(!name){alert('法人名を入力してください');return;}
+  var isEdit=!!editingCorpId;
+  var id=isEdit?editingCorpId:uid();
+  var corp={
+    id:id,
+    name:name,
+    rep:document.getElementById('coRep').value,
+    tel:document.getElementById('coTel').value,
+    email:document.getElementById('coEmail').value,
+    address:document.getElementById('coAddress').value,
+    genre:document.getElementById('coGenre').value,
+    contractType:document.getElementById('coContractType').value,
+    memo:document.getElementById('coMemo').value
+  };
+  if(isEdit){
+    var idx=DB.corporations.findIndex(function(x){return x.id===id;});
+    if(idx>=0){DB.corporations[idx]=corp;}else{DB.corporations.push(corp);}
+  }else{
+    DB.corporations.push(corp);
+  }
+  closeModal('corpModal');
+  closeModal('corpDetailModal');
+  refreshAll();
+  saveItem('corporations',corp);
+  updateCorpSelects();
+}
+
+function deleteCorp(id){
+  if(!confirm('この法人を削除しますか？（店舗の法人紐づけは解除されます）'))return;
+  DB.stores.forEach(function(s){if(s.corpId===id){s.corpId='';saveItem('stores',s);}});
+  DB.corporations=DB.corporations.filter(function(c){return c.id!==id;});
+  closeModal('corpDetailModal');
+  refreshAll();
+  deleteItem('corporations',id);
+}
+
+function updateCorpSelects(){
+  var opts='<option value="">選択しない（個人・未設定）</option>'+DB.corporations.map(function(c){return'<option value="'+c.id+'">'+esc(c.name)+'</option>';}).join('');
+  var sCorp=document.getElementById('sCorpId');
+  if(sCorp){var pv=sCorp.value;sCorp.innerHTML=opts;if(pv)sCorp.value=pv;}
+  var slCorpSel=document.getElementById('sl-corp-select');
+  if(slCorpSel){var pv2=slCorpSel.value;slCorpSel.innerHTML='<option value="">新規法人 / 個人</option>'+DB.corporations.map(function(c){return'<option value="'+c.id+'">'+esc(c.name)+'</option>';}).join('');if(pv2)slCorpSel.value=pv2;}
+  var nb=document.getElementById('nb-corps');
+  if(nb)nb.textContent=DB.corporations.length;
+}
+
+function onCorpSelect(){
+  var corpId=document.getElementById('sCorpId').value;
+  if(!corpId)return;
+  var corp=DB.corporations.find(function(x){return x.id===corpId;});
+  if(!corp)return;
+  /* 契約タブの連絡先に自動引用（空欄のときのみ） */
+  var tel=document.getElementById('sContactTel');
+  var email=document.getElementById('sContactEmail');
+  if(tel&&!tel.value&&corp.tel)tel.value=corp.tel;
+  if(email&&!email.value&&corp.email)email.value=corp.email;
+}
+
+function onSlCorpSelect(){
+  var sel=document.getElementById('sl-corp-select');
+  var inp=document.getElementById('sl-corp');
+  if(!sel||!inp)return;
+  if(sel.value){
+    var corp=DB.corporations.find(function(x){return x.id===sel.value;});
+    if(corp)inp.value=corp.name;
+  }
+}
+
+function openCorpDetail(id){
+  var corp=DB.corporations.find(function(x){return x.id===id;});
+  if(!corp)return;
+  var stores=DB.stores.filter(function(s){return s.corpId===id;});
+  var active=stores.filter(function(s){return s.status==='active';});
+  var totalRev=active.reduce(function(sum,s){return sum+(Number(s.monthlyFee)||0);},0);
+  var editBtn=document.getElementById('corpDetailEditBtn');
+  if(editBtn)editBtn.onclick=function(){closeModal('corpDetailModal');openCorpModal(id);};
+  document.getElementById('corpDetailTitle').textContent=corp.name;
+  document.getElementById('corpDetailBody').innerHTML=
+    '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px">'
+      +'<div class="card-sm" style="text-align:center"><div style="font-size:22px;font-weight:500;font-family:\'DM Mono\',monospace">'+stores.length+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">契約店舗数</div></div>'
+      +'<div class="card-sm" style="text-align:center"><div style="font-size:22px;font-weight:500;font-family:\'DM Mono\',monospace;color:var(--green)">'+active.length+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">稼働中</div></div>'
+      +'<div class="card-sm" style="text-align:center"><div style="font-size:14px;font-weight:500;font-family:\'DM Mono\',monospace;color:var(--accent)">'+totalRev.toLocaleString()+'円</div><div style="font-size:10px;color:var(--text3);margin-top:2px">月次売上</div></div>'
+    +'</div>'
+    +'<div class="grid2" style="margin-bottom:16px">'
+      +'<div>'
+        +(corp.rep?'<div style="font-size:12px;margin-bottom:4px">👤 '+esc(corp.rep)+'</div>':'')
+        +(corp.tel?'<div style="font-size:12px;margin-bottom:4px">📱 '+esc(corp.tel)+'</div>':'')
+        +(corp.email?'<div style="font-size:12px;margin-bottom:4px">✉ '+esc(corp.email)+'</div>':'')
+      +'</div>'
+      +'<div>'
+        +(corp.address?'<div style="font-size:12px;margin-bottom:4px">📍 '+esc(corp.address)+'</div>':'')
+        +(corp.genre?'<div style="font-size:12px;margin-bottom:4px">業種: '+esc(corp.genre)+'</div>':'')
+        +(corp.contractType?'<div style="font-size:12px">契約: '+esc(corp.contractType)+'</div>':'')
+      +'</div>'
+    +'</div>'
+    +(corp.memo?'<div style="padding:10px 12px;background:var(--bg3);border-radius:var(--r);font-size:12px;margin-bottom:16px;white-space:pre-wrap">'+esc(corp.memo)+'</div>':'')
+    +'<div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px">傘下店舗</div>'
+    +(stores.length===0
+      ?'<div class="empty-state" style="padding:12px">傘下店舗なし</div>'
+      :'<div class="table-wrap"><table><thead><tr><th>店舗名</th><th>ステータス</th><th>プラン</th><th>月額</th><th>営業担当</th></tr></thead><tbody>'
+        +stores.map(function(s){
+          var plan=s.planId?DB.plans.find(function(x){return x.id===s.planId;}):null;
+          return'<tr><td><span style="cursor:pointer;color:var(--accent)" onclick="closeModal(\'corpDetailModal\');setTimeout(function(){showDetail(\''+s.id+'\');},100)">'+esc(s.name)+'</span></td>'
+            +'<td>'+statusBadge(s.status)+'</td>'
+            +'<td style="font-size:12px">'+(plan?esc(plan.name):'—')+'</td>'
+            +'<td class="td-mono">'+fmtMoney(s.monthlyFee)+'</td>'
+            +'<td style="font-size:12px">'+esc(s.ourManager||'—')+'</td>'
+            +'</tr>';
+        }).join('')
+        +'</tbody></table></div>'
+    )
+    +'<div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">'
+      +'<div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px">一括設定</div>'
+      +'<div style="display:flex;gap:8px;flex-wrap:wrap">'
+        +'<select id="bulkPlanSel" style="font-size:12px;padding:4px 8px"><option value="">プランを選択...</option>'+DB.plans.map(function(p){return'<option value="'+p.id+'">'+esc(p.name)+'</option>';}).join('')+'</select>'
+        +'<button class="btn btn-sm" onclick="bulkApplyPlan(\''+id+'\')">全店舗に適用</button>'
+        +'<select id="bulkMgrSel" style="font-size:12px;padding:4px 8px"><option value="">担当者を選択...</option>'+getActiveStaff('sales').map(function(p){return'<option value="'+esc(p.name)+'">'+esc(p.name)+'</option>';}).join('')+'</select>'
+        +'<button class="btn btn-sm" onclick="bulkApplyManager(\''+id+'\')">全店舗に適用</button>'
+      +'</div>'
+    +'</div>'
+    +'<div class="form-actions" style="border-top:1px solid var(--border);margin-top:16px;padding-top:14px">'
+      +'<button class="btn-ghost-danger" onclick="deleteCorp(\''+id+'\')">削除</button>'
+      +'<button class="btn" onclick="closeModal(\'corpDetailModal\')">閉じる</button>'
+      +'<button class="btn btn-primary" onclick="closeModal(\'corpDetailModal\');openCorpModal(\''+id+'\')">編集</button>'
+    +'</div>';
+  openModal('corpDetailModal');
+}
+
+function bulkApplyPlan(corpId){
+  var planId=document.getElementById('bulkPlanSel').value;
+  if(!planId){alert('プランを選択してください');return;}
+  var plan=DB.plans.find(function(x){return x.id===planId;});
+  var stores=DB.stores.filter(function(s){return s.corpId===corpId;});
+  if(!stores.length){alert('傘下店舗がありません');return;}
+  if(!confirm(stores.length+'店舗のプランを「'+plan.name+'」に変更しますか？'))return;
+  stores.forEach(function(s){
+    s.planId=planId;
+    if(plan.price)s.monthlyFee=plan.price;
+    saveItem('stores',s);
+  });
+  refreshAll();
+  openCorpDetail(corpId);
+}
+function bulkApplyManager(corpId){
+  var mgr=document.getElementById('bulkMgrSel').value;
+  if(!mgr){alert('担当者を選択してください');return;}
+  var stores=DB.stores.filter(function(s){return s.corpId===corpId;});
+  if(!stores.length){alert('傘下店舗がありません');return;}
+  if(!confirm(stores.length+'店舗の担当者を「'+mgr+'」に変更しますか？'))return;
+  stores.forEach(function(s){
+    if(s.ourManager!==mgr){
+      s.managerLog=s.managerLog||[];
+      if(s.ourManager)s.managerLog.push({from:s.ourManager,to:mgr,at:new Date().toISOString()});
+      s.ourManager=mgr;
+      saveItem('stores',s);
+    }
+  });
+  refreshAll();
+  openCorpDetail(corpId);
+}
+
+function renderCorps(){
+  if(!DB.corporations)DB.corporations=[];
+  var tb=document.getElementById('corpTableBody');
+  if(!tb)return;
+  var nb=document.getElementById('nb-corps');
+  if(nb)nb.textContent=DB.corporations.length;
+  if(!DB.corporations.length){tb.innerHTML='<tr><td colspan="7" class="empty-state">法人が登録されていません</td></tr>';return;}
+  tb.innerHTML=DB.corporations.map(function(corp){
+    var stores=DB.stores.filter(function(s){return s.corpId===corp.id;});
+    var active=stores.filter(function(s){return s.status==='active';});
+    var totalRev=active.reduce(function(sum,s){return sum+(Number(s.monthlyFee)||0);},0);
+    return'<tr style="cursor:pointer" onclick="openCorpDetail(\''+corp.id+'\')">'
+      +'<td><div style="font-weight:500;color:var(--accent)">'+esc(corp.name)+'</div>'+(corp.genre?'<div style="font-size:10px;color:var(--text3)">'+esc(corp.genre)+'</div>':'')+'</td>'
+      +'<td style="font-size:12px">'+esc(corp.rep||'—')+'</td>'
+      +'<td style="font-size:12px;color:var(--text2)">'+esc(corp.tel||corp.email||'—')+'</td>'
+      +'<td style="text-align:center;font-weight:500">'+stores.length+'</td>'
+      +'<td style="text-align:center"><span style="color:var(--green);font-weight:500">'+active.length+'</span></td>'
+      +'<td class="td-mono">'+fmtMoney(totalRev)+'</td>'
+      +'<td onclick="event.stopPropagation()"><button class="btn btn-sm" onclick="openCorpModal(\''+corp.id+'\')">編集</button></td>'
+      +'</tr>';
+  }).join('');
+}
+
+
 function updateSidebarStats(){
   /* サイドバーの数値だけ更新（ページ切り替えなし） */
   var active=DB.stores.filter(function(s){return s.status==='active';});
@@ -2636,13 +3025,14 @@ function refreshAll(){
   if(currentPage==='schedule'){renderSchedFilter();renderSchedule();renderCalendar();}
   if(currentPage==='influencers')renderInfluencers();
   if(currentPage==='casting')renderCasting();
+  if(currentPage==='corporations')renderCorps();
   if(currentPage==='plans'){renderPlans();renderRevSummary();}
   if(currentPage==='sales'){renderSalesNotifs();}
   if(currentPage==='creators')renderCreators();
 }
 
 setSyncStatus('saving','読み込み中...');
-loadDB().then(function(){renderDashboard();updateSidebarStats();});
+loadDB().then(function(){renderDashboard();updateSidebarStats();updateCorpSelects();});
 </script>
 <!-- GENRE MODAL -->
 <div class="modal-overlay" id="genreModal">
@@ -2690,6 +3080,41 @@ loadDB().then(function(){renderDashboard();updateSidebarStats();});
       </div>
     </div>
   </div>
+</div>
+</div>
+
+<!-- CORP MODAL -->
+<div class="modal-overlay" id="corpModal">
+<div class="modal" style="width:580px">
+  <div class="modal-header">
+    <span class="modal-title" id="corpModalTitle">法人を追加</span>
+    <button class="modal-close" onclick="closeModal('corpModal')">✕</button>
+  </div>
+  <div class="modal-body">
+    <div class="fr"><div class="field"><label>法人名 *</label><input id="coName" type="text" placeholder="株式会社〇〇"></div><div class="field"><label>代表者名</label><input id="coRep" type="text" placeholder="山田 太郎"></div></div>
+    <div class="fr"><div class="field"><label>電話番号</label><input id="coTel" type="tel" placeholder="03-XXXX-XXXX"></div><div class="field"><label>メール</label><input id="coEmail" type="email" placeholder="info@example.com"></div></div>
+    <div class="fr1 field"><label>住所</label><input id="coAddress" type="text" placeholder="東京都渋谷区..."></div>
+    <div class="fr"><div class="field"><label>業種</label><input id="coGenre" type="text" placeholder="焼肉・居酒屋など"></div><div class="field"><label>契約形態</label><select id="coContractType"><option value="">—</option><option>直接契約</option><option>代理店経由</option><option>紹介</option></select></div></div>
+    <div class="fr1 field"><label>備考</label><textarea id="coMemo" placeholder="チェーン展開の特徴、注意事項など..." style="min-height:52px"></textarea></div>
+    <div class="form-actions">
+      <button class="btn" onclick="closeModal('corpModal')">キャンセル</button>
+      <button class="btn btn-primary" onclick="saveCorp()">保存</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- CORP DETAIL MODAL -->
+<div class="modal-overlay" id="corpDetailModal">
+<div class="modal" style="width:660px">
+  <div class="modal-header">
+    <span class="modal-title" id="corpDetailTitle">法人詳細</span>
+    <div style="display:flex;gap:6px;align-items:center">
+      <button class="btn btn-sm" id="corpDetailEditBtn">編集</button>
+      <button class="modal-close" onclick="closeModal('corpDetailModal')">✕</button>
+    </div>
+  </div>
+  <div class="modal-body" id="corpDetailBody"></div>
 </div>
 </div>
 
