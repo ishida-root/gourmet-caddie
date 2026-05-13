@@ -860,7 +860,12 @@ var STAFF_MEMBERS=[
   {id:'sp5',name:'小豆澤 由莉',role:'sales',retired:false},
   {id:'sp6',name:'村田 晃大',role:'sales',retired:false},
   {id:'sp7',name:'田中 拓也',role:'sales',retired:false},
-  {id:'sp8',name:'石田 温子',role:'sns',retired:false}
+  {id:'sp8',name:'石田 温子',role:'sns',retired:false},
+  {id:'sp9',name:'塚井 亜衣',role:'office',retired:false},
+  {id:'sp10',name:'松本 繁樹',role:'office',retired:false},
+  {id:'sp11',name:'岩佐 彩加',role:'office',retired:false},
+  {id:'sp12',name:'松本 英',role:'office',retired:false},
+  {id:'sp13',name:'今富 信至',role:'president',retired:false}
 ];
 var SALES_PERSONS=STAFF_MEMBERS;
 function loadSalesPersons(){
@@ -905,15 +910,9 @@ function renderStaffList(){
   ae.innerHTML=active.length?active.map(function(p){
     return'<div style="display:flex;align-items:center;gap:6px;padding:7px 10px;background:var(--bg3);border-radius:var(--r);margin-bottom:5px">'
       +'<span style="flex:1;font-size:13px">'+esc(p.name)+'</span>'
-      +'<span class="badge '+(ROLE_BADGE[p.role]||'b-gray')+'" style="font-size:10px">'+(ROLE_LABELS[p.role]||'—')+'</span>'
-      +'<select onchange="changeStaffRole(\''+p.id+'\',this.value)" style="font-size:11px;padding:2px 4px;width:76px;border:1px solid var(--border);border-radius:4px;background:var(--bg2);color:var(--text)">'
-        +'<option value="sales"'+(p.role==='sales'?' selected':'')+'>営業</option>'
-        +'<option value="sns"'+(p.role==='sns'?' selected':'')+'>SNS</option>'
-        +'<option value="office"'+(p.role==='office'?' selected':'')+'>事務</option>'
-        +'<option value="president"'+(p.role==='president'?' selected':'')+'>社長</option>'
-      +'</select>'
-      +'<button class="btn btn-sm" onclick="retireSalesPerson(\''+p.id+'\')" style="font-size:11px;color:var(--amber)">退職</button>'
-      +'<button class="btn-ghost-danger btn-sm" onclick="deleteSalesPerson(\''+p.id+'\')">削除</button>'
+      +'<span class="badge '+(ROLE_BADGE[p.role]||'b-gray')+' style="font-size:10px">'+(ROLE_LABELS[p.role]||'—')+'</span>'
+      +'<button class="btn btn-sm" onclick="openStaffEditModal(\''+p.id+'\')" style="font-size:11px">編集</button>'
+      +'<button class="btn btn-sm" onclick="retireSalesPerson(\''+p.id+'\')" style="font-size:11px;color:var(--text3)">退職</button>'
       +'</div>';
   }).join(''):'<div style="font-size:12px;color:var(--text3)">在籍中のメンバーなし</div>';
   re.innerHTML=retired.length?retired.map(function(p){
@@ -976,6 +975,26 @@ function deleteSalesPerson(id){
   STAFF_MEMBERS=STAFF_MEMBERS.filter(function(p){return p.id!==id;});
   SALES_PERSONS=STAFF_MEMBERS;
   saveSalesPersons();renderStaffList();updateSalesPersonSelects();
+  closeModal('staffEditModal');
+}
+function openStaffEditModal(id){
+  var p=STAFF_MEMBERS.find(function(x){return x.id===id;});
+  if(!p)return;
+  document.getElementById('seId').value=p.id;
+  document.getElementById('seName').value=p.name;
+  document.getElementById('seRole').value=p.role||'sales';
+  openModal('staffEditModal');
+}
+function saveStaffEdit(){
+  var id=document.getElementById('seId').value;
+  var name=document.getElementById('seName').value.trim();
+  var role=document.getElementById('seRole').value;
+  if(!name){alert('名前を入力してください');return;}
+  var p=STAFF_MEMBERS.find(function(x){return x.id===id;});
+  if(!p)return;
+  p.name=name;p.role=role;
+  saveSalesPersons();renderStaffList();updateSalesPersonSelects();
+  closeModal('staffEditModal');
 }
 loadSalesPersons();
 updateSalesPersonSelects();
@@ -2636,6 +2655,39 @@ loadDB().then(function(){renderDashboard();updateSidebarStats();});
 </div>
 
 <!-- SALES PERSON MODAL -->
+<!-- STAFF EDIT MODAL -->
+<div class="modal-overlay" id="staffEditModal" style="z-index:200">
+<div class="modal" style="width:360px">
+  <div class="modal-header">
+    <span class="modal-title">社員を編集</span>
+    <button class="modal-close" onclick="closeModal('staffEditModal')">✕</button>
+  </div>
+  <div class="modal-body">
+    <input type="hidden" id="seId">
+    <div class="fr1 field" style="margin-bottom:10px">
+      <label>名前</label>
+      <input id="seName" type="text" placeholder="氏名">
+    </div>
+    <div class="fr1 field" style="margin-bottom:16px">
+      <label>役割</label>
+      <select id="seRole">
+        <option value="sales">営業</option>
+        <option value="sns">SNS</option>
+        <option value="office">事務</option>
+        <option value="president">社長</option>
+      </select>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;padding-top:14px;border-top:1px solid var(--border)">
+      <button class="btn-ghost-danger" style="font-size:12px;padding:6px 10px" onclick="deleteSalesPerson(document.getElementById('seId').value)">削除</button>
+      <div style="display:flex;gap:8px">
+        <button class="btn" onclick="closeModal('staffEditModal')">キャンセル</button>
+        <button class="btn btn-primary" onclick="saveStaffEdit()">保存</button>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
 <div class="modal-overlay" id="salesPersonModal">
 <div class="modal" style="width:460px">
   <div class="modal-header"><span class="modal-title">社員マスタ</span><button class="modal-close" onclick="closeModal('salesPersonModal')">✕</button></div>
