@@ -581,7 +581,7 @@ var currentPage='dashboard';
    ============================================================ */
 var SUPA_URL='https://vwtcshwzetxnaedjhoej.supabase.co';
 var SUPA_KEY='sb_publishable_zt0zrtChZOxcwCIhiMKPug_l4D59YZq';
-var TABLES=['stores','posts','influencers','castings','plans'];
+var TABLES=['stores','posts','influencers','castings','plans','salesNotifs'];
 
 /* ============================================================
    APIレイヤー（ここを将来書き換えると別サーバーに移行できる）
@@ -626,6 +626,7 @@ async function loadDB(){
     var results=await Promise.all(TABLES.map(function(t){return apiFetch(t);}));
     TABLES.forEach(function(t,i){DB[t]=results[i]||[];});
     if(!DB.plans)DB.plans=[];
+    if(!DB.salesNotifs)DB.salesNotifs=[];
     try{localStorage.setItem('adcore3',JSON.stringify(DB));}catch(e){}
     setSyncStatus('ok','同期済み');
   }catch(e){
@@ -698,7 +699,10 @@ function navigate(page){
   if(page==='stores')renderStoreTable();
   if(page==='schedule'){renderSchedFilter();renderSchedule();}
   if(page==='calendar')renderCalendar();
-  if(page==='influencers')renderInfluencers();
+  if(page==='influencers'){
+    renderInfluencers();
+    loadDB().then(function(){renderInfluencers();refreshAll();});
+  }
   if(page==='casting')renderCasting();
   if(page==='plans'){renderPlans();renderRevSummary();}
 }
@@ -850,11 +854,11 @@ function submitSalesForm(){
   var plan=DB.plans.find(function(p){return p.id===s.planId;});
   if(plan&&plan.price) s.monthlyFee=plan.price;
   DB.stores.push(s);
+  if(!DB.salesNotifs)DB.salesNotifs=[];
   var notif={id:uid(),storeId:s.id,storeName:name,salesBy:sales,plan:plan?plan.name:'未設定',at:new Date().toISOString(),read:false};
-  var notifs=getSalesNotifs();
-  notifs.unshift(notif);
-  try{localStorage.setItem('gc_sales_notifs',JSON.stringify(notifs));}catch(e){}
+  DB.salesNotifs.unshift(notif);
   saveItem('stores',s);
+  saveItem('salesNotifs',notif);
   ['sl-name','sl-genre','sl-pref','sl-area','sl-contact','sl-role','sl-tel','sl-email','sl-memo','sl-sales'].forEach(function(id){document.getElementById(id).value='';});
   document.getElementById('sl-plan').value='';
   updateSalesNotifBadge();
@@ -863,7 +867,10 @@ function submitSalesForm(){
   alert('✓ 登録しました！SNS局に通知しました。');
 }
 function getSalesNotifs(){
-  try{var d=localStorage.getItem('gc_sales_notifs');return d?JSON.parse(d):[];}catch(e){return[];}
+  return DB.salesNotifs||[];
+}
+function saveSalesNotifs(){
+  try{localStorage.setItem('gc_sales_notifs',JSON.stringify(DB.salesNotifs||[]));}catch(e){}
 }
 function renderSalesNotifs(){
   var el=document.getElementById('salesNotifList');
@@ -887,20 +894,20 @@ function renderSalesNotifs(){
   }).join('');
 }
 function openStoreFromNotif(storeId){
-  var notifs=getSalesNotifs();
-  notifs.forEach(function(n){if(n.storeId===storeId)n.read=true;});
-  try{localStorage.setItem('gc_sales_notifs',JSON.stringify(notifs));}catch(e){}
+  if(!DB.salesNotifs)DB.salesNotifs=[];
+  DB.salesNotifs.forEach(function(n){if(n.storeId===storeId)n.read=true;});
   updateSalesNotifBadge();
   renderSalesNotifs();
+  renderDashboard();
   navigate('stores');
   setTimeout(function(){showDetail(storeId);},100);
 }
 function clearSalesNotifs(){
-  var notifs=getSalesNotifs();
-  notifs.forEach(function(n){n.read=true;});
-  try{localStorage.setItem('gc_sales_notifs',JSON.stringify(notifs));}catch(e){}
+  if(!DB.salesNotifs)DB.salesNotifs=[];
+  DB.salesNotifs.forEach(function(n){n.read=true;});
   updateSalesNotifBadge();
   renderSalesNotifs();
+  renderDashboard();
 }
 function updateSalesNotifBadge(){
   var notifs=getSalesNotifs();
