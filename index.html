@@ -168,6 +168,7 @@ tr:hover td{background:#fafaf8}
 .alert-danger{background:var(--red-bg);border-color:var(--red-border);color:var(--red)}
 .alert-warn{background:var(--amber-bg);border-color:var(--amber-border);color:var(--amber)}
 .alert-ok{background:var(--green-bg);border-color:var(--green-border);color:var(--green)}
+.alert-info{background:var(--accent-bg);border-color:var(--accent-border);color:var(--accent)}
 
 /* CALENDAR */
 .cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
@@ -275,7 +276,7 @@ tr:hover td{background:#fafaf8}
         <div class="stat-card"><div class="stat-val" id="ds-inf">0</div><div class="stat-label">インフルエンサー</div></div>
       </div>
       <div class="grid2">
-        <div class="card"><div class="card-header"><span class="card-title">要対応アラート</span></div><div id="dash-alerts"></div></div>
+        <div class="card"><div class="card-header"><span class="card-title">要対応アラート</span><button class="btn btn-sm" onclick="navigate('check')">チェック実行</button></div><div id="dash-alerts"></div></div>
         <div class="card"><div class="card-header"><span class="card-title">直近の投稿予定</span><button class="btn btn-sm" onclick="navigate('schedule')">全て見る</button></div><div id="dash-upcoming"></div></div>
       </div>
       <div class="card"><div class="card-header"><span class="card-title">初期設定 進捗</span></div><div id="dash-setup"></div></div>
@@ -289,12 +290,12 @@ tr:hover td{background:#fafaf8}
           <div style="font-size:12px;color:var(--text3);margin-bottom:14px;padding:8px 12px;background:var(--bg3);border-radius:var(--r)">営業担当が入力する簡易フォームです。入力後はSNS局に通知されます。</div>
           <div class="fr"><div class="field"><label>店舗名 *</label><input id="sl-name" type="text" placeholder="例: 炭火焼 竹山 渋谷店"></div><div class="field"><label>業種</label><input id="sl-genre" type="text" list="genreList" placeholder="例: 焼肉"></div></div>
           <div class="fr1 field"><label>郵便番号 <span style="color:var(--text3);font-weight:400"></span></label><div style="display:flex;gap:6px"><input id="sl-zip" type="text" placeholder="例: 150-0043" maxlength="8" style="max-width:160px" oninput="autoFillAddress(this.value,'sl-pref','sl-area')"><span style="font-size:12px;color:var(--text3);align-self:center" id="sl-zip-status"></span></div></div>
-          <div class="fr"><div class="field"><label>都道府県</label><input id="sl-pref" type="text" placeholder="東京都"></div><div class="field"><label>エリア</label><input id="sl-area" type="text" placeholder="渋谷区"></div></div>
+          <div class="fr"><div class="field"><label>都道府県</label><input id="sl-pref" type="text" placeholder="東京都"></div><div class="field"><label>市区町村・番地</label><input id="sl-area" type="text" placeholder="渋谷区道玄坂1-1-1"></div></div>
           <div class="fr"><div class="field"><label>契約プラン</label><select id="sl-plan"><option value="">選択...</option></select></div><div class="field"><label>契約期間</label><select id="sl-term"><option value="3">3ヶ月</option><option value="6">6ヶ月</option><option value="12">12ヶ月</option></select></div></div>
           <div style="border-top:1px solid var(--border);padding-top:12px;margin-top:4px;margin-bottom:12px">
-            <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:10px">店舗担当者</div>
-            <div class="fr"><div class="field"><label>担当者名</label><input id="sl-contact" type="text" placeholder="田中 太郎"></div><div class="field"><label>役職</label><input id="sl-role" type="text" placeholder="店長"></div></div>
-            <div class="fr"><div class="field"><label>電話番号</label><input id="sl-tel" type="tel" placeholder="090-XXXX-XXXX"></div><div class="field"><label>メール</label><input id="sl-email" type="email" placeholder="tanaka@example.com"></div></div>
+            <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:10px">店舗担当者 *</div>
+            <div class="fr"><div class="field"><label>担当者名 *</label><input id="sl-contact" type="text" placeholder="田中 太郎"></div><div class="field"><label>役職</label><input id="sl-role" type="text" placeholder="店長"></div></div>
+            <div class="fr"><div class="field"><label>電話番号 <span style="color:var(--text3);font-weight:400">※どちらか必須</span></label><input id="sl-tel" type="tel" placeholder="090-XXXX-XXXX"></div><div class="field"><label>メール <span style="color:var(--text3);font-weight:400">※どちらか必須</span></label><input id="sl-email" type="email" placeholder="tanaka@example.com"></div></div>
           </div>
           <div class="fr1 field"><label>備考・メモ</label><textarea id="sl-memo" placeholder="特記事項、経緯など..." style="min-height:52px"></textarea></div>
           <div class="fr1 field"><label>営業担当者名 *</label><input id="sl-sales" type="text" placeholder="例: 山田 花子"></div>
@@ -408,7 +409,7 @@ tr:hover td{background:#fafaf8}
     <div class="tab-pane active" id="stab0">
       <div class="fr"><div class="field"><label>店舗名 *</label><input id="sName" type="text" placeholder="例: 炭火焼 竹山 渋谷店"></div><div class="field"><label>業種 <button type="button" onclick="openGenreModal()" style="font-size:10px;padding:2px 7px;margin-left:6px;background:var(--bg3);border:1px solid var(--border2);border-radius:4px;cursor:pointer;color:var(--text2)">＋ 編集</button></label><input id="sGenre" type="text" list="genreList" placeholder="例: 焼肉"><datalist id="genreList"></datalist></div></div>
       <div class="fr1 field"><label>郵便番号 <span style="color:var(--text3);font-weight:400"></span></label><div style="display:flex;gap:6px"><input id="sZip" type="text" placeholder="例: 150-0043" maxlength="8" style="max-width:160px" oninput="autoFillAddress(this.value,'sPref','sArea')"><span style="font-size:12px;color:var(--text3);align-self:center" id="sZip-status"></span></div></div>
-      <div class="fr"><div class="field"><label>都道府県</label><input id="sPref" type="text" placeholder="東京都"></div><div class="field"><label>エリア / 住所</label><input id="sArea" type="text" placeholder="渋谷区道玄坂..."></div></div>
+      <div class="fr"><div class="field"><label>都道府県</label><input id="sPref" type="text" placeholder="東京都"></div><div class="field"><label>市区町村・番地</label><input id="sArea" type="text" placeholder="渋谷区道玄坂..."></div></div>
       <div class="fr3"><div class="field"><label>営業時間</label><input id="sHours" type="text" placeholder="17:00–24:00"></div><div class="field"><label>定休日</label><input id="sHoliday" type="text" placeholder="月曜"></div><div class="field"><label>席数</label><input id="sSeats" type="number" placeholder="40"></div></div>
       <div class="fr"><div class="field"><label>食べログ URL</label><input id="sTabelog" type="url" placeholder="https://tabelog.com/..."></div><div class="field"><label>公式 HP</label><input id="sHp" type="url" placeholder="https://..."></div></div>
       <div class="fr1 field"><label>備考</label><textarea id="sMemo" placeholder="特記事項..."></textarea></div>
@@ -589,10 +590,11 @@ function apiUrl(table){return SUPA_URL+'/rest/v1/'+table;}
 function apiHeaders(){return{'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Prefer':'return=minimal'};}
 
 async function apiFetch(table){
-  var r=await fetch(apiUrl(table)+'?select=*',{headers:apiHeaders()});
-  if(!r.ok)throw new Error('fetch '+table+' failed');
+  var r=await fetch(apiUrl(table)+'?select=*&order=updated_at.asc',{headers:apiHeaders()});
+  if(!r.ok)throw new Error('fetch '+table+' failed: '+r.status);
   var rows=await r.json();
-  return rows.map(function(row){return row.data;});
+  if(!Array.isArray(rows))return[];
+  return rows.map(function(row){return row.data;}).filter(function(d){return d&&d.id;});
 }
 async function apiUpsert(table,item){
   var r=await fetch(apiUrl(table),{method:'POST',headers:Object.assign({},apiHeaders(),{'Prefer':'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify({id:item.id,data:item})});
@@ -627,9 +629,19 @@ async function loadDB(){
     try{localStorage.setItem('adcore3',JSON.stringify(DB));}catch(e){}
     setSyncStatus('ok','同期済み');
   }catch(e){
-    var cached=localStorage.getItem('adcore3');
-    if(cached){try{var d=JSON.parse(cached);Object.assign(DB,d);if(!DB.plans)DB.plans=[];}catch(e2){}}
-    setSyncStatus('error','オフライン（キャッシュ表示中）');
+    setSyncStatus('error','読込失敗 — 再試行中...');
+    try{
+      await new Promise(function(r){setTimeout(r,2000);});
+      var results2=await Promise.all(TABLES.map(function(t){return apiFetch(t);}));
+      TABLES.forEach(function(t,i){DB[t]=results2[i]||[];});
+      if(!DB.plans)DB.plans=[];
+      try{localStorage.setItem('adcore3',JSON.stringify(DB));}catch(e2){}
+      setSyncStatus('ok','同期済み');
+    }catch(e2){
+      var cached=localStorage.getItem('adcore3');
+      if(cached){try{var d=JSON.parse(cached);Object.assign(DB,d);if(!DB.plans)DB.plans=[];}catch(e3){}}
+      setSyncStatus('error','オフライン（キャッシュ表示中）');
+    }
   }
 }
 
@@ -738,6 +750,9 @@ function openStoreModal(id){
     if(s){
       var map={sName:'name',sPref:'pref',sArea:'area',sHours:'hours',sHoliday:'holiday',sSeats:'seats',sTabelog:'tabelog',sHp:'hp',sMemo:'memo',sIg:'ig',sIgFollowers:'igFollowers',sFb:'fb',sTw:'tw',sTt:'tt',sYt:'yt',sMetaId:'metaId',sMetaExp:'metaExp',sCreator:'creator',sContractStart:'contractStart',sContractTerm:'contractTerm',sMonthlyFee:'monthlyFee',sStatus:'status',sContactName:'contactName',sContactRole:'contactRole',sContactTel:'contactTel',sContactEmail:'contactEmail',sContactLine:'contactLine',sOurManager:'ourManager',sReviewCycle:'reviewCycle',sVideos:'videos',sAdDelivery:'adDelivery',sSetupMemo:'setupMemo',sPlanId:'planId'};
       Object.keys(map).forEach(function(elId){var el=document.getElementById(elId);if(el&&s[map[elId]]!==undefined)el.value=s[map[elId]];});
+      if(document.getElementById('sOurManager')&&!document.getElementById('sOurManager').value&&s.salesBy){
+        document.getElementById('sOurManager').value=s.salesBy;
+      }
       showPlanPreview();
       if(s.setupChecks){var items=document.querySelectorAll('#setupChecklist .check-item');s.setupChecks.forEach(function(v,i){if(items[i]&&v){items[i].classList.add('done');items[i].querySelector('.check-box').textContent='✓';}});}
     }
@@ -806,7 +821,12 @@ function updateSalesPlanSelect(){
 function submitSalesForm(){
   var name=document.getElementById('sl-name').value.trim();
   var sales=document.getElementById('sl-sales').value.trim();
+  var contact=document.getElementById('sl-contact').value.trim();
+  var tel=document.getElementById('sl-tel').value.trim();
+  var email=document.getElementById('sl-email').value.trim();
   if(!name){alert('店舗名を入力してください');return;}
+  if(!contact){alert('店舗担当者名を入力してください');return;}
+  if(!tel&&!email){alert('電話番号またはメールアドレスをどちらか入力してください');return;}
   if(!sales){alert('営業担当者名を入力してください');return;}
   var s={
     id:uid(),
@@ -1007,17 +1027,39 @@ function postStatusBadge(v){var m={draft:'<span class="badge b-gray">下書き</
 
 function generateAlerts(){
   var alerts=[],today=new Date();
-  DB.posts.forEach(function(p){
-    if(p.status==='scheduled'&&new Date(p.date)<today)alerts.push({level:'danger',msg:'【'+storeName(p.storeId)+'】予約済みなのに日時が過去 ('+fmtDT(p.date)+')'});
-    if(!p.creative&&p.type==='video')alerts.push({level:'warn',msg:'【'+storeName(p.storeId)+'】動画投稿のクリエイティブ未設定 ('+fmtDT(p.date)+')'});
+
+  /* 営業からの未読通知 */
+  var unreadNotifs=getSalesNotifs().filter(function(n){return!n.read;});
+  unreadNotifs.forEach(function(n){
+    alerts.push({level:'info',msg:'📬 新規契約【'+n.storeName+'】営業: '+n.salesBy+' / プラン: '+n.plan,storeId:n.storeId,isNotif:true,notifId:n.id});
   });
+
+  /* 投稿日が3日以内 */
+  var in3days=new Date(today.getTime()+3*86400000);
+  DB.posts.filter(function(p){
+    var d=new Date(p.date);
+    return p.status!=='done'&&d>=today&&d<=in3days;
+  }).forEach(function(p){
+    var diff=Math.ceil((new Date(p.date)-today)/86400000);
+    alerts.push({level:'warn',msg:'📅 投稿まで'+diff+'日【'+storeName(p.storeId)+'】'+fmtDT(p.date)+(p.caption?' — '+(p.caption||'').slice(0,20):'')});
+  });
+
+  /* 予約済みなのに過去 */
+  DB.posts.forEach(function(p){
+    if(p.status==='scheduled'&&new Date(p.date)<today)alerts.push({level:'danger',msg:'⚠ 投稿日が過去【'+storeName(p.storeId)+'】'+fmtDT(p.date)});
+    if(!p.creative&&p.type==='video')alerts.push({level:'warn',msg:'🎬 クリエイティブ未設定【'+storeName(p.storeId)+'】'+fmtDT(p.date)});
+  });
+
+  /* 同日重複 */
   var dateMap={};
   DB.posts.forEach(function(p){var k=p.storeId+'_'+(p.date||'').slice(0,10);if(!dateMap[k])dateMap[k]=[];dateMap[k].push(p);});
-  Object.values(dateMap).forEach(function(ps){if(ps.length>1)alerts.push({level:'danger',msg:'【'+storeName(ps[0].storeId)+'】同日に'+ps.length+'件の投稿が重複 ('+(ps[0].date||'').slice(0,10)+')'});});
+  Object.values(dateMap).forEach(function(ps){if(ps.length>1)alerts.push({level:'danger',msg:'⚠ 同日重複【'+storeName(ps[0].storeId)+'】'+(ps[0].date||'').slice(0,10)+' '+ps.length+'件'});});
+
+  /* 契約終了・投稿本数 */
   DB.stores.forEach(function(s){
     var end=contractEndDate(s);
-    if(end){var diff=(end-today)/86400000;if(diff<30&&diff>0)alerts.push({level:'warn',msg:'【'+s.name+'】契約終了まで'+Math.round(diff)+'日 ('+fmtD(end)+')'});}
-    if(s.status==='active'){var mon=DB.posts.filter(function(p){var d=new Date(p.date);return p.storeId===s.id&&d.getFullYear()===today.getFullYear()&&d.getMonth()===today.getMonth();});if(mon.length<2)alerts.push({level:'warn',msg:'【'+s.name+'】今月の投稿が'+mon.length+'本（目標: 2本）'});}
+    if(end){var diff=(end-today)/86400000;if(diff<30&&diff>0)alerts.push({level:'warn',msg:'📋 契約終了まで'+Math.round(diff)+'日【'+s.name+'】'+fmtD(end)});}
+    if(s.status==='active'){var mon=DB.posts.filter(function(p){var d=new Date(p.date);return p.storeId===s.id&&d.getFullYear()===today.getFullYear()&&d.getMonth()===today.getMonth();});if(mon.length<2)alerts.push({level:'warn',msg:'📉 今月'+mon.length+'本【'+s.name+'】目標: 2本'});}
   });
   return alerts;
 }
@@ -1036,7 +1078,11 @@ function renderDashboard(){
   var alerts=generateAlerts();
   document.getElementById('nb-alerts').textContent=alerts.length;
   var ae=document.getElementById('dash-alerts');
-  ae.innerHTML=alerts.length?alerts.slice(0,5).map(function(a){return'<div class="alert-item alert-'+a.level+'">'+esc(a.msg)+'</div>';}).join(''):'<div class="empty-state" style="padding:16px">問題なし ✓</div>';
+  ae.innerHTML=alerts.length?alerts.map(function(a){
+    var style=a.level==='danger'?'alert-danger':a.level==='info'?'alert-info':'alert-warn';
+    var extra=a.storeId?'<button class="btn btn-sm" style="margin-left:auto;flex-shrink:0" onclick="openStoreFromNotif(\''+a.storeId+'\')">詳細</button>':'';
+    return'<div class="alert-item '+style+'" style="justify-content:space-between">'+esc(a.msg)+extra+'</div>';
+  }).join(''):'<div class="empty-state" style="padding:16px">問題なし ✓</div>';
   var upcoming=DB.posts.filter(function(p){return p.status!=='done';}).sort(function(a,b){return new Date(a.date)-new Date(b.date);}).slice(0,5);
   var ue=document.getElementById('dash-upcoming');
   ue.innerHTML=upcoming.length?'<div class="timeline">'+upcoming.map(function(p){return'<div class="tl-item"><div class="tl-dot" style="background:'+storeColor(p.storeId)+'15;border-color:'+storeColor(p.storeId)+'"></div><div><div class="tl-date">'+fmtDT(p.date)+'</div><div class="tl-title">'+esc(storeName(p.storeId))+' — '+esc((p.caption||'').slice(0,36))+((p.caption||'').length>36?'…':'')+'</div></div></div>';}).join('')+'</div>':'<div class="empty-state" style="padding:16px">投稿予定なし</div>';
@@ -1072,7 +1118,7 @@ function showDetail(id){
   var myCast=DB.castings.filter(function(c){return c.storeId===id;});
   var pct=setupPct(s);
   document.getElementById('detailTitle').textContent=s.name;
-  document.getElementById('detailBody').innerHTML='<div class="grid3" style="margin-bottom:14px"><div class="card-sm"><div style="font-size:10px;color:var(--text3);margin-bottom:4px">ステータス</div>'+statusBadge(s.status)+'</div><div class="card-sm"><div style="font-size:10px;color:var(--text3);margin-bottom:4px">契約</div><div style="font-size:12px">'+(s.contractStart||'—')+' / '+(s.contractTerm?s.contractTerm+'ヶ月':'—')+'</div></div><div class="card-sm"><div style="font-size:10px;color:var(--text3);margin-bottom:4px">月額</div><div style="font-size:13px;font-weight:500">'+fmtMoney(s.monthlyFee)+'</div></div></div><div class="grid2" style="margin-bottom:14px"><div><div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px">店舗情報</div>'+[['業種',s.genre],['エリア',s.area],['営業時間',s.hours],['担当者',s.contactName+(s.contactRole?' / '+s.contactRole:'')],['電話',s.contactTel],['メール',s.contactEmail],['営業担当',s.salesBy||s.ourManager],['クリエイター',s.creator]].map(function(r){return r[1]?'<div style="font-size:12px;display:flex;gap:8px;padding:3px 0;border-bottom:1px solid var(--border)"><span style="color:var(--text3);min-width:68px;flex-shrink:0">'+r[0]+'</span><span>'+esc(r[1])+'</span></div>':'';}).join('')+'</div><div><div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px">SNS / 広告</div>'+[['Instagram',s.ig],['Facebook',s.fb],['X',s.tw],['TikTok',s.tt],['Meta広告ID',s.metaId],['食べログ',s.tabelog?'登録あり':''],['HP',s.hp?'登録あり':'']].map(function(r){return r[1]?'<div style="font-size:12px;display:flex;gap:8px;padding:3px 0;border-bottom:1px solid var(--border)"><span style="color:var(--text3);min-width:68px">'+r[0]+'</span><span>'+esc(r[1])+'</span></div>':'';}).join('')+'<div style="margin-top:10px"><div style="font-size:11px;color:var(--text3);margin-bottom:4px">初期設定 '+pct+'%</div><div class="pbar-wrap"><div class="pbar" style="background:'+(pct===100?'var(--green)':'var(--accent)')+';width:'+pct+'%"></div></div></div></div></div><div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px">投稿履歴 ('+myPosts.length+'件)</div>'+(myPosts.length?'<div style="max-height:140px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--r)">'+myPosts.map(function(p,i){return'<div style="display:flex;gap:10px;padding:7px 12px;border-bottom:'+(i<myPosts.length-1?'1px solid var(--border)':'none')+'"><span class="td-mono" style="color:var(--text3);white-space:nowrap">'+fmtDT(p.date)+'</span><span style="font-size:12px;flex:1">'+esc((p.caption||'').slice(0,50))+((p.caption||'').length>50?'…':'')+'</span>'+postStatusBadge(p.status)+'</div>';}).join('')+'</div>':'<div style="font-size:12px;color:var(--text3)">投稿なし</div>')+'<div style="font-size:11px;font-weight:500;color:var(--text2);margin:12px 0 8px">キャスティング ('+myCast.length+'件)</div>'+(myCast.length?'<div style="border:1px solid var(--border);border-radius:var(--r)">'+myCast.map(function(c,i){return'<div style="font-size:12px;padding:7px 12px;border-bottom:'+(i<myCast.length-1?'1px solid var(--border)':'none')+';display:flex;gap:10px"><span class="td-mono" style="color:var(--text3)">'+fmtD(c.date)+'</span><span>'+esc(infName(c.infId))+'</span><span style="margin-left:auto;color:var(--text3)">'+esc(c.platform)+'</span></div>';}).join('')+'</div>':'<div style="font-size:12px;color:var(--text3)">なし</div>');
+  document.getElementById('detailBody').innerHTML='<div class="grid3" style="margin-bottom:14px"><div class="card-sm"><div style="font-size:10px;color:var(--text3);margin-bottom:4px">ステータス</div>'+statusBadge(s.status)+'</div><div class="card-sm"><div style="font-size:10px;color:var(--text3);margin-bottom:4px">契約</div><div style="font-size:12px">'+(s.contractStart||'—')+' / '+(s.contractTerm?s.contractTerm+'ヶ月':'—')+'</div></div><div class="card-sm"><div style="font-size:10px;color:var(--text3);margin-bottom:4px">月額</div><div style="font-size:13px;font-weight:500">'+fmtMoney(s.monthlyFee)+'</div></div></div><div class="grid2" style="margin-bottom:14px"><div><div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px">店舗情報</div>'+[['業種',s.genre],['市区町村・番地',s.area],['営業時間',s.hours],['担当者',s.contactName+(s.contactRole?' / '+s.contactRole:'')],['電話',s.contactTel],['メール',s.contactEmail],['営業担当',s.salesBy||s.ourManager],['クリエイター',s.creator]].map(function(r){return r[1]?'<div style="font-size:12px;display:flex;gap:8px;padding:3px 0;border-bottom:1px solid var(--border)"><span style="color:var(--text3);min-width:68px;flex-shrink:0">'+r[0]+'</span><span>'+esc(r[1])+'</span></div>':'';}).join('')+'</div><div><div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px">SNS / 広告</div>'+[['Instagram',s.ig],['Facebook',s.fb],['X',s.tw],['TikTok',s.tt],['Meta広告ID',s.metaId],['食べログ',s.tabelog?'登録あり':''],['HP',s.hp?'登録あり':'']].map(function(r){return r[1]?'<div style="font-size:12px;display:flex;gap:8px;padding:3px 0;border-bottom:1px solid var(--border)"><span style="color:var(--text3);min-width:68px">'+r[0]+'</span><span>'+esc(r[1])+'</span></div>':'';}).join('')+'<div style="margin-top:10px"><div style="font-size:11px;color:var(--text3);margin-bottom:4px">初期設定 '+pct+'%</div><div class="pbar-wrap"><div class="pbar" style="background:'+(pct===100?'var(--green)':'var(--accent)')+';width:'+pct+'%"></div></div></div></div></div><div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px">投稿履歴 ('+myPosts.length+'件)</div>'+(myPosts.length?'<div style="max-height:140px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--r)">'+myPosts.map(function(p,i){return'<div style="display:flex;gap:10px;padding:7px 12px;border-bottom:'+(i<myPosts.length-1?'1px solid var(--border)':'none')+'"><span class="td-mono" style="color:var(--text3);white-space:nowrap">'+fmtDT(p.date)+'</span><span style="font-size:12px;flex:1">'+esc((p.caption||'').slice(0,50))+((p.caption||'').length>50?'…':'')+'</span>'+postStatusBadge(p.status)+'</div>';}).join('')+'</div>':'<div style="font-size:12px;color:var(--text3)">投稿なし</div>')+'<div style="font-size:11px;font-weight:500;color:var(--text2);margin:12px 0 8px">キャスティング ('+myCast.length+'件)</div>'+(myCast.length?'<div style="border:1px solid var(--border);border-radius:var(--r)">'+myCast.map(function(c,i){return'<div style="font-size:12px;padding:7px 12px;border-bottom:'+(i<myCast.length-1?'1px solid var(--border)':'none')+';display:flex;gap:10px"><span class="td-mono" style="color:var(--text3)">'+fmtD(c.date)+'</span><span>'+esc(infName(c.infId))+'</span><span style="margin-left:auto;color:var(--text3)">'+esc(c.platform)+'</span></div>';}).join('')+'</div>':'<div style="font-size:12px;color:var(--text3)">なし</div>');
   openModal('detailModal');
 }
 
