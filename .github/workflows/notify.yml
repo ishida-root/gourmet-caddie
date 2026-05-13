@@ -1,0 +1,45 @@
+name: Chatwork Notify
+
+on:
+  workflow_dispatch:
+    inputs:
+      room_id:
+        description: 'Chatwork Room ID'
+        required: true
+      message:
+        description: 'Message body'
+        required: true
+      type:
+        description: 'message or task'
+        required: true
+        default: 'message'
+      to_ids:
+        description: 'Account ID for task assignment'
+        required: false
+        default: ''
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send message to Chatwork
+        if: ${{ inputs.type == 'message' }}
+        run: |
+          curl -s -X POST "https://api.chatwork.com/v2/rooms/${{ inputs.room_id }}/messages" \
+            -H "X-ChatWorkToken: ${{ secrets.CHATWORK_TOKEN }}" \
+            -d "body=$(python3 -c "import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1]))" "${{ inputs.message }}")" \
+            | tee /tmp/cw_result.json
+          cat /tmp/cw_result.json
+
+      - name: Create task in Chatwork
+        if: ${{ inputs.type == 'task' }}
+        run: |
+          PARAMS="body=$(python3 -c "import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1]))" "${{ inputs.message }}")"
+          if [ -n "${{ inputs.to_ids }}" ]; then
+            PARAMS="$PARAMS&to_ids=${{ inputs.to_ids }}"
+          fi
+          curl -s -X POST "https://api.chatwork.com/v2/rooms/${{ inputs.room_id }}/tasks" \
+            -H "X-ChatWorkToken: ${{ secrets.CHATWORK_TOKEN }}" \
+            -d "$PARAMS" \
+            | tee /tmp/cw_result.json
+          cat /tmp/cw_result.json
