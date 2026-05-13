@@ -14,7 +14,7 @@ on:
         required: true
         default: 'message'
       to_ids:
-        description: 'Account ID for task assignment'
+        description: 'Account IDs (comma separated, for task or mention)'
         required: false
         default: ''
 
@@ -24,22 +24,30 @@ jobs:
     steps:
       - name: Send message to Chatwork
         if: ${{ inputs.type == 'message' }}
+        env:
+          CW_TOKEN: ${{ secrets.CHATWORK_TOKEN }}
+          ROOM_ID: ${{ inputs.room_id }}
+          MSG: ${{ inputs.message }}
         run: |
-          curl -s -X POST "https://api.chatwork.com/v2/rooms/${{ inputs.room_id }}/messages" \
-            -H "X-ChatWorkToken: ${{ secrets.CHATWORK_TOKEN }}" \
-            -d "body=$(python3 -c "import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1]))" "${{ inputs.message }}")" \
-            | tee /tmp/cw_result.json
-          cat /tmp/cw_result.json
+          curl -s -X POST "https://api.chatwork.com/v2/rooms/${ROOM_ID}/messages" \
+            -H "X-ChatWorkToken: ${CW_TOKEN}" \
+            --data-urlencode "body=${MSG}"
 
       - name: Create task in Chatwork
         if: ${{ inputs.type == 'task' }}
+        env:
+          CW_TOKEN: ${{ secrets.CHATWORK_TOKEN }}
+          ROOM_ID: ${{ inputs.room_id }}
+          MSG: ${{ inputs.message }}
+          TO_IDS: ${{ inputs.to_ids }}
         run: |
-          PARAMS="body=$(python3 -c "import urllib.parse,sys; print(urllib.parse.quote(sys.argv[1]))" "${{ inputs.message }}")"
-          if [ -n "${{ inputs.to_ids }}" ]; then
-            PARAMS="$PARAMS&to_ids=${{ inputs.to_ids }}"
+          if [ -n "${TO_IDS}" ]; then
+            curl -s -X POST "https://api.chatwork.com/v2/rooms/${ROOM_ID}/tasks" \
+              -H "X-ChatWorkToken: ${CW_TOKEN}" \
+              --data-urlencode "body=${MSG}" \
+              --data-urlencode "to_ids=${TO_IDS}"
+          else
+            curl -s -X POST "https://api.chatwork.com/v2/rooms/${ROOM_ID}/tasks" \
+              -H "X-ChatWorkToken: ${CW_TOKEN}" \
+              --data-urlencode "body=${MSG}"
           fi
-          curl -s -X POST "https://api.chatwork.com/v2/rooms/${{ inputs.room_id }}/tasks" \
-            -H "X-ChatWorkToken: ${{ secrets.CHATWORK_TOKEN }}" \
-            -d "$PARAMS" \
-            | tee /tmp/cw_result.json
-          cat /tmp/cw_result.json
