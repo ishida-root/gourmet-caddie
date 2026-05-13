@@ -221,10 +221,6 @@ tr:hover td{background:#fafaf8}
       <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="3" width="14" height="12" rx="1"/><path d="M5 1v4M11 1v4M1 7h14"/></svg>
       投稿スケジュール
     </div>
-    <div class="nav-item" onclick="navigate('calendar')">
-      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="2" width="14" height="13" rx="1"/><path d="M1 6h14M5 1v3M11 1v3M4 9h1M7.5 9h1M11 9h1M4 12h1M7.5 12h1M11 12h1"/></svg>
-      カレンダー
-    </div>
     <div class="nav-item" onclick="navigate('check')">
       <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1l1.5 3h3l-2.5 2 1 3L8 7.5 5 9l1-3L3.5 4h3z"/><circle cx="8" cy="12" r="3"/><path d="M6.5 12l1 1 2-2"/></svg>
       事前チェック
@@ -244,6 +240,11 @@ tr:hover td{background:#fafaf8}
     <div class="nav-item" onclick="navigate('casting')">
       <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 8h14M8 1l5 7-5 7-5-7z"/></svg>
       キャスティング履歴
+    </div>
+    <div class="nav-item" onclick="navigate('creators')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="5" r="2.5"/><path d="M3 13c0-2.8 2.2-5 5-5s5 2.2 5 5"/><path d="M11 2l1 1-1 1M12 7h2"/></svg>
+      クリエイター管理
+      <span class="nav-badge" id="nb-creators">0</span>
     </div>
     <div class="nav-section">System</div>
     <div class="nav-item" onclick="navigate('settings')">
@@ -330,22 +331,38 @@ tr:hover td{background:#fafaf8}
       </div>
     </div>
 
-    <!-- SCHEDULE -->
+    <!-- SCHEDULE (統合: リスト + カレンダー) -->
     <div class="page" id="page-schedule">
       <div class="card">
-        <div class="card-header"><span class="card-title">投稿スケジュール</span><button class="btn btn-primary btn-sm" onclick="openPostModal()">＋ 投稿追加</button></div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px" id="schedFilter"></div>
-        <div class="table-wrap"><table><thead><tr><th>店舗</th><th>配信日時</th><th>種別</th><th>キャプション</th><th>クリエイティブ</th><th>広告</th><th>ステータス</th><th></th></tr></thead><tbody id="schedBody"></tbody></table></div>
-      </div>
-    </div>
-
-    <!-- CALENDAR -->
-    <div class="page" id="page-calendar">
-      <div class="card">
-        <div class="cal-nav"><button class="btn btn-sm" onclick="calMove(-1)">← 前月</button><span id="calTitle" style="font-size:13px;font-weight:500"></span><button class="btn btn-sm" onclick="calMove(1)">次月 →</button></div>
-        <div id="calFilter" style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px"></div>
-        <div class="cal-grid" id="calHeads"></div>
-        <div class="cal-grid" id="calCells"></div>
+        <div class="card-header">
+          <span class="card-title">投稿スケジュール</span>
+          <div style="display:flex;gap:6px;align-items:center">
+            <div style="display:flex;border:1px solid var(--border);border-radius:var(--r);overflow:hidden">
+              <button id="viewTabList" onclick="setSchedView('list')" style="padding:4px 12px;font-size:11px;background:var(--accent);color:#fff;border:none;cursor:pointer">リスト</button>
+              <button id="viewTabCal" onclick="setSchedView('cal')" style="padding:4px 12px;font-size:11px;background:var(--bg3);color:var(--text2);border:none;cursor:pointer">カレンダー</button>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="openPostModal()">＋ 追加</button>
+          </div>
+        </div>
+        <!-- 店舗フィルタ -->
+        <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px" id="schedFilter"></div>
+        <!-- リストビュー -->
+        <div id="schedListView">
+          <div class="table-wrap"><table>
+            <thead><tr><th>種別</th><th>店舗</th><th>日時</th><th>インフルエンサー</th><th>キャプション</th><th>クリエイティブ</th><th>広告</th><th>ステータス</th><th></th></tr></thead>
+            <tbody id="schedBody"></tbody>
+          </table></div>
+        </div>
+        <!-- カレンダービュー -->
+        <div id="schedCalView" style="display:none">
+          <div class="cal-nav" style="margin-bottom:10px">
+            <button class="btn btn-sm" onclick="calMove(-1)">← 前月</button>
+            <span id="calTitle" style="font-size:13px;font-weight:500"></span>
+            <button class="btn btn-sm" onclick="calMove(1)">次月 →</button>
+          </div>
+          <div class="cal-grid" id="calHeads"></div>
+          <div class="cal-grid" id="calCells"></div>
+        </div>
       </div>
     </div>
 
@@ -386,27 +403,61 @@ tr:hover td{background:#fafaf8}
       </div>
     </div>
 
+    <!-- CREATORS -->
+    <div class="page" id="page-creators">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">クリエイター管理</span>
+          <button class="btn btn-primary btn-sm" onclick="openCreatorModal()">＋ 追加</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead><tr>
+              <th>名前</th><th>性別</th><th>活動エリア</th>
+              <th>得意ジャンル</th><th>面談</th><th>プロマネ</th><th>連絡先</th><th></th>
+            </tr></thead>
+            <tbody id="creatorTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
     <!-- SETTINGS -->
     <div class="page" id="page-settings">
       <div class="grid2">
         <div class="card">
-          <div class="card-header"><span class="card-title">Chatwork 連携設定</span></div>
-          <div style="font-size:12px;color:var(--text3);margin-bottom:14px;padding:8px 12px;background:var(--bg3);border-radius:var(--r)">APIトークンとルームIDはブラウザに保存されます。GitHubには残りません。</div>
-          <div class="fr1 field"><label>Chatwork APIトークン</label><input id="cwToken" type="password" placeholder="APIトークンを入力"></div>
+          <div class="card-header"><span class="card-title">Chatwork API 連携設定</span></div>
+          <div style="font-size:12px;color:var(--text3);margin-bottom:14px;padding:8px 12px;background:var(--bg3);border-radius:var(--r)">
+            入力内容はブラウザのみに保存され、GitHubには残りません。<br>
+            APIトークン：Chatworkログイン後 → 右上アイコン → サービス連携 → APIトークン発行<br>
+            ルームID：対象ルームのURL末尾の数字（例: chatwork.com/#!rid<strong>123456789</strong>）
+          </div>
+          <div class="fr1 field">
+            <label>Chatwork API トークン</label>
+            <input id="cwToken" type="password" placeholder="APIトークンを貼り付け">
+          </div>
           <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px;margin-bottom:14px">
-            <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:10px">📢 SNS局への通知</div>
-            <div class="fr1 field"><label>ルームID</label><input id="cwSnsSalesRoomId" type="text" placeholder="例: 12345678"></div>
+            <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px">📢 SNS局 — メッセージ送信</div>
+            <div class="fr1 field"><label>ルームID</label><input id="cwSnsRoomId" type="text" placeholder="例: 123456789"></div>
           </div>
           <div style="border-top:1px solid var(--border);padding-top:14px;margin-bottom:14px">
-            <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:10px">📋 楽々販売登録依頼（タスク）</div>
-            <div class="fr1 field"><label>ルームID</label><input id="cwCsRoomId" type="text" placeholder="例: 87654321"></div>
-            <div class="fr1 field"><label>担当アカウントID</label><input id="cwIwaId" type="text" placeholder="例: 1234567"></div>
+            <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px">📋 CS — タスク作成（楽々販売登録依頼）</div>
+            <div class="fr1 field"><label>ルームID</label><input id="cwCsRoomId" type="text" placeholder="例: 987654321"></div>
+            <div class="fr1 field">
+              <label>担当者アカウントID <span style="font-size:10px;color:var(--text3);font-weight:400">タスクのアサイン先</span></label>
+              <input id="cwIwaId" type="text" placeholder="例: 1234567（プロフィールURLの末尾）">
+            </div>
           </div>
           <div style="display:flex;gap:8px;justify-content:flex-end">
             <button class="btn" onclick="testChatwork()">テスト送信</button>
             <button class="btn btn-primary" onclick="saveChatworkSettings()">保存</button>
           </div>
           <div id="cwStatus" style="font-size:12px;margin-top:10px"></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">社員マスタ</span></div>
+          <div style="font-size:12px;color:var(--text2);margin-bottom:12px">営業・スタッフなどの役割を管理します。営業入力には営業ロールのメンバーのみ表示されます。</div>
+          <button class="btn btn-primary" onclick="openSalesPersonModal()">社員マスタを開く</button>
         </div>
         <div class="card">
           <div class="card-header"><span class="card-title">通知プレビュー</span></div>
@@ -446,7 +497,37 @@ tr:hover td{background:#fafaf8}
       <div class="fr"><div class="field"><label>店舗名 *</label><input id="sName" type="text" placeholder="例: 炭火焼 竹山 渋谷店"></div><div class="field"><label>業種 <button type="button" onclick="openGenreModal()" style="font-size:10px;padding:2px 7px;margin-left:6px;background:var(--bg3);border:1px solid var(--border2);border-radius:4px;cursor:pointer;color:var(--text2)">＋ 編集</button></label><input id="sGenre" type="text" list="genreList" placeholder="例: 焼肉"><datalist id="genreList"></datalist></div></div>
       <div class="fr1 field"><label>郵便番号 <span style="color:var(--text3);font-weight:400"></span></label><div style="display:flex;gap:6px"><input id="sZip" type="text" placeholder="例: 150-0043" maxlength="8" style="max-width:160px" oninput="autoFillAddress(this.value,'sPref','sArea')"><span style="font-size:12px;color:var(--text3);align-self:center" id="sZip-status"></span></div></div>
       <div class="fr"><div class="field"><label>都道府県</label><input id="sPref" type="text" placeholder="東京都"></div><div class="field"><label>市区町村・番地</label><input id="sArea" type="text" placeholder="渋谷区道玄坂..."></div></div>
-      <div class="fr3"><div class="field"><label>営業時間</label><input id="sHours" type="text" placeholder="17:00–24:00"></div><div class="field"><label>定休日</label><input id="sHoliday" type="text" placeholder="月曜"></div><div class="field"><label>席数</label><input id="sSeats" type="number" placeholder="40"></div></div>
+      <!-- 営業時間・定休日 統合UI -->
+      <div style="margin-bottom:12px;border:1px solid var(--border);border-radius:var(--r);overflow:hidden">
+        <!-- 共通時間行 -->
+        <div style="padding:10px 12px;background:var(--bg3);display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <span style="font-size:11px;font-weight:500;color:var(--text2);min-width:60px">共通時間</span>
+          <input id="sHoursFrom" type="text" oninput="updateHoursData()" placeholder="例: 17:00" style="width:90px;font-size:12px;padding:4px 6px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg2);color:var(--text)">
+          <span style="font-size:12px;color:var(--text3)">〜</span>
+          <input id="sHoursTo" type="text" oninput="updateHoursData()" placeholder="例: 24:00" style="width:90px;font-size:12px;padding:4px 6px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg2);color:var(--text)">
+          <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;margin-left:auto">
+            <input type="checkbox" id="sPerDay" onchange="togglePerDay()" style="width:auto;margin:0">
+            曜日ごとに設定
+          </label>
+        </div>
+        <!-- 曜日別テーブル（折りたたみ） -->
+        <div id="perDayTable" style="display:none">
+          <table style="width:100%;border-collapse:collapse">
+            <thead>
+              <tr style="background:var(--bg3)">
+                <th style="font-size:10px;color:var(--text3);font-weight:400;padding:5px 10px;text-align:left;border-bottom:1px solid var(--border);width:60px">定休日</th>
+                <th style="font-size:10px;color:var(--text3);font-weight:400;padding:5px 8px;text-align:left;border-bottom:1px solid var(--border);width:40px">曜日</th>
+                <th style="font-size:10px;color:var(--text3);font-weight:400;padding:5px 8px;text-align:left;border-bottom:1px solid var(--border)">開始時間 <span style="color:var(--text3);font-weight:300">（空欄=共通）</span></th>
+                <th style="font-size:10px;color:var(--text3);font-weight:400;padding:5px 8px;text-align:left;border-bottom:1px solid var(--border)">終了時間</th>
+              </tr>
+            </thead>
+            <tbody id="perDayBody"></tbody>
+          </table>
+        </div>
+        <input id="sHours" type="hidden">
+        <input id="sHoliday" type="hidden">
+      </div>
+      <div class="fr" style="margin-bottom:10px"><div class="field"><label>席数</label><input id="sSeats" type="number" placeholder="40"></div><div></div></div>
       <div class="fr"><div class="field"><label>食べログ URL</label><input id="sTabelog" type="url" placeholder="https://tabelog.com/..."></div><div class="field"><label>公式 HP</label><input id="sHp" type="url" placeholder="https://..."></div></div>
       <div class="fr1 field"><label>備考</label><textarea id="sMemo" placeholder="特記事項..."></textarea></div>
     </div>
@@ -494,32 +575,83 @@ tr:hover td{background:#fafaf8}
 
 <!-- POST MODAL -->
 <div class="modal-overlay" id="postModal">
-<div class="modal" style="width:520px">
-  <div class="modal-header"><span class="modal-title">投稿を追加</span><button class="modal-close" onclick="closeModal('postModal')">✕</button></div>
+<div class="modal" style="width:540px">
+  <div class="modal-header"><span class="modal-title" id="postModalTitle">投稿を追加</span><button class="modal-close" onclick="closeModal('postModal')">✕</button></div>
   <div class="modal-body">
-    <div class="fr"><div class="field"><label>店舗 *</label><select id="pStore"><option value="">選択...</option></select></div><div class="field"><label>種別</label><select id="pType"><option value="video">動画</option><option value="image">画像</option><option value="reel">リール</option><option value="story">ストーリー</option></select></div></div>
-    <div class="fr"><div class="field"><label>配信日時 *</label><input id="pDate" type="datetime-local"></div><div class="field"><label>プラットフォーム</label><select id="pPlatform"><option>Instagram</option><option>Facebook</option><option>TikTok</option><option>X</option><option>Instagram+FB</option></select></div></div>
-    <div class="fr1 field"><label>キャプション *</label><textarea id="pCaption" placeholder="投稿のキャプション..."></textarea></div>
-    <div class="fr"><div class="field"><label>クリエイティブファイル名</label><input id="pCreative" type="text" placeholder="例: 渋谷店_夏セール_v2.mp4"></div><div class="field"><label>広告配信</label><select id="pAd"><option value="yes">あり</option><option value="no">なし</option></select></div></div>
-    <div class="fr"><div class="field"><label>広告予算（円 / 日）</label><input id="pBudget" type="number" placeholder="3000"></div><div class="field"><label>ステータス</label><select id="pStatus"><option value="draft">下書き</option><option value="scheduled">予約済み</option><option value="done">投稿済み</option></select></div></div>
-    <div class="fr1 field"><label>備考 / LP URL</label><input id="pNote" type="text" placeholder="https://..."></div>
+    <!-- 種別（最初に選ばせてフォームを切り替え） -->
+    <div class="fr1 field" style="margin-bottom:12px">
+      <label>種別 *</label>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px" id="pTypeGroup">
+        <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:5px 10px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg3)"><input type="radio" name="pTypeRadio" value="video" onchange="onPostTypeChange()" style="width:auto;margin:0" checked> ▶ 動画</label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:5px 10px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg3)"><input type="radio" name="pTypeRadio" value="image" onchange="onPostTypeChange()" style="width:auto;margin:0"> ◼ 画像</label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:5px 10px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg3)"><input type="radio" name="pTypeRadio" value="reel" onchange="onPostTypeChange()" style="width:auto;margin:0"> ◈ リール</label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:5px 10px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg3)"><input type="radio" name="pTypeRadio" value="story" onchange="onPostTypeChange()" style="width:auto;margin:0"> ◷ ストーリー</label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:5px 10px;border-radius:var(--r);border:1px solid var(--amber-border);background:var(--amber-bg);color:var(--amber)"><input type="radio" name="pTypeRadio" value="inf_visit" onchange="onPostTypeChange()" style="width:auto;margin:0"> 🏃 来店予定</label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:5px 10px;border-radius:var(--r);border:1px solid var(--purple-border);background:var(--purple-bg);color:var(--purple)"><input type="radio" name="pTypeRadio" value="inf_post" onchange="onPostTypeChange()" style="width:auto;margin:0"> ✦ INF投稿予定</label>
+      </div>
+    </div>
+    <input id="pType" type="hidden" value="video">
+    <div class="fr"><div class="field"><label>店舗 *</label><select id="pStore"><option value="">選択...</option></select></div><div class="field"><label>プラットフォーム</label><select id="pPlatform"><option>Instagram</option><option>Facebook</option><option>TikTok</option><option>X</option><option>Instagram+FB</option><option>YouTube</option></select></div></div>
+    <!-- インフルエンサー選択（来店/INF投稿のみ表示） -->
+    <div class="fr" id="pInfRow" style="display:none">
+      <div class="field"><label>インフルエンサー *</label><select id="pInfId"><option value="">選択...</option></select></div>
+      <div class="field"><label>PR費用（円）</label><input id="pInfFee" type="number" placeholder="50000"></div>
+    </div>
+    <div class="fr"><div class="field"><label>日時 *</label><input id="pDate" type="datetime-local"></div><div class="field"><label>ステータス</label><select id="pStatus"><option value="draft">下書き</option><option value="scheduled">予約済み</option><option value="done">完了</option></select></div></div>
+    <!-- 通常投稿のみ -->
+    <div id="pPostFields">
+      <div class="fr1 field"><label>キャプション</label><textarea id="pCaption" placeholder="投稿のキャプション..."></textarea></div>
+      <div class="fr"><div class="field"><label>クリエイティブファイル名</label><input id="pCreative" type="text" placeholder="例: 渋谷店_v2.mp4"></div><div class="field"><label>広告配信</label><select id="pAd"><option value="yes">あり</option><option value="no">なし</option></select></div></div>
+      <div class="fr"><div class="field"><label>広告予算（円 / 日）</label><input id="pBudget" type="number" placeholder="3000"></div><div class="field"></div></div>
+    </div>
+    <div class="fr1 field"><label>メモ</label><input id="pNote" type="text" placeholder="備考・LP URLなど"></div>
     <div class="form-actions"><button class="btn" onclick="closeModal('postModal')">キャンセル</button><button class="btn btn-primary" onclick="savePost()">保存</button></div>
   </div>
 </div>
 </div>
 
 <!-- INFLUENCER MODAL -->
+<!-- INFLUENCER EDIT MODAL -->
 <div class="modal-overlay" id="infModal">
-<div class="modal" style="width:520px">
-  <div class="modal-header"><span class="modal-title">インフルエンサーを追加</span><button class="modal-close" onclick="closeModal('infModal')">✕</button></div>
-  <div class="modal-body">
-    <div class="fr"><div class="field"><label>名前 *</label><input id="iName" type="text" placeholder="田中 みな"></div><div class="field"><label>ハンドル *</label><input id="iHandle" type="text" placeholder="@tanakami_food"></div></div>
-    <div class="fr"><div class="field"><label>主な媒体</label><select id="iPlatform"><option>Instagram</option><option>TikTok</option><option>YouTube</option><option>X</option></select></div><div class="field"><label>フォロワー数</label><input id="iFollowers" type="number" placeholder="50000"></div></div>
-    <div class="fr"><div class="field"><label>ジャンル</label><input id="iGenre" type="text" placeholder="グルメ・飲食"></div><div class="field"><label>PR 単価（円）</label><input id="iFee" type="number" placeholder="50000"></div></div>
-    <div class="fr"><div class="field"><label>連絡先</label><input id="iContact" type="text" placeholder="mail@example.com"></div><div class="field"><label>所属事務所</label><input id="iAgency" type="text" placeholder="なし"></div></div>
-    <div class="fr1 field"><label>備考</label><textarea id="iMemo" placeholder="得意ジャンル、注意点など..."></textarea></div>
-    <div class="form-actions"><button class="btn" onclick="closeModal('infModal')">キャンセル</button><button class="btn btn-primary" onclick="saveInfluencer()">保存</button></div>
+<div class="modal" style="width:560px">
+  <div class="modal-header">
+    <span class="modal-title" id="infModalTitle">インフルエンサーを追加</span>
+    <button class="modal-close" onclick="closeModal('infModal')">✕</button>
   </div>
+  <div class="modal-body">
+    <div class="fr"><div class="field"><label>名前 *</label><input id="iName" type="text" placeholder="田中 みな"></div><div class="field"><label>ハンドル</label><input id="iHandle" type="text" placeholder="@tanakami_food"></div></div>
+    <div class="fr"><div class="field"><label>主な媒体</label><select id="iPlatform"><option>Instagram</option><option>TikTok</option><option>YouTube</option><option>X</option><option>その他</option></select></div><div class="field"><label>フォロワー数</label><input id="iFollowers" type="number" placeholder="50000"></div></div>
+    <div class="fr1 field"><label>アカウント URL <span style="font-size:10px;color:var(--text3);font-weight:400">（名前クリックで開くリンク）</span></label><input id="iUrl" type="url" placeholder="https://www.instagram.com/tanakami_food"></div>
+    <div class="fr"><div class="field"><label>ジャンル</label><input id="iGenre" type="text" placeholder="グルメ・飲食"></div><div class="field"><label>連絡先</label><input id="iContact" type="text" placeholder="mail@example.com / LINE ID"></div></div>
+    <div style="margin-bottom:10px">
+      <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:6px">PR 費用（円） <span style="font-size:10px;color:var(--text3);font-weight:400">幅がある場合は下限・上限両方入力</span></label>
+      <div style="display:flex;align-items:center;gap:8px">
+        <input id="iFeeLow" type="number" placeholder="30,000（下限）" style="flex:1">
+        <span style="font-size:12px;color:var(--text3);white-space:nowrap">〜</span>
+        <input id="iFeeHigh" type="number" placeholder="80,000（幅なしは空欄）" style="flex:1.5">
+      </div>
+    </div>
+    <div class="fr"><div class="field"><label>所属事務所</label><input id="iAgency" type="text" placeholder="なし"></div><div class="field"><label>評価</label><select id="iRating"><option value="">—</option><option value="5">★★★★★ 最高</option><option value="4">★★★★ 良い</option><option value="3">★★★ 普通</option><option value="2">★★ 要注意</option><option value="1">★ NG</option></select></div></div>
+    <div class="fr1 field"><label>備考・注意点</label><textarea id="iMemo" placeholder="得意ジャンル、投稿スタイル、注意点など..."></textarea></div>
+    <div class="form-actions">
+      <button class="btn" onclick="closeModal('infModal')">キャンセル</button>
+      <button class="btn btn-primary" onclick="saveInfluencer()">保存</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- INFLUENCER DETAIL MODAL -->
+<div class="modal-overlay" id="infDetailModal">
+<div class="modal" style="width:620px">
+  <div class="modal-header">
+    <span class="modal-title" id="infDetailTitle">インフルエンサー詳細</span>
+    <div style="display:flex;gap:6px;align-items:center">
+      <button class="btn btn-sm" id="infDetailEditBtn">編集</button>
+      <button class="modal-close" onclick="closeModal('infDetailModal')">✕</button>
+    </div>
+  </div>
+  <div class="modal-body" id="infDetailBody"></div>
 </div>
 </div>
 
@@ -609,29 +741,29 @@ function loadChatworkSettings(){
     var d=localStorage.getItem('gc_cw_settings');
     if(d){
       var s=JSON.parse(d);
-      if(document.getElementById('cwToken'))document.getElementById('cwToken').value=s.token||'';
-      if(document.getElementById('cwSnsSalesRoomId'))document.getElementById('cwSnsSalesRoomId').value=s.snsRoomId||'';
-      if(document.getElementById('cwCsRoomId'))document.getElementById('cwCsRoomId').value=s.csRoomId||'';
-      if(document.getElementById('cwIwaId'))document.getElementById('cwIwaId').value=s.iwaId||'';
+      var set=function(id,v){var el=document.getElementById(id);if(el)el.value=v||'';};
+      set('cwToken',s.token);
+      set('cwSnsRoomId',s.snsRoomId);
+      set('cwCsRoomId',s.csRoomId);
+      set('cwIwaId',s.iwaId);
     }
   }catch(e){}
 }
 function saveChatworkSettings(){
-  var s={
-    token:document.getElementById('cwToken').value.trim(),
-    snsRoomId:document.getElementById('cwSnsSalesRoomId').value.trim(),
-    csRoomId:document.getElementById('cwCsRoomId').value.trim(),
-    iwaId:document.getElementById('cwIwaId').value.trim()
-  };
+  var get=function(id){var el=document.getElementById(id);return el?el.value.trim():'';};
+  var s={token:get('cwToken'),snsRoomId:get('cwSnsRoomId'),csRoomId:get('cwCsRoomId'),iwaId:get('cwIwaId')};
   try{localStorage.setItem('gc_cw_settings',JSON.stringify(s));}catch(e){}
-  document.getElementById('cwStatus').innerHTML='<span style="color:var(--green)">✓ 保存しました</span>';
-  setTimeout(function(){document.getElementById('cwStatus').innerHTML='';},2000);
+  var statusEl=document.getElementById('cwStatus');
+  if(statusEl)statusEl.innerHTML='<span style="color:var(--green)">✓ 保存しました</span>';
+  setTimeout(function(){var el=document.getElementById('cwStatus');if(el)el.innerHTML='';},2000);
   renderCwPreview();
 }
 function getCwSettings(){
   try{var d=localStorage.getItem('gc_cw_settings');return d?JSON.parse(d):{};}catch(e){return{};}
 }
-async function sendChatwork(roomId,message){
+
+/* ---- Chatwork API 送信 ---- */
+async function cwSendMessage(roomId,message){
   var s=getCwSettings();
   if(!s.token||!roomId)return false;
   try{
@@ -643,6 +775,21 @@ async function sendChatwork(roomId,message){
     return res.ok;
   }catch(e){return false;}
 }
+async function cwCreateTask(roomId,body,toAccountId){
+  var s=getCwSettings();
+  if(!s.token||!roomId)return false;
+  var params='body='+encodeURIComponent(body);
+  if(toAccountId)params+='&to_ids='+encodeURIComponent(toAccountId);
+  try{
+    var res=await fetch('https://api.chatwork.com/v2/rooms/'+roomId+'/tasks',{
+      method:'POST',
+      headers:{'X-ChatWorkToken':s.token,'Content-Type':'application/x-www-form-urlencoded'},
+      body:params
+    });
+    return res.ok;
+  }catch(e){return false;}
+}
+
 function buildSnsMessage(storeName,plan,salesBy,contactName,tel,email){
   return '[info][title]📢 新規契約店舗 登録通知[/title]'
     +'\n店舗名：'+storeName
@@ -653,157 +800,182 @@ function buildSnsMessage(storeName,plan,salesBy,contactName,tel,email){
     +'\n営業担当：'+salesBy
     +'\n\n初期設定の準備をお願いします！[/info]';
 }
-async function createChatworkTask(roomId,body,accountId){
-  var s=getCwSettings();
-  if(!s.token||!roomId)return false;
-  var params='body='+encodeURIComponent(body);
-  if(accountId)params+='&to_ids='+encodeURIComponent(accountId);
-  try{
-    var res=await fetch('https://api.chatwork.com/v2/rooms/'+roomId+'/tasks',{
-      method:'POST',
-      headers:{'X-ChatWorkToken':s.token,'Content-Type':'application/x-www-form-urlencoded'},
-      body:params
-    });
-    return res.ok;
-  }catch(e){return false;}
-}
 function buildCsTaskBody(corpName,storeName,planName,salesBy){
-  return '◆'+(salesBy||'')+'\n楽々販売登録承認をお願い致します。\n・法人名(個人名)：'+corpName+'\n・店舗名：'+storeName+'\n・プラン名：'+planName;
+  return '◆'+(salesBy||'')
+    +'\n楽々販売登録承認をお願い致します。'
+    +'\n・法人名(個人名)：'+corpName
+    +'\n・店舗名：'+storeName
+    +'\n・プラン名：'+planName;
 }
+
 async function notifyChatwork(storeName,plan,salesBy,contactName,tel,email,corpName){
   var s=getCwSettings();
   var results=[];
   if(s.snsRoomId){
     var snsMsg=buildSnsMessage(storeName,plan,salesBy,contactName,tel,email);
-    var ok1=await sendChatwork(s.snsRoomId,snsMsg);
+    var ok1=await cwSendMessage(s.snsRoomId,snsMsg);
     results.push({to:'SNS局',ok:ok1});
   }
   if(s.csRoomId){
     var taskBody=buildCsTaskBody(corpName||contactName||storeName,storeName,plan,salesBy);
-    var ok2=await createChatworkTask(s.csRoomId,taskBody,s.iwaId);
-    results.push({to:'CS楽々販売タスク',ok:ok2});
+    var ok2=await cwCreateTask(s.csRoomId,taskBody,s.iwaId);
+    results.push({to:'CSタスク',ok:ok2});
   }
   return results;
 }
+
 async function testChatwork(){
   var statusEl=document.getElementById('cwStatus');
+  if(!statusEl)return;
   statusEl.innerHTML='<span style="color:var(--amber)">送信中...</span>';
   saveChatworkSettings();
-  var results=await notifyChatwork('テスト店舗','パタープラン','テスト営業','テスト担当者','090-0000-0000','test@example.com');
-  if(!results.length){statusEl.innerHTML='<span style="color:var(--red)">✗ ルームIDが設定されていません</span>';return;}
+  var s=getCwSettings();
+  if(!s.token){statusEl.innerHTML='<span style="color:var(--red)">✗ APIトークンを入力してください</span>';return;}
+  if(!s.snsRoomId&&!s.csRoomId){statusEl.innerHTML='<span style="color:var(--red)">✗ ルームIDを少なくとも1つ入力してください</span>';return;}
+  var results=await notifyChatwork('テスト店舗','パタープラン','テスト営業','テスト担当者','090-0000-0000','test@example.com','テスト法人');
   var allOk=results.every(function(r){return r.ok;});
+  var detail=results.map(function(r){return r.to+':'+(r.ok?'✓':'✗');}).join(' / ');
   statusEl.innerHTML=allOk
-    ?'<span style="color:var(--green)">✓ テスト送信成功！Chatworkを確認してください</span>'
-    :'<span style="color:var(--red)">✗ 送信失敗。APIトークンまたはルームIDを確認してください</span>';
+    ?'<span style="color:var(--green)">✓ テスト送信成功！ ('+detail+')</span>'
+    :'<span style="color:var(--red)">✗ 一部失敗 ('+detail+') — トークン・ルームIDを確認してください</span>';
 }
+
 function renderCwPreview(){
   var el=document.getElementById('cwPreview');
   if(!el)return;
   var snsMsg=buildSnsMessage('◯◯焼肉 渋谷店','アイアンプラン','山田 花子','店長 鈴木','090-XXXX-XXXX','suzuki@example.com');
   var taskBody=buildCsTaskBody('株式会社竹山','◯◯焼肉 渋谷店','アイアンプラン','山田 花子');
-  el.textContent='【SNS局へ（メッセージ）】\n'+snsMsg+'\n\n【CS（タスク）】\n'+taskBody;
+  el.textContent='【SNS局 → メッセージ】\n'+snsMsg+'\n\n【CS → タスク作成】\n'+taskBody;
 }
 
-var SALES_PERSONS=[
-  {id:'sp1',name:'結城 康大',retired:false},
-  {id:'sp2',name:'中 千明',retired:false},
-  {id:'sp3',name:'町頭 剛志',retired:false},
-  {id:'sp4',name:'寺薗 克浩',retired:false},
-  {id:'sp5',name:'小豆澤 由莉',retired:false},
-  {id:'sp6',name:'村田 晃大',retired:false},
-  {id:'sp7',name:'田中 拓也',retired:false}
+/* ============================================================
+   社員マスタ（STAFF_MEMBERS）
+   role: 'sales'=営業, 'sns'=SNS, 'office'=事務, 'president'=社長
+   ============================================================ */
+var STAFF_MEMBERS=[
+  {id:'sp1',name:'結城 康大',role:'sales',retired:false},
+  {id:'sp2',name:'中 千明',role:'sales',retired:false},
+  {id:'sp3',name:'町頭 剛志',role:'sales',retired:false},
+  {id:'sp4',name:'寺薗 克浩',role:'sales',retired:false},
+  {id:'sp5',name:'小豆澤 由莉',role:'sales',retired:false},
+  {id:'sp6',name:'村田 晃大',role:'sales',retired:false},
+  {id:'sp7',name:'田中 拓也',role:'sales',retired:false},
+  {id:'sp8',name:'石田 温子',role:'sns',retired:false}
 ];
+var SALES_PERSONS=STAFF_MEMBERS;
 function loadSalesPersons(){
-  try{var d=localStorage.getItem('gc_sales_persons');if(d)SALES_PERSONS=JSON.parse(d);}catch(e){}
+  try{
+    var d=localStorage.getItem('gc_staff_members');
+    if(d){STAFF_MEMBERS=JSON.parse(d);SALES_PERSONS=STAFF_MEMBERS;return;}
+    var old=localStorage.getItem('gc_sales_persons');
+    if(old){var arr=JSON.parse(old);arr.forEach(function(p){if(!p.role)p.role='sales';});STAFF_MEMBERS=arr;SALES_PERSONS=STAFF_MEMBERS;}
+  }catch(e){}
 }
 function saveSalesPersons(){
-  try{localStorage.setItem('gc_sales_persons',JSON.stringify(SALES_PERSONS));}catch(e){}
+  try{localStorage.setItem('gc_staff_members',JSON.stringify(STAFF_MEMBERS));}catch(e){}
+}
+var ROLE_LABELS={sales:'営業',sns:'SNS',office:'事務',president:'社長'};
+var ROLE_BADGE={sales:'b-blue',sns:'b-purple',office:'b-green',president:'b-amber'};
+function getActiveStaff(roleFilter){
+  return STAFF_MEMBERS.filter(function(p){
+    if(p.retired)return false;
+    if(roleFilter)return p.role===roleFilter;
+    return true;
+  });
 }
 function updateSalesPersonSelects(){
-  var active=SALES_PERSONS.filter(function(p){return!p.retired;});
-  var opts='<option value="">選択...</option>'+active.map(function(p){return'<option value="'+esc(p.name)+'">'+esc(p.name)+'</option>';}).join('');
-  ['sl-sales','sOurManager'].forEach(function(id){var el=document.getElementById(id);if(el){var prev=el.value;el.innerHTML=opts;if(prev)el.value=prev;}});
+  var salesOnly=getActiveStaff('sales');
+  var salesOpts='<option value="">選択...</option>'+salesOnly.map(function(p){return'<option value="'+esc(p.name)+'">'+esc(p.name)+'</option>';}).join('');
+  var sl=document.getElementById('sl-sales');
+  if(sl){var pv=sl.value;sl.innerHTML=salesOpts;if(pv)sl.value=pv;}
+  var allActive=getActiveStaff();
+  var allOpts='<option value="">選択...</option>'+allActive.map(function(p){return'<option value="'+esc(p.name)+'">'+esc(p.name)+'</option>';}).join('');
+  var om=document.getElementById('sOurManager');
+  if(om){var pv2=om.value;om.innerHTML=allOpts;if(pv2)om.value=pv2;}
+  var ci=document.getElementById('crInterviewer');
+  if(ci){var pv3=ci.value;ci.innerHTML='<option value="">選択...</option>'+allActive.map(function(p){return'<option value="'+esc(p.name)+'">'+esc(p.name)+'</option>';}).join('');if(pv3)ci.value=pv3;}
 }
-function openSalesPersonModal(){
-  renderSalesPersonList();
-  openModal('salesPersonModal');
-}
-function renderSalesPersonList(){
-  var active=SALES_PERSONS.filter(function(p){return!p.retired;});
-  var retired=SALES_PERSONS.filter(function(p){return p.retired;});
-  var activeEl=document.getElementById('spActiveList');
-  var retiredEl=document.getElementById('spRetiredList');
-  activeEl.innerHTML=active.length?active.map(function(p){
-    return'<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--bg3);border-radius:var(--r);margin-bottom:5px">'
+function openSalesPersonModal(){renderStaffList();openModal('salesPersonModal');}
+function renderSalesPersonList(){renderStaffList();}
+function renderStaffList(){
+  var active=STAFF_MEMBERS.filter(function(p){return!p.retired;});
+  var retired=STAFF_MEMBERS.filter(function(p){return p.retired;});
+  var ae=document.getElementById('spActiveList');
+  var re=document.getElementById('spRetiredList');
+  ae.innerHTML=active.length?active.map(function(p){
+    return'<div style="display:flex;align-items:center;gap:6px;padding:7px 10px;background:var(--bg3);border-radius:var(--r);margin-bottom:5px">'
       +'<span style="flex:1;font-size:13px">'+esc(p.name)+'</span>'
+      +'<span class="badge '+(ROLE_BADGE[p.role]||'b-gray')+'" style="font-size:10px">'+(ROLE_LABELS[p.role]||'—')+'</span>'
+      +'<select onchange="changeStaffRole(\''+p.id+'\',this.value)" style="font-size:11px;padding:2px 4px;width:76px;border:1px solid var(--border);border-radius:4px;background:var(--bg2);color:var(--text)">'
+        +'<option value="sales"'+(p.role==='sales'?' selected':'')+'>営業</option>'
+        +'<option value="sns"'+(p.role==='sns'?' selected':'')+'>SNS</option>'
+        +'<option value="office"'+(p.role==='office'?' selected':'')+'>事務</option>'
+        +'<option value="president"'+(p.role==='president'?' selected':'')+'>社長</option>'
+      +'</select>'
       +'<button class="btn btn-sm" onclick="retireSalesPerson(\''+p.id+'\')" style="font-size:11px;color:var(--amber)">退職</button>'
       +'<button class="btn-ghost-danger btn-sm" onclick="deleteSalesPerson(\''+p.id+'\')">削除</button>'
       +'</div>';
-  }).join(''):'<div style="font-size:12px;color:var(--text3)">在籍中の担当者なし</div>';
-  retiredEl.innerHTML=retired.length?retired.map(function(p){
-    var storeCount=DB.stores.filter(function(s){return s.ourManager===p.name;}).length;
-    return'<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--bg3);border-radius:var(--r);margin-bottom:5px;opacity:0.6">'
-      +'<span style="flex:1;font-size:13px">'+esc(p.name)+'<span style="font-size:10px;color:var(--text3);margin-left:6px">担当'+storeCount+'店舗</span></span>'
+  }).join(''):'<div style="font-size:12px;color:var(--text3)">在籍中のメンバーなし</div>';
+  re.innerHTML=retired.length?retired.map(function(p){
+    var sc=DB.stores.filter(function(s){return s.ourManager===p.name;}).length;
+    return'<div style="display:flex;align-items:center;gap:6px;padding:7px 10px;background:var(--bg3);border-radius:var(--r);margin-bottom:5px;opacity:0.6">'
+      +'<span style="flex:1;font-size:13px">'+esc(p.name)+'<span style="font-size:10px;color:var(--text3);margin-left:6px">'+(ROLE_LABELS[p.role]||'')+(sc?' 担当'+sc+'店':'')+'</span></span>'
       +'<button class="btn btn-sm" onclick="reinstateSalesPerson(\''+p.id+'\')" style="font-size:11px">復帰</button>'
-      +'<input type="text" placeholder="後任者名" id="successor_'+p.id+'" style="width:110px;font-size:11px;padding:4px 8px">'
-      +'<button class="btn btn-sm btn-primary" onclick="assignSuccessor(\''+p.id+'\')" style="font-size:11px">後任設定</button>'
+      +'<input type="text" placeholder="後任者名" id="successor_'+p.id+'" style="width:100px;font-size:11px;padding:4px 6px">'
+      +'<button class="btn btn-sm btn-primary" onclick="assignSuccessor(\''+p.id+'\')" style="font-size:11px">後任</button>'
       +'</div>';
   }).join(''):'<div style="font-size:12px;color:var(--text3)">退職済みなし</div>';
 }
+function changeStaffRole(id,role){
+  var p=STAFF_MEMBERS.find(function(x){return x.id===id;});
+  if(p){p.role=role;saveSalesPersons();renderStaffList();updateSalesPersonSelects();}
+}
 function addSalesPerson(){
   var name=document.getElementById('spNameInput').value.trim();
+  var roleEl=document.getElementById('spRoleSelect');
+  var role=roleEl?roleEl.value:'sales';
   if(!name)return;
-  if(SALES_PERSONS.find(function(p){return p.name===name;})){alert('すでに登録されています');return;}
-  SALES_PERSONS.push({id:'sp'+Date.now(),name:name,retired:false});
+  if(STAFF_MEMBERS.find(function(p){return p.name===name;})){alert('すでに登録されています');return;}
+  STAFF_MEMBERS.push({id:'sp'+Date.now(),name:name,role:role,retired:false});
   saveSalesPersons();
   document.getElementById('spNameInput').value='';
-  renderSalesPersonList();
-  updateSalesPersonSelects();
+  renderStaffList();updateSalesPersonSelects();
 }
 function retireSalesPerson(id){
   if(!confirm('退職済みにしますか？担当店舗の履歴は残ります。'))return;
-  var p=SALES_PERSONS.find(function(x){return x.id===id;});
+  var p=STAFF_MEMBERS.find(function(x){return x.id===id;});
   if(p){p.retired=true;p.retiredAt=new Date().toISOString();}
-  saveSalesPersons();
-  renderSalesPersonList();
-  updateSalesPersonSelects();
+  saveSalesPersons();renderStaffList();updateSalesPersonSelects();
 }
 function reinstateSalesPerson(id){
-  var p=SALES_PERSONS.find(function(x){return x.id===id;});
+  var p=STAFF_MEMBERS.find(function(x){return x.id===id;});
   if(p){p.retired=false;delete p.retiredAt;}
-  saveSalesPersons();
-  renderSalesPersonList();
-  updateSalesPersonSelects();
+  saveSalesPersons();renderStaffList();updateSalesPersonSelects();
 }
 function assignSuccessor(retiredId){
-  var retiredPerson=SALES_PERSONS.find(function(x){return x.id===retiredId;});
-  var successorName=document.getElementById('successor_'+retiredId).value.trim();
-  if(!successorName){alert('後任者名を入力してください');return;}
-  if(!SALES_PERSONS.find(function(p){return p.name===successorName&&!p.retired;})){
-    if(!confirm(successorName+'を新規担当者として追加しますか？')){return;}
-    SALES_PERSONS.push({id:'sp'+Date.now(),name:successorName,retired:false});
+  var rp=STAFF_MEMBERS.find(function(x){return x.id===retiredId;});
+  var sn=document.getElementById('successor_'+retiredId).value.trim();
+  if(!sn){alert('後任者名を入力してください');return;}
+  if(!STAFF_MEMBERS.find(function(p){return p.name===sn&&!p.retired;})){
+    if(!confirm(sn+'を新規メンバーとして追加しますか？'))return;
+    STAFF_MEMBERS.push({id:'sp'+Date.now(),name:sn,role:rp.role||'sales',retired:false});
   }
   var count=0;
   DB.stores.forEach(function(s){
-    if(s.ourManager===retiredPerson.name){
-      s.ourManager=successorName;
-      s.prevManagers=s.prevManagers||[];
-      s.prevManagers.push({name:retiredPerson.name,assignedAt:retiredPerson.retiredAt});
-      saveItem('stores',s);
-      count++;
+    if(s.ourManager===rp.name){
+      s.ourManager=sn;s.prevManagers=s.prevManagers||[];
+      s.prevManagers.push({name:rp.name,assignedAt:rp.retiredAt});
+      saveItem('stores',s);count++;
     }
   });
-  saveSalesPersons();
-  renderSalesPersonList();
-  updateSalesPersonSelects();
-  alert(count+'店舗の担当を'+successorName+'に引き継ぎました');
+  saveSalesPersons();renderStaffList();updateSalesPersonSelects();
+  alert(count+'店舗の担当を'+sn+'に引き継ぎました');
 }
 function deleteSalesPerson(id){
   if(!confirm('削除しますか？'))return;
-  SALES_PERSONS=SALES_PERSONS.filter(function(p){return p.id!==id;});
-  saveSalesPersons();
-  renderSalesPersonList();
-  updateSalesPersonSelects();
+  STAFF_MEMBERS=STAFF_MEMBERS.filter(function(p){return p.id!==id;});
+  SALES_PERSONS=STAFF_MEMBERS;
+  saveSalesPersons();renderStaffList();updateSalesPersonSelects();
 }
 loadSalesPersons();
 updateSalesPersonSelects();
@@ -822,7 +994,7 @@ var currentPage='dashboard';
    ============================================================ */
 var SUPA_URL='https://vwtcshwzetxnaedjhoej.supabase.co';
 var SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3dGNzaHd6ZXR4bmFlZGpob2VqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2MzM3MTgsImV4cCI6MjA5NDIwOTcxOH0.S10RHDE7wvKUMa2SxeoNvkgg6TtiMInw7ax6J5ZuMZk';
-var TABLES=['stores','posts','influencers','castings','plans','salesnotifs'];
+var TABLES=['stores','posts','influencers','castings','plans','salesnotifs','creators'];
 
 /* ============================================================
    APIレイヤー（ここを将来書き換えると別サーバーに移行できる）
@@ -865,8 +1037,10 @@ async function loadDB(){
   setSyncStatus('saving','読み込み中...');
   try{
     var results=await Promise.all(TABLES.map(function(t){return apiFetch(t);}));
-    TABLES.forEach(function(t,i){DB[t]=results[i]||[];});
-    DB.salesNotifs=DB['salesnotifs']||[];
+    TABLES.forEach(function(t,i){
+      var key=t==='salesnotifs'?'salesNotifs':t;
+      DB[key]=results[i]||[];
+    });
     if(!DB.plans)DB.plans=[];
     if(!DB.salesNotifs)DB.salesNotifs=[];
     try{localStorage.setItem('adcore3',JSON.stringify(DB));}catch(e){}
@@ -876,13 +1050,17 @@ async function loadDB(){
     try{
       await new Promise(function(r){setTimeout(r,2000);});
       var results2=await Promise.all(TABLES.map(function(t){return apiFetch(t);}));
-      TABLES.forEach(function(t,i){DB[t]=results2[i]||[];});
+      TABLES.forEach(function(t,i){
+        var key=t==='salesnotifs'?'salesNotifs':t;
+        DB[key]=results2[i]||[];
+      });
       if(!DB.plans)DB.plans=[];
+      if(!DB.salesNotifs)DB.salesNotifs=[];
       try{localStorage.setItem('adcore3',JSON.stringify(DB));}catch(e2){}
       setSyncStatus('ok','同期済み');
     }catch(e2){
       var cached=localStorage.getItem('adcore3');
-      if(cached){try{var d=JSON.parse(cached);Object.assign(DB,d);if(!DB.plans)DB.plans=[];}catch(e3){}}
+      if(cached){try{var d=JSON.parse(cached);Object.assign(DB,d);if(!DB.plans)DB.plans=[];if(!DB.salesNotifs)DB.salesNotifs=[];}catch(e3){}}
       setSyncStatus('error','オフライン（キャッシュ表示中）');
     }
   }
@@ -934,22 +1112,21 @@ function navigate(page){
     if(item.getAttribute('onclick')==="navigate('"+page+"')")item.classList.add('active');
   });
   currentPage=page;
-  var titles={dashboard:'ダッシュボード',sales:'営業入力',stores:'店舗管理',schedule:'投稿スケジュール',calendar:'カレンダー',check:'事前チェック',plans:'プラン管理',influencers:'インフルエンサー管理',casting:'キャスティング履歴',settings:'設定'};
+  var titles={dashboard:'ダッシュボード',sales:'営業入力',stores:'店舗管理',schedule:'投稿スケジュール',check:'事前チェック',plans:'プラン管理',influencers:'インフルエンサー管理',casting:'キャスティング履歴',creators:'クリエイター管理',settings:'設定'};
   document.getElementById('page-title').textContent=titles[page]||page;
-  var btnLabels={dashboard:'＋ 店舗追加',sales:'＋ 店舗入力',stores:'＋ 店舗追加',schedule:'＋ 投稿追加',calendar:'＋ 投稿追加',check:'＋ 店舗追加',plans:'＋ プラン追加',influencers:'＋ インフルエンサー追加',casting:'＋ キャスティング記録',settings:''};
+  var btnLabels={dashboard:'＋ 店舗追加',sales:'＋ 店舗入力',stores:'＋ 店舗追加',schedule:'＋ 追加',check:'＋ 店舗追加',plans:'＋ プラン追加',influencers:'＋ インフルエンサー追加',casting:'＋ キャスティング記録',creators:'＋ クリエイター追加',settings:''};
   document.getElementById('addBtn').textContent=btnLabels[page]||'＋ 新規追加';
   document.getElementById('addBtn').style.display=page==='settings'?'none':'';
   if(page==='settings'){loadChatworkSettings();renderCwPreview();}
   if(page==='sales'){updateSalesPlanSelect();updateSalesPersonSelects();renderSalesNotifs();updateSalesNotifBadge();}
   if(page==='dashboard')renderDashboard();
   if(page==='stores')renderStoreTable();
-  if(page==='schedule'){renderSchedFilter();renderSchedule();}
-  if(page==='calendar')renderCalendar();
+  if(page==='schedule'){renderSchedFilter();renderSchedule();renderCalendar();}
   if(page==='influencers'){
     renderInfluencers();
-    loadDB().then(function(){renderInfluencers();refreshAll();});
   }
   if(page==='casting')renderCasting();
+  if(page==='creators')renderCreators();
   if(page==='plans'){renderPlans();renderRevSummary();}
 }
 
@@ -959,10 +1136,10 @@ function topAddBtn(){
     sales:function(){document.getElementById('sl-name').focus();},
     stores:openStoreModal,
     schedule:openPostModal,
-    calendar:openPostModal,
     check:openStoreModal,
     influencers:openInfluencerModal,
     casting:openCastingModal,
+    creators:openCreatorModal,
     plans:function(){document.getElementById('plName').focus();openModal&&document.getElementById('plName').scrollIntoView();}
   };
   var fn=m[currentPage];
@@ -975,9 +1152,183 @@ function switchStoreTab(idx){
 }
 function toggleCheck(el){el.classList.toggle('done');el.querySelector('.check-box').textContent=el.classList.contains('done')?'✓':'';}
 
+/* ============================================================
+   営業時間・定休日 統合管理
+   保存形式（sHours hidden field に JSON文字列）:
+   シンプル: "17:00–24:00"
+   曜日別:   {"common":"17:00–24:00","perDay":true,"days":{"mon":{"closed":true},"sun":{"from":"18:00","to":"23:00"},"hol":{"closed":true}}}
+   ============================================================ */
+var DAY_KEYS=['mon','tue','wed','thu','fri','sat','sun','hol'];
+var DAY_LABELS={'mon':'月','tue':'火','wed':'水','thu':'木','fri':'金','sat':'土','sun':'日','hol':'祝'};
+var HOURS_FROM_OPTS=['00:00','6:00','7:00','8:00','9:00','10:00','11:00','11:30','12:00','13:00','14:00','15:00','16:00','17:00','17:30','18:00','18:30','19:00','20:00'];
+var HOURS_TO_OPTS=['21:00','22:00','22:30','23:00','23:30','24:00','25:00','26:00','27:00','28:00','翌3:00','翌5:00'];
+var _pdListsRendered=false;
+
+function ensurePerDayDatalist(){
+  if(_pdListsRendered)return;
+  _pdListsRendered=true;
+  var frag=document.createDocumentFragment();
+  var dlf=document.createElement('datalist');dlf.id='pdFromList';
+  HOURS_FROM_OPTS.forEach(function(o){var opt=document.createElement('option');opt.value=o;dlf.appendChild(opt);});
+  var dlt=document.createElement('datalist');dlt.id='pdToList';
+  HOURS_TO_OPTS.forEach(function(o){var opt=document.createElement('option');opt.value=o;dlt.appendChild(opt);});
+  frag.appendChild(dlf);frag.appendChild(dlt);
+  document.body.appendChild(frag);
+}
+
+function makeTimeInput(id, val, onchangeFn, listId){
+  return '<input id="'+id+'" list="'+listId+'" value="'+esc(val||'')+'" oninput="'+onchangeFn+'" placeholder="例: 17:00" style="width:80px;font-size:12px;padding:3px 5px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg2);color:var(--text)">';
+}
+
+function renderPerDayTable(savedDays){
+  var body=document.getElementById('perDayBody');
+  if(!body)return;
+  body.innerHTML=DAY_KEYS.map(function(key){
+    var d=savedDays&&savedDays[key]?savedDays[key]:{};
+    var closed=d.closed||false;
+    var rowStyle=closed?'background:var(--red-bg)':'';
+    return '<tr id="pdr-'+key+'" style="border-bottom:1px solid var(--border);'+rowStyle+'">'
+      +'<td style="padding:6px 10px;text-align:center">'
+        +'<input type="checkbox" id="pdc-'+key+'" '+(closed?'checked':'')+' onchange="onDayClosedChange(\''+key+'\')" style="width:auto;margin:0">'
+      +'</td>'
+      +'<td style="padding:6px 8px;font-size:12px;font-weight:500;color:'+(closed?'var(--red)':'var(--text)')+'">'+DAY_LABELS[key]+'</td>'
+      +'<td style="padding:4px 8px">'
+        +(closed
+          ?'<span style="font-size:11px;color:var(--red)">定休日</span>'
+          :makeTimeInput('pdfrom-'+key,d.from||'','updateHoursData()','pdFromList')
+        )
+      +'</td>'
+      +'<td style="padding:4px 8px">'
+        +(closed
+          ?''
+          :'<span style="font-size:11px;color:var(--text3);margin-right:4px">〜</span>'
+           +makeTimeInput('pdto-'+key,d.to||'','updateHoursData()','pdToList')
+        )
+      +'</td>'
+      +'</tr>';
+  }).join('');
+}
+
+function onDayClosedChange(key){
+  updateHoursData();
+  /* 行の背景・テキストを即時更新するために再描画 */
+  var days=getPerDayData();
+  renderPerDayTable(days);
+  /* チェック状態をDOMから再取得して再セット（再描画後にチェックが消えないよう） */
+  var el=document.getElementById('pdc-'+key);
+  if(el)el.checked=days[key]&&days[key].closed;
+}
+
+function getPerDayData(){
+  var days={};
+  DAY_KEYS.forEach(function(key){
+    var closedEl=document.getElementById('pdc-'+key);
+    if(!closedEl)return;
+    var closed=closedEl.checked;
+    if(closed){days[key]={closed:true};}
+    else{
+      var fromEl=document.getElementById('pdfrom-'+key);
+      var toEl=document.getElementById('pdto-'+key);
+      var from=fromEl?fromEl.value:'';
+      var to=toEl?toEl.value:'';
+      if(from||to)days[key]={from:from,to:to};
+    }
+  });
+  return days;
+}
+
+function togglePerDay(){
+  ensurePerDayDatalist();
+  var on=document.getElementById('sPerDay').checked;
+  document.getElementById('perDayTable').style.display=on?'':'none';
+  if(on){
+    /* 初回展開時：既存 days データか空で初期化 */
+    var cur=parseHoursData(document.getElementById('sHours').value);
+    renderPerDayTable(cur.days||{});
+  }
+  updateHoursData();
+}
+
+function updateHoursData(){
+  var from=document.getElementById('sHoursFrom').value;
+  var to=document.getElementById('sHoursTo').value;
+  var perDay=document.getElementById('sPerDay').checked;
+  var hoursEl=document.getElementById('sHours');
+  var holidayEl=document.getElementById('sHoliday');
+  if(!perDay){
+    hoursEl.value=(from&&to)?from+'–'+to:(from||to||'');
+    holidayEl.value='';
+  }else{
+    var days=getPerDayData();
+    var obj={common:(from&&to)?from+'–'+to:'',perDay:true,days:days};
+    hoursEl.value=JSON.stringify(obj);
+    /* holiday フィールドを定休日曜日テキストで更新 */
+    var closedDays=DAY_KEYS.filter(function(k){return days[k]&&days[k].closed;})
+      .map(function(k){return DAY_LABELS[k]+'曜';});
+    if(closedDays.length){
+      holidayEl.value=closedDays.map(function(d){return d.replace('祝曜','祝日');}).join('・');
+    }else{
+      holidayEl.value='';
+    }
+  }
+}
+
+function parseHoursData(val){
+  if(!val)return{common:'',perDay:false,days:{}};
+  if(val.charAt(0)==='{'){
+    try{return JSON.parse(val);}catch(e){}
+  }
+  return{common:val,perDay:false,days:{}};
+}
+
+/* ---- clearStoreForm / openStoreModal 用の復元 ---- */
+function restoreHoursUI(hoursVal){
+  var data=parseHoursData(hoursVal);
+  var perDayEl=document.getElementById('sPerDay');
+  var tableEl=document.getElementById('perDayTable');
+  if(data.perDay){
+    perDayEl.checked=true;
+    tableEl.style.display='';
+    var parts=(data.common||'').split('–');
+    document.getElementById('sHoursFrom').value=parts[0]||'';
+    document.getElementById('sHoursTo').value=parts[1]||'';
+    renderPerDayTable(data.days||{});
+  }else{
+    perDayEl.checked=false;
+    tableEl.style.display='none';
+    var parts2=(data.common||'').split('–');
+    document.getElementById('sHoursFrom').value=parts2[0]||'';
+    document.getElementById('sHoursTo').value=parts2[1]||'';
+  }
+  document.getElementById('sHours').value=hoursVal||'';
+}
+
+/* ---- 人間が読める営業時間サマリー（表示用） ---- */
+function formatHoursSummary(hoursVal){
+  var data=parseHoursData(hoursVal);
+  if(!data.perDay)return data.common||'—';
+  var common=data.common||'';
+  var lines=[];
+  DAY_KEYS.forEach(function(key){
+    var d=data.days&&data.days[key];
+    if(!d)return;
+    var label=DAY_LABELS[key];
+    if(d.closed){lines.push(label+': 定休');}
+    else if(d.from||d.to){lines.push(label+': '+(d.from||'?')+'–'+(d.to||'?'));}
+  });
+  if(!lines.length)return common||'—';
+  return (common?common+'\n':'')+lines.join(' / ');
+}
+
 function clearStoreForm(){
-  ['sName','sPref','sArea','sHours','sHoliday','sSeats','sTabelog','sHp','sMemo','sIg','sIgFollowers','sFb','sTw','sTt','sYt','sMetaId','sCreator','sContractStart','sMonthlyFee','sContactName','sContactRole','sContactTel','sContactEmail','sContactLine','sOurManager','sSetupMemo'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+  ['sName','sPref','sArea','sSeats','sTabelog','sHp','sMemo','sIg','sIgFollowers','sFb','sTw','sTt','sYt','sMetaId','sCreator','sContractStart','sMonthlyFee','sContactName','sContactRole','sContactTel','sContactEmail','sContactLine','sSetupMemo'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('sGenre').value='';
+  document.getElementById('sHours').value='';
+  document.getElementById('sHoliday').value='';
+  document.getElementById('sHoursFrom').value='';
+  document.getElementById('sHoursTo').value='';
+  document.getElementById('sPerDay').checked=false;
+  document.getElementById('perDayTable').style.display='none';
   document.getElementById('sMetaExp').value='none';
   document.getElementById('sContractTerm').value='3';
   document.getElementById('sStatus').value='pending';
@@ -999,11 +1350,13 @@ function openStoreModal(id){
   if(id){
     var s=DB.stores.find(function(x){return x.id===id;});
     if(s){
-      var map={sName:'name',sPref:'pref',sArea:'area',sHours:'hours',sHoliday:'holiday',sSeats:'seats',sTabelog:'tabelog',sHp:'hp',sMemo:'memo',sIg:'ig',sIgFollowers:'igFollowers',sFb:'fb',sTw:'tw',sTt:'tt',sYt:'yt',sMetaId:'metaId',sMetaExp:'metaExp',sCreator:'creator',sContractStart:'contractStart',sContractTerm:'contractTerm',sMonthlyFee:'monthlyFee',sStatus:'status',sContactName:'contactName',sContactRole:'contactRole',sContactTel:'contactTel',sContactEmail:'contactEmail',sContactLine:'contactLine',sOurManager:'ourManager',sReviewCycle:'reviewCycle',sVideos:'videos',sAdDelivery:'adDelivery',sSetupMemo:'setupMemo',sPlanId:'planId'};
+      var map={sName:'name',sPref:'pref',sArea:'area',sSeats:'seats',sTabelog:'tabelog',sHp:'hp',sMemo:'memo',sIg:'ig',sIgFollowers:'igFollowers',sFb:'fb',sTw:'tw',sTt:'tt',sYt:'yt',sMetaId:'metaId',sMetaExp:'metaExp',sCreator:'creator',sContractStart:'contractStart',sContractTerm:'contractTerm',sMonthlyFee:'monthlyFee',sStatus:'status',sContactName:'contactName',sContactRole:'contactRole',sContactTel:'contactTel',sContactEmail:'contactEmail',sContactLine:'contactLine',sOurManager:'ourManager',sReviewCycle:'reviewCycle',sVideos:'videos',sAdDelivery:'adDelivery',sSetupMemo:'setupMemo',sPlanId:'planId'};
       Object.keys(map).forEach(function(elId){var el=document.getElementById(elId);if(el&&s[map[elId]]!==undefined)el.value=s[map[elId]];});
       if(document.getElementById('sOurManager')&&!document.getElementById('sOurManager').value&&s.salesBy){
         document.getElementById('sOurManager').value=s.salesBy;
       }
+      /* 営業時間・定休日を復元 */
+      restoreHoursUI(s.hours||'');
       showPlanPreview();
       if(s.setupChecks){var items=document.querySelectorAll('#setupChecklist .check-item');s.setupChecks.forEach(function(v,i){if(items[i]&&v){items[i].classList.add('done');items[i].querySelector('.check-box').textContent='✓';}});}
     }
@@ -1015,14 +1368,60 @@ function openStoreModal(id){
 function saveStore(){
   var name=document.getElementById('sName').value.trim();
   if(!name){alert('店舗名を入力してください');return;}
-  var id=editingStoreId||uid();
-  var colorIdx=editingStoreId?DB.stores.findIndex(function(x){return x.id===editingStoreId;}):DB.stores.length;
-  var color=editingStoreId?(DB.stores.find(function(x){return x.id===editingStoreId;})||{}).color||COLORS[colorIdx%COLORS.length]:COLORS[colorIdx%COLORS.length];
+  var isEdit=!!editingStoreId;
+  var id=isEdit?editingStoreId:uid();
+  var existing=isEdit?DB.stores.find(function(x){return x.id===id;}):null;
+  var colorIdx=isEdit?(DB.stores.findIndex(function(x){return x.id===id;})):(DB.stores.length);
+  if(colorIdx<0)colorIdx=DB.stores.length;
+  var color=existing?existing.color:COLORS[colorIdx%COLORS.length];
   var checks=Array.from(document.querySelectorAll('#setupChecklist .check-item')).map(function(el){return el.classList.contains('done');});
-  var s={id:id,color:color,setupChecks:checks,name:name,genre:document.getElementById('sGenre').value,pref:document.getElementById('sPref').value,area:document.getElementById('sArea').value,hours:document.getElementById('sHours').value,holiday:document.getElementById('sHoliday').value,seats:document.getElementById('sSeats').value,tabelog:document.getElementById('sTabelog').value,hp:document.getElementById('sHp').value,memo:document.getElementById('sMemo').value,ig:document.getElementById('sIg').value,igFollowers:document.getElementById('sIgFollowers').value,fb:document.getElementById('sFb').value,tw:document.getElementById('sTw').value,tt:document.getElementById('sTt').value,yt:document.getElementById('sYt').value,metaId:document.getElementById('sMetaId').value,metaExp:document.getElementById('sMetaExp').value,creator:document.getElementById('sCreator').value,contractStart:document.getElementById('sContractStart').value,contractTerm:document.getElementById('sContractTerm').value,monthlyFee:document.getElementById('sMonthlyFee').value,status:document.getElementById('sStatus').value,contactName:document.getElementById('sContactName').value,contactRole:document.getElementById('sContactRole').value,contactTel:document.getElementById('sContactTel').value,contactEmail:document.getElementById('sContactEmail').value,contactLine:document.getElementById('sContactLine').value,ourManager:document.getElementById('sOurManager').value,reviewCycle:document.getElementById('sReviewCycle').value,videos:document.getElementById('sVideos').value,adDelivery:document.getElementById('sAdDelivery').value,setupMemo:document.getElementById('sSetupMemo').value,planId:document.getElementById('sPlanId').value};
-  if(editingStoreId){var idx=DB.stores.findIndex(function(x){return x.id===editingStoreId;});if(idx>=0)DB.stores[idx]=s;else DB.stores.push(s);}
-  else DB.stores.push(s);
-  closeModal('storeModal');refreshAll();saveItem('stores',s);
+  var s={
+    id:id,color:color,setupChecks:checks,
+    name:name,
+    genre:document.getElementById('sGenre').value,
+    pref:document.getElementById('sPref').value,
+    area:document.getElementById('sArea').value,
+    hours:document.getElementById('sHours').value,
+    holiday:document.getElementById('sHoliday').value,
+    seats:document.getElementById('sSeats').value,
+    tabelog:document.getElementById('sTabelog').value,
+    hp:document.getElementById('sHp').value,
+    memo:document.getElementById('sMemo').value,
+    ig:document.getElementById('sIg').value,
+    igFollowers:document.getElementById('sIgFollowers').value,
+    fb:document.getElementById('sFb').value,
+    tw:document.getElementById('sTw').value,
+    tt:document.getElementById('sTt').value,
+    yt:document.getElementById('sYt').value,
+    metaId:document.getElementById('sMetaId').value,
+    metaExp:document.getElementById('sMetaExp').value,
+    creator:document.getElementById('sCreator').value,
+    contractStart:document.getElementById('sContractStart').value,
+    contractTerm:document.getElementById('sContractTerm').value,
+    monthlyFee:document.getElementById('sMonthlyFee').value,
+    status:document.getElementById('sStatus').value,
+    contactName:document.getElementById('sContactName').value,
+    contactRole:document.getElementById('sContactRole').value,
+    contactTel:document.getElementById('sContactTel').value,
+    contactEmail:document.getElementById('sContactEmail').value,
+    contactLine:document.getElementById('sContactLine').value,
+    ourManager:document.getElementById('sOurManager').value,
+    reviewCycle:document.getElementById('sReviewCycle').value,
+    videos:document.getElementById('sVideos').value,
+    adDelivery:document.getElementById('sAdDelivery').value,
+    setupMemo:document.getElementById('sSetupMemo').value,
+    planId:document.getElementById('sPlanId').value,
+    rakurakuRegistered:existing?existing.rakurakuRegistered:false
+  };
+  if(isEdit){
+    var idx=DB.stores.findIndex(function(x){return x.id===id;});
+    if(idx>=0){DB.stores[idx]=s;}else{DB.stores.push(s);}
+  }else{
+    DB.stores.push(s);
+  }
+  closeModal('storeModal');
+  refreshAll();
+  saveItem('stores',s);
 }
 function deleteStore(id){
   if(!confirm('この店舗を削除しますか？'))return;
@@ -1031,27 +1430,289 @@ function deleteStore(id){
   refreshAll();deleteItem('stores',id);
 }
 
-function openPostModal(){updatePostStoreSelect();openModal('postModal');}
+var editingPostId=null;
+function openPostModal(id){
+  editingPostId=id||null;
+  updatePostStoreSelect();
+  var infSel=document.getElementById('pInfId');
+  if(infSel){
+    infSel.innerHTML='<option value="">選択...</option>'+DB.influencers.map(function(i){return'<option value="'+i.id+'">'+esc(i.name)+(i.handle?' '+esc(i.handle):'')+'</option>';}).join('');
+  }
+  if(id){
+    /* 編集：既存データをフォームに復元 */
+    var p=DB.posts.find(function(x){return x.id===id;});
+    if(p){
+      /* 種別ラジオ */
+      var radio=document.querySelector('input[name="pTypeRadio"][value="'+p.type+'"]');
+      if(radio){radio.checked=true;}else{
+        var first=document.querySelector('input[name="pTypeRadio"][value="video"]');
+        if(first)first.checked=true;
+      }
+      document.getElementById('pType').value=p.type||'video';
+      onPostTypeChange();
+      /* 各フィールド */
+      var set=function(fid,v){var el=document.getElementById(fid);if(el&&v!==undefined)el.value=v||'';};
+      set('pStore',p.storeId);set('pDate',p.date);set('pPlatform',p.platform);
+      set('pNote',p.note);
+      var statusSel=document.getElementById('pStatus');
+      if(statusSel&&statusSel.querySelector('option[value="'+p.status+'"]'))statusSel.value=p.status;
+      var isInf=p.type==='inf_visit'||p.type==='inf_post';
+      if(isInf){
+        set('pInfId',p.infId);set('pInfFee',p.infFee);
+      }else{
+        set('pCaption',p.caption);set('pCreative',p.creative);
+        set('pAd',p.ad);set('pBudget',p.budget);
+      }
+      var titleEl=document.getElementById('postModalTitle');
+      if(titleEl)titleEl.textContent='スケジュールを編集';
+    }
+  }else{
+    /* 新規：リセット */
+    var first=document.querySelector('input[name="pTypeRadio"][value="video"]');
+    if(first){first.checked=true;document.getElementById('pType').value='video';}
+    ['pCaption','pCreative','pBudget','pNote','pInfFee'].forEach(function(fid){var el=document.getElementById(fid);if(el)el.value='';});
+    onPostTypeChange();
+  }
+  openModal('postModal');
+}
+function onPostTypeChange(){
+  var sel=document.querySelector('input[name="pTypeRadio"]:checked');
+  var val=sel?sel.value:'video';
+  document.getElementById('pType').value=val;
+  var isInf=val==='inf_visit'||val==='inf_post';
+  document.getElementById('pInfRow').style.display=isInf?'':'none';
+  document.getElementById('pPostFields').style.display=isInf?'none':'';
+  var titleEl=document.getElementById('postModalTitle');
+  if(titleEl){
+    if(val==='inf_visit')titleEl.textContent='来店予定を追加';
+    else if(val==='inf_post')titleEl.textContent='インフルエンサー投稿予定を追加';
+    else titleEl.textContent='投稿を追加';
+  }
+  /* ステータス選択肢を種別に合わせて切り替え */
+  var statusSel=document.getElementById('pStatus');
+  if(!statusSel)return;
+  var cur=statusSel.value;
+  if(val==='inf_visit'){
+    statusSel.innerHTML=
+      '<option value="unbooked">予約未</option>'
+      +'<option value="booked">予約済み</option>'
+      +'<option value="visited">来店済み</option>'
+      +'<option value="cancelled">キャンセル</option>';
+  }else{
+    statusSel.innerHTML=
+      '<option value="draft">下書き</option>'
+      +'<option value="scheduled">予約済み</option>'
+      +'<option value="done">完了</option>';
+  }
+  /* 可能なら以前の値を復元 */
+  if(statusSel.querySelector('option[value="'+cur+'"]'))statusSel.value=cur;
+}
 function savePost(){
-  var sid=document.getElementById('pStore').value,dt=document.getElementById('pDate').value,cap=document.getElementById('pCaption').value.trim();
-  if(!sid||!dt||!cap){alert('店舗・配信日時・キャプションは必須です');return;}
-  var p={id:uid(),storeId:sid,date:dt,type:document.getElementById('pType').value,platform:document.getElementById('pPlatform').value,caption:cap,creative:document.getElementById('pCreative').value,ad:document.getElementById('pAd').value,budget:document.getElementById('pBudget').value,status:document.getElementById('pStatus').value,note:document.getElementById('pNote').value};
-  DB.posts.push(p);closeModal('postModal');
-  ['pCaption','pCreative','pBudget','pNote'].forEach(function(id){document.getElementById(id).value='';});
+  var sid=document.getElementById('pStore').value;
+  var dt=document.getElementById('pDate').value;
+  var type=document.getElementById('pType').value;
+  var isInf=type==='inf_visit'||type==='inf_post';
+  if(!sid||!dt){alert('店舗と日時は必須です');return;}
+  if(isInf&&!document.getElementById('pInfId').value){alert('インフルエンサーを選択してください');return;}
+  var isEdit=!!editingPostId;
+  var id=isEdit?editingPostId:uid();
+  var p={
+    id:id,storeId:sid,date:dt,type:type,
+    platform:document.getElementById('pPlatform').value,
+    status:document.getElementById('pStatus').value,
+    note:document.getElementById('pNote').value
+  };
+  if(isInf){
+    p.infId=document.getElementById('pInfId').value;
+    p.infFee=document.getElementById('pInfFee').value;
+  }else{
+    p.caption=document.getElementById('pCaption').value;
+    p.creative=document.getElementById('pCreative').value;
+    p.ad=document.getElementById('pAd').value;
+    p.budget=document.getElementById('pBudget').value;
+  }
+  if(isEdit){
+    var idx=DB.posts.findIndex(function(x){return x.id===id;});
+    if(idx>=0){DB.posts[idx]=p;}else{DB.posts.push(p);}
+  }else{
+    DB.posts.push(p);
+  }
+  closeModal('postModal');
   refreshAll();saveItem('posts',p);
 }
 function deletePost(id){DB.posts=DB.posts.filter(function(p){return p.id!==id;});refreshAll();deleteItem('posts',id);}
+function inlineDateEdit(e,id){
+  e.stopPropagation();
+  var td=e.currentTarget;
+  var p=DB.posts.find(function(x){return x.id===id;});
+  if(!p)return;
+  /* datetime-local の値形式に変換 */
+  var cur=p.date?p.date.slice(0,16):'';
+  td.innerHTML='<input type="datetime-local" value="'+esc(cur)+'" style="font-size:11px;padding:2px 4px;width:160px;border:1px solid var(--accent);border-radius:4px;background:var(--bg2);color:var(--text)" id="inlineDtInput_'+id+'">';
+  var inp=td.querySelector('input');
+  if(inp){
+    inp.focus();
+    inp.onblur=function(){commitInlineDate(id,inp.value);};
+    inp.onkeydown=function(ev){
+      if(ev.key==='Enter'){inp.blur();}
+      if(ev.key==='Escape'){renderSchedule();}
+    };
+  }
+}
+function commitInlineDate(id,val){
+  if(!val){renderSchedule();return;}
+  var idx=DB.posts.findIndex(function(x){return x.id===id;});
+  if(idx<0){renderSchedule();return;}
+  DB.posts[idx].date=val;
+  saveItem('posts',DB.posts[idx]);
+  refreshAll();
+}
 
-function openInfluencerModal(){openModal('infModal');}
+var editingInfId=null;
+
+function openInfluencerModal(id){
+  editingInfId=id||null;
+  var titleEl=document.getElementById('infModalTitle');
+  if(titleEl)titleEl.textContent=id?'インフルエンサーを編集':'インフルエンサーを追加';
+  ['iName','iHandle','iUrl','iGenre','iContact','iAgency','iMemo','iFeeLow','iFeeHigh'].forEach(function(fid){var el=document.getElementById(fid);if(el)el.value='';});
+  document.getElementById('iPlatform').value='Instagram';
+  document.getElementById('iFollowers').value='';
+  document.getElementById('iRating').value='';
+  if(id){
+    var inf=DB.influencers.find(function(x){return x.id===id;});
+    if(inf){
+      var map={iName:'name',iHandle:'handle',iUrl:'url',iPlatform:'platform',iFollowers:'followers',iGenre:'genre',iContact:'contact',iAgency:'agency',iMemo:'memo',iRating:'rating'};
+      Object.keys(map).forEach(function(fid){var el=document.getElementById(fid);if(el&&inf[map[fid]]!==undefined)el.value=inf[map[fid]]||'';});
+      /* fee range */
+      if(inf.feeLow!==undefined){document.getElementById('iFeeLow').value=inf.feeLow||'';}
+      else if(inf.fee){document.getElementById('iFeeLow').value=inf.fee;}
+      document.getElementById('iFeeHigh').value=inf.feeHigh||'';
+    }
+  }
+  openModal('infModal');
+}
+
 function saveInfluencer(){
   var name=document.getElementById('iName').value.trim();
   if(!name){alert('名前を入力してください');return;}
-  var i={id:uid(),name:name,handle:document.getElementById('iHandle').value,platform:document.getElementById('iPlatform').value,followers:document.getElementById('iFollowers').value,genre:document.getElementById('iGenre').value,fee:document.getElementById('iFee').value,contact:document.getElementById('iContact').value,agency:document.getElementById('iAgency').value,memo:document.getElementById('iMemo').value};
-  DB.influencers.push(i);closeModal('infModal');
-  ['iName','iHandle','iFollowers','iGenre','iFee','iContact','iAgency','iMemo'].forEach(function(id){document.getElementById(id).value='';});
-  refreshAll();saveItem('influencers',i);
+  var isEdit=!!editingInfId;
+  var id=isEdit?editingInfId:uid();
+  var feeLow=document.getElementById('iFeeLow').value;
+  var feeHigh=document.getElementById('iFeeHigh').value;
+  var inf={
+    id:id,
+    name:name,
+    handle:document.getElementById('iHandle').value,
+    url:document.getElementById('iUrl').value,
+    platform:document.getElementById('iPlatform').value,
+    followers:document.getElementById('iFollowers').value,
+    genre:document.getElementById('iGenre').value,
+    feeLow:feeLow,
+    feeHigh:feeHigh,
+    fee:feeLow, /* 後方互換 */
+    contact:document.getElementById('iContact').value,
+    agency:document.getElementById('iAgency').value,
+    rating:document.getElementById('iRating').value,
+    memo:document.getElementById('iMemo').value
+  };
+  if(isEdit){
+    var idx=DB.influencers.findIndex(function(x){return x.id===id;});
+    if(idx>=0){DB.influencers[idx]=inf;}else{DB.influencers.push(inf);}
+  }else{
+    DB.influencers.push(inf);
+  }
+  closeModal('infModal');
+  closeModal('infDetailModal');
+  refreshAll();
+  saveItem('influencers',inf);
 }
-function deleteInfluencer(id){DB.influencers=DB.influencers.filter(function(i){return i.id!==id;});refreshAll();deleteItem('influencers',id);}
+
+function deleteInfluencer(id){
+  if(!confirm('このインフルエンサーを削除しますか？'))return;
+  DB.influencers=DB.influencers.filter(function(i){return i.id!==id;});
+  closeModal('infDetailModal');
+  refreshAll();
+  deleteItem('influencers',id);
+}
+
+function fmtFeeRange(inf){
+  var low=inf.feeLow!==undefined?inf.feeLow:inf.fee;
+  var high=inf.feeHigh;
+  if(!low&&!high)return'—';
+  if(low&&high&&String(low)!==String(high))return Number(low).toLocaleString()+'〜'+Number(high).toLocaleString()+'円';
+  return Number(low||high).toLocaleString()+'円';
+}
+
+function ratingStars(r){
+  if(!r)return'';
+  var n=parseInt(r);
+  var stars='★'.repeat(n)+'☆'.repeat(5-n);
+  var colors={5:'var(--green)',4:'var(--green)',3:'var(--amber)',2:'var(--amber)',1:'var(--red)'};
+  return '<span style="color:'+colors[n]+';font-size:12px">'+stars+'</span>';
+}
+
+function openInfluencerDetail(id){
+  var inf=DB.influencers.find(function(x){return x.id===id;});
+  if(!inf)return;
+  var platColor={Instagram:'#e1306c',TikTok:'#010101',YouTube:'#ff0000',X:'#1da1f2'};
+  var platUrl={Instagram:'https://www.instagram.com/',TikTok:'https://www.tiktok.com/@',YouTube:'',X:'https://x.com/'};
+  /* アカウントURL決定 */
+  var accountUrl=inf.url||(inf.handle?(platUrl[inf.platform]||'')+(inf.handle.replace('@','')):'');
+  var castings=DB.castings.filter(function(c){return c.infId===id;}).sort(function(a,b){return new Date(b.date)-new Date(a.date);});
+  var totalFee=castings.reduce(function(s,c){return s+(Number(c.fee)||0);},0);
+  var totalReach=castings.reduce(function(s,c){return s+(Number(c.reach)||0);},0);
+  document.getElementById('infDetailTitle').textContent=inf.name+(inf.handle?' ('+inf.handle+')':'');
+  var editBtn=document.getElementById('infDetailEditBtn');
+  if(editBtn)editBtn.onclick=function(){closeModal('infDetailModal');openInfluencerModal(id);};
+  document.getElementById('infDetailBody').innerHTML=
+    /* プロフィールヘッダ */
+    '<div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:18px">'
+      +'<div style="width:48px;height:48px;border-radius:50%;background:var(--accent-bg);border:2px solid var(--accent-border);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">👤</div>'
+      +'<div style="flex:1">'
+        +'<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'
+          +(accountUrl
+            ?'<a href="'+esc(accountUrl)+'" target="_blank" rel="noopener" style="font-size:16px;font-weight:500;color:var(--accent);text-decoration:none">'+esc(inf.name)+'&nbsp;↗</a>'
+            :'<span style="font-size:16px;font-weight:500">'+esc(inf.name)+'</span>'
+          )
+          +(inf.handle?'<span style="font-size:12px;color:'+(platColor[inf.platform]||'var(--text3)')+'">'+esc(inf.handle)+'</span>':'')
+          +ratingStars(inf.rating)
+        +'</div>'
+        +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">'
+          +(inf.platform?'<span class="badge b-blue">'+esc(inf.platform)+'</span>':'')
+          +(inf.genre?'<span class="badge b-gray">'+esc(inf.genre)+'</span>':'')
+          +(inf.agency&&inf.agency!=='なし'?'<span class="badge b-gray">'+esc(inf.agency)+'</span>':'')
+        +'</div>'
+      +'</div>'
+    +'</div>'
+    /* 数値サマリー */
+    +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px">'
+      +'<div class="card-sm" style="text-align:center"><div style="font-size:18px;font-weight:500;font-family:\"DM Mono\",monospace;color:var(--text)">'+(inf.followers?Number(inf.followers).toLocaleString():'—')+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">フォロワー</div></div>'
+      +'<div class="card-sm" style="text-align:center"><div style="font-size:14px;font-weight:500;font-family:\"DM Mono\",monospace;color:var(--accent)">'+fmtFeeRange(inf)+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">PR 費用</div></div>'
+      +'<div class="card-sm" style="text-align:center"><div style="font-size:18px;font-weight:500;font-family:\"DM Mono\",monospace;color:var(--green)">'+castings.length+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">起用回数</div></div>'
+    +'</div>'
+    /* 連絡先 */
+    +(inf.contact?'<div style="margin-bottom:12px;padding:10px 12px;background:var(--bg3);border-radius:var(--r);font-size:12px"><span style="color:var(--text3)">連絡先：</span><span style="color:var(--accent)">'+esc(inf.contact)+'</span></div>':'')
+    /* メモ */
+    +(inf.memo?'<div style="margin-bottom:16px;padding:10px 12px;background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:var(--r);font-size:12px;color:var(--text);line-height:1.7;white-space:pre-wrap">'+esc(inf.memo)+'</div>':'')
+    /* キャスティング履歴 */
+    +'<div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px">キャスティング履歴</div>'
+    +(castings.length===0
+      ?'<div class="empty-state" style="padding:16px">まだ起用履歴がありません</div>'
+      :('<div style="margin-bottom:12px;font-size:12px;color:var(--text3)">累計費用 <strong style="color:var(--text)">'+totalFee.toLocaleString()+'円</strong> ／ 累計リーチ <strong style="color:var(--text)">'+totalReach.toLocaleString()+'</strong></div>'
+        +'<div class="table-wrap"><table><thead><tr><th>店舗</th><th>投稿日</th><th>媒体</th><th>費用</th><th>リーチ</th><th>成果メモ</th></tr></thead><tbody>'
+        +castings.map(function(c){
+          return '<tr><td>'+esc(storeName(c.storeId))+'</td><td class="td-mono">'+fmtD(c.date)+'</td><td>'+esc(c.platform||'')+'</td><td class="td-mono">'+fmtMoney(c.fee)+'</td><td class="td-mono">'+(c.reach?Number(c.reach).toLocaleString():'—')+'</td><td style="color:var(--text3);max-width:160px">'+esc((c.result||'').slice(0,60))+'</td></tr>';
+        }).join('')
+        +'</tbody></table></div>'
+      )
+    )
+    +'<div class="form-actions" style="border-top:1px solid var(--border);margin-top:16px;padding-top:14px">'
+      +'<button class="btn-ghost-danger" onclick="deleteInfluencer(\''+id+'\')">削除</button>'
+      +'<button class="btn" onclick="closeModal(\'infDetailModal\')">閉じる</button>'
+      +'<button class="btn btn-primary" onclick="closeModal(\'infDetailModal\');openInfluencerModal(\''+id+'\')">編集</button>'
+    +'</div>';
+  openModal('infDetailModal');
+}
 
 function openCastingModal(){updateCastSelects();openModal('castModal');}
 function saveCasting(){
@@ -1108,12 +1769,16 @@ function submitSalesForm(){
   DB.salesNotifs.unshift(notif);
   saveItem('stores',s);
   saveItem('salesnotifs',notif);
-  /* Chatwork通知 */
+  /* Webhook通知 */
   var planName=plan?plan.name:'未設定';
   notifyChatwork(name,planName,sales,document.getElementById('sl-contact').value,document.getElementById('sl-tel').value,document.getElementById('sl-email').value,document.getElementById('sl-corp').value).then(function(results){
     if(results.length){
       var allOk=results.every(function(r){return r.ok;});
-      if(!allOk)alert('Chatwork通知の送信に失敗しました。設定を確認してください。');
+      if(!allOk){
+        var statusEl=document.getElementById('syncStatus');
+        setSyncStatus('error','Webhook送信失敗 — 設定を確認してください');
+        setTimeout(function(){setSyncStatus('ok','');},4000);
+      }
     }
   });
   ['sl-name','sl-corp','sl-genre','sl-pref','sl-area','sl-contact','sl-role','sl-tel','sl-email','sl-memo','sl-sales'].forEach(function(id){document.getElementById(id).value='';});
@@ -1121,13 +1786,14 @@ function submitSalesForm(){
   updateSalesNotifBadge();
   renderSalesNotifs();
   refreshAll();
-  alert('✓ 登録しました！SNS局に通知しました。');
+  alert('✓ 登録しました！Webhook通知を送信しました。');
 }
 function getSalesNotifs(){
-  return DB.salesNotifs||[];
+  if(!DB.salesNotifs)DB.salesNotifs=[];
+  return DB.salesNotifs;
 }
 function saveSalesNotifs(){
-  try{localStorage.setItem('gc_sales_notifs',JSON.stringify(DB.salesNotifs||[]));}catch(e){}
+  try{localStorage.setItem('adcore3',JSON.stringify(DB));}catch(e){}
 }
 function renderSalesNotifs(){
   var el=document.getElementById('salesNotifList');
@@ -1152,7 +1818,9 @@ function renderSalesNotifs(){
 }
 function openStoreFromNotif(storeId){
   if(!DB.salesNotifs)DB.salesNotifs=[];
-  DB.salesNotifs.forEach(function(n){if(n.storeId===storeId)n.read=true;});
+  DB.salesNotifs.forEach(function(n){
+    if(n.storeId===storeId&&!n.read){n.read=true;saveItem('salesnotifs',n);}
+  });
   updateSalesNotifBadge();
   renderSalesNotifs();
   renderDashboard();
@@ -1161,16 +1829,21 @@ function openStoreFromNotif(storeId){
 }
 function clearSalesNotifs(){
   if(!DB.salesNotifs)DB.salesNotifs=[];
-  DB.salesNotifs.forEach(function(n){n.read=true;});
+  DB.salesNotifs.forEach(function(n){
+    if(!n.read){n.read=true;saveItem('salesnotifs',n);}
+  });
   updateSalesNotifBadge();
   renderSalesNotifs();
   renderDashboard();
 }
 function updateSalesNotifBadge(){
-  var notifs=getSalesNotifs();
-  var unread=notifs.filter(function(n){return!n.read;}).length;
+  if(!DB.salesNotifs)DB.salesNotifs=[];
+  var unread=DB.salesNotifs.filter(function(n){return!n.read;}).length;
   var badge=document.getElementById('nb-sales');
-  if(badge){badge.style.display=unread>0?'':'none';badge.textContent=unread>0?unread:'';}
+  if(badge){
+    if(unread>0){badge.style.display='';badge.textContent=unread;}
+    else{badge.style.display='none';badge.textContent='';}
+  }
 }
 
 var ZIP_PREF={
@@ -1287,7 +1960,7 @@ function updateCastSelects(){
 function setupPct(s){if(!s.setupChecks||!s.setupChecks.length)return 0;return Math.round(s.setupChecks.filter(Boolean).length/s.setupChecks.length*100);}
 function contractEndDate(s){if(!s.contractStart||!s.contractTerm)return null;var d=new Date(s.contractStart);d.setMonth(d.getMonth()+parseInt(s.contractTerm));return d;}
 function statusBadge(v){var m={active:'<span class="badge b-green">稼働中</span>',pending:'<span class="badge b-amber">準備中</span>',ended:'<span class="badge b-gray">終了</span>'};return m[v]||'—';}
-function postStatusBadge(v){var m={draft:'<span class="badge b-gray">下書き</span>',scheduled:'<span class="badge b-blue">予約済み</span>',done:'<span class="badge b-green">投稿済み</span>'};return m[v]||v;}
+function postStatusBadge(v){var m={draft:'<span class="badge b-gray">下書き</span>',scheduled:'<span class="badge b-blue">予約済み</span>',done:'<span class="badge b-green">投稿済み</span>',unbooked:'<span class="badge b-gray">予約未</span>',booked:'<span class="badge b-amber">予約済み</span>',visited:'<span class="badge b-green">来店済み</span>',cancelled:'<span class="badge b-red">キャンセル</span>'};return m[v]||v;}
 
 function generateAlerts(){
   var alerts=[],today=new Date();
@@ -1411,7 +2084,9 @@ function markRakurakuDone(id){
 }
 
 function renderSchedFilter(){
-  document.getElementById('schedFilter').innerHTML=DB.stores.map(function(s){return'<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;border:1px solid var(--border);font-size:11px;cursor:pointer;color:var(--text2);background:var(--bg2);transition:all .1s" data-sid="'+s.id+'" onclick="toggleSchedFilter(this)"><span style="width:6px;height:6px;border-radius:50%;background:'+s.color+';display:inline-block"></span>'+esc(s.name)+'</span>';}).join('');
+  document.getElementById('schedFilter').innerHTML=DB.stores.map(function(s){
+    return'<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;border:1px solid var(--border);font-size:11px;cursor:pointer;color:var(--text2);background:var(--bg2);transition:all .1s" data-sid="'+s.id+'" onclick="toggleSchedFilter(this)"><span style="width:6px;height:6px;border-radius:50%;background:'+s.color+';display:inline-block"></span>'+esc(s.name)+'</span>';
+  }).join('');
 }
 function toggleSchedFilter(el){
   var active=el.getAttribute('data-active')==='1';
@@ -1421,37 +2096,165 @@ function toggleSchedFilter(el){
   else{el.style.background='';el.style.borderColor='';el.style.color='';}
   renderSchedule();
 }
+var schedView='list';
+function setSchedView(v){
+  schedView=v;
+  var listBtn=document.getElementById('viewTabList');
+  var calBtn=document.getElementById('viewTabCal');
+  var listView=document.getElementById('schedListView');
+  var calView=document.getElementById('schedCalView');
+  if(listBtn){listBtn.style.background=v==='list'?'var(--accent)':'var(--bg3)';listBtn.style.color=v==='list'?'#fff':'var(--text2)';}
+  if(calBtn){calBtn.style.background=v==='cal'?'var(--accent)':'var(--bg3)';calBtn.style.color=v==='cal'?'#fff':'var(--text2)';}
+  if(listView)listView.style.display=v==='list'?'':'none';
+  if(calView)calView.style.display=v==='cal'?'':'none';
+  if(v==='cal')renderCalendar();
+}
+/* 投稿種別の設定 */
+var TYPE_ICON={video:'▶',image:'◼',reel:'◈',story:'◷',inf_visit:'🏃',inf_post:'✦'};
+var TYPE_LABEL={video:'動画',image:'画像',reel:'リール',story:'ストーリー',inf_visit:'来店予定',inf_post:'INF投稿'};
+var TYPE_BADGE={video:'b-gray',image:'b-gray',reel:'b-blue',story:'b-gray',inf_visit:'b-amber',inf_post:'b-purple'};
+
 function renderSchedule(){
   var activeFilters=Array.from(document.querySelectorAll('#schedFilter [data-active="1"]')).map(function(el){return el.getAttribute('data-sid');});
   var search=(document.getElementById('globalSearch').value||'').toLowerCase();
   var list=DB.posts.slice().sort(function(a,b){return new Date(a.date)-new Date(b.date);});
   if(activeFilters.length)list=list.filter(function(p){return activeFilters.includes(p.storeId);});
-  if(search)list=list.filter(function(p){return storeName(p.storeId).toLowerCase().includes(search)||(p.caption||'').toLowerCase().includes(search);});
+  if(search)list=list.filter(function(p){
+    return storeName(p.storeId).toLowerCase().includes(search)
+      ||(p.caption||'').toLowerCase().includes(search)
+      ||(p.infId?infName(p.infId).toLowerCase().includes(search):false);
+  });
   var tb=document.getElementById('schedBody');
-  if(!list.length){tb.innerHTML='<tr><td colspan="8" class="empty-state">投稿がありません</td></tr>';return;}
-  var typeIcon={video:'▶ 動画',image:'◼ 画像',reel:'◈ リール',story:'◷ ストーリー'};
-  tb.innerHTML=list.map(function(p){return'<tr><td><div style="display:flex;align-items:center;gap:6px"><span style="width:6px;height:6px;border-radius:50%;background:'+storeColor(p.storeId)+';display:inline-block;flex-shrink:0"></span>'+esc(storeName(p.storeId))+'</div></td><td class="td-mono">'+fmtDT(p.date)+'</td><td style="font-size:11px;color:var(--text2)">'+(typeIcon[p.type]||p.type||'')+'</td><td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc((p.caption||'').slice(0,50))+((p.caption||'').length>50?'…':'')+'</td><td style="color:var(--text3)">'+esc(p.creative||'—')+'</td><td>'+(p.ad==='yes'?'<span class="badge b-blue">あり</span>':'—')+'</td><td>'+postStatusBadge(p.status)+'</td><td><button class="btn-ghost-danger" onclick="deletePost(\''+p.id+'\')">削除</button></td></tr>';}).join('');
+  if(!list.length){tb.innerHTML='<tr><td colspan="9" class="empty-state">スケジュールがありません</td></tr>';return;}
+  tb.innerHTML=list.map(function(p){
+    var isInf=p.type==='inf_visit'||p.type==='inf_post';
+    var infCell=isInf&&p.infId
+      ?'<span style="color:var(--purple)">'+esc(infName(p.infId).split(' ')[0])+'</span>'
+      :'<span style="color:var(--text3)">—</span>';
+    var captCell=isInf
+      ?(p.type==='inf_visit'?'<span style="color:var(--amber)">来店</span>':'<span style="color:var(--purple)">投稿予定</span>')
+      :(p.caption?esc((p.caption||'').slice(0,40))+((p.caption||'').length>40?'…':''):'—');
+    var rowBg=p.type==='inf_visit'?'background:var(--amber-bg)':(p.type==='inf_post'?'background:var(--purple-bg)':'');
+    return'<tr style="'+rowBg+'">'
+      +'<td><span class="badge '+TYPE_BADGE[p.type]+'">'+(TYPE_ICON[p.type]||'')+' '+(TYPE_LABEL[p.type]||p.type)+'</span></td>'
+      +'<td><div style="display:flex;align-items:center;gap:5px"><span style="width:5px;height:5px;border-radius:50%;background:'+storeColor(p.storeId)+';display:inline-block;flex-shrink:0"></span>'+esc(storeName(p.storeId))+'</div></td>'
+      +'<td class="td-mono" style="white-space:nowrap;cursor:pointer" title="クリックで日時変更" onclick="inlineDateEdit(event,\''+p.id+'\')">'+fmtDT(p.date)+'</td>'
+      +'<td>'+infCell+'</td>'
+      +'<td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+captCell+'</td>'
+      +'<td style="color:var(--text3)">'+esc(p.creative||'—')+'</td>'
+      +'<td>'+(p.ad==='yes'?'<span class="badge b-blue">あり</span>':'—')+'</td>'
+      +'<td>'+postStatusBadge(p.status)+'</td>'
+      +'<td style="white-space:nowrap">'
+        +'<button class="btn btn-sm" style="margin-right:4px" onclick="openPostModal(\''+p.id+'\')">編集</button>'
+        +'<button class="btn-ghost-danger" onclick="deletePost(\''+p.id+'\')">削除</button>'
+      +'</td>'
+      +'</tr>';
+  }).join('');
 }
 
 function renderCalendar(){
-  document.getElementById('calTitle').textContent=calYear+'年'+(calMonth+1)+'月';
-  document.getElementById('calFilter').innerHTML=DB.stores.map(function(s){var on=!calActiveStores[s.id];return'<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;border:1px solid '+(on?s.color+'50':'var(--border)')+';font-size:11px;cursor:pointer;color:'+(on?s.color:'var(--text3)')+';background:'+(on?s.color+'12':'transparent')+';transition:all .1s" onclick="toggleCalStore(\''+s.id+'\')"><span style="width:5px;height:5px;border-radius:50%;background:'+(on?s.color:'var(--text3)')+';display:inline-block"></span>'+esc(s.name)+'</span>';}).join('');
+  var titleEl=document.getElementById('calTitle');
+  if(!titleEl)return;
+  titleEl.textContent=calYear+'年'+(calMonth+1)+'月';
+  var headsEl=document.getElementById('calHeads');
+  var cellsEl=document.getElementById('calCells');
+  if(!headsEl||!cellsEl)return;
   var days=['日','月','火','水','木','金','土'];
-  document.getElementById('calHeads').innerHTML=days.map(function(d){return'<div class="cal-head">'+d+'</div>';}).join('');
+  headsEl.innerHTML=days.map(function(d,i){
+    return'<div class="cal-head" style="'+(i===0?'color:var(--red)':i===6?'color:var(--accent)':'')+'">'+d+'</div>';
+  }).join('');
   var first=new Date(calYear,calMonth,1).getDay(),last=new Date(calYear,calMonth+1,0).getDate();
   var cells='';
   for(var i=0;i<first;i++)cells+='<div class="cal-cell empty"></div>';
   for(var d=1;d<=last;d++){
-    var isToday=d===NOW.getDate()&&calMonth===NOW.getMonth()&&calYear===NOW.getFullYear();
-    var dayPosts=DB.posts.filter(function(p){var dt=new Date(p.date);return dt.getDate()===d&&dt.getMonth()===calMonth&&dt.getFullYear()===calYear&&!calActiveStores[p.storeId];});
-    var chips=dayPosts.slice(0,3).map(function(p){return'<div class="cal-chip" style="background:'+storeColor(p.storeId)+'18;color:'+storeColor(p.storeId)+'">'+esc(storeName(p.storeId).slice(0,5))+'</div>';}).join('');
-    var more=dayPosts.length>3?'<div style="font-size:9px;color:var(--text3)">+'+( dayPosts.length-3)+'</div>':'';
-    cells+='<div class="cal-cell'+(isToday?' today':'')+'"><div class="cal-num">'+d+'</div>'+chips+more+'</div>';
+    var dd=d; /* closure */
+    var isToday=dd===NOW.getDate()&&calMonth===NOW.getMonth()&&calYear===NOW.getFullYear();
+    var dayItems=DB.posts.filter(function(p){
+      var dt=new Date(p.date);
+      return dt.getDate()===dd&&dt.getMonth()===calMonth&&dt.getFullYear()===calYear
+        &&!calActiveStores[p.storeId];
+    });
+    /* 種別ごとに色分け */
+    var chips=dayItems.slice(0,4).map(function(p){
+      var isInf=p.type==='inf_visit'||p.type==='inf_post';
+      var bg=isInf
+        ?(p.type==='inf_visit'?'var(--amber-bg)':'var(--purple-bg)')
+        :storeColor(p.storeId)+'18';
+      var col=isInf
+        ?(p.type==='inf_visit'?'var(--amber)':'var(--purple)')
+        :storeColor(p.storeId);
+      var icon=TYPE_ICON[p.type]||'';
+      var label=isInf
+        ?icon+' '+esc(infName(p.infId).split(' ')[0])
+        :icon+' '+esc(storeName(p.storeId).slice(0,5));
+      return'<div class="cal-chip" draggable="true" '
+        +'ondragstart="calChipDragStart(event,\''+p.id+'\','+dd+')" '
+        +'onclick="event.stopPropagation();openPostModal(\''+p.id+'\')" '
+        +'style="background:'+bg+';color:'+col+';cursor:grab;user-select:none" '
+        +'title="ドラッグで日程移動・クリックで編集">'+label+'</div>';
+    }).join('');
+    var more=dayItems.length>4?'<div style="font-size:9px;color:var(--text3)">+'+(dayItems.length-4)+'</div>':'';
+    cells+='<div class="cal-cell'+(isToday?' today':'')+'" '
+      +'data-day="'+dd+'" '
+      +'ondragover="calCellDragOver(event)" '
+      +'ondragleave="calCellDragLeave(event)" '
+      +'ondrop="calCellDrop(event,'+dd+')" '
+      +'onclick="calDayClick('+dd+')" '
+      +'style="cursor:pointer">'
+      +'<div class="cal-num">'+dd+'</div>'+chips+more+'</div>';
   }
-  document.getElementById('calCells').innerHTML=cells;
+  cellsEl.innerHTML=cells;
 }
+function calDayClick(d){
+  /* 日付クリックで投稿追加モーダルをその日付でプリフィル */
+  openPostModal();
+  var pad=function(n){return String(n).padStart(2,'0');};
+  var dateStr=calYear+'-'+pad(calMonth+1)+'-'+pad(d)+'T19:00';
+  var el=document.getElementById('pDate');
+  if(el)el.value=dateStr;
+}
+
 function toggleCalStore(id){calActiveStores[id]=!calActiveStores[id];renderCalendar();}
 function calMove(d){calMonth+=d;if(calMonth>11){calMonth=0;calYear++;}if(calMonth<0){calMonth=11;calYear--;}renderCalendar();}
+
+/* ---- カレンダー ドラッグ&ドロップ ---- */
+var _calDragPostId=null;
+function calChipDragStart(e,postId,fromDay){
+  _calDragPostId=postId;
+  e.dataTransfer.effectAllowed='move';
+  e.dataTransfer.setData('text/plain',postId);
+  /* ドラッグ中は薄くする */
+  e.target.style.opacity='0.4';
+}
+function calCellDragOver(e){
+  e.preventDefault();
+  e.dataTransfer.dropEffect='move';
+  e.currentTarget.style.background='var(--accent-bg)';
+  e.currentTarget.style.borderColor='var(--accent)';
+}
+function calCellDragLeave(e){
+  e.currentTarget.style.background='';
+  e.currentTarget.style.borderColor='';
+}
+function calCellDrop(e,toDay){
+  e.preventDefault();
+  e.currentTarget.style.background='';
+  e.currentTarget.style.borderColor='';
+  var postId=_calDragPostId||e.dataTransfer.getData('text/plain');
+  if(!postId)return;
+  var idx=DB.posts.findIndex(function(x){return x.id===postId;});
+  if(idx<0)return;
+  var p=DB.posts[idx];
+  var oldDate=new Date(p.date);
+  var newDate=new Date(calYear,calMonth,toDay,oldDate.getHours(),oldDate.getMinutes());
+  var pad=function(n){return String(n).padStart(2,'0');};
+  p.date=newDate.getFullYear()+'-'+pad(newDate.getMonth()+1)+'-'+pad(newDate.getDate())
+    +'T'+pad(newDate.getHours())+':'+pad(newDate.getMinutes());
+  saveItem('posts',p);
+  renderCalendar();
+  if(currentPage==='schedule')renderSchedule();
+  _calDragPostId=null;
+}
 
 function runChecks(){
   var alerts=generateAlerts();
@@ -1464,10 +2267,26 @@ function renderInfluencers(){
   var list=DB.influencers.filter(function(i){return!search||(i.name||'').toLowerCase().includes(search)||(i.handle||'').toLowerCase().includes(search)||(i.genre||'').toLowerCase().includes(search);});
   var tb=document.getElementById('infBody');
   if(!list.length){tb.innerHTML='<tr><td colspan="8" class="empty-state">インフルエンサーが登録されていません</td></tr>';return;}
-  var platColor={Instagram:'#e1306c',TikTok:'#010101',YouTube:'#ff0000',X:'#000'};
+  var platColor={Instagram:'#e1306c',TikTok:'#010101',YouTube:'#ff0000',X:'#1da1f2'};
+  var platUrl={Instagram:'https://www.instagram.com/',TikTok:'https://www.tiktok.com/@',YouTube:'',X:'https://x.com/'};
   tb.innerHTML=list.map(function(i){
     var last=DB.castings.filter(function(c){return c.infId===i.id;}).sort(function(a,b){return new Date(b.date)-new Date(a.date);})[0];
-    return'<tr><td><div style="font-weight:400">'+esc(i.name)+'</div><div style="font-size:10px;color:'+(platColor[i.platform]||'var(--text3)')+'">'+esc(i.handle||'')+'</div></td><td>'+esc(i.platform||'')+'</td><td class="td-mono">'+(i.followers?Number(i.followers).toLocaleString():'—')+'</td><td class="td-mono">'+fmtMoney(i.fee)+'</td><td>'+esc(i.genre||'—')+'</td><td style="color:var(--accent)">'+esc(i.contact||'—')+'</td><td style="color:var(--text3)">'+(last?fmtD(last.date):'—')+'</td><td><button class="btn-ghost-danger" onclick="deleteInfluencer(\''+i.id+'\')">削除</button></td></tr>';
+    var accountUrl=i.url||(i.handle?(platUrl[i.platform]||'')+(i.handle.replace('@','')):'');
+    var handleHtml=i.handle
+      ?(accountUrl
+        ?'<a href="'+esc(accountUrl)+'" target="_blank" rel="noopener" style="font-size:10px;color:'+(platColor[i.platform]||'var(--accent)')+';text-decoration:none">'+esc(i.handle)+'&nbsp;↗</a>'
+        :'<span style="font-size:10px;color:'+(platColor[i.platform]||'var(--text3)')+'">'+esc(i.handle)+'</span>'
+      ):'';
+    return'<tr style="cursor:pointer" onclick="openInfluencerDetail(\''+i.id+'\')">'
+      +'<td><div style="font-weight:500;color:var(--accent)">'+esc(i.name)+'</div>'+handleHtml+'</td>'
+      +'<td>'+esc(i.platform||'')+'</td>'
+      +'<td class="td-mono">'+(i.followers?Number(i.followers).toLocaleString():'—')+'</td>'
+      +'<td class="td-mono" style="white-space:nowrap">'+fmtFeeRange(i)+'</td>'
+      +'<td>'+esc(i.genre||'—')+'</td>'
+      +'<td style="color:var(--text2);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(i.contact||'—')+'</td>'
+      +'<td style="color:var(--text3)">'+(last?fmtD(last.date):'—')+'</td>'
+      +'<td onclick="event.stopPropagation()"><button class="btn btn-sm" onclick="openInfluencerModal(\''+i.id+'\')">編集</button></td>'
+      +'</tr>';
   }).join('');
 }
 
@@ -1561,21 +2380,245 @@ function renderRevSummary(){
   el.innerHTML='<div style="padding-bottom:10px;margin-bottom:10px;border-bottom:2px solid var(--border)"><div style="font-size:11px;color:var(--text3);margin-bottom:2px">稼働中 月次合計</div><div style="font-size:24px;font-weight:500;font-family:\'DM Mono\',monospace;color:var(--accent)">'+fmtMoney(totalMonthly)+'</div><div style="font-size:11px;color:var(--text3)">'+active.length+'店舗</div></div>'+rows+(rows?'':'<div class="empty-state" style="padding:16px">稼働中の店舗がありません</div>');
 }
 
+/* ============================================================
+   クリエイター管理
+   ============================================================ */
+var editingCreatorId=null;
+var CREATOR_SKILL_LABELS={crSkillPlan:'企画',crSkillShoot:'撮影',crSkillEdit:'編集',crSkillAnalyze:'投稿分析',crSkillFood:'外食知見',crSkillCooking:'料理撮影',crSkillStill:'静止画',crSkillComm:'コミュニケーション'};
+var CREATOR_SKILL_VALS={'3':'◎','2':'○','1':'△','0':'✗','':'' };
+
+function switchCreatorTab(idx){
+  document.querySelectorAll('#creatorTabBtns .tab-btn').forEach(function(b,i){b.classList.toggle('active',i===idx);});
+  [0,1,2,3].forEach(function(i){var el=document.getElementById('ctab'+i);if(el)el.classList.toggle('active',i===idx);});
+}
+
+function clearCreatorForm(){
+  var fields=['crName','crRealName','crAddress','crArea','crReachTime','crTel','crEmail','crContact',
+    'crEquipment','crSoftware','crSns','crPortfolio','crPhoto','crSpecialty',
+    'crOrderPoint','crCondition','crDelivery','crImpression'];
+  fields.forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('crGender').value='';
+  document.getElementById('crBirthday').value='';
+  document.getElementById('crInterviewDate').value='';
+  document.getElementById('crInterviewType').value='';
+  Object.keys(CREATOR_SKILL_LABELS).forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+  document.querySelectorAll('input[name="crPromanage"]').forEach(function(r){r.checked=false;});
+}
+
+function openCreatorModal(id){
+  editingCreatorId=id||null;
+  clearCreatorForm();
+  var titleEl=document.getElementById('creatorModalTitle');
+  if(titleEl)titleEl.textContent=id?'クリエイターを編集':'クリエイターを追加';
+  if(id){
+    var cr=DB.creators.find(function(x){return x.id===id;});
+    if(cr){
+      var textFields=['crName','crRealName','crAddress','crArea','crReachTime','crTel','crEmail','crContact',
+        'crEquipment','crSoftware','crSns','crPortfolio','crPhoto','crSpecialty',
+        'crOrderPoint','crCondition','crDelivery','crImpression'];
+      textFields.forEach(function(fid){var el=document.getElementById(fid);if(el&&cr[fid]!==undefined)el.value=cr[fid]||'';});
+      ['crGender','crInterviewType','crInterviewer'].forEach(function(fid){var el=document.getElementById(fid);if(el&&cr[fid])el.value=cr[fid];});
+      ['crBirthday','crInterviewDate'].forEach(function(fid){var el=document.getElementById(fid);if(el&&cr[fid])el.value=cr[fid];});
+      Object.keys(CREATOR_SKILL_LABELS).forEach(function(fid){var el=document.getElementById(fid);if(el&&cr[fid]!==undefined)el.value=cr[fid];});
+      if(cr.crPromanage){var r=document.querySelector('input[name="crPromanage"][value="'+cr.crPromanage+'"]');if(r)r.checked=true;}
+    }
+  }
+  switchCreatorTab(0);
+  openModal('creatorModal');
+}
+
+function saveCreator(){
+  var name=document.getElementById('crName').value.trim();
+  if(!name){alert('活動名を入力してください');return;}
+  var isEdit=!!editingCreatorId;
+  var id=isEdit?editingCreatorId:uid();
+  var proEl=document.querySelector('input[name="crPromanage"]:checked');
+  var cr={id:id};
+  ['crName','crRealName','crAddress','crArea','crReachTime','crTel','crEmail','crContact',
+   'crEquipment','crSoftware','crSns','crPortfolio','crPhoto','crSpecialty',
+   'crOrderPoint','crCondition','crDelivery','crImpression',
+   'crGender','crBirthday','crInterviewDate','crInterviewType','crInterviewer'].forEach(function(fid){
+    var el=document.getElementById(fid);cr[fid]=el?el.value:'';
+  });
+  Object.keys(CREATOR_SKILL_LABELS).forEach(function(fid){
+    var el=document.getElementById(fid);cr[fid]=el?el.value:'';
+  });
+  cr.crPromanage=proEl?proEl.value:'';
+  if(isEdit){
+    var idx=DB.creators.findIndex(function(x){return x.id===id;});
+    if(idx>=0){DB.creators[idx]=cr;}else{DB.creators.push(cr);}
+  }else{
+    DB.creators.push(cr);
+  }
+  closeModal('creatorModal');
+  closeModal('creatorDetailModal');
+  refreshAll();
+  saveItem('creators',cr);
+}
+
+function deleteCreator(id){
+  if(!confirm('このクリエイターを削除しますか？'))return;
+  DB.creators=DB.creators.filter(function(c){return c.id!==id;});
+  closeModal('creatorDetailModal');
+  refreshAll();
+  deleteItem('creators',id);
+}
+
+function calcAge(birthday){
+  if(!birthday)return null;
+  var b=new Date(birthday),t=new Date();
+  var age=t.getFullYear()-b.getFullYear();
+  if(t.getMonth()<b.getMonth()||(t.getMonth()===b.getMonth()&&t.getDate()<b.getDate()))age--;
+  return age;
+}
+
+function skillBadge(val){
+  var m={'3':'b-green','2':'b-blue','1':'b-amber','0':'b-red'};
+  var l=CREATOR_SKILL_VALS[val]||'';
+  if(!l)return'';
+  return'<span class="badge '+(m[val]||'b-gray')+'">'+l+'</span>';
+}
+
+function openCreatorDetail(id){
+  var cr=DB.creators.find(function(x){return x.id===id;});
+  if(!cr)return;
+  var age=calcAge(cr.crBirthday);
+  var editBtn=document.getElementById('creatorDetailEditBtn');
+  if(editBtn)editBtn.onclick=function(){closeModal('creatorDetailModal');openCreatorModal(id);};
+  document.getElementById('creatorDetailTitle').textContent=cr.crName+(cr.crRealName?' ('+cr.crRealName+')':'');
+
+  var proManageColors={yes:'b-green',no:'b-red',pending:'b-amber'};
+  var proManageLabels={yes:'提出済み',no:'未提出',pending:'確認中'};
+
+  var skillRows=Object.keys(CREATOR_SKILL_LABELS).map(function(fid){
+    return'<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border)">'
+      +'<span style="font-size:12px;color:var(--text2)">'+CREATOR_SKILL_LABELS[fid]+'</span>'
+      +(cr[fid]!==undefined&&cr[fid]!==''?skillBadge(cr[fid]):'<span style="font-size:11px;color:var(--text3)">—</span>')
+    +'</div>';
+  }).join('');
+
+  var photoHtml=cr.crPhoto
+    ?'<img src="'+esc(cr.crPhoto)+'" style="width:56px;height:56px;border-radius:50%;object-fit:cover;border:2px solid var(--border);flex-shrink:0" onerror="this.style.display=&quot;none&quot;">'
+    :'<div style="width:56px;height:56px;border-radius:50%;background:var(--accent-bg);border:2px solid var(--accent-border);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0">📷</div>';
+
+  document.getElementById('creatorDetailBody').innerHTML=
+    '<div style="display:flex;gap:14px;align-items:flex-start;margin-bottom:18px">'
+      +photoHtml
+      +'<div style="flex:1">'
+        +'<div style="font-size:17px;font-weight:500;margin-bottom:4px">'+esc(cr.crName)+'</div>'
+        +'<div style="display:flex;gap:6px;flex-wrap:wrap">'
+          +(cr.crGender?'<span class="badge b-gray">'+esc(cr.crGender)+'</span>':'')
+          +(age!==null?'<span class="badge b-gray">'+age+'歳</span>':'')
+          +(cr.crSpecialty?'<span class="badge b-blue">'+esc(cr.crSpecialty)+'</span>':'')
+          +(cr.crPromanage?'<span class="badge '+proManageColors[cr.crPromanage]+'">プロマネ: '+proManageLabels[cr.crPromanage]+'</span>':'')
+        +'</div>'
+        +(cr.crArea?'<div style="font-size:12px;color:var(--text2);margin-top:6px">📍 '+esc(cr.crArea)+'</div>':'')
+      +'</div>'
+    +'</div>'
+
+    +'<div class="grid2" style="margin-bottom:16px">'
+      +'<div>'
+        +'<div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px">連絡先</div>'
+        +(cr.crTel?'<div style="font-size:12px;margin-bottom:4px">📱 '+esc(cr.crTel)+'</div>':'')
+        +(cr.crEmail?'<div style="font-size:12px;margin-bottom:4px">✉ '+esc(cr.crEmail)+'</div>':'')
+        +(cr.crContact?'<div style="font-size:12px;margin-bottom:4px;color:var(--text2)">'+esc(cr.crContact)+'</div>':'')
+        +(cr.crReachTime?'<div style="font-size:11px;color:var(--text3)">連絡時間: '+esc(cr.crReachTime)+'</div>':'')
+      +'</div>'
+      +'<div>'
+        +'<div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px">面談</div>'
+        +(cr.crInterviewDate?'<div style="font-size:12px;margin-bottom:4px">日付: '+fmtD(cr.crInterviewDate)+'</div>':'')
+        +(cr.crInterviewType?'<div style="font-size:12px;margin-bottom:4px">'+esc(cr.crInterviewType)+'</div>':'')
+        +(cr.crPortfolio?'<div style="font-size:12px"><a href="'+esc(cr.crPortfolio)+'" target="_blank" style="color:var(--accent)">ポートフォリオ ↗</a></div>':'')
+      +'</div>'
+    +'</div>'
+
+    +'<div class="grid2" style="margin-bottom:16px">'
+      +'<div>'
+        +'<div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:6px">スキル</div>'
+        +skillRows
+      +'</div>'
+      +'<div>'
+        +(cr.crEquipment?'<div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:6px">機材</div><div style="font-size:12px;white-space:pre-wrap;color:var(--text2)">'+esc(cr.crEquipment)+'</div>':'')
+        +(cr.crSoftware?'<div style="font-size:11px;font-weight:500;color:var(--text2);margin:8px 0 4px">ソフト</div><div style="font-size:12px;color:var(--text2)">'+esc(cr.crSoftware)+'</div>':'')
+        +(cr.crSns?'<div style="font-size:11px;font-weight:500;color:var(--text2);margin:8px 0 4px">SNS</div><div style="font-size:12px;white-space:pre-wrap;color:var(--accent)">'+esc(cr.crSns)+'</div>':'')
+      +'</div>'
+    +'</div>'
+
+    +(cr.crCondition||cr.crDelivery||cr.crOrderPoint
+      ?'<div class="card-sm" style="margin-bottom:12px">'
+        +(cr.crOrderPoint?'<div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:4px">発注ポイント</div><div style="font-size:12px;white-space:pre-wrap;margin-bottom:8px">'+esc(cr.crOrderPoint)+'</div>':'')
+        +(cr.crCondition?'<div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:4px">条件</div><div style="font-size:12px;white-space:pre-wrap;margin-bottom:8px">'+esc(cr.crCondition)+'</div>':'')
+        +(cr.crDelivery?'<div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:4px">納品スケジュール</div><div style="font-size:12px">'+esc(cr.crDelivery)+'</div>':'')
+      +'</div>'
+      :'')
+
+    +(cr.crImpression
+      ?'<div style="padding:10px 12px;background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:var(--r);font-size:12px;white-space:pre-wrap;line-height:1.7;margin-bottom:12px">'+esc(cr.crImpression)+'</div>'
+      :'')
+
+    +'<div class="form-actions" style="border-top:1px solid var(--border);margin-top:4px;padding-top:14px">'
+      +'<button class="btn-ghost-danger" onclick="deleteCreator(\''+id+'\')">削除</button>'
+      +'<button class="btn" onclick="closeModal(\'creatorDetailModal\')">閉じる</button>'
+      +'<button class="btn btn-primary" onclick="closeModal(\'creatorDetailModal\');openCreatorModal(\''+id+'\')">編集</button>'
+    +'</div>';
+
+  openModal('creatorDetailModal');
+}
+
+function renderCreators(){
+  if(!DB.creators)DB.creators=[];
+  var tb=document.getElementById('creatorTableBody');
+  if(!tb)return;
+  if(!DB.creators.length){tb.innerHTML='<tr><td colspan="8" class="empty-state">クリエイターが登録されていません</td></tr>';return;}
+  var nb=document.getElementById('nb-creators');
+  if(nb)nb.textContent=DB.creators.length;
+  tb.innerHTML=DB.creators.map(function(cr){
+    var age=calcAge(cr.crBirthday);
+    var topSkills=Object.keys(CREATOR_SKILL_LABELS).filter(function(k){return cr[k]==='3';}).map(function(k){return CREATOR_SKILL_LABELS[k];}).slice(0,3);
+    var proColors={yes:'b-green',no:'b-red',pending:'b-amber'};
+    var proLabels={yes:'提出済',no:'未提出',pending:'確認中'};
+    return'<tr style="cursor:pointer" onclick="openCreatorDetail(\''+cr.id+'\')">'
+      +'<td><div style="font-weight:500;color:var(--accent)">'+esc(cr.crName)+'</div>'+(age?'<div style="font-size:10px;color:var(--text3)">'+age+'歳</div>':'')+'</td>'
+      +'<td>'+(cr.crGender?'<span class="badge b-gray">'+esc(cr.crGender)+'</span>':'—')+'</td>'
+      +'<td style="font-size:12px;color:var(--text2)">'+esc(cr.crArea||'—')+'</td>'
+      +'<td>'+topSkills.map(function(s){return'<span class="badge b-blue" style="margin-right:2px">'+esc(s)+'</span>';}).join('')+'</td>'
+      +'<td style="font-size:12px">'+(cr.crInterviewDate?fmtD(cr.crInterviewDate):'—')+'</td>'
+      +'<td>'+(cr.crPromanage?'<span class="badge '+proColors[cr.crPromanage]+'">'+proLabels[cr.crPromanage]+'</span>':'—')+'</td>'
+      +'<td style="font-size:11px;color:var(--text2);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(cr.crTel||cr.crEmail||'—')+'</td>'
+      +'<td onclick="event.stopPropagation()"><button class="btn btn-sm" onclick="openCreatorModal(\''+cr.id+'\')">編集</button></td>'
+      +'</tr>';
+  }).join('');
+}
+
+
+function updateSidebarStats(){
+  /* サイドバーの数値だけ更新（ページ切り替えなし） */
+  var active=DB.stores.filter(function(s){return s.status==='active';});
+  var thisMon=DB.posts.filter(function(p){var d=new Date(p.date);return d.getFullYear()===NOW.getFullYear()&&d.getMonth()===NOW.getMonth();});
+  var el;
+  if(el=document.getElementById('ss-active'))el.textContent=active.length;
+  if(el=document.getElementById('ss-posts'))el.textContent=thisMon.length;
+  if(el=document.getElementById('nb-stores'))el.textContent=DB.stores.length;
+  if(el=document.getElementById('nb-inf'))el.textContent=DB.influencers.length;
+  if(el=document.getElementById('nb-plans'))el.textContent=DB.plans.length;
+  var alerts=generateAlerts();
+  if(el=document.getElementById('nb-alerts'))el.textContent=alerts.length;
+  updateSalesNotifBadge();
+}
 function refreshAll(){
-  renderDashboard();
+  updateSidebarStats();
+  if(currentPage==='dashboard')renderDashboard();
   if(currentPage==='stores')renderStoreTable();
-  if(currentPage==='schedule'){renderSchedFilter();renderSchedule();}
-  if(currentPage==='calendar')renderCalendar();
+  if(currentPage==='schedule'){renderSchedFilter();renderSchedule();renderCalendar();}
   if(currentPage==='influencers')renderInfluencers();
   if(currentPage==='casting')renderCasting();
   if(currentPage==='plans'){renderPlans();renderRevSummary();}
   if(currentPage==='sales'){renderSalesNotifs();}
-  document.getElementById('nb-plans').textContent=DB.plans.length;
-  updateSalesNotifBadge();
+  if(currentPage==='creators')renderCreators();
 }
 
 setSyncStatus('saving','読み込み中...');
-loadDB().then(function(){refreshAll();});
+loadDB().then(function(){renderDashboard();updateSidebarStats();});
 </script>
 <!-- GENRE MODAL -->
 <div class="modal-overlay" id="genreModal">
@@ -1595,10 +2638,16 @@ loadDB().then(function(){refreshAll();});
 <!-- SALES PERSON MODAL -->
 <div class="modal-overlay" id="salesPersonModal">
 <div class="modal" style="width:460px">
-  <div class="modal-header"><span class="modal-title">営業担当者を管理</span><button class="modal-close" onclick="closeModal('salesPersonModal')">✕</button></div>
+  <div class="modal-header"><span class="modal-title">社員マスタ</span><button class="modal-close" onclick="closeModal('salesPersonModal')">✕</button></div>
   <div class="modal-body">
-    <div style="display:flex;gap:8px;margin-bottom:14px">
+    <div style="display:flex;gap:6px;margin-bottom:14px">
       <input id="spNameInput" type="text" placeholder="氏名を入力" style="flex:1" onkeydown="if(event.key==='Enter')addSalesPerson()">
+      <select id="spRoleSelect" style="width:80px;font-size:12px">
+        <option value="sales">営業</option>
+        <option value="sns">SNS</option>
+        <option value="office">事務</option>
+        <option value="president">社長</option>
+      </select>
       <button class="btn btn-primary" style="white-space:nowrap;flex-shrink:0" onclick="addSalesPerson()">追加</button>
     </div>
     <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px">在籍中</div>
@@ -1607,6 +2656,97 @@ loadDB().then(function(){refreshAll();});
     <div id="spRetiredList"></div>
     <div class="form-actions"><button class="btn btn-primary" onclick="closeModal('salesPersonModal');updateSalesPersonSelects()">完了</button></div>
   </div>
+</div>
+</div>
+
+<!-- CREATOR MODAL -->
+<div class="modal-overlay" id="creatorModal">
+<div class="modal" style="width:700px;max-height:90vh">
+  <div class="modal-header">
+    <span class="modal-title" id="creatorModalTitle">クリエイターを追加</span>
+    <button class="modal-close" onclick="closeModal('creatorModal')">✕</button>
+  </div>
+  <div class="modal-body">
+    <div class="tabs-line" id="creatorTabBtns">
+      <button class="tab-btn active" onclick="switchCreatorTab(0)">基本情報</button>
+      <button class="tab-btn" onclick="switchCreatorTab(1)">スキル・機材</button>
+      <button class="tab-btn" onclick="switchCreatorTab(2)">SNS・実績</button>
+      <button class="tab-btn" onclick="switchCreatorTab(3)">条件・所感</button>
+    </div>
+
+    <!-- Tab 0: 基本情報 -->
+    <div class="tab-pane active" id="ctab0">
+      <div class="fr"><div class="field"><label>活動名 *</label><input id="crName" type="text" placeholder="例: 田中 カメラ"></div><div class="field"><label>本名</label><input id="crRealName" type="text" placeholder="田中 太郎"></div></div>
+      <div class="fr"><div class="field"><label>性別</label><select id="crGender"><option value="">—</option><option>男性</option><option>女性</option><option>その他</option></select></div><div class="field"><label>生年月日</label><input id="crBirthday" type="date"></div></div>
+      <div class="fr1 field"><label>住所</label><input id="crAddress" type="text" placeholder="東京都渋谷区..."></div>
+      <div class="fr"><div class="field"><label>訪問可能エリア</label><input id="crArea" type="text" placeholder="東京・神奈川・埼玉"></div><div class="field"><label>連絡つきやすい時間</label><input id="crReachTime" type="text" placeholder="平日 10:00〜18:00"></div></div>
+      <div class="fr"><div class="field"><label>携帯番号</label><input id="crTel" type="tel" placeholder="090-XXXX-XXXX"></div><div class="field"><label>メールアドレス</label><input id="crEmail" type="email" placeholder="creator@example.com"></div></div>
+      <div class="fr1 field"><label>その他連絡先 <span style="font-size:10px;color:var(--text3)">LINE / ChatWork / Slack など</span></label><input id="crContact" type="text" placeholder="LINE: creator_line"></div>
+      <div class="fr"><div class="field"><label>面接日</label><input id="crInterviewDate" type="date"></div><div class="field"><label>面談対応</label><select id="crInterviewType"><option value="">—</option><option>オンライン可</option><option>対面のみ</option><option>どちらも可</option><option>未対応</option></select></div></div>
+      <div class="fr1 field"><label>面談担当者</label><select id="crInterviewer"><option value="">選択...</option></select></div>
+    </div>
+
+    <!-- Tab 1: スキル・機材 -->
+    <div class="tab-pane" id="ctab1">
+      <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:10px">スキル評価</div>
+      <div class="grid2" style="margin-bottom:14px">
+        <div class="field"><label>企画</label><select id="crSkillPlan"><option value="">—</option><option value="3">◎ 得意</option><option value="2">○ できる</option><option value="1">△ 要サポート</option><option value="0">✗ 不可</option></select></div>
+        <div class="field"><label>撮影</label><select id="crSkillShoot"><option value="">—</option><option value="3">◎ 得意</option><option value="2">○ できる</option><option value="1">△ 要サポート</option><option value="0">✗ 不可</option></select></div>
+        <div class="field"><label>編集</label><select id="crSkillEdit"><option value="">—</option><option value="3">◎ 得意</option><option value="2">○ できる</option><option value="1">△ 要サポート</option><option value="0">✗ 不可</option></select></div>
+        <div class="field"><label>投稿分析</label><select id="crSkillAnalyze"><option value="">—</option><option value="3">◎ 得意</option><option value="2">○ できる</option><option value="1">△ 要サポート</option><option value="0">✗ 不可</option></select></div>
+        <div class="field"><label>外食知見</label><select id="crSkillFood"><option value="">—</option><option value="3">◎ 得意</option><option value="2">○ できる</option><option value="1">△ 要サポート</option><option value="0">✗ 不可</option></select></div>
+        <div class="field"><label>料理撮影経験</label><select id="crSkillCooking"><option value="">—</option><option value="3">◎ 得意</option><option value="2">○ できる</option><option value="1">△ 要サポート</option><option value="0">✗ 不可</option></select></div>
+        <div class="field"><label>静止画作成</label><select id="crSkillStill"><option value="">—</option><option value="3">◎ 得意</option><option value="2">○ できる</option><option value="1">△ 要サポート</option><option value="0">✗ 不可</option></select></div>
+        <div class="field"><label>コミュニケーション</label><select id="crSkillComm"><option value="">—</option><option value="3">◎ 得意</option><option value="2">○ できる</option><option value="1">△ 要サポート</option><option value="0">✗ 不可</option></select></div>
+      </div>
+      <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:10px">機材・ソフト</div>
+      <div class="fr1 field"><label>機材周り</label><textarea id="crEquipment" placeholder="カメラ: Sony α7IV&#10;レンズ: 24-70mm F2.8&#10;照明: ..." style="min-height:60px"></textarea></div>
+      <div class="fr1 field"><label>使用ソフト</label><input id="crSoftware" type="text" placeholder="Premiere Pro / DaVinci Resolve / Lightroom など"></div>
+    </div>
+
+    <!-- Tab 2: SNS・実績 -->
+    <div class="tab-pane" id="ctab2">
+      <div class="fr1 field"><label>SNSアカウント <span style="font-size:10px;color:var(--text3)">複数あれば改行で</span></label><textarea id="crSns" placeholder="Instagram: @creator_ig&#10;YouTube: https://...&#10;TikTok: @creator_tt" style="min-height:72px"></textarea></div>
+      <div class="fr1 field"><label>ポートフォリオ URL</label><input id="crPortfolio" type="url" placeholder="https://portfolio.example.com"></div>
+      <div class="fr1 field" style="margin-top:4px">
+        <label>プロマネ提出</label>
+        <div style="display:flex;gap:8px;margin-top:4px">
+          <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:5px 10px;border-radius:var(--r);background:var(--bg3);border:1px solid var(--border)"><input type="radio" name="crPromanage" id="crPromanageYes" value="yes" style="width:auto;margin:0"> 提出済み</label>
+          <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:5px 10px;border-radius:var(--r);background:var(--bg3);border:1px solid var(--border)"><input type="radio" name="crPromanage" id="crPromanageNo" value="no" style="width:auto;margin:0"> 未提出</label>
+          <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:5px 10px;border-radius:var(--r);background:var(--bg3);border:1px solid var(--border)"><input type="radio" name="crPromanage" id="crPromanagePending" value="pending" style="width:auto;margin:0"> 確認中</label>
+        </div>
+      </div>
+      <div class="fr1 field" style="margin-top:10px"><label>写真 / プロフィール画像 URL</label><input id="crPhoto" type="url" placeholder="https://...（ドライブリンクなど）"></div>
+      <div class="fr1 field"><label>得意ジャンル・特徴</label><input id="crSpecialty" type="text" placeholder="グルメ・カフェ・夜景・人物など"></div>
+    </div>
+
+    <!-- Tab 3: 条件・所感 -->
+    <div class="tab-pane" id="ctab3">
+      <div class="fr1 field"><label>発注ポイント</label><textarea id="crOrderPoint" placeholder="依頼時の注意点・コツなど..." style="min-height:56px"></textarea></div>
+      <div class="fr1 field"><label>条件</label><textarea id="crCondition" placeholder="単価・稼働可能日数・NG案件など..." style="min-height:56px"></textarea></div>
+      <div class="fr1 field"><label>納品スケジュール</label><input id="crDelivery" type="text" placeholder="例: 撮影後5営業日以内"></div>
+      <div class="fr1 field"><label>所感</label><textarea id="crImpression" placeholder="面談・やりとりの感想など..." style="min-height:56px"></textarea></div>
+    </div>
+
+    <div class="form-actions">
+      <button class="btn" onclick="closeModal('creatorModal')">キャンセル</button>
+      <button class="btn btn-primary" onclick="saveCreator()">保存</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- CREATOR DETAIL MODAL -->
+<div class="modal-overlay" id="creatorDetailModal">
+<div class="modal" style="width:660px">
+  <div class="modal-header">
+    <span class="modal-title" id="creatorDetailTitle">クリエイター詳細</span>
+    <div style="display:flex;gap:6px;align-items:center">
+      <button class="btn btn-sm" id="creatorDetailEditBtn">編集</button>
+      <button class="modal-close" onclick="closeModal('creatorDetailModal')">✕</button>
+    </div>
+  </div>
+  <div class="modal-body" id="creatorDetailBody"></div>
 </div>
 </div>
 
