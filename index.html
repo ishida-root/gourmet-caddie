@@ -245,6 +245,11 @@ tr:hover td{background:#fafaf8}
       <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M1 8h14M8 1l5 7-5 7-5-7z"/></svg>
       キャスティング履歴
     </div>
+    <div class="nav-section">System</div>
+    <div class="nav-item" onclick="navigate('settings')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="2.5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41"/></svg>
+      設定
+    </div>
   </nav>
   <div class="sidebar-footer">
     <div class="sf-card"><div class="sf-val" id="ss-active">0</div><div class="sf-label">稼働中</div></div>
@@ -298,7 +303,7 @@ tr:hover td{background:#fafaf8}
             <div class="fr"><div class="field"><label>電話番号 <span style="color:var(--text3);font-weight:400">※どちらか必須</span></label><input id="sl-tel" type="tel" placeholder="090-XXXX-XXXX"></div><div class="field"><label>メール <span style="color:var(--text3);font-weight:400">※どちらか必須</span></label><input id="sl-email" type="email" placeholder="tanaka@example.com"></div></div>
           </div>
           <div class="fr1 field"><label>備考・メモ</label><textarea id="sl-memo" placeholder="特記事項、経緯など..." style="min-height:52px"></textarea></div>
-          <div class="fr1 field"><label>営業担当者名 *</label><input id="sl-sales" type="text" placeholder="例: 山田 花子"></div>
+          <div class="fr1 field"><label>営業担当者名 *</label><div style="display:flex;gap:8px"><select id="sl-sales" style="flex:1"><option value="">選択...</option></select><button type="button" class="btn btn-sm" onclick="openSalesPersonModal()" style="white-space:nowrap;flex-shrink:0">＋ 管理</button></div></div>
           <div style="display:flex;justify-content:flex-end;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
             <button class="btn btn-primary" onclick="submitSalesForm()">登録してSNS局に通知</button>
           </div>
@@ -380,6 +385,36 @@ tr:hover td{background:#fafaf8}
       </div>
     </div>
 
+    <!-- SETTINGS -->
+    <div class="page" id="page-settings">
+      <div class="grid2">
+        <div class="card">
+          <div class="card-header"><span class="card-title">Chatwork 連携設定</span></div>
+          <div style="font-size:12px;color:var(--text3);margin-bottom:14px;padding:8px 12px;background:var(--bg3);border-radius:var(--r)">APIトークンとルームIDはブラウザに保存されます。GitHubには残りません。</div>
+          <div class="fr1 field"><label>Chatwork APIトークン</label><input id="cwToken" type="password" placeholder="APIトークンを入力"></div>
+          <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px;margin-bottom:14px">
+            <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:10px">📢 SNS局への通知</div>
+            <div class="fr1 field"><label>ルームID</label><input id="cwSnsSalesRoomId" type="text" placeholder="例: 12345678"></div>
+          </div>
+          <div style="border-top:1px solid var(--border);padding-top:14px;margin-bottom:14px">
+            <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:10px">📋 CS（岩さん）への楽々販売登録依頼</div>
+            <div class="fr1 field"><label>ルームID</label><input id="cwCsRoomId" type="text" placeholder="例: 87654321"></div>
+            <div class="fr1 field"><label>岩さんのアカウントID（メンション用・任意）</label><input id="cwIwaId" type="text" placeholder="例: 1234567"></div>
+          </div>
+          <div style="display:flex;gap:8px;justify-content:flex-end">
+            <button class="btn" onclick="testChatwork()">テスト送信</button>
+            <button class="btn btn-primary" onclick="saveChatworkSettings()">保存</button>
+          </div>
+          <div id="cwStatus" style="font-size:12px;margin-top:10px"></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">通知プレビュー</span></div>
+          <div style="font-size:12px;color:var(--text2);margin-bottom:10px">営業入力時に送信されるメッセージ</div>
+          <div style="background:var(--bg3);border-radius:var(--r);padding:12px;font-size:12px;line-height:1.8;color:var(--text);white-space:pre-wrap" id="cwPreview"></div>
+        </div>
+      </div>
+    </div>
+
     <!-- CASTING -->
     <div class="page" id="page-casting">
       <div class="card">
@@ -433,7 +468,7 @@ tr:hover td{background:#fafaf8}
       </div>
       <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px">
         <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:10px">弊社情報</div>
-        <div class="fr"><div class="field"><label>営業担当者</label><input id="sOurManager" type="text" placeholder="山田 花子"></div><div class="field"><label>成果振り返り頻度</label><select id="sReviewCycle"><option value="monthly">毎月</option><option value="bimonthly">2ヶ月ごと</option><option value="quarterly">四半期</option></select></div></div>
+        <div class="fr"><div class="field"><label>営業担当者</label><select id="sOurManager"><option value="">選択...</option></select></div><div class="field"><label>成果振り返り頻度</label><select id="sReviewCycle"><option value="monthly">毎月</option><option value="bimonthly">2ヶ月ごと</option><option value="quarterly">四半期</option></select></div></div>
       </div>
     </div>
     <div class="tab-pane" id="stab3">
@@ -565,7 +600,205 @@ function deleteGenre(idx){
   renderGenreTags();
   updateGenreDatalist();
 }
-var COLORS=['#2563eb','#16a34a','#d97706','#dc2626','#7c3aed','#0891b2','#db2777','#65a30d','#ea580c','#4f46e5'];
+/* ============================================================
+   Chatwork 連携
+   ============================================================ */
+function loadChatworkSettings(){
+  try{
+    var d=localStorage.getItem('gc_cw_settings');
+    if(d){
+      var s=JSON.parse(d);
+      if(document.getElementById('cwToken'))document.getElementById('cwToken').value=s.token||'';
+      if(document.getElementById('cwSnsSalesRoomId'))document.getElementById('cwSnsSalesRoomId').value=s.snsRoomId||'';
+      if(document.getElementById('cwCsRoomId'))document.getElementById('cwCsRoomId').value=s.csRoomId||'';
+      if(document.getElementById('cwIwaId'))document.getElementById('cwIwaId').value=s.iwaId||'';
+    }
+  }catch(e){}
+}
+function saveChatworkSettings(){
+  var s={
+    token:document.getElementById('cwToken').value.trim(),
+    snsRoomId:document.getElementById('cwSnsSalesRoomId').value.trim(),
+    csRoomId:document.getElementById('cwCsRoomId').value.trim(),
+    iwaId:document.getElementById('cwIwaId').value.trim()
+  };
+  try{localStorage.setItem('gc_cw_settings',JSON.stringify(s));}catch(e){}
+  document.getElementById('cwStatus').innerHTML='<span style="color:var(--green)">✓ 保存しました</span>';
+  setTimeout(function(){document.getElementById('cwStatus').innerHTML='';},2000);
+  renderCwPreview();
+}
+function getCwSettings(){
+  try{var d=localStorage.getItem('gc_cw_settings');return d?JSON.parse(d):{};}catch(e){return{};}
+}
+async function sendChatwork(roomId,message){
+  var s=getCwSettings();
+  if(!s.token||!roomId)return false;
+  try{
+    var res=await fetch('https://api.chatwork.com/v2/rooms/'+roomId+'/messages',{
+      method:'POST',
+      headers:{'X-ChatWorkToken':s.token,'Content-Type':'application/x-www-form-urlencoded'},
+      body:'body='+encodeURIComponent(message)
+    });
+    return res.ok;
+  }catch(e){return false;}
+}
+function buildSnsMessage(storeName,plan,salesBy,contactName,tel,email){
+  return '[info][title]📢 新規契約店舗 登録通知[/title]'
+    +'\n店舗名：'+storeName
+    +'\nプラン：'+plan
+    +'\n担当者：'+contactName
+    +(tel?'\nTEL：'+tel:'')
+    +(email?'\nメール：'+email:'')
+    +'\n営業担当：'+salesBy
+    +'\n\n初期設定の準備をお願いします！[/info]';
+}
+function buildCsMessage(storeName,plan,salesBy,iwaId){
+  var mention=iwaId?'[To:'+iwaId+'] 岩さん\n':'';
+  return mention
+    +'[info][title]📋 楽々販売 登録依頼[/title]'
+    +'\n店舗名：'+storeName
+    +'\nプラン：'+plan
+    +'\n営業担当：'+salesBy
+    +'\n\n楽々販売への登録をお願いします！[/info]';
+}
+async function notifyChatwork(storeName,plan,salesBy,contactName,tel,email){
+  var s=getCwSettings();
+  var results=[];
+  if(s.snsRoomId){
+    var snsMsg=buildSnsMessage(storeName,plan,salesBy,contactName,tel,email);
+    var ok1=await sendChatwork(s.snsRoomId,snsMsg);
+    results.push({to:'SNS局',ok:ok1});
+  }
+  if(s.csRoomId){
+    var csMsg=buildCsMessage(storeName,plan,salesBy,s.iwaId);
+    var ok2=await sendChatwork(s.csRoomId,csMsg);
+    results.push({to:'CS（岩さん）',ok:ok2});
+  }
+  return results;
+}
+async function testChatwork(){
+  var statusEl=document.getElementById('cwStatus');
+  statusEl.innerHTML='<span style="color:var(--amber)">送信中...</span>';
+  saveChatworkSettings();
+  var results=await notifyChatwork('テスト店舗','パタープラン','テスト営業','テスト担当者','090-0000-0000','test@example.com');
+  if(!results.length){statusEl.innerHTML='<span style="color:var(--red)">✗ ルームIDが設定されていません</span>';return;}
+  var allOk=results.every(function(r){return r.ok;});
+  statusEl.innerHTML=allOk
+    ?'<span style="color:var(--green)">✓ テスト送信成功！Chatworkを確認してください</span>'
+    :'<span style="color:var(--red)">✗ 送信失敗。APIトークンまたはルームIDを確認してください</span>';
+}
+function renderCwPreview(){
+  var el=document.getElementById('cwPreview');
+  if(!el)return;
+  var s=getCwSettings();
+  var snsMsg=buildSnsMessage('◯◯焼肉 渋谷店','アイアンプラン','田中 拓也','店長 鈴木','090-XXXX-XXXX','suzuki@example.com');
+  var csMsg=buildCsMessage('◯◯焼肉 渋谷店','アイアンプラン','田中 拓也',s.iwaId||'');
+  el.textContent='【SNS局へ】\n'+snsMsg+'\n\n【CS（岩さん）へ】\n'+csMsg;
+}
+
+var SALES_PERSONS=[
+  {id:'sp1',name:'結城 康大',retired:false},
+  {id:'sp2',name:'中 千明',retired:false},
+  {id:'sp3',name:'町頭 剛志',retired:false},
+  {id:'sp4',name:'寺薗 克浩',retired:false},
+  {id:'sp5',name:'小豆澤 由莉',retired:false},
+  {id:'sp6',name:'村田 晃大',retired:false},
+  {id:'sp7',name:'田中 拓也',retired:false}
+];
+function loadSalesPersons(){
+  try{var d=localStorage.getItem('gc_sales_persons');if(d)SALES_PERSONS=JSON.parse(d);}catch(e){}
+}
+function saveSalesPersons(){
+  try{localStorage.setItem('gc_sales_persons',JSON.stringify(SALES_PERSONS));}catch(e){}
+}
+function updateSalesPersonSelects(){
+  var active=SALES_PERSONS.filter(function(p){return!p.retired;});
+  var opts='<option value="">選択...</option>'+active.map(function(p){return'<option value="'+esc(p.name)+'">'+esc(p.name)+'</option>';}).join('');
+  ['sl-sales','sOurManager'].forEach(function(id){var el=document.getElementById(id);if(el){var prev=el.value;el.innerHTML=opts;if(prev)el.value=prev;}});
+}
+function openSalesPersonModal(){
+  renderSalesPersonList();
+  openModal('salesPersonModal');
+}
+function renderSalesPersonList(){
+  var active=SALES_PERSONS.filter(function(p){return!p.retired;});
+  var retired=SALES_PERSONS.filter(function(p){return p.retired;});
+  var activeEl=document.getElementById('spActiveList');
+  var retiredEl=document.getElementById('spRetiredList');
+  activeEl.innerHTML=active.length?active.map(function(p){
+    return'<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--bg3);border-radius:var(--r);margin-bottom:5px">'
+      +'<span style="flex:1;font-size:13px">'+esc(p.name)+'</span>'
+      +'<button class="btn btn-sm" onclick="retireSalesPerson(\''+p.id+'\')" style="font-size:11px;color:var(--amber)">退職</button>'
+      +'<button class="btn-ghost-danger btn-sm" onclick="deleteSalesPerson(\''+p.id+'\')">削除</button>'
+      +'</div>';
+  }).join(''):'<div style="font-size:12px;color:var(--text3)">在籍中の担当者なし</div>';
+  retiredEl.innerHTML=retired.length?retired.map(function(p){
+    var storeCount=DB.stores.filter(function(s){return s.ourManager===p.name;}).length;
+    return'<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--bg3);border-radius:var(--r);margin-bottom:5px;opacity:0.6">'
+      +'<span style="flex:1;font-size:13px">'+esc(p.name)+'<span style="font-size:10px;color:var(--text3);margin-left:6px">担当'+storeCount+'店舗</span></span>'
+      +'<button class="btn btn-sm" onclick="reinstateSalesPerson(\''+p.id+'\')" style="font-size:11px">復帰</button>'
+      +'<input type="text" placeholder="後任者名" id="successor_'+p.id+'" style="width:110px;font-size:11px;padding:4px 8px">'
+      +'<button class="btn btn-sm btn-primary" onclick="assignSuccessor(\''+p.id+'\')" style="font-size:11px">後任設定</button>'
+      +'</div>';
+  }).join(''):'<div style="font-size:12px;color:var(--text3)">退職済みなし</div>';
+}
+function addSalesPerson(){
+  var name=document.getElementById('spNameInput').value.trim();
+  if(!name)return;
+  if(SALES_PERSONS.find(function(p){return p.name===name;})){alert('すでに登録されています');return;}
+  SALES_PERSONS.push({id:'sp'+Date.now(),name:name,retired:false});
+  saveSalesPersons();
+  document.getElementById('spNameInput').value='';
+  renderSalesPersonList();
+  updateSalesPersonSelects();
+}
+function retireSalesPerson(id){
+  if(!confirm('退職済みにしますか？担当店舗の履歴は残ります。'))return;
+  var p=SALES_PERSONS.find(function(x){return x.id===id;});
+  if(p){p.retired=true;p.retiredAt=new Date().toISOString();}
+  saveSalesPersons();
+  renderSalesPersonList();
+  updateSalesPersonSelects();
+}
+function reinstateSalesPerson(id){
+  var p=SALES_PERSONS.find(function(x){return x.id===id;});
+  if(p){p.retired=false;delete p.retiredAt;}
+  saveSalesPersons();
+  renderSalesPersonList();
+  updateSalesPersonSelects();
+}
+function assignSuccessor(retiredId){
+  var retiredPerson=SALES_PERSONS.find(function(x){return x.id===retiredId;});
+  var successorName=document.getElementById('successor_'+retiredId).value.trim();
+  if(!successorName){alert('後任者名を入力してください');return;}
+  if(!SALES_PERSONS.find(function(p){return p.name===successorName&&!p.retired;})){
+    if(!confirm(successorName+'を新規担当者として追加しますか？')){return;}
+    SALES_PERSONS.push({id:'sp'+Date.now(),name:successorName,retired:false});
+  }
+  var count=0;
+  DB.stores.forEach(function(s){
+    if(s.ourManager===retiredPerson.name){
+      s.ourManager=successorName;
+      s.prevManagers=s.prevManagers||[];
+      s.prevManagers.push({name:retiredPerson.name,assignedAt:retiredPerson.retiredAt});
+      saveItem('stores',s);
+      count++;
+    }
+  });
+  saveSalesPersons();
+  renderSalesPersonList();
+  updateSalesPersonSelects();
+  alert(count+'店舗の担当を'+successorName+'に引き継ぎました');
+}
+function deleteSalesPerson(id){
+  if(!confirm('削除しますか？'))return;
+  SALES_PERSONS=SALES_PERSONS.filter(function(p){return p.id!==id;});
+  saveSalesPersons();
+  renderSalesPersonList();
+  updateSalesPersonSelects();
+}
+loadSalesPersons();
+updateSalesPersonSelects();
 var GENRES=['焼肉','居酒屋','ラーメン','イタリアン','フレンチ','カフェ','寿司','焼き鳥','中華','その他'];
 loadGenres();
 var DB={stores:[],posts:[],influencers:[],castings:[],plans:[]};
@@ -693,11 +926,13 @@ function navigate(page){
     if(item.getAttribute('onclick')==="navigate('"+page+"')")item.classList.add('active');
   });
   currentPage=page;
-  var titles={dashboard:'ダッシュボード',sales:'営業入力',stores:'店舗管理',schedule:'投稿スケジュール',calendar:'カレンダー',check:'事前チェック',plans:'プラン管理',influencers:'インフルエンサー管理',casting:'キャスティング履歴'};
+  var titles={dashboard:'ダッシュボード',sales:'営業入力',stores:'店舗管理',schedule:'投稿スケジュール',calendar:'カレンダー',check:'事前チェック',plans:'プラン管理',influencers:'インフルエンサー管理',casting:'キャスティング履歴',settings:'設定'};
   document.getElementById('page-title').textContent=titles[page]||page;
-  var btnLabels={dashboard:'＋ 店舗追加',sales:'＋ 店舗入力',stores:'＋ 店舗追加',schedule:'＋ 投稿追加',calendar:'＋ 投稿追加',check:'＋ 店舗追加',plans:'＋ プラン追加',influencers:'＋ インフルエンサー追加',casting:'＋ キャスティング記録'};
+  var btnLabels={dashboard:'＋ 店舗追加',sales:'＋ 店舗入力',stores:'＋ 店舗追加',schedule:'＋ 投稿追加',calendar:'＋ 投稿追加',check:'＋ 店舗追加',plans:'＋ プラン追加',influencers:'＋ インフルエンサー追加',casting:'＋ キャスティング記録',settings:''};
   document.getElementById('addBtn').textContent=btnLabels[page]||'＋ 新規追加';
-  if(page==='sales'){updateSalesPlanSelect();renderSalesNotifs();updateSalesNotifBadge();}
+  document.getElementById('addBtn').style.display=page==='settings'?'none':'';
+  if(page==='settings'){loadChatworkSettings();renderCwPreview();}
+  if(page==='sales'){updateSalesPlanSelect();updateSalesPersonSelects();renderSalesNotifs();updateSalesNotifBadge();}
   if(page==='dashboard')renderDashboard();
   if(page==='stores')renderStoreTable();
   if(page==='schedule'){renderSchedFilter();renderSchedule();}
@@ -751,6 +986,7 @@ function openStoreModal(id){
   clearStoreForm();
   updateGenreDatalist();
   updatePlanSelect();
+  updateSalesPersonSelects();
   document.getElementById('storeModalTitle').textContent=id?'店舗を編集':'店舗を追加';
   if(id){
     var s=DB.stores.find(function(x){return x.id===id;});
@@ -856,12 +1092,21 @@ function submitSalesForm(){
   };
   var plan=DB.plans.find(function(p){return p.id===s.planId;});
   if(plan&&plan.price) s.monthlyFee=plan.price;
+  s.rakurakuRegistered=false;
   DB.stores.push(s);
   if(!DB.salesNotifs)DB.salesNotifs=[];
   var notif={id:uid(),storeId:s.id,storeName:name,salesBy:sales,plan:plan?plan.name:'未設定',at:new Date().toISOString(),read:false};
   DB.salesNotifs.unshift(notif);
   saveItem('stores',s);
   saveItem('salesnotifs',notif);
+  /* Chatwork通知 */
+  var planName=plan?plan.name:'未設定';
+  notifyChatwork(name,planName,sales,document.getElementById('sl-contact').value,document.getElementById('sl-tel').value,document.getElementById('sl-email').value).then(function(results){
+    if(results.length){
+      var allOk=results.every(function(r){return r.ok;});
+      if(!allOk)alert('Chatwork通知の送信に失敗しました。設定を確認してください。');
+    }
+  });
   ['sl-name','sl-genre','sl-pref','sl-area','sl-contact','sl-role','sl-tel','sl-email','sl-memo','sl-sales'].forEach(function(id){document.getElementById(id).value='';});
   document.getElementById('sl-plan').value='';
   updateSalesNotifBadge();
@@ -1038,6 +1283,11 @@ function postStatusBadge(v){var m={draft:'<span class="badge b-gray">下書き</
 function generateAlerts(){
   var alerts=[],today=new Date();
 
+  /* 楽々販売未登録 */
+  DB.stores.filter(function(s){return s.rakurakuRegistered===false;}).forEach(function(s){
+    alerts.push({level:'warn',msg:'📋 楽々販売未登録【'+s.name+'】登録をお願いします',storeId:s.id});
+  });
+
   /* 営業からの未読通知 */
   var unreadNotifs=getSalesNotifs().filter(function(n){return!n.read;});
   unreadNotifs.forEach(function(n){
@@ -1127,9 +1377,28 @@ function showDetail(id){
   var myPosts=DB.posts.filter(function(p){return p.storeId===id;}).sort(function(a,b){return new Date(a.date)-new Date(b.date);});
   var myCast=DB.castings.filter(function(c){return c.storeId===id;});
   var pct=setupPct(s);
+  var rakurakuBadge=s.rakurakuRegistered
+    ?'<span class="badge b-green">✓ 楽々販売登録済み</span>'
+    :'<span class="badge b-red">未登録</span>';
+  var rakurakuBtn=s.rakurakuRegistered
+    ?''
+    :'<button class="btn btn-sm btn-primary" style="margin-left:8px" onclick="markRakurakuDone(\''+s.id+'\')">登録完了にする</button>';
   document.getElementById('detailTitle').textContent=s.name;
-  document.getElementById('detailBody').innerHTML='<div class="grid3" style="margin-bottom:14px"><div class="card-sm"><div style="font-size:10px;color:var(--text3);margin-bottom:4px">ステータス</div>'+statusBadge(s.status)+'</div><div class="card-sm"><div style="font-size:10px;color:var(--text3);margin-bottom:4px">契約</div><div style="font-size:12px">'+(s.contractStart||'—')+' / '+(s.contractTerm?s.contractTerm+'ヶ月':'—')+'</div></div><div class="card-sm"><div style="font-size:10px;color:var(--text3);margin-bottom:4px">月額</div><div style="font-size:13px;font-weight:500">'+fmtMoney(s.monthlyFee)+'</div></div></div><div class="grid2" style="margin-bottom:14px"><div><div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px">店舗情報</div>'+[['業種',s.genre],['市区町村・番地',s.area],['営業時間',s.hours],['担当者',s.contactName+(s.contactRole?' / '+s.contactRole:'')],['電話',s.contactTel],['メール',s.contactEmail],['営業担当',s.salesBy||s.ourManager],['クリエイター',s.creator]].map(function(r){return r[1]?'<div style="font-size:12px;display:flex;gap:8px;padding:3px 0;border-bottom:1px solid var(--border)"><span style="color:var(--text3);min-width:68px;flex-shrink:0">'+r[0]+'</span><span>'+esc(r[1])+'</span></div>':'';}).join('')+'</div><div><div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px">SNS / 広告</div>'+[['Instagram',s.ig],['Facebook',s.fb],['X',s.tw],['TikTok',s.tt],['Meta広告ID',s.metaId],['食べログ',s.tabelog?'登録あり':''],['HP',s.hp?'登録あり':'']].map(function(r){return r[1]?'<div style="font-size:12px;display:flex;gap:8px;padding:3px 0;border-bottom:1px solid var(--border)"><span style="color:var(--text3);min-width:68px">'+r[0]+'</span><span>'+esc(r[1])+'</span></div>':'';}).join('')+'<div style="margin-top:10px"><div style="font-size:11px;color:var(--text3);margin-bottom:4px">初期設定 '+pct+'%</div><div class="pbar-wrap"><div class="pbar" style="background:'+(pct===100?'var(--green)':'var(--accent)')+';width:'+pct+'%"></div></div></div></div></div><div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px">投稿履歴 ('+myPosts.length+'件)</div>'+(myPosts.length?'<div style="max-height:140px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--r)">'+myPosts.map(function(p,i){return'<div style="display:flex;gap:10px;padding:7px 12px;border-bottom:'+(i<myPosts.length-1?'1px solid var(--border)':'none')+'"><span class="td-mono" style="color:var(--text3);white-space:nowrap">'+fmtDT(p.date)+'</span><span style="font-size:12px;flex:1">'+esc((p.caption||'').slice(0,50))+((p.caption||'').length>50?'…':'')+'</span>'+postStatusBadge(p.status)+'</div>';}).join('')+'</div>':'<div style="font-size:12px;color:var(--text3)">投稿なし</div>')+'<div style="font-size:11px;font-weight:500;color:var(--text2);margin:12px 0 8px">キャスティング ('+myCast.length+'件)</div>'+(myCast.length?'<div style="border:1px solid var(--border);border-radius:var(--r)">'+myCast.map(function(c,i){return'<div style="font-size:12px;padding:7px 12px;border-bottom:'+(i<myCast.length-1?'1px solid var(--border)':'none')+';display:flex;gap:10px"><span class="td-mono" style="color:var(--text3)">'+fmtD(c.date)+'</span><span>'+esc(infName(c.infId))+'</span><span style="margin-left:auto;color:var(--text3)">'+esc(c.platform)+'</span></div>';}).join('')+'</div>':'<div style="font-size:12px;color:var(--text3)">なし</div>');
+  document.getElementById('detailBody').innerHTML=
+    '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;padding:8px 12px;background:var(--bg3);border-radius:var(--r)"><span style="font-size:12px;color:var(--text2)">楽々販売：</span>'+rakurakuBadge+rakurakuBtn+'</div>'
+    +'<div class="grid3" style="margin-bottom:14px"><div class="card-sm"><div style="font-size:10px;color:var(--text3);margin-bottom:4px">ステータス</div>'+statusBadge(s.status)+'</div><div class="card-sm"><div style="font-size:10px;color:var(--text3);margin-bottom:4px">契約</div><div style="font-size:12px">'+(s.contractStart||'—')+' / '+(s.contractTerm?s.contractTerm+'ヶ月':'—')+'</div></div><div class="card-sm"><div style="font-size:10px;color:var(--text3);margin-bottom:4px">月額</div><div style="font-size:13px;font-weight:500">'+fmtMoney(s.monthlyFee)+'</div></div></div><div class="grid2" style="margin-bottom:14px"><div><div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px">店舗情報</div>'+[['業種',s.genre],['市区町村・番地',s.area],['営業時間',s.hours],['担当者',s.contactName+(s.contactRole?' / '+s.contactRole:'')],['電話',s.contactTel],['メール',s.contactEmail],['営業担当',s.salesBy||s.ourManager],['クリエイター',s.creator]].map(function(r){return r[1]?'<div style="font-size:12px;display:flex;gap:8px;padding:3px 0;border-bottom:1px solid var(--border)"><span style="color:var(--text3);min-width:68px;flex-shrink:0">'+r[0]+'</span><span>'+esc(r[1])+'</span></div>':'';}).join('')+'</div><div><div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px">SNS / 広告</div>'+[['Instagram',s.ig],['Facebook',s.fb],['X',s.tw],['TikTok',s.tt],['Meta広告ID',s.metaId],['食べログ',s.tabelog?'登録あり':''],['HP',s.hp?'登録あり':'']].map(function(r){return r[1]?'<div style="font-size:12px;display:flex;gap:8px;padding:3px 0;border-bottom:1px solid var(--border)"><span style="color:var(--text3);min-width:68px">'+r[0]+'</span><span>'+esc(r[1])+'</span></div>':'';}).join('')+'<div style="margin-top:10px"><div style="font-size:11px;color:var(--text3);margin-bottom:4px">初期設定 '+pct+'%</div><div class="pbar-wrap"><div class="pbar" style="background:'+(pct===100?'var(--green)':'var(--accent)')+';width:'+pct+'%"></div></div></div></div></div><div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px">投稿履歴 ('+myPosts.length+'件)</div>'+(myPosts.length?'<div style="max-height:140px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--r)">'+myPosts.map(function(p,i){return'<div style="display:flex;gap:10px;padding:7px 12px;border-bottom:'+(i<myPosts.length-1?'1px solid var(--border)':'none')+'"><span class="td-mono" style="color:var(--text3);white-space:nowrap">'+fmtDT(p.date)+'</span><span style="font-size:12px;flex:1">'+esc((p.caption||'').slice(0,50))+((p.caption||'').length>50?'…':'')+'</span>'+postStatusBadge(p.status)+'</div>';}).join('')+'</div>':'<div style="font-size:12px;color:var(--text3)">投稿なし</div>')+'<div style="font-size:11px;font-weight:500;color:var(--text2);margin:12px 0 8px">キャスティング ('+myCast.length+'件)</div>'+(myCast.length?'<div style="border:1px solid var(--border);border-radius:var(--r)">'+myCast.map(function(c,i){return'<div style="font-size:12px;padding:7px 12px;border-bottom:'+(i<myCast.length-1?'1px solid var(--border)':'none')+';display:flex;gap:10px"><span class="td-mono" style="color:var(--text3)">'+fmtD(c.date)+'</span><span>'+esc(infName(c.infId))+'</span><span style="margin-left:auto;color:var(--text3)">'+esc(c.platform)+'</span></div>';}).join('')+'</div>':'<div style="font-size:12px;color:var(--text3)">なし</div>');
   openModal('detailModal');
+}
+
+function markRakurakuDone(id){
+  var s=DB.stores.find(function(x){return x.id===id;});
+  if(!s)return;
+  s.rakurakuRegistered=true;
+  s.rakurakuDoneAt=new Date().toISOString();
+  saveItem('stores',s);
+  refreshAll();
+  closeModal('detailModal');
+  setTimeout(function(){showDetail(id);},100);
 }
 
 function renderSchedFilter(){
@@ -1310,6 +1579,24 @@ loadDB().then(function(){refreshAll();});
     </div>
     <div id="genreTagList" style="display:flex;flex-wrap:wrap;gap:6px"></div>
     <div class="form-actions"><button class="btn btn-primary" onclick="closeModal('genreModal')">完了</button></div>
+  </div>
+</div>
+</div>
+
+<!-- SALES PERSON MODAL -->
+<div class="modal-overlay" id="salesPersonModal">
+<div class="modal" style="width:460px">
+  <div class="modal-header"><span class="modal-title">営業担当者を管理</span><button class="modal-close" onclick="closeModal('salesPersonModal')">✕</button></div>
+  <div class="modal-body">
+    <div style="display:flex;gap:8px;margin-bottom:14px">
+      <input id="spNameInput" type="text" placeholder="氏名を入力" style="flex:1" onkeydown="if(event.key==='Enter')addSalesPerson()">
+      <button class="btn btn-primary" style="white-space:nowrap;flex-shrink:0" onclick="addSalesPerson()">追加</button>
+    </div>
+    <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px">在籍中</div>
+    <div id="spActiveList" style="margin-bottom:14px"></div>
+    <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px">退職済み（履歴）</div>
+    <div id="spRetiredList"></div>
+    <div class="form-actions"><button class="btn btn-primary" onclick="closeModal('salesPersonModal');updateSalesPersonSelects()">完了</button></div>
   </div>
 </div>
 </div>
