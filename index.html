@@ -581,7 +581,7 @@ var currentPage='dashboard';
    ============================================================ */
 var SUPA_URL='https://vwtcshwzetxnaedjhoej.supabase.co';
 var SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3dGNzaHd6ZXR4bmFlZGpob2VqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2MzM3MTgsImV4cCI6MjA5NDIwOTcxOH0.S10RHDE7wvKUMa2SxeoNvkgg6TtiMInw7ax6J5ZuMZk';
-var TABLES=['stores','posts','influencers','castings','plans','salesNotifs'];
+var TABLES=['stores','posts','influencers','castings','plans','salesnotifs'];
 
 /* ============================================================
    APIレイヤー（ここを将来書き換えると別サーバーに移行できる）
@@ -625,6 +625,7 @@ async function loadDB(){
   try{
     var results=await Promise.all(TABLES.map(function(t){return apiFetch(t);}));
     TABLES.forEach(function(t,i){DB[t]=results[i]||[];});
+    DB.salesNotifs=DB['salesnotifs']||[];
     if(!DB.plans)DB.plans=[];
     if(!DB.salesNotifs)DB.salesNotifs=[];
     try{localStorage.setItem('adcore3',JSON.stringify(DB));}catch(e){}
@@ -685,10 +686,12 @@ function openModal(id){document.getElementById(id).classList.add('open');}
 function navigate(page){
   document.querySelectorAll('.page').forEach(function(p){p.classList.remove('active');});
   document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});
-  document.getElementById('page-'+page).classList.add('active');
-  var navMap={dashboard:0,sales:2,stores:3,schedule:5,calendar:6,check:7,plans:8,influencers:10,casting:11};
+  var pageEl=document.getElementById('page-'+page);
+  if(pageEl)pageEl.classList.add('active');
   var items=document.querySelectorAll('.nav-item');
-  if(navMap[page]!==undefined)items[navMap[page]].classList.add('active');
+  items.forEach(function(item){
+    if(item.getAttribute('onclick')==="navigate('"+page+"')")item.classList.add('active');
+  });
   currentPage=page;
   var titles={dashboard:'ダッシュボード',sales:'営業入力',stores:'店舗管理',schedule:'投稿スケジュール',calendar:'カレンダー',check:'事前チェック',plans:'プラン管理',influencers:'インフルエンサー管理',casting:'キャスティング履歴'};
   document.getElementById('page-title').textContent=titles[page]||page;
@@ -858,7 +861,7 @@ function submitSalesForm(){
   var notif={id:uid(),storeId:s.id,storeName:name,salesBy:sales,plan:plan?plan.name:'未設定',at:new Date().toISOString(),read:false};
   DB.salesNotifs.unshift(notif);
   saveItem('stores',s);
-  saveItem('salesNotifs',notif);
+  saveItem('salesnotifs',notif);
   ['sl-name','sl-genre','sl-pref','sl-area','sl-contact','sl-role','sl-tel','sl-email','sl-memo','sl-sales'].forEach(function(id){document.getElementById(id).value='';});
   document.getElementById('sl-plan').value='';
   updateSalesNotifBadge();
