@@ -1077,11 +1077,23 @@ function renderInterviewerChecks(currentVal){
   if(!el)return;
   var selected=(currentVal||'').split(',').filter(Boolean);
   el.innerHTML=getActiveStaff().map(function(p){
-    var chk=selected.indexOf(p.name)>=0?' checked':'';
-    return'<label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;padding:3px 8px;border-radius:4px;background:var(--bg2);border:1px solid var(--border);white-space:nowrap">'
-      +'<input type="checkbox" value="'+esc(p.name)+'"'+chk+' style="width:auto;margin:0"> '+esc(p.name)
+    var chk=selected.indexOf(p.name)>=0;
+    var roleColor=ROLE_BADGE[p.role]||'b-gray';
+    return'<label style="display:flex;align-items:center;gap:3px;font-size:11px;cursor:pointer;padding:2px 7px;border-radius:20px;'
+      +(chk?'background:var(--accent);color:#fff;border:1px solid var(--accent)':'background:var(--bg2);color:var(--text2);border:1px solid var(--border)')
+      +'">'
+      +'<input type="checkbox" value="'+esc(p.name)+'"'+(chk?' checked':'')+' onchange="refreshInterviewerStyle(this)" style="display:none"> '
+      +esc(p.name)
       +'</label>';
   }).join('');
+}
+function refreshInterviewerStyle(cb){
+  var label=cb.parentElement;
+  if(cb.checked){
+    label.style.background='var(--accent)';label.style.color='#fff';label.style.borderColor='var(--accent)';
+  }else{
+    label.style.background='var(--bg2)';label.style.color='var(--text2)';label.style.borderColor='var(--border)';
+  }
 }
 
 function changeStaffRole(id,role){
@@ -1159,6 +1171,7 @@ loadSalesPersons();
 updateSalesPersonSelects();
 var GENRES=['焼肉','居酒屋','ラーメン','イタリアン','フレンチ','カフェ','寿司','焼き鳥','中華','その他'];
 loadGenres();
+var COLORS=['#4f8ef7','#e85d75','#f5a623','#7ed321','#9b59b6','#1abc9c','#e67e22','#e74c3c','#3498db','#2ecc71','#f39c12','#8e44ad'];
 var DB={stores:[],posts:[],influencers:[],castings:[],plans:[],corporations:[]};
 var NOW=new Date();
 var calYear=NOW.getFullYear(),calMonth=NOW.getMonth();
@@ -2620,7 +2633,6 @@ function clearCreatorForm(){
   document.getElementById('crGender').value='';
   document.getElementById('crBirthday').value='';
   document.getElementById('crInterviewDate').value='';
-  document.getElementById('crInterviewType').value='';
   Object.keys(CREATOR_SKILL_LABELS).forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
   document.querySelectorAll('input[name="crPromanage"]').forEach(function(r){r.checked=false;});
 }
