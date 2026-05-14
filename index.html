@@ -388,9 +388,27 @@ tr:hover td{background:#fafaf8}
       <div class="grid2" style="margin-bottom:14px">
         <div class="card">
           <div class="card-header"><span class="card-title">プランを登録</span></div>
-          <div class="fr"><div class="field"><label>プラン名 *</label><input id="plName" type="text" placeholder="例: パタープラン"></div><div class="field"><label>カテゴリ</label><select id="plCategory"><option value="putter">🏌 パター（エントリー）</option><option value="wedge">🏌 ウェッジ</option><option value="iron">🏌 アイアン</option><option value="driver">🏌 ドライバー（プレミアム）</option><option value="option">＋ オプション</option></select></div></div>
-          <div class="fr"><div class="field"><label>月額料金（円）</label><input id="plPrice" type="number" placeholder="150000"></div><div class="field"><label>初期費用（円）</label><input id="plSetup" type="number" placeholder="50000"></div></div>
-          <div class="fr1 field"><label>内容・備考</label><textarea id="plDesc" placeholder="含まれるサービス内容など..." style="min-height:52px"></textarea></div>
+          <div class="fr1 field">
+            <label>プラン名 *</label>
+            <select id="plName">
+              <option value="">選択してください</option>
+              <option value="パター">パター</option>
+              <option value="ウェッジ">ウェッジ</option>
+              <option value="アイアン">アイアン</option>
+              <option value="ドライバー">ドライバー</option>
+            </select>
+          </div>
+          <div class="fr">
+            <div class="field"><label>月額料金（円）</label><input id="plPrice" type="number" placeholder="100000"></div>
+            <div class="field"><label>初期費用（円）</label><input id="plSetup" type="number" placeholder="100000"></div>
+          </div>
+          <div class="field" style="margin-bottom:10px">
+            <label style="display:flex;align-items:center;gap:8px">
+              <input type="checkbox" id="plOpenPrice" style="width:auto;margin:0" onchange="toggleOpenPrice()">
+              ドライバーの応相談設定（月額に下限のみ設定）
+            </label>
+          </div>
+          <div class="fr1 field"><label>備考</label><textarea id="plDesc" placeholder="特記事項など..." style="min-height:44px"></textarea></div>
           <div style="display:flex;justify-content:flex-end"><button class="btn btn-primary" onclick="savePlan()">登録</button></div>
         </div>
         <div class="card">
@@ -400,7 +418,7 @@ tr:hover td{background:#fafaf8}
       </div>
       <div class="card">
         <div class="card-header"><span class="card-title">登録済みプラン</span></div>
-        <div class="table-wrap"><table><thead><tr><th>プラン名</th><th>カテゴリ</th><th>月額</th><th>初期費用</th><th>契約店舗数</th><th>内容</th><th></th></tr></thead><tbody id="planTableBody"></tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>プラン名</th><th>月額</th><th>初期費用</th><th>応相談</th><th>契約店舗数</th><th>備考</th><th></th></tr></thead><tbody id="planTableBody"></tbody></table></div>
       </div>
     </div>
 
@@ -2565,37 +2583,118 @@ function showPlanPreview(){
   var p=DB.plans.find(function(x){return x.id===pid;});
   if(p){el.innerHTML='月額 <strong>'+fmtMoney(p.price)+'</strong>'+(p.setup?' / 初期 '+fmtMoney(p.setup):'')+(p.desc?' — '+esc(p.desc.slice(0,40)):'');}
 }
+function toggleOpenPrice(){
+  var chk=document.getElementById('plOpenPrice');
+  var priceEl=document.getElementById('plPrice');
+  if(chk&&priceEl){
+    priceEl.placeholder=chk.checked?'304000（下限）':'100000';
+  }
+}
+
+/* プラン名から初期値を自動入力 */
+document.addEventListener('DOMContentLoaded',function(){
+  var plNameEl=document.getElementById('plName');
+  if(plNameEl){
+    plNameEl.addEventListener('change',function(){
+      var defaults={
+        'パター':{price:100000,setup:100000},
+        'ウェッジ':{price:200000,setup:100000},
+        'アイアン':{price:304000,setup:120000},
+        'ドライバー':{price:304000,setup:120000}
+      };
+      var d=defaults[this.value];
+      if(d){
+        var pe=document.getElementById('plPrice');var se=document.getElementById('plSetup');
+        if(pe&&!pe.value)pe.value=d.price;
+        if(se&&!se.value)se.value=d.setup;
+        if(this.value==='ドライバー'){
+          var chk=document.getElementById('plOpenPrice');if(chk)chk.checked=true;
+          toggleOpenPrice();
+        }
+      }
+    });
+  }
+});
+
+var PLAN_ORDER={'パター':1,'ウェッジ':2,'アイアン':3,'ドライバー':4};
+var PLAN_BADGE={'パター':'b-gray','ウェッジ':'b-blue','アイアン':'b-purple','ドライバー':'b-green'};
+
 function savePlan(){
-  var name=document.getElementById('plName').value.trim();
-  if(!name){alert('プラン名を入力してください');return;}
-  var p={id:uid(),name:name,category:document.getElementById('plCategory').value,price:document.getElementById('plPrice').value,setup:document.getElementById('plSetup').value,desc:document.getElementById('plDesc').value};
+  var nameEl=document.getElementById('plName');
+  var name=nameEl?nameEl.value.trim():'';
+  if(!name){alert('プランを選択してください');return;}
+  var price=document.getElementById('plPrice').value;
+  var setup=document.getElementById('plSetup').value;
+  var openPrice=document.getElementById('plOpenPrice').checked;
+  var desc=document.getElementById('plDesc').value;
+  var p={
+    id:uid(),
+    name:name,
+    price:price,
+    setup:setup,
+    openPrice:openPrice,
+    desc:desc
+  };
   DB.plans.push(p);
-  ['plName','plPrice','plSetup','plDesc'].forEach(function(id){document.getElementById(id).value='';});
-  renderPlans();renderRevSummary();
-  document.getElementById('nb-plans').textContent=DB.plans.length;
+  nameEl.value='';
+  document.getElementById('plPrice').value='';
+  document.getElementById('plSetup').value='';
+  document.getElementById('plOpenPrice').checked=false;
+  document.getElementById('plDesc').value='';
+  renderPlans();
+  renderRevSummary();
+  var nb=document.getElementById('nb-plans');if(nb)nb.textContent=DB.plans.length;
   saveItem('plans',p);
 }
+
 function deletePlan(id){
-  if(!confirm('このプランを削除しますか？\n（店舗への紐づけは解除されます）'))return;
-  DB.stores.forEach(function(s){if(s.planId===id)s.planId='';});
+  if(!confirm('このプランを削除しますか？（店舗への紐づけは解除されます）'))return;
+  DB.stores.forEach(function(s){if(s.planId===id){s.planId='';saveItem('stores',s);}});
   DB.plans=DB.plans.filter(function(p){return p.id!==id;});
   renderPlans();renderRevSummary();
-  document.getElementById('nb-plans').textContent=DB.plans.length;
+  var nb=document.getElementById('nb-plans');if(nb)nb.textContent=DB.plans.length;
   deleteItem('plans',id);
 }
-var catLabel={putter:'🏌 パター',wedge:'🏌 ウェッジ',iron:'🏌 アイアン',driver:'🏌 ドライバー','option':'＋ オプション'};
-var catBadge={putter:'b-gray',wedge:'b-blue',iron:'b-purple',driver:'b-green','option':'b-amber'};
-var catOrder={putter:1,wedge:2,iron:3,driver:4,'option':5};
+
 function renderPlans(){
   var tb=document.getElementById('planTableBody');
-  if(!DB.plans.length){tb.innerHTML='<tr><td colspan="7" class="empty-state">プランがありません<br><span style="font-size:11px;color:var(--text3)">パター → ウェッジ → アイアン → ドライバー の順に登録してください</span></td></tr>';return;}
-  var sorted=DB.plans.slice().sort(function(a,b){return(catOrder[a.category]||9)-(catOrder[b.category]||9);});
+  if(!tb)return;
+  if(!DB.plans.length){
+    tb.innerHTML='<tr><td colspan="7" class="empty-state">プランがありません<br><span style="font-size:11px;color:var(--text3)">パター・ウェッジ・アイアン・ドライバーの順に登録してください</span></td></tr>';
+    return;
+  }
+  var sorted=DB.plans.slice().sort(function(a,b){
+    return(PLAN_ORDER[a.name]||9)-(PLAN_ORDER[b.name]||9);
+  });
   tb.innerHTML=sorted.map(function(p){
     var count=DB.stores.filter(function(s){return s.planId===p.id;}).length;
-    var opacities={putter:'0.4',wedge:'0.6',iron:'0.8',driver:'1.0'};
-    var tierDot=p.category!=='option'?'<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--accent);margin-right:6px;opacity:'+(opacities[p.category]||'0.4')+'"></span>':'<span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:var(--amber);margin-right:6px;opacity:0.8"></span>';
-    return'<tr><td><div style="display:flex;align-items:center">'+tierDot+'<span style="font-weight:500">'+esc(p.name)+'</span></div></td><td><span class="badge '+(catBadge[p.category]||'b-gray')+'">'+(catLabel[p.category]||p.category)+'</span></td><td class="td-mono" style="font-size:13px;font-weight:500;color:var(--text)">'+fmtMoney(p.price)+'</td><td class="td-mono">'+fmtMoney(p.setup)+'</td><td style="text-align:center"><span style="font-size:13px;font-weight:500;color:var(--accent)">'+count+'</span></td><td style="color:var(--text3);max-width:160px">'+esc((p.desc||'').slice(0,50))+'</td><td><button class="btn-ghost-danger" onclick="deletePlan(\''+p.id+'\')">削除</button></td></tr>';
+    var priceStr=p.openPrice
+      ?fmtMoney(p.price)+'〜（応相談）'
+      :fmtMoney(p.price);
+    return'<tr>'
+      +'<td><span class="badge '+(PLAN_BADGE[p.name]||'b-gray')+'">'+esc(p.name)+'</span></td>'
+      +'<td class="td-mono" style="font-size:13px;font-weight:500;color:var(--text)">'+priceStr+'</td>'
+      +'<td class="td-mono">'+fmtMoney(p.setup)+'</td>'
+      +'<td style="text-align:center">'+(p.openPrice?'<span class="badge b-amber">応相談</span>':'—')+'</td>'
+      +'<td style="text-align:center"><span style="font-size:13px;font-weight:500;color:var(--accent)">'+count+'</span></td>'
+      +'<td style="color:var(--text3);max-width:160px">'+esc((p.desc||'').slice(0,50))+'</td>'
+      +'<td><button class="btn-ghost-danger" onclick="deletePlan(\''+p.id+'\')">削除</button></td>'
+      +'</tr>';
   }).join('');
+  /* 店舗登録のプランselectも更新 */
+  updatePlanSelect();
+}
+
+function updatePlanSelect(){
+  var sel=document.getElementById('sPlanId');
+  if(!sel)return;
+  var prev=sel.value;
+  var sorted=DB.plans.slice().sort(function(a,b){return(PLAN_ORDER[a.name]||9)-(PLAN_ORDER[b.name]||9);});
+  sel.innerHTML='<option value="">選択...</option>'+sorted.map(function(p){
+    var label=p.name+(p.openPrice?' (応相談)':'');
+    return'<option value="'+p.id+'">'+esc(label)+'</option>';
+  }).join('');
+  if(prev)sel.value=prev;
 }
 function renderRevSummary(){
   var el=document.getElementById('revSummary');
@@ -2611,7 +2710,7 @@ function renderRevSummary(){
   });
   var rows=Object.keys(byPlan).sort(function(a,b){
     var pa=DB.plans.find(function(x){return x.id===a;}),pb=DB.plans.find(function(x){return x.id===b;});
-    return(catOrder[(pa||{}).category]||9)-(catOrder[(pb||{}).category]||9);
+    return(PLAN_ORDER[(pa||{}).name]||9)-(PLAN_ORDER[(pb||{}).name]||9);
   }).map(function(pid){
     var p=DB.plans.find(function(x){return x.id===pid;});
     var label=p?p.name:'プランなし';
