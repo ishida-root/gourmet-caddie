@@ -984,8 +984,8 @@ function updateSalesPersonSelects(){
   if(om){var pv2=om.value;om.innerHTML=salesOpts2;if(pv2)om.value=pv2;}
   /* 退職済み担当者の表示更新 */
   refreshManagerDisplay();
-  var ci=document.getElementById('crInterviewer');
-  if(ci){var pv3=ci.value;ci.innerHTML='<option value="">選択...</option>'+getActiveStaff().map(function(p){return'<option value="'+esc(p.name)+'">'+esc(p.name)+'</option>';}).join('');if(pv3)ci.value=pv3;}
+  /* 面談担当者チェックボックスを更新 */
+  renderInterviewerChecks();
 }
 function openSalesPersonModal(){renderStaffList();openModal('salesPersonModal');}
 function renderSalesPersonList(){renderStaffList();}
@@ -1070,6 +1070,18 @@ function assignManagerFromRetired(storeId){
   s.ourManager=newMgr;
   saveItem('stores',s);
   refreshAll();
+}
+
+function renderInterviewerChecks(currentVal){
+  var el=document.getElementById('crInterviewerChecks');
+  if(!el)return;
+  var selected=(currentVal||'').split(',').filter(Boolean);
+  el.innerHTML=getActiveStaff().map(function(p){
+    var chk=selected.indexOf(p.name)>=0?' checked':'';
+    return'<label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;padding:3px 8px;border-radius:4px;background:var(--bg2);border:1px solid var(--border);white-space:nowrap">'
+      +'<input type="checkbox" value="'+esc(p.name)+'"'+chk+' style="width:auto;margin:0"> '+esc(p.name)
+      +'</label>';
+  }).join('');
 }
 
 function changeStaffRole(id,role){
@@ -1177,7 +1189,11 @@ async function apiFetch(table){
 }
 async function apiUpsert(table,item){
   var r=await fetch(apiUrl(table),{method:'POST',headers:Object.assign({},apiHeaders(),{'Prefer':'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify({id:item.id,data:item})});
-  if(!r.ok)throw new Error('upsert '+table+' failed');
+  if(!r.ok){
+    var errText=await r.text().catch(function(){return r.status;});
+    console.error('[apiUpsert] '+table+' '+r.status+':',errText);
+    throw new Error('upsert '+table+' failed: '+r.status+' '+errText);
+  }
 }
 async function apiDelete(table,id){
   var r=await fetch(apiUrl(table)+'?id=eq.'+encodeURIComponent(id),{method:'DELETE',headers:apiHeaders()});
@@ -1239,8 +1255,9 @@ async function saveItem(table,item){
     try{localStorage.setItem('adcore3',JSON.stringify(DB));}catch(e){}
     setSyncStatus('ok','保存しました');
   }catch(e){
+    console.error('[saveItem] '+table+' failed:',e);
     try{localStorage.setItem('adcore3',JSON.stringify(DB));}catch(e2){}
-    setSyncStatus('error','保存失敗（ローカルに退避済み）');
+    setSyncStatus('error','保存失敗: '+e.message);
   }
 }
 
@@ -2620,12 +2637,15 @@ function openCreatorModal(id){
         'crEquipment','crSoftware','crSns','crPortfolio','crPhoto','crSpecialty',
         'crOrderPoint','crCondition','crDelivery','crImpression'];
       textFields.forEach(function(fid){var el=document.getElementById(fid);if(el&&cr[fid]!==undefined)el.value=cr[fid]||'';});
-      ['crGender','crInterviewType','crInterviewer'].forEach(function(fid){var el=document.getElementById(fid);if(el&&cr[fid])el.value=cr[fid];});
+      ['crGender'].forEach(function(fid){var el=document.getElementById(fid);if(el&&cr[fid])el.value=cr[fid];});
       ['crBirthday','crInterviewDate'].forEach(function(fid){var el=document.getElementById(fid);if(el&&cr[fid])el.value=cr[fid];});
       Object.keys(CREATOR_SKILL_LABELS).forEach(function(fid){var el=document.getElementById(fid);if(el&&cr[fid]!==undefined)el.value=cr[fid];});
       if(cr.crPromanage){var r=document.querySelector('input[name="crPromanage"][value="'+cr.crPromanage+'"]');if(r)r.checked=true;}
     }
   }
+  /* 面談担当者チェックボックス初期化 */
+  var ivVal=id?(DB.creators.find(function(x){return x.id===id;})||{}).crInterviewer||'':'';
+  renderInterviewerChecks(ivVal);
   switchCreatorTab(0);
   openModal('creatorModal');
 }
@@ -2640,13 +2660,20 @@ function saveCreator(){
   ['crName','crRealName','crAddress','crArea','crReachTime','crTel','crEmail','crContact',
    'crEquipment','crSoftware','crSns','crPortfolio','crPhoto','crSpecialty',
    'crOrderPoint','crCondition','crDelivery','crImpression',
-   'crGender','crBirthday','crInterviewDate','crInterviewType','crInterviewer'].forEach(function(fid){
+   'crGender','crBirthday','crInterviewDate'].forEach(function(fid){
     var el=document.getElementById(fid);cr[fid]=el?el.value:'';
   });
   Object.keys(CREATOR_SKILL_LABELS).forEach(function(fid){
     var el=document.getElementById(fid);cr[fid]=el?el.value:'';
   });
   cr.crPromanage=proEl?proEl.value:'';
+  /* 面談担当者：チェックされた人を配列で保存 */
+  var interviewerEl=document.getElementById('crInterviewerChecks');
+  if(interviewerEl){
+    var checked=Array.from(interviewerEl.querySelectorAll('input[type=checkbox]:checked')).map(function(cb){return cb.value;});
+    cr.crInterviewer=checked.join(',');
+    var hidEl=document.getElementById('crInterviewer');if(hidEl)hidEl.value=cr.crInterviewer;
+  }
   if(isEdit){
     var idx=DB.creators.findIndex(function(x){return x.id===id;});
     if(idx>=0){DB.creators[idx]=cr;}else{DB.creators.push(cr);}
@@ -2730,7 +2757,7 @@ function openCreatorDetail(id){
       +'<div>'
         +'<div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px">面談</div>'
         +(cr.crInterviewDate?'<div style="font-size:12px;margin-bottom:4px">日付: '+fmtD(cr.crInterviewDate)+'</div>':'')
-        +(cr.crInterviewType?'<div style="font-size:12px;margin-bottom:4px">'+esc(cr.crInterviewType)+'</div>':'')
+        +(cr.crInterviewer?'<div style="font-size:12px;margin-bottom:4px">👥 '+esc(cr.crInterviewer.split(',').join(' / '))+'</div>':'')
         +(cr.crPortfolio?'<div style="font-size:12px"><a href="'+esc(cr.crPortfolio)+'" target="_blank" style="color:var(--accent)">ポートフォリオ ↗</a></div>':'')
       +'</div>'
     +'</div>'
@@ -3164,8 +3191,12 @@ loadDB().then(function(){renderDashboard();updateSidebarStats();updateCorpSelect
       <div class="fr"><div class="field"><label>訪問可能エリア</label><input id="crArea" type="text" placeholder="東京・神奈川・埼玉"></div><div class="field"><label>連絡つきやすい時間</label><input id="crReachTime" type="text" placeholder="平日 10:00〜18:00"></div></div>
       <div class="fr"><div class="field"><label>携帯番号</label><input id="crTel" type="tel" placeholder="090-XXXX-XXXX"></div><div class="field"><label>メールアドレス</label><input id="crEmail" type="email" placeholder="creator@example.com"></div></div>
       <div class="fr1 field"><label>その他連絡先 <span style="font-size:10px;color:var(--text3)">LINE / ChatWork / Slack など</span></label><input id="crContact" type="text" placeholder="LINE: creator_line"></div>
-      <div class="fr"><div class="field"><label>面接日</label><input id="crInterviewDate" type="date"></div><div class="field"><label>面談対応</label><select id="crInterviewType"><option value="">—</option><option>オンライン可</option><option>対面のみ</option><option>どちらも可</option><option>未対応</option></select></div></div>
-      <div class="fr1 field"><label>面談担当者</label><select id="crInterviewer"><option value="">選択...</option></select></div>
+      <div class="fr1 field"><label>面接日</label><input id="crInterviewDate" type="date"></div>
+      <div class="field" style="margin-bottom:10px">
+        <label>面談担当者 <span style="font-size:10px;color:var(--text3);font-weight:400">複数選択可</span></label>
+        <div id="crInterviewerChecks" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r)"></div>
+        <input type="hidden" id="crInterviewer">
+      </div>
     </div>
 
     <!-- Tab 1: スキル・機材 -->
