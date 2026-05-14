@@ -555,7 +555,7 @@ tr:hover td{background:#fafaf8}
       <div class="fr1 field"><label>担当クリエイター</label><input id="sCreator" type="text" placeholder="制作会社名 or 担当者名"></div>
     </div>
     <div class="tab-pane" id="stab2">
-      <div class="fr"><div class="field"><label>契約開始日 *</label><input id="sContractStart" type="date"></div><div class="field"><label>契約期間</label><select id="sContractTerm"><option value="3">3ヶ月</option><option value="6">6ヶ月</option><option value="12">12ヶ月</option></select></div></div>
+      <div class="fr"><div class="field"><label>契約開始日</label><div style="display:flex;gap:4px;align-items:center" id="sContractStartWrap"></div><input type="hidden" id="sContractStart"></div><div class="field"><label>契約期間</label><select id="sContractTerm"><option value="3">3ヶ月</option><option value="6">6ヶ月</option><option value="12">12ヶ月</option></select></div></div>
       <div class="fr1 field"><label>契約プラン</label><select id="sPlanId"><option value="">プランを選択（任意）</option></select><div style="font-size:11px;color:var(--text3);margin-top:4px" id="sPlanPreview"></div></div>
       <div class="fr"><div class="field"><label>月額費用（円）<span style="color:var(--text3);font-weight:400"> ※プラン選択で自動入力</span></label><input id="sMonthlyFee" type="number" placeholder="150000"></div><div class="field"><label>ステータス</label><select id="sStatus"><option value="pending">準備中</option><option value="active">稼働中</option><option value="ended">終了</option></select></div></div>
       <div style="border-top:1px solid var(--border);padding-top:14px;margin:4px 0">
@@ -1565,6 +1565,14 @@ function openStoreModal(id){
     }
   }
   switchStoreTab(0);
+  /* 契約開始日ピッカー初期化 */
+  makeDatePicker('sContractStartWrap','sContractStart',{yearFrom:2020,yearTo:new Date().getFullYear()+3,yearLabel:'年'});
+  if(id){
+    var _scs=DB.stores.find(function(x){return x.id===id;});
+    if(_scs){
+      var _scwrap=document.getElementById('sContractStartWrap');if(_scwrap&&_scwrap._setDate)_scwrap._setDate(_scs.contractStart||'');
+    }
+  }
   openModal('storeModal');
 }
 
@@ -2620,6 +2628,91 @@ var editingCreatorId=null;
 var CREATOR_SKILL_LABELS={crSkillPlan:'企画',crSkillShoot:'撮影',crSkillEdit:'編集',crSkillAnalyze:'投稿分析',crSkillFood:'外食知見',crSkillCooking:'料理撮影',crSkillStill:'静止画',crSkillComm:'コミュニケーション'};
 var CREATOR_SKILL_VALS={'3':'◎','2':'○','1':'△','0':'✗','':'' };
 
+
+/* ============================================================
+   日付プルダウン共通コンポーネント
+   makeDatePicker(wrapperId, hiddenId, opts)
+   opts: { yearFrom, yearTo, yearLabel }
+   ============================================================ */
+function makeDatePicker(wrapperId, hiddenId, opts){
+  var wrap=document.getElementById(wrapperId);
+  if(!wrap)return;
+  opts=opts||{};
+  var yearFrom=opts.yearFrom||1950;
+  var yearTo=opts.yearTo||(new Date().getFullYear()+2);
+  var yearLabel=opts.yearLabel||'年';
+  var style='font-size:12px;padding:4px 6px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg2);color:var(--text);cursor:pointer';
+
+  /* 年 */
+  var ysel=document.createElement('select');
+  ysel.style.cssText=style+';width:80px';
+  ysel.innerHTML='<option value="">'+yearLabel+'</option>';
+  for(var y=yearTo;y>=yearFrom;y--){
+    ysel.innerHTML+='<option value="'+y+'">'+y+'</option>';
+  }
+  /* 月 */
+  var msel=document.createElement('select');
+  msel.style.cssText=style+';width:56px';
+  msel.innerHTML='<option value="">月</option>';
+  for(var m=1;m<=12;m++){msel.innerHTML+='<option value="'+(m<10?'0':'')+m+'">'+m+'月</option>';}
+  /* 日 */
+  var dsel=document.createElement('select');
+  dsel.style.cssText=style+';width:56px';
+  function rebuildDays(){
+    var curD=dsel.value;
+    dsel.innerHTML='<option value="">日</option>';
+    var ym=ysel.value&&msel.value?new Date(parseInt(ysel.value),parseInt(msel.value),0).getDate():31;
+    for(var d=1;d<=ym;d++){dsel.innerHTML+='<option value="'+(d<10?'0':'')+d+'">'+(d)+'日</option>';}
+    if(curD)dsel.value=curD;
+  }
+  rebuildDays();
+
+  function syncHidden(){
+    var hid=document.getElementById(hiddenId);
+    if(!hid)return;
+    hid.value=(ysel.value&&msel.value&&dsel.value)
+      ?ysel.value+'-'+msel.value+'-'+dsel.value:'';
+  }
+  function restoreFromHidden(){
+    var hid=document.getElementById(hiddenId);
+    if(!hid||!hid.value)return;
+    var parts=hid.value.split('-');
+    if(parts.length>=3){
+      ysel.value=parts[0];msel.value=parts[1];
+      rebuildDays();dsel.value=parts[2];
+    }
+  }
+
+  ysel.onchange=function(){rebuildDays();syncHidden();};
+  msel.onchange=function(){rebuildDays();syncHidden();};
+  dsel.onchange=syncHidden;
+
+  wrap.innerHTML='';
+  wrap.appendChild(ysel);
+  var s1=document.createElement('span');s1.textContent='/';s1.style.cssText='font-size:11px;color:var(--text3)';
+  wrap.appendChild(s1);
+  wrap.appendChild(msel);
+  var s2=document.createElement('span');s2.textContent='/';s2.style.cssText='font-size:11px;color:var(--text3)';
+  wrap.appendChild(s2);
+  wrap.appendChild(dsel);
+
+  /* hiddenに値があれば復元 */
+  restoreFromHidden();
+
+  /* 外から値をセットするユーティリティ */
+  wrap._setDate=function(val){
+    var hid=document.getElementById(hiddenId);if(hid)hid.value=val||'';
+    restoreFromHidden();
+  };
+}
+
+/* 各日付ピッカーを初期化 */
+function initDatePickers(){
+  makeDatePicker('crBirthdayWrap','crBirthday',{yearFrom:1950,yearTo:new Date().getFullYear()-10,yearLabel:'年'});
+  makeDatePicker('crInterviewDateWrap','crInterviewDate',{yearFrom:2020,yearTo:new Date().getFullYear()+1,yearLabel:'年'});
+  makeDatePicker('sContractStartWrap','sContractStart',{yearFrom:2020,yearTo:new Date().getFullYear()+3,yearLabel:'年'});
+}
+
 function switchCreatorTab(idx){
   document.querySelectorAll('#creatorTabBtns .tab-btn').forEach(function(b,i){b.classList.toggle('active',i===idx);});
   [0,1,2,3].forEach(function(i){var el=document.getElementById('ctab'+i);if(el)el.classList.toggle('active',i===idx);});
@@ -2628,13 +2721,13 @@ function switchCreatorTab(idx){
 function clearCreatorForm(){
   var fields=['crName','crRealName','crAddress','crArea','crReachTime','crTel','crEmail','crContact',
     'crEquipment','crSoftware','crSns','crPortfolio','crPhoto','crSpecialty',
-    'crOrderPoint','crCondition','crDelivery','crImpression'];
+    'crOrderPoint','crCondition','crDelivery','crImpression',
+    'crGender','crBirthday','crInterviewDate','crInterviewer'];
   fields.forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
-  document.getElementById('crGender').value='';
-  document.getElementById('crBirthday').value='';
-  document.getElementById('crInterviewDate').value='';
   Object.keys(CREATOR_SKILL_LABELS).forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
   document.querySelectorAll('input[name="crPromanage"]').forEach(function(r){r.checked=false;});
+  var chkEl=document.getElementById('crInterviewerChecks');
+  if(chkEl)chkEl.querySelectorAll('input[type=checkbox]').forEach(function(cb){cb.checked=false;});
 }
 
 function openCreatorModal(id){
@@ -2659,6 +2752,15 @@ function openCreatorModal(id){
   var ivVal=id?(DB.creators.find(function(x){return x.id===id;})||{}).crInterviewer||'':'';
   renderInterviewerChecks(ivVal);
   switchCreatorTab(0);
+  initDatePickers();
+  /* 編集時: 生年月日と面接日を復元 */
+  if(id){
+    var _cr=DB.creators.find(function(x){return x.id===id;});
+    if(_cr){
+      var _bwrap=document.getElementById('crBirthdayWrap');if(_bwrap&&_bwrap._setDate)_bwrap._setDate(_cr.crBirthday||'');
+      var _iwrap=document.getElementById('crInterviewDateWrap');if(_iwrap&&_iwrap._setDate)_iwrap._setDate(_cr.crInterviewDate||'');
+    }
+  }
   openModal('creatorModal');
 }
 
@@ -3198,12 +3300,15 @@ loadDB().then(function(){renderDashboard();updateSidebarStats();updateCorpSelect
     <!-- Tab 0: 基本情報 -->
     <div class="tab-pane active" id="ctab0">
       <div class="fr"><div class="field"><label>活動名 *</label><input id="crName" type="text" placeholder="例: 田中 カメラ"></div><div class="field"><label>本名</label><input id="crRealName" type="text" placeholder="田中 太郎"></div></div>
-      <div class="fr"><div class="field"><label>性別</label><select id="crGender"><option value="">—</option><option>男性</option><option>女性</option><option>その他</option></select></div><div class="field"><label>生年月日</label><input id="crBirthday" type="date"></div></div>
+      <div class="fr">
+  <div class="field"><label>性別</label><select id="crGender"><option value="">—</option><option>男性</option><option>女性</option><option>その他</option></select></div>
+  <div class="field"><label>生年月日</label><div style="display:flex;gap:4px;align-items:center" id="crBirthdayWrap"></div><input type="hidden" id="crBirthday"></div>
+</div>
       <div class="fr1 field"><label>住所</label><input id="crAddress" type="text" placeholder="東京都渋谷区..."></div>
       <div class="fr"><div class="field"><label>訪問可能エリア</label><input id="crArea" type="text" placeholder="東京・神奈川・埼玉"></div><div class="field"><label>連絡つきやすい時間</label><input id="crReachTime" type="text" placeholder="平日 10:00〜18:00"></div></div>
       <div class="fr"><div class="field"><label>携帯番号</label><input id="crTel" type="tel" placeholder="090-XXXX-XXXX"></div><div class="field"><label>メールアドレス</label><input id="crEmail" type="email" placeholder="creator@example.com"></div></div>
       <div class="fr1 field"><label>その他連絡先 <span style="font-size:10px;color:var(--text3)">LINE / ChatWork / Slack など</span></label><input id="crContact" type="text" placeholder="LINE: creator_line"></div>
-      <div class="fr1 field"><label>面接日</label><input id="crInterviewDate" type="date"></div>
+      <div class="fr1 field"><label>面接日</label><div style="display:flex;gap:4px;align-items:center" id="crInterviewDateWrap"></div><input type="hidden" id="crInterviewDate"></div>
       <div class="field" style="margin-bottom:10px">
         <label>面談担当者 <span style="font-size:10px;color:var(--text3);font-weight:400">複数選択可</span></label>
         <div id="crInterviewerChecks" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r)"></div>
