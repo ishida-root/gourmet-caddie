@@ -194,8 +194,8 @@ tr:hover td{background:#fafaf8}
 <!-- SIDEBAR -->
 <aside class="sidebar">
   <div class="logo">
-    <div class="logo-icon">
-      <svg viewBox="0 0 16 16"><path d="M2 2h5v5H2zM9 2h5v5H9zM2 9h5v5H2zM9 9h5v5H9z"/></svg>
+    <div class="logo-icon" style="background:none;padding:0;overflow:hidden">
+      <img src="root.logo.jpg" alt="ロゴ" style="width:28px;height:28px;object-fit:contain;border-radius:6px;display:block">
     </div>
     <div><div class="logo-text">グルメキャディ</div><div class="logo-sub">Gourmet Caddie</div></div>
   </div>
@@ -2724,8 +2724,13 @@ function renderRevSummary(){
    クリエイター管理
    ============================================================ */
 var editingCreatorId=null;
-var CREATOR_SKILL_LABELS={crSkillPlan:'企画',crSkillShoot:'撮影',crSkillEdit:'編集',crSkillAnalyze:'投稿分析',crSkillFood:'外食知見',crSkillCooking:'料理撮影',crSkillStill:'静止画',crSkillComm:'コミュニケーション'};
-var CREATOR_SKILL_VALS={'3':'◎','2':'○','1':'△','0':'✗','':'' };
+var CREATOR_SKILL_LABELS={crSkillPlan:'企画',crSkillShoot:'撮影',crSkillEdit:'編集',crSkillAnalyze:'投稿分析',crSkillFood:'外食知見',crSkillCooking:'料理撮影',crSkillStill:'フィード作成',crSkillComm:'コミュニケーション'};
+var CREATOR_SKILL_VALS={'3':'◎','2':'○','1':'△','0':'✗','':''};
+var FEED_SKILL_VALS={'3':'可','0':'不可','':''};
+function skillValLabel(skillId,val){
+  if(skillId==='crSkillStill')return FEED_SKILL_VALS[val]||'';
+  return CREATOR_SKILL_VALS[val]||'';
+}
 
 
 /* ============================================================
@@ -2915,9 +2920,10 @@ function calcAge(birthday){
   return age;
 }
 
-function skillBadge(val){
+function skillBadge(fid,val){
   var m={'3':'b-green','2':'b-blue','1':'b-amber','0':'b-red'};
-  var l=CREATOR_SKILL_VALS[val]||'';
+  if(fid==='crSkillStill'){m={'3':'b-green','0':'b-red'};}
+  var l=skillValLabel(fid,val);
   if(!l)return'';
   return'<span class="badge '+(m[val]||'b-gray')+'">'+l+'</span>';
 }
@@ -2931,12 +2937,12 @@ function openCreatorDetail(id){
   document.getElementById('creatorDetailTitle').textContent=cr.crName+(cr.crRealName?' ('+cr.crRealName+')':'');
 
   var proManageColors={yes:'b-green',no:'b-red',pending:'b-amber'};
-  var proManageLabels={yes:'提出済み',no:'未提出',pending:'確認中'};
+  var proManageLabels={yes:'可',no:'不可',pending:'要相談'};
 
   var skillRows=Object.keys(CREATOR_SKILL_LABELS).map(function(fid){
     return'<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border)">'
       +'<span style="font-size:12px;color:var(--text2)">'+CREATOR_SKILL_LABELS[fid]+'</span>'
-      +(cr[fid]!==undefined&&cr[fid]!==''?skillBadge(cr[fid]):'<span style="font-size:11px;color:var(--text3)">—</span>')
+      +(cr[fid]!==undefined&&cr[fid]!==''?skillBadge(fid,cr[fid]):'<span style="font-size:11px;color:var(--text3)">—</span>')
     +'</div>';
   }).join('');
 
@@ -2953,7 +2959,7 @@ function openCreatorDetail(id){
           +(cr.crGender?'<span class="badge b-gray">'+esc(cr.crGender)+'</span>':'')
           +(age!==null?'<span class="badge b-gray">'+age+'歳</span>':'')
           +(cr.crSpecialty?'<span class="badge b-blue">'+esc(cr.crSpecialty)+'</span>':'')
-          +(cr.crPromanage?'<span class="badge '+proManageColors[cr.crPromanage]+'">プロマネ: '+proManageLabels[cr.crPromanage]+'</span>':'')
+          +(cr.crPromanage?'<span class="badge '+proManageColors[cr.crPromanage]+'">プロマネ提出: '+proManageLabels[cr.crPromanage]+'</span>':'')
         +'</div>'
         +(cr.crArea?'<div style="font-size:12px;color:var(--text2);margin-top:6px">📍 '+esc(cr.crArea)+'</div>':'')
       +'</div>'
@@ -3019,7 +3025,7 @@ function renderCreators(){
     var age=calcAge(cr.crBirthday);
     var topSkills=Object.keys(CREATOR_SKILL_LABELS).filter(function(k){return cr[k]==='3';}).map(function(k){return CREATOR_SKILL_LABELS[k];}).slice(0,3);
     var proColors={yes:'b-green',no:'b-red',pending:'b-amber'};
-    var proLabels={yes:'提出済',no:'未提出',pending:'確認中'};
+    var proLabels={yes:'可',no:'不可',pending:'要相談'};
     return'<tr style="cursor:pointer" onclick="openCreatorDetail(\''+cr.id+'\')">'
       +'<td><div style="font-weight:500;color:var(--accent)">'+esc(cr.crName)+'</div>'+(age?'<div style="font-size:10px;color:var(--text3)">'+age+'歳</div>':'')+'</td>'
       +'<td>'+(cr.crGender?'<span class="badge b-gray">'+esc(cr.crGender)+'</span>':'—')+'</td>'
@@ -3425,7 +3431,7 @@ loadDB().then(function(){renderDashboard();updateSidebarStats();updateCorpSelect
         <div class="field"><label>投稿分析</label><select id="crSkillAnalyze"><option value="">—</option><option value="3">◎ 得意</option><option value="2">○ できる</option><option value="1">△ 要サポート</option><option value="0">✗ 不可</option></select></div>
         <div class="field"><label>外食知見</label><select id="crSkillFood"><option value="">—</option><option value="3">◎ 得意</option><option value="2">○ できる</option><option value="1">△ 要サポート</option><option value="0">✗ 不可</option></select></div>
         <div class="field"><label>料理撮影経験</label><select id="crSkillCooking"><option value="">—</option><option value="3">◎ 得意</option><option value="2">○ できる</option><option value="1">△ 要サポート</option><option value="0">✗ 不可</option></select></div>
-        <div class="field"><label>静止画作成</label><select id="crSkillStill"><option value="">—</option><option value="3">◎ 得意</option><option value="2">○ できる</option><option value="1">△ 要サポート</option><option value="0">✗ 不可</option></select></div>
+        <div class="field"><label>フィード作成</label><select id="crSkillStill"><option value="">—</option><option value="3">可</option><option value="0">不可</option></select></div>
         <div class="field"><label>コミュニケーション</label><select id="crSkillComm"><option value="">—</option><option value="3">◎ 得意</option><option value="2">○ できる</option><option value="1">△ 要サポート</option><option value="0">✗ 不可</option></select></div>
       </div>
       <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:10px">機材・ソフト</div>
@@ -3440,9 +3446,9 @@ loadDB().then(function(){renderDashboard();updateSidebarStats();updateCorpSelect
       <div class="fr1 field" style="margin-top:4px">
         <label>プロマネ提出</label>
         <div style="display:flex;gap:8px;margin-top:4px">
-          <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:5px 10px;border-radius:var(--r);background:var(--bg3);border:1px solid var(--border)"><input type="radio" name="crPromanage" id="crPromanageYes" value="yes" style="width:auto;margin:0"> 提出済み</label>
-          <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:5px 10px;border-radius:var(--r);background:var(--bg3);border:1px solid var(--border)"><input type="radio" name="crPromanage" id="crPromanageNo" value="no" style="width:auto;margin:0"> 未提出</label>
-          <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:5px 10px;border-radius:var(--r);background:var(--bg3);border:1px solid var(--border)"><input type="radio" name="crPromanage" id="crPromanagePending" value="pending" style="width:auto;margin:0"> 確認中</label>
+          <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:5px 10px;border-radius:var(--r);background:var(--bg3);border:1px solid var(--border)"><input type="radio" name="crPromanage" id="crPromanageYes" value="yes" style="width:auto;margin:0"> 可</label>
+          <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:5px 10px;border-radius:var(--r);background:var(--bg3);border:1px solid var(--border)"><input type="radio" name="crPromanage" id="crPromanageNo" value="no" style="width:auto;margin:0"> 不可</label>
+          <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:5px 10px;border-radius:var(--r);background:var(--bg3);border:1px solid var(--border)"><input type="radio" name="crPromanage" id="crPromanagePending" value="pending" style="width:auto;margin:0"> 要相談</label>
         </div>
       </div>
       <div class="fr1 field" style="margin-top:10px"><label>写真 / プロフィール画像 URL</label><input id="crPhoto" type="url" placeholder="https://...（ドライブリンクなど）"></div>
