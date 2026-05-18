@@ -3,27 +3,41 @@ name: Chatwork Notify
 on:
   workflow_dispatch:
     inputs:
+      action:
+        description: 'Action type: notify or create_user'
+        required: true
+        default: 'notify'
       room_id:
         description: 'Chatwork Room ID'
-        required: true
+        required: false
       message:
         description: 'Message body'
-        required: true
+        required: false
       type:
         description: 'message or task'
-        required: true
+        required: false
         default: 'message'
       to_ids:
-        description: 'Account IDs (comma separated, for task or mention)'
+        description: 'Account IDs (comma separated)'
         required: false
         default: ''
+      email:
+        description: 'Email for user creation'
+        required: false
+      role:
+        description: 'Role for user creation (admin or sales)'
+        required: false
+        default: 'sales'
+      password:
+        description: 'Password for user creation'
+        required: false
 
 jobs:
   notify:
     runs-on: ubuntu-latest
     steps:
       - name: Send message to Chatwork
-        if: ${{ inputs.type == 'message' }}
+        if: ${{ inputs.action == 'notify' && inputs.type == 'message' }}
         env:
           CW_TOKEN: ${{ secrets.CHATWORK_TOKEN }}
           ROOM_ID: ${{ inputs.room_id }}
@@ -34,7 +48,7 @@ jobs:
             --data-urlencode "body=${MSG}"
 
       - name: Create task in Chatwork
-        if: ${{ inputs.type == 'task' }}
+        if: ${{ inputs.action == 'notify' && inputs.type == 'task' }}
         env:
           CW_TOKEN: ${{ secrets.CHATWORK_TOKEN }}
           ROOM_ID: ${{ inputs.room_id }}
@@ -50,4 +64,33 @@ jobs:
             curl -s -X POST "https://api.chatwork.com/v2/rooms/${ROOM_ID}/tasks" \
               -H "X-ChatWorkToken: ${CW_TOKEN}" \
               --data-urlencode "body=${MSG}"
+          fi
+
+      - name: Create Supabase user
+        if: ${{ inputs.action == 'create_user' }}
+        env:
+          SUPABASE_URL: https://vwtcshwzetxnaedjhoej.supabase.co
+          SERVICE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          EMAIL: ${{ inputs.email }}
+          ROLE: ${{ inputs.role }}
+          PASSWORD: ${{ inputs.password }}
+        run: |
+          RESULT=$(curl -s -X POST "${SUPABASE_URL}/auth/v1/admin/users" \
+            -H "apikey: ${SERVICE_KEY}" \
+            -H "Authorization: Bearer ${SERVICE_KEY}" \
+            -H "Content-Type: application/json" \
+            -d "{\"email\":\"${EMAIL}\",\"password\":\"${PASSWORD}\",\"email_confirm\":true,\"user_metadata\":{\"role\":\"${ROLE}\"}}")
+          echo "Result: $RESULT"
+          if echo "$RESULT" | grep -q '"id"'; then
+            echo "✓ User created: ${EMAIL} (role: ${ROLE})"
+            
+            # SQLでrole設定（念のため）
+            curl -s -X POST "${SUPABASE_URL}/rest/v1/rpc/set_user_role" \
+              -H "apikey: ${SERVICE_KEY}" \
+              -H "Authorization: Bearer ${SERVICE_KEY}" \
+              -H "Content-Type: application/json" \
+              -d "{\"user_email\":\"${EMAIL}\",\"user_role\":\"${ROLE}\"}" || true
+          else
+            echo "✗ Failed: $RESULT"
+            exit 1
           fi
