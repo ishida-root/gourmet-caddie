@@ -849,11 +849,23 @@ tr:hover td{background:#fafaf8}
     <div class="fr"><div class="field"><label>媒体</label><select id="cPlatform"><option>Instagram</option><option>TikTok</option><option>YouTube</option><option>X</option></select></div><div class="field"><label>PR 費用（円）</label><input id="cFee" type="number" placeholder="50000"></div></div>
     <!-- スケジュール3ステップ -->
     <div style="padding:12px;background:var(--bg3);border-radius:var(--r);margin-bottom:12px">
-      <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:10px">📅 スケジュール</div>
+      <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:10px">📅 スケジュール <span style="font-weight:300;color:var(--text3)">（全て任意）</span></div>
       <div class="fr">
-        <div class="field"><label>🏃 来店予定日</label><input id="cVisitDate" type="date"></div>
-        <div class="field"><label>📝 初稿確認日</label><input id="cDraftDate" type="date"></div>
-        <div class="field"><label>✦ 投稿予定日 *</label><input id="cDate" type="date"></div>
+        <div class="field">
+          <label>🏃 来店予定日</label>
+          <div id="cVisitDateWrap" style="display:flex;gap:3px"></div>
+          <input type="hidden" id="cVisitDate">
+        </div>
+        <div class="field">
+          <label>📝 初稿確認日</label>
+          <div id="cDraftDateWrap" style="display:flex;gap:3px"></div>
+          <input type="hidden" id="cDraftDate">
+        </div>
+        <div class="field">
+          <label>✦ 投稿予定日</label>
+          <div id="cDateWrap" style="display:flex;gap:3px"></div>
+          <input type="hidden" id="cDate">
+        </div>
       </div>
     </div>
     <div class="fr"><div class="field"><label>リーチ数</label><input id="cReach" type="number" placeholder="30000"></div><div class="field"></div></div>
@@ -2260,21 +2272,49 @@ function openInfluencerDetail(id){
   openModal('infDetailModal');
 }
 
+var editingCastId=null;
 function openCastingModal(opts){
   updateCastSelects();
-  /* フォームリセット */
-  ['cFee','cReach','cResult','cVisitDate','cDraftDate','cDate'].forEach(function(id){
-    var el=document.getElementById(id);if(el)el.value='';
+  editingCastId=null;
+  ['cFee','cReach','cResult','cVisitDate','cDraftDate','cDate'].forEach(function(fid){
+    var el=document.getElementById(fid);if(el)el.value='';
   });
+  document.getElementById('cPlatform').value='Instagram';
   var titleEl=document.getElementById('castModalTitle');
   if(titleEl)titleEl.textContent='キャスティング記録';
-  /* プリセット（インフルエンサー詳細・キャスティング履歴から開いた場合） */
   if(opts){
+    /* 編集モード */
+    if(opts.editId){
+      editingCastId=opts.editId;
+      var ec=DB.castings.find(function(x){return x.id===opts.editId;});
+      if(ec){
+        if(titleEl)titleEl.textContent='キャスティングを編集';
+        var set=function(fid,v){var el=document.getElementById(fid);if(el&&v)el.value=v;};
+        set('cStore',ec.storeId);set('cInf',ec.infId);
+        set('cPlatform',ec.platform);set('cFee',ec.fee);
+        set('cReach',ec.reach);set('cResult',ec.result);
+        set('cVisitDate',ec.visitDate);set('cDraftDate',ec.draftDate);set('cDate',ec.date);
+      }
+    }
+    /* プリセット */
     if(opts.storeId){var s=document.getElementById('cStore');if(s)s.value=opts.storeId;}
     if(opts.infId){var i=document.getElementById('cInf');if(i)i.value=opts.infId;}
-    if(opts.infId&&opts.storeId){
-      var inf=DB.influencers.find(function(x){return x.id===opts.infId;});
-      if(inf&&titleEl)titleEl.textContent=esc(inf.name)+' のキャスティング記録';
+  }
+  /* 日付ピッカー初期化 */
+  var yr=new Date().getFullYear();
+  makeDatePicker('cVisitDateWrap','cVisitDate',{yearFrom:yr,yearTo:yr+2,yearLabel:'年'});
+  makeDatePicker('cDraftDateWrap','cDraftDate',{yearFrom:yr,yearTo:yr+2,yearLabel:'年'});
+  makeDatePicker('cDateWrap','cDate',{yearFrom:yr,yearTo:yr+2,yearLabel:'年'});
+  /* 編集時: 日付を復元 */
+  if(opts&&opts.editId){
+    var ec2=DB.castings.find(function(x){return x.id===opts.editId;});
+    if(ec2){
+      var setDp=function(wrapId,hidId,val){
+        var wrap=document.getElementById(wrapId);if(wrap&&wrap._setDate)wrap._setDate(val||'');
+      };
+      setDp('cVisitDateWrap','cVisitDate',ec2.visitDate);
+      setDp('cDraftDateWrap','cDraftDate',ec2.draftDate);
+      setDp('cDateWrap','cDate',ec2.date);
     }
   }
   openModal('castModal');
@@ -2283,7 +2323,8 @@ function saveCasting(){
   var sid=document.getElementById('cStore').value;
   var iid=document.getElementById('cInf').value;
   var dt=document.getElementById('cDate').value;
-  if(!sid||!iid||!dt){alert('店舗・インフルエンサー・投稿予定日は必須です');return;}
+  if(!sid||!iid){alert('店舗とインフルエンサーは必須です');return;}
+  var isEdit=!!editingCastId;
   var visitDate=document.getElementById('cVisitDate').value;
   var draftDate=document.getElementById('cDraftDate').value;
   var platform=document.getElementById('cPlatform').value;
@@ -2295,7 +2336,15 @@ function saveCasting(){
     reach:document.getElementById('cReach').value,
     result:document.getElementById('cResult').value
   };
-  DB.castings.push(c);
+  if(isEdit){
+    var eidx=DB.castings.findIndex(function(x){return x.id===editingCastId;});
+    c.id=editingCastId;
+    if(eidx>=0){DB.castings[eidx]=c;}else{DB.castings.push(c);}
+    /* 既存のpostsから紐づいたものを削除して再生成 */
+    DB.posts=DB.posts.filter(function(p){return p.castingId!==editingCastId;});
+  }else{
+    DB.castings.push(c);
+  }
 
   /* 投稿スケジュールに3ステップを自動登録 */
   var newPosts=[];
@@ -2311,10 +2360,12 @@ function saveCasting(){
       status:'draft',note:'初稿確認 キャスティングID:'+c.id,castingId:c.id};
     DB.posts.push(dp);newPosts.push(dp);
   }
-  var pp={id:uid(),storeId:sid,infId:iid,type:'inf_post',
-    date:dt+'T12:00',platform:platform,infFee:fee,
-    status:'scheduled',note:'投稿予定 キャスティングID:'+c.id,castingId:c.id};
-  DB.posts.push(pp);newPosts.push(pp);
+  if(dt){
+    var pp={id:uid(),storeId:sid,infId:iid,type:'inf_post',
+      date:dt+'T12:00',platform:platform,infFee:fee,
+      status:'scheduled',note:'投稿予定 キャスティングID:'+c.id,castingId:c.id};
+    DB.posts.push(pp);newPosts.push(pp);
+  }
 
   closeModal('castModal');
   ['cFee','cReach','cResult','cVisitDate','cDraftDate','cDate'].forEach(function(id){
@@ -2322,6 +2373,8 @@ function saveCasting(){
   });
   saveItem('castings',c);
   newPosts.forEach(function(p){saveItem('posts',p);});
+  /* 削除されたpostsをDBから消す */
+  if(isEdit){DB.posts.filter(function(p){return p.castingId===c.id;}).forEach(function(p){saveItem('posts',p);});}
   refreshAll();
 }
 function deleteCasting(id){DB.castings=DB.castings.filter(function(c){return c.id!==id;});refreshAll();deleteItem('castings',id);}
@@ -3187,7 +3240,7 @@ function renderCasting(){
       +'<td class="td-mono">'+fmtMoney(c.fee)+'</td>'
       +'<td class="td-mono">'+(c.reach?Number(c.reach).toLocaleString():'—')+'</td>'
       +'<td style="color:var(--text3);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc((c.result||'').slice(0,40))+'</td>'
-      +'<td onclick="event.stopPropagation()"><button class="btn-ghost-danger" onclick="deleteCasting(\''+c.id+'\')">削除</button></td>'
+      +'<td onclick="event.stopPropagation()" style="white-space:nowrap"><button class="btn btn-sm" style="margin-right:4px" onclick="openCastingModal({editId:\''+c.id+'\'})">編集</button><button class="btn-ghost-danger" onclick="deleteCasting(\''+c.id+'\')">削除</button></td>'
     +'</tr>';
   }).join('');
 }
@@ -3370,80 +3423,150 @@ function skillValLabel(skillId,val){
 
 
 /* ============================================================
-   日付プルダウン共通コンポーネント
+   カレンダーピッカー共通コンポーネント
    makeDatePicker(wrapperId, hiddenId, opts)
-   opts: { yearFrom, yearTo, yearLabel }
+   - 年プルダウン + 月←→ボタン + カレンダーグリッドで日クリック
    ============================================================ */
-function makeDatePicker(wrapperId, hiddenId, opts){
+function makeDatePicker(wrapperId,hiddenId,opts){
   var wrap=document.getElementById(wrapperId);
   if(!wrap)return;
   opts=opts||{};
   var yearFrom=opts.yearFrom||1950;
   var yearTo=opts.yearTo||(new Date().getFullYear()+2);
-  var yearLabel=opts.yearLabel||'年';
-  var style='font-size:12px;padding:4px 6px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg2);color:var(--text);cursor:pointer';
+  var hid=document.getElementById(hiddenId);
+  var today=new Date();
 
-  /* 年 */
-  var ysel=document.createElement('select');
-  ysel.style.cssText=style+';width:80px';
-  ysel.innerHTML='<option value="">'+yearLabel+'</option>';
-  for(var y=yearTo;y>=yearFrom;y--){
-    ysel.innerHTML+='<option value="'+y+'">'+y+'</option>';
+  /* 状態 */
+  var state={y:today.getFullYear(),m:today.getMonth()+1,d:0};
+  /* hiddenに既存値があれば復元 */
+  if(hid&&hid.value){
+    var parts=hid.value.split('-');
+    if(parts.length===3){state.y=+parts[0];state.m=+parts[1];state.d=+parts[2];}
   }
-  /* 月 */
-  var msel=document.createElement('select');
-  msel.style.cssText=style+';width:56px';
-  msel.innerHTML='<option value="">月</option>';
-  for(var m=1;m<=12;m++){msel.innerHTML+='<option value="'+(m<10?'0':'')+m+'">'+m+'月</option>';}
-  /* 日 */
-  var dsel=document.createElement('select');
-  dsel.style.cssText=style+';width:56px';
-  function rebuildDays(){
-    var curD=dsel.value;
-    dsel.innerHTML='<option value="">日</option>';
-    var ym=ysel.value&&msel.value?new Date(parseInt(ysel.value),parseInt(msel.value),0).getDate():31;
-    for(var d=1;d<=ym;d++){dsel.innerHTML+='<option value="'+(d<10?'0':'')+d+'">'+(d)+'日</option>';}
-    if(curD)dsel.value=curD;
-  }
-  rebuildDays();
 
   function syncHidden(){
-    var hid=document.getElementById(hiddenId);
-    if(!hid)return;
-    hid.value=(ysel.value&&msel.value&&dsel.value)
-      ?ysel.value+'-'+msel.value+'-'+dsel.value:'';
+    if(hid)hid.value=state.d?(state.y+'-'+(state.m<10?'0':'')+state.m+'-'+(state.d<10?'0':'')+state.d):'';
   }
-  function restoreFromHidden(){
-    var hid=document.getElementById(hiddenId);
-    if(!hid||!hid.value)return;
-    var parts=hid.value.split('-');
-    if(parts.length>=3){
-      ysel.value=parts[0];msel.value=parts[1];
-      rebuildDays();dsel.value=parts[2];
+
+  function render(){
+    wrap.innerHTML='';
+
+    /* --- 表示ラベル（クリックでカレンダー開閉） --- */
+    var label=document.createElement('div');
+    label.style.cssText='display:inline-flex;align-items:center;gap:6px;cursor:pointer;padding:4px 10px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg2);font-size:12px;min-width:110px;user-select:none';
+    label.innerHTML=(state.d?state.y+'/'+(state.m<10?'0':'')+state.m+'/'+(state.d<10?'0':'')+state.d:'<span style="color:var(--text3)">日付を選択</span>')
+      +'<span style="margin-left:auto;color:var(--text3);font-size:10px">▼</span>';
+
+    /* --- ポップアップ --- */
+    var popup=document.createElement('div');
+    popup.style.cssText='display:none;position:absolute;z-index:1000;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);box-shadow:0 4px 16px rgba(0,0,0,.15);padding:10px;width:220px;margin-top:2px';
+
+    var isOpen=false;
+    label.onclick=function(e){
+      e.stopPropagation();
+      isOpen=!isOpen;
+      popup.style.display=isOpen?'block':'none';
+      if(isOpen)renderGrid();
+    };
+    document.addEventListener('click',function close(e){
+      if(!wrap.contains(e.target)){popup.style.display='none';isOpen=false;}
+    });
+
+    function renderGrid(){
+      popup.innerHTML='';
+      /* 年プルダウン + 月ナビ */
+      var nav=document.createElement('div');
+      nav.style.cssText='display:flex;align-items:center;gap:4px;margin-bottom:8px';
+
+      var ySel=document.createElement('select');
+      ySel.style.cssText='font-size:12px;padding:2px 4px;border:1px solid var(--border);border-radius:4px;background:var(--bg2);color:var(--text);flex:1';
+      for(var y=yearTo;y>=yearFrom;y--){
+        ySel.innerHTML+='<option value="'+y+'"'+(y===state.y?' selected':'')+'>'+y+'年</option>';
+      }
+      ySel.onchange=function(){state.y=+this.value;renderGrid();};
+
+      var prevBtn=document.createElement('button');
+      prevBtn.textContent='‹';
+      prevBtn.style.cssText='width:24px;height:24px;border:1px solid var(--border);border-radius:4px;background:var(--bg3);cursor:pointer;font-size:14px;color:var(--text2)';
+      prevBtn.onclick=function(e){e.stopPropagation();state.m--;if(state.m<1){state.m=12;state.y--;}renderGrid();};
+
+      var mLabel=document.createElement('span');
+      mLabel.style.cssText='font-size:12px;font-weight:500;min-width:30px;text-align:center';
+      mLabel.textContent=state.m+'月';
+
+      var nextBtn=document.createElement('button');
+      nextBtn.textContent='›';
+      nextBtn.style.cssText=prevBtn.style.cssText;
+      nextBtn.onclick=function(e){e.stopPropagation();state.m++;if(state.m>12){state.m=1;state.y++;}renderGrid();};
+
+      var clearBtn=document.createElement('button');
+      clearBtn.textContent='✕';
+      clearBtn.title='クリア';
+      clearBtn.style.cssText='width:24px;height:24px;border:1px solid var(--border);border-radius:4px;background:var(--bg3);cursor:pointer;font-size:11px;color:var(--text3)';
+      clearBtn.onclick=function(e){e.stopPropagation();state.d=0;syncHidden();render();popup.style.display='none';isOpen=false;};
+
+      nav.appendChild(ySel);nav.appendChild(prevBtn);nav.appendChild(mLabel);nav.appendChild(nextBtn);nav.appendChild(clearBtn);
+      popup.appendChild(nav);
+
+      /* 曜日ヘッダ */
+      var dayNames=['日','月','火','水','木','金','土'];
+      var grid=document.createElement('div');
+      grid.style.cssText='display:grid;grid-template-columns:repeat(7,1fr);gap:2px';
+      dayNames.forEach(function(d,i){
+        var cell=document.createElement('div');
+        cell.textContent=d;
+        cell.style.cssText='text-align:center;font-size:10px;color:'+(i===0?'var(--red)':i===6?'var(--accent)':'var(--text3)')+';padding:2px 0';
+        grid.appendChild(cell);
+      });
+
+      /* 日付グリッド */
+      var firstDay=new Date(state.y,state.m-1,1).getDay();
+      var lastDate=new Date(state.y,state.m,0).getDate();
+      for(var blank=0;blank<firstDay;blank++){
+        var empty=document.createElement('div');grid.appendChild(empty);
+      }
+      for(var d2=1;d2<=lastDate;d2++){
+        (function(day){
+          var cell=document.createElement('div');
+          cell.textContent=day;
+          var isSelected=state.d===day;
+          var isToday=today.getFullYear()===state.y&&today.getMonth()+1===state.m&&today.getDate()===day;
+          cell.style.cssText='text-align:center;font-size:12px;padding:4px 2px;border-radius:4px;cursor:pointer;'
+            +(isSelected?'background:var(--accent);color:#fff;font-weight:500;'
+              :isToday?'background:var(--accent-bg);color:var(--accent);font-weight:500;'
+              :'color:var(--text);');
+          cell.onmouseover=function(){if(!isSelected)this.style.background='var(--bg3)';};
+          cell.onmouseout=function(){if(!isSelected)this.style.background=isToday?'var(--accent-bg)':'';};
+          cell.onclick=function(e){
+            e.stopPropagation();
+            state.d=day;
+            syncHidden();
+            render();
+            popup.style.display='none';isOpen=false;
+          };
+          grid.appendChild(cell);
+        })(d2);
+      }
+      popup.appendChild(grid);
     }
+
+    var container=document.createElement('div');
+    container.style.cssText='position:relative;display:inline-block';
+    container.appendChild(label);
+    container.appendChild(popup);
+    wrap.appendChild(container);
+
+    /* _setDate ユーティリティ */
+    wrap._setDate=function(val){
+      if(hid)hid.value=val||'';
+      if(val){
+        var p=val.split('-');
+        if(p.length===3){state.y=+p[0];state.m=+p[1];state.d=+p[2];}
+      }else{state.d=0;}
+      render();
+    };
   }
-
-  ysel.onchange=function(){rebuildDays();syncHidden();};
-  msel.onchange=function(){rebuildDays();syncHidden();};
-  dsel.onchange=syncHidden;
-
-  wrap.innerHTML='';
-  wrap.appendChild(ysel);
-  var s1=document.createElement('span');s1.textContent='/';s1.style.cssText='font-size:11px;color:var(--text3)';
-  wrap.appendChild(s1);
-  wrap.appendChild(msel);
-  var s2=document.createElement('span');s2.textContent='/';s2.style.cssText='font-size:11px;color:var(--text3)';
-  wrap.appendChild(s2);
-  wrap.appendChild(dsel);
-
-  /* hiddenに値があれば復元 */
-  restoreFromHidden();
-
-  /* 外から値をセットするユーティリティ */
-  wrap._setDate=function(val){
-    var hid=document.getElementById(hiddenId);if(hid)hid.value=val||'';
-    restoreFromHidden();
-  };
+  render();
 }
 
 /* 各日付ピッカーを初期化 */
@@ -3452,6 +3575,7 @@ function initDatePickers(){
   makeDatePicker('crInterviewDateWrap','crInterviewDate',{yearFrom:2020,yearTo:new Date().getFullYear()+1,yearLabel:'年'});
   makeDatePicker('sContractStartWrap','sContractStart',{yearFrom:2020,yearTo:new Date().getFullYear()+3,yearLabel:'年'});
 }
+
 
 function switchCreatorTab(idx){
   document.querySelectorAll('#creatorTabBtns .tab-btn').forEach(function(b,i){b.classList.toggle('active',i===idx);});
