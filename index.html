@@ -189,7 +189,32 @@ tr:hover td{background:#fafaf8}
 </style>
 </head>
 <body>
-<div class="app">
+
+<!-- LOGIN SCREEN -->
+<div id="loginScreen" style="position:fixed;inset:0;background:var(--bg);z-index:9999;display:flex;align-items:center;justify-content:center">
+  <div style="width:360px;padding:40px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 32px rgba(0,0,0,.12)">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:28px">
+      <img src="root.logo.jpg" style="width:36px;height:36px;object-fit:contain;border-radius:8px" onerror="this.style.display='none'">
+      <div>
+        <div style="font-size:16px;font-weight:500">グルメキャディ</div>
+        <div style="font-size:11px;color:var(--text3)">Gourmet Caddie</div>
+      </div>
+    </div>
+    <div class="field" style="margin-bottom:12px">
+      <label>メールアドレス</label>
+      <input id="loginEmail" type="email" placeholder="your@email.com" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <div class="field" style="margin-bottom:20px">
+      <label>パスワード</label>
+      <input id="loginPassword" type="password" placeholder="パスワード" onkeydown="if(event.key==='Enter')doLogin()">
+    </div>
+    <button class="btn btn-primary" style="width:100%;padding:10px" onclick="doLogin()">ログイン</button>
+    <div id="loginError" style="font-size:12px;color:var(--red);margin-top:10px;text-align:center"></div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div class="app" id="mainApp" style="display:none">
 
 <!-- SIDEBAR -->
 <aside class="sidebar">
@@ -197,7 +222,14 @@ tr:hover td{background:#fafaf8}
     <div class="logo-icon" style="background:none;padding:0;overflow:hidden">
       <img src="root.logo.jpg" alt="ロゴ" style="width:28px;height:28px;object-fit:contain;border-radius:6px;display:block">
     </div>
-    <div><div class="logo-text">グルメキャディ</div><div class="logo-sub">Gourmet Caddie</div></div>
+    <div style="flex:1"><div class="logo-text">グルメキャディ</div><div class="logo-sub">Gourmet Caddie</div></div>
+  </div>
+  <div style="padding:8px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px">
+    <div style="flex:1;min-width:0">
+      <div style="font-size:11px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="currentUserName"></div>
+      <span class="badge b-green" id="currentUserRole" style="font-size:9px;margin-top:2px"></span>
+    </div>
+    <button onclick="doLogout()" style="font-size:10px;padding:3px 8px;border:1px solid var(--border);border-radius:4px;background:var(--bg3);color:var(--text2);cursor:pointer;white-space:nowrap">ログアウト</button>
   </div>
   <nav class="nav">
     <div class="nav-section">Overview</div>
@@ -500,9 +532,20 @@ tr:hover td{background:#fafaf8}
           <div id="cwStatus" style="font-size:12px;margin-top:10px"></div>
         </div>
         <div class="card">
-          <div class="card-header"><span class="card-title">社員マスタ</span></div>
-          <div style="font-size:12px;color:var(--text2);margin-bottom:12px">営業・スタッフなどの役割を管理します。営業入力には営業ロールのメンバーのみ表示されます。</div>
-          <button class="btn btn-primary" onclick="openSalesPersonModal()">社員マスタを開く</button>
+          <div class="card-header"><span class="card-title">👥 ユーザー管理</span></div>
+          <div style="font-size:12px;color:var(--text2);margin-bottom:14px">メンバーのアカウントを発行します。登録後にパスワード設定メールが届きます。</div>
+          <div class="fr">
+            <div class="field"><label>メールアドレス</label><input id="inviteEmail" type="email" placeholder="member@example.com"></div>
+            <div class="field"><label>ロール</label><select id="inviteRole"><option value="sales">営業</option><option value="admin">管理者</option></select></div>
+          </div>
+          <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
+            <button class="btn btn-primary" onclick="inviteUser()">ユーザーを作成</button>
+          </div>
+          <div id="inviteStatus" style="font-size:12px;margin-top:10px"></div>
+          <div style="border-top:1px solid var(--border);margin-top:14px;padding-top:14px">
+            <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px">登録済みユーザー</div>
+            <div id="userList"><div style="font-size:12px;color:var(--text3)">読み込み中...</div></div>
+          </div>
         </div>
         <div class="card">
           <div class="card-header"><span class="card-title">通知プレビュー</span></div>
@@ -1234,6 +1277,163 @@ var currentPage='dashboard';
    将来サーバーを変えるときはここの2行だけ書き換えればOK
    ============================================================ */
 var SUPA_URL='https://vwtcshwzetxnaedjhoej.supabase.co';
+/* ============================================================
+   認証管理
+   ============================================================ */
+var currentUser=null;
+var currentRole=null; /* 'admin' or 'sales' */
+
+async function doLogin(){
+  var email=document.getElementById('loginEmail').value.trim();
+  var pw=document.getElementById('loginPassword').value;
+  var errEl=document.getElementById('loginError');
+  if(!email||!pw){errEl.textContent='メールアドレスとパスワードを入力してください';return;}
+  errEl.textContent='ログイン中...';
+  try{
+    var res=await fetch(SUPA_URL+'/auth/v1/token?grant_type=password',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':SUPA_KEY},
+      body:JSON.stringify({email:email,password:pw})
+    });
+    var data=await res.json();
+    if(!res.ok){errEl.textContent='メールアドレスまたはパスワードが正しくありません';return;}
+    currentUser=data.user;
+    currentRole=(data.user.user_metadata&&data.user.user_metadata.role)||'sales';
+    /* セッションを保存 */
+    try{localStorage.setItem('gc_session',JSON.stringify({
+      access_token:data.access_token,
+      refresh_token:data.refresh_token,
+      user:data.user,
+      role:currentRole
+    }));}catch(e){}
+    showApp();
+  }catch(e){errEl.textContent='ログインに失敗しました';}
+}
+
+function doLogout(){
+  currentUser=null;currentRole=null;
+  try{localStorage.removeItem('gc_session');}catch(e){}
+  document.getElementById('mainApp').style.display='none';
+  document.getElementById('loginScreen').style.display='flex';
+  document.getElementById('loginEmail').value='';
+  document.getElementById('loginPassword').value='';
+  document.getElementById('loginError').textContent='';
+}
+
+function showApp(){
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('mainApp').style.display='flex';
+  applyRoleUI();
+  loadDB().then(function(){renderDashboard();updateSidebarStats();updateCorpSelects();});
+}
+
+function applyRoleUI(){
+  var isSales=currentRole==='sales';
+  /* 営業ロールは特定ページのみ表示 */
+  var adminOnlyPages=['check','plans','influencers','casting','creators','corporations','settings'];
+  adminOnlyPages.forEach(function(page){
+    var navItems=document.querySelectorAll('.nav-item');
+    navItems.forEach(function(item){
+      if(item.getAttribute('onclick')==="navigate('"+page+"')"){
+        item.style.display=isSales?'none':'';
+      }
+    });
+  });
+  /* ユーザー名表示 */
+  var nameEl=document.getElementById('currentUserName');
+  if(nameEl)nameEl.textContent=(currentUser&&currentUser.email||'').split('@')[0];
+  /* 役割バッジ */
+  var roleEl=document.getElementById('currentUserRole');
+  if(roleEl){roleEl.textContent=isSales?'営業':'管理';roleEl.className='badge '+(isSales?'b-blue':'b-green');}
+  /* 投稿スケジュールの追加ボタンを営業は非表示 */
+  if(isSales){
+    var addBtn=document.getElementById('addBtn');
+    if(addBtn)addBtn.style.display='none';
+  }
+}
+
+
+/* ============================================================
+   ユーザー管理（管理者のみ）
+   ============================================================ */
+async function inviteUser(){
+  var email=document.getElementById('inviteEmail').value.trim();
+  var role=document.getElementById('inviteRole').value;
+  var statusEl=document.getElementById('inviteStatus');
+  if(!email){statusEl.innerHTML='<span style="color:var(--red)">メールアドレスを入力してください</span>';return;}
+  statusEl.innerHTML='<span style="color:var(--amber)">作成中...</span>';
+
+  /* Supabase Admin APIでユーザーを作成（service_roleキーが必要なためGitHub Actions経由） */
+  /* 代替：通常のsignUpを使い、メタデータにroleを付与 */
+  try{
+    var res=await fetch(SUPA_URL+'/auth/v1/admin/users',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'apikey':SUPA_KEY,
+        'Authorization':'Bearer '+SUPA_KEY
+      },
+      body:JSON.stringify({
+        email:email,
+        email_confirm:true,
+        user_metadata:{role:role}
+      })
+    });
+    var data=await res.json();
+    if(!res.ok){
+      /* admin APIは anon keyでは使えないのでsignUpを使う */
+      var res2=await fetch(SUPA_URL+'/auth/v1/signup',{
+        method:'POST',
+        headers:{'Content-Type':'application/json','apikey':SUPA_KEY},
+        body:JSON.stringify({
+          email:email,
+          password:Math.random().toString(36).slice(-10)+'Aa1!',
+          data:{role:role}
+        })
+      });
+      var data2=await res2.json();
+      if(!res2.ok){
+        statusEl.innerHTML='<span style="color:var(--red)">作成失敗: '+esc((data2.msg||data2.error||'エラー'))+'</span>';
+        return;
+      }
+      /* ロールをSQLで設定する案内 */
+      statusEl.innerHTML='<span style="color:var(--green)">✓ '+esc(email)+' を作成しました（ロール: '+(role==='admin'?'管理者':'営業')+'）<br>'
+        +'パスワードはSupabase → Authentication → Users → 該当ユーザー → Send password recovery で設定できます</span>';
+      document.getElementById('inviteEmail').value='';
+      loadUserList();
+      return;
+    }
+    statusEl.innerHTML='<span style="color:var(--green)">✓ '+esc(email)+' を作成しました</span>';
+    document.getElementById('inviteEmail').value='';
+    loadUserList();
+  }catch(e){
+    statusEl.innerHTML='<span style="color:var(--red)">エラー: '+e.message+'</span>';
+  }
+}
+
+async function loadUserList(){
+  var el=document.getElementById('userList');
+  if(!el)return;
+  /* anon keyでは全ユーザー一覧は取れないため、案内テキストを表示 */
+  el.innerHTML='<div style="font-size:12px;color:var(--text3)">ユーザー一覧はSupabaseダッシュボード → Authentication → Users で確認できます。<br><a href="https://supabase.com/dashboard/project/vwtcshwzetxnaedjhoej/auth/users" target="_blank" style="color:var(--accent)">Supabaseを開く ↗</a></div>';
+}
+
+function checkSession(){
+  try{
+    var s=localStorage.getItem('gc_session');
+    if(s){
+      var sess=JSON.parse(s);
+      if(sess&&sess.user&&sess.access_token){
+        currentUser=sess.user;
+        currentRole=sess.role||'sales';
+        showApp();
+        return;
+      }
+    }
+  }catch(e){}
+  document.getElementById('loginScreen').style.display='flex';
+  document.getElementById('mainApp').style.display='none';
+}
 var SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3dGNzaHd6ZXR4bmFlZGpob2VqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2MzM3MTgsImV4cCI6MjA5NDIwOTcxOH0.S10RHDE7wvKUMa2SxeoNvkgg6TtiMInw7ax6J5ZuMZk';
 var TABLES=['stores','posts','influencers','castings','plans','salesnotifs','creators','corporations'];
 
@@ -1363,11 +1563,16 @@ function navigate(page){
   var btnLabels={dashboard:'＋ 店舗追加',sales:'＋ 店舗入力',stores:'＋ 店舗追加',schedule:'＋ 追加',check:'＋ 店舗追加',plans:'＋ プラン追加',influencers:'＋ インフルエンサー追加',casting:'＋ キャスティング記録',creators:'＋ クリエイター追加',corporations:'＋ 法人追加',settings:''};
   document.getElementById('addBtn').textContent=btnLabels[page]||'＋ 新規追加';
   document.getElementById('addBtn').style.display=page==='settings'?'none':'';
-  if(page==='settings'){loadChatworkSettings();renderCwPreview();}
+  if(page==='settings'){loadChatworkSettings();renderCwPreview();loadUserList();}
   if(page==='sales'){updateSalesPlanSelect();updateSalesPersonSelects();}
   if(page==='dashboard')renderDashboard();
   if(page==='stores'){renderStoreTable();updateCorpSelects();}
-  if(page==='schedule'){renderSchedFilter();renderSchedule();renderCalendar();}
+  if(page==='schedule'){
+    renderSchedFilter();renderSchedule();renderCalendar();
+    /* 営業ロールは追加ボタン非表示 */
+    var addBtn=document.getElementById('addBtn');
+    if(addBtn)addBtn.style.display=(currentRole==='sales'?'none':'');
+  }
   if(page==='influencers'){
     renderInfluencers();
   }
@@ -3578,8 +3783,8 @@ function refreshAll(){
   if(currentPage==='creators')renderCreators();
 }
 
-setSyncStatus('saving','読み込み中...');
-loadDB().then(function(){renderDashboard();updateSidebarStats();updateCorpSelects();});
+/* 起動時にセッション確認 */
+checkSession();
 </script>
 <!-- GENRE MODAL -->
 <div class="modal-overlay" id="genreModal">
@@ -3786,5 +3991,6 @@ loadDB().then(function(){renderDashboard();updateSidebarStats();updateCorpSelect
 </div>
 </div>
 
+  </div><!-- /mainApp -->
 </body>
 </html>
