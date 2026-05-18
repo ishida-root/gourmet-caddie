@@ -548,6 +548,19 @@ tr:hover td{background:#fafaf8}
           </div>
         </div>
         <div class="card">
+          <div class="card-header"><span class="card-title">🔑 パスワード変更</span></div>
+          <div class="field" style="margin-bottom:10px">
+            <label>新しいパスワード</label>
+            <input id="newPassword" type="password" placeholder="新しいパスワード">
+          </div>
+          <div class="field" style="margin-bottom:12px">
+            <label>確認</label>
+            <input id="newPasswordConfirm" type="password" placeholder="もう一度入力">
+          </div>
+          <button class="btn btn-primary" onclick="changePassword()">パスワードを変更</button>
+          <div id="pwChangeStatus" style="font-size:12px;margin-top:10px"></div>
+        </div>
+        <div class="card">
           <div class="card-header"><span class="card-title">通知プレビュー</span></div>
           <div style="font-size:12px;color:var(--text2);margin-bottom:10px">営業入力時に送信されるメッセージ</div>
           <div style="background:var(--bg3);border-radius:var(--r);padding:12px;font-size:12px;line-height:1.8;color:var(--text);white-space:pre-wrap" id="cwPreview"></div>
@@ -829,12 +842,21 @@ tr:hover td{background:#fafaf8}
 
 <!-- CASTING MODAL -->
 <div class="modal-overlay" id="castModal">
-<div class="modal" style="width:520px">
-  <div class="modal-header"><span class="modal-title">キャスティング記録</span><button class="modal-close" onclick="closeModal('castModal')">✕</button></div>
+<div class="modal" style="width:560px">
+  <div class="modal-header"><span class="modal-title" id="castModalTitle">キャスティング記録</span><button class="modal-close" onclick="closeModal('castModal')">✕</button></div>
   <div class="modal-body">
     <div class="fr"><div class="field"><label>店舗 *</label><select id="cStore"><option value="">選択...</option></select></div><div class="field"><label>インフルエンサー *</label><select id="cInf"><option value="">選択...</option></select></div></div>
-    <div class="fr"><div class="field"><label>投稿日 *</label><input id="cDate" type="date"></div><div class="field"><label>媒体</label><select id="cPlatform"><option>Instagram</option><option>TikTok</option><option>YouTube</option><option>X</option></select></div></div>
-    <div class="fr"><div class="field"><label>PR 費用（円）</label><input id="cFee" type="number" placeholder="50000"></div><div class="field"><label>リーチ数</label><input id="cReach" type="number" placeholder="30000"></div></div>
+    <div class="fr"><div class="field"><label>媒体</label><select id="cPlatform"><option>Instagram</option><option>TikTok</option><option>YouTube</option><option>X</option></select></div><div class="field"><label>PR 費用（円）</label><input id="cFee" type="number" placeholder="50000"></div></div>
+    <!-- スケジュール3ステップ -->
+    <div style="padding:12px;background:var(--bg3);border-radius:var(--r);margin-bottom:12px">
+      <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:10px">📅 スケジュール</div>
+      <div class="fr">
+        <div class="field"><label>🏃 来店予定日</label><input id="cVisitDate" type="date"></div>
+        <div class="field"><label>📝 初稿確認日</label><input id="cDraftDate" type="date"></div>
+        <div class="field"><label>✦ 投稿予定日 *</label><input id="cDate" type="date"></div>
+      </div>
+    </div>
+    <div class="fr"><div class="field"><label>リーチ数</label><input id="cReach" type="number" placeholder="30000"></div><div class="field"></div></div>
     <div class="fr1 field"><label>成果メモ</label><textarea id="cResult" placeholder="反応・コメント・効果など..."></textarea></div>
     <div class="form-actions"><button class="btn" onclick="closeModal('castModal')">キャンセル</button><button class="btn btn-primary" onclick="saveCasting()">保存</button></div>
   </div>
@@ -1356,6 +1378,35 @@ function applyRoleUI(){
 /* ============================================================
    ユーザー管理（管理者のみ）
    ============================================================ */
+
+async function changePassword(){
+  var pw=document.getElementById('newPassword').value;
+  var pw2=document.getElementById('newPasswordConfirm').value;
+  var statusEl=document.getElementById('pwChangeStatus');
+  if(!pw){statusEl.innerHTML='<span style="color:var(--red)">パスワードを入力してください</span>';return;}
+  if(pw.length<6){statusEl.innerHTML='<span style="color:var(--red)">6文字以上で入力してください</span>';return;}
+  if(pw!==pw2){statusEl.innerHTML='<span style="color:var(--red)">パスワードが一致しません</span>';return;}
+  statusEl.innerHTML='<span style="color:var(--amber)">変更中...</span>';
+  try{
+    var sess=JSON.parse(localStorage.getItem('gc_session')||'{}');
+    var token=sess.access_token;
+    if(!token){statusEl.innerHTML='<span style="color:var(--red)">ログインし直してください</span>';return;}
+    var res=await fetch(SUPA_URL+'/auth/v1/user',{
+      method:'PUT',
+      headers:{'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+token},
+      body:JSON.stringify({password:pw})
+    });
+    if(res.ok){
+      statusEl.innerHTML='<span style="color:var(--green)">✓ パスワードを変更しました</span>';
+      document.getElementById('newPassword').value='';
+      document.getElementById('newPasswordConfirm').value='';
+    }else{
+      var d=await res.json();
+      statusEl.innerHTML='<span style="color:var(--red)">変更失敗: '+(d.msg||d.error||'エラー')+'</span>';
+    }
+  }catch(e){statusEl.innerHTML='<span style="color:var(--red)">エラー: '+e.message+'</span>';}
+}
+
 async function inviteUser(){
   var email=document.getElementById('inviteEmail').value.trim();
   var role=document.getElementById('inviteRole').value;
@@ -1967,7 +2018,7 @@ function onPostTypeChange(){
   var sel=document.querySelector('input[name="pTypeRadio"]:checked');
   var val=sel?sel.value:'video';
   document.getElementById('pType').value=val;
-  var isInf=val==='inf_visit'||val==='inf_post';
+  var isInf=val==='inf_visit'||val==='inf_post'||val==='inf_draft';
   document.getElementById('pInfRow').style.display=isInf?'':'none';
   document.getElementById('pPostFields').style.display=isInf?'none':'';
   var titleEl=document.getElementById('postModalTitle');
@@ -1985,6 +2036,12 @@ function onPostTypeChange(){
       '<option value="unbooked">予約未</option>'
       +'<option value="booked">予約済み</option>'
       +'<option value="visited">来店済み</option>'
+      +'<option value="cancelled">キャンセル</option>';
+  }else if(val==='inf_draft'){
+    statusSel.innerHTML=
+      '<option value="draft">未送付</option>'
+      +'<option value="pending_review">確認待ち</option>'
+      +'<option value="approved">承認済み</option>'
       +'<option value="cancelled">キャンセル</option>';
   }else{
     statusSel.innerHTML=
@@ -2197,19 +2254,75 @@ function openInfluencerDetail(id){
     +'<div class="form-actions" style="border-top:1px solid var(--border);margin-top:16px;padding-top:14px">'
       +'<button class="btn-ghost-danger" onclick="deleteInfluencer(\''+id+'\')">削除</button>'
       +'<button class="btn" onclick="closeModal(\'infDetailModal\')">閉じる</button>'
+      +'<button class="btn" onclick="closeModal(\'infDetailModal\');openCastingModal({infId:\''+id+'\'})">キャスティング登録</button>'
       +'<button class="btn btn-primary" onclick="closeModal(\'infDetailModal\');openInfluencerModal(\''+id+'\')">編集</button>'
     +'</div>';
   openModal('infDetailModal');
 }
 
-function openCastingModal(){updateCastSelects();openModal('castModal');}
+function openCastingModal(opts){
+  updateCastSelects();
+  /* フォームリセット */
+  ['cFee','cReach','cResult','cVisitDate','cDraftDate','cDate'].forEach(function(id){
+    var el=document.getElementById(id);if(el)el.value='';
+  });
+  var titleEl=document.getElementById('castModalTitle');
+  if(titleEl)titleEl.textContent='キャスティング記録';
+  /* プリセット（インフルエンサー詳細・キャスティング履歴から開いた場合） */
+  if(opts){
+    if(opts.storeId){var s=document.getElementById('cStore');if(s)s.value=opts.storeId;}
+    if(opts.infId){var i=document.getElementById('cInf');if(i)i.value=opts.infId;}
+    if(opts.infId&&opts.storeId){
+      var inf=DB.influencers.find(function(x){return x.id===opts.infId;});
+      if(inf&&titleEl)titleEl.textContent=esc(inf.name)+' のキャスティング記録';
+    }
+  }
+  openModal('castModal');
+}
 function saveCasting(){
-  var sid=document.getElementById('cStore').value,iid=document.getElementById('cInf').value,dt=document.getElementById('cDate').value;
-  if(!sid||!iid||!dt){alert('店舗・インフルエンサー・日付は必須です');return;}
-  var c={id:uid(),storeId:sid,infId:iid,date:dt,platform:document.getElementById('cPlatform').value,fee:document.getElementById('cFee').value,reach:document.getElementById('cReach').value,result:document.getElementById('cResult').value};
-  DB.castings.push(c);closeModal('castModal');
-  ['cFee','cReach','cResult'].forEach(function(id){document.getElementById(id).value='';});
-  refreshAll();saveItem('castings',c);
+  var sid=document.getElementById('cStore').value;
+  var iid=document.getElementById('cInf').value;
+  var dt=document.getElementById('cDate').value;
+  if(!sid||!iid||!dt){alert('店舗・インフルエンサー・投稿予定日は必須です');return;}
+  var visitDate=document.getElementById('cVisitDate').value;
+  var draftDate=document.getElementById('cDraftDate').value;
+  var platform=document.getElementById('cPlatform').value;
+  var fee=document.getElementById('cFee').value;
+  var c={
+    id:uid(),storeId:sid,infId:iid,date:dt,
+    visitDate:visitDate,draftDate:draftDate,
+    platform:platform,fee:fee,
+    reach:document.getElementById('cReach').value,
+    result:document.getElementById('cResult').value
+  };
+  DB.castings.push(c);
+
+  /* 投稿スケジュールに3ステップを自動登録 */
+  var newPosts=[];
+  if(visitDate){
+    var vp={id:uid(),storeId:sid,infId:iid,type:'inf_visit',
+      date:visitDate+'T12:00',platform:platform,infFee:fee,
+      status:'unbooked',note:'キャスティングID:'+c.id,castingId:c.id};
+    DB.posts.push(vp);newPosts.push(vp);
+  }
+  if(draftDate){
+    var dp={id:uid(),storeId:sid,infId:iid,type:'inf_draft',
+      date:draftDate+'T12:00',platform:platform,
+      status:'draft',note:'初稿確認 キャスティングID:'+c.id,castingId:c.id};
+    DB.posts.push(dp);newPosts.push(dp);
+  }
+  var pp={id:uid(),storeId:sid,infId:iid,type:'inf_post',
+    date:dt+'T12:00',platform:platform,infFee:fee,
+    status:'scheduled',note:'投稿予定 キャスティングID:'+c.id,castingId:c.id};
+  DB.posts.push(pp);newPosts.push(pp);
+
+  closeModal('castModal');
+  ['cFee','cReach','cResult','cVisitDate','cDraftDate','cDate'].forEach(function(id){
+    var el=document.getElementById(id);if(el)el.value='';
+  });
+  saveItem('castings',c);
+  newPosts.forEach(function(p){saveItem('posts',p);});
+  refreshAll();
 }
 function deleteCasting(id){DB.castings=DB.castings.filter(function(c){return c.id!==id;});refreshAll();deleteItem('castings',id);}
 
@@ -2449,7 +2562,7 @@ function updateCastSelects(){
 function setupPct(s){if(!s.setupChecks||!s.setupChecks.length)return 0;return Math.round(s.setupChecks.filter(Boolean).length/s.setupChecks.length*100);}
 function contractEndDate(s){if(!s.contractStart||!s.contractTerm)return null;var d=new Date(s.contractStart);d.setMonth(d.getMonth()+parseInt(s.contractTerm));return d;}
 function statusBadge(v){var m={active:'<span class="badge b-green">稼働中</span>',pending:'<span class="badge b-amber">準備中</span>',ended:'<span class="badge b-gray">終了</span>'};return m[v]||'—';}
-function postStatusBadge(v){var m={draft:'<span class="badge b-gray">下書き</span>',scheduled:'<span class="badge b-blue">予約済み</span>',done:'<span class="badge b-green">投稿済み</span>',unbooked:'<span class="badge b-gray">予約未</span>',booked:'<span class="badge b-amber">予約済み</span>',visited:'<span class="badge b-green">来店済み</span>',cancelled:'<span class="badge b-red">キャンセル</span>'};return m[v]||v;}
+function postStatusBadge(v){var m={draft:'<span class="badge b-gray">下書き</span>',scheduled:'<span class="badge b-blue">予約済み</span>',done:'<span class="badge b-green">投稿済み</span>',unbooked:'<span class="badge b-gray">予約未</span>',booked:'<span class="badge b-amber">予約済み</span>',visited:'<span class="badge b-green">来店済み</span>',cancelled:'<span class="badge b-red">キャンセル</span>',pending_review:'<span class="badge b-amber">確認待ち</span>',approved:'<span class="badge b-green">承認済み</span>'};return m[v]||v;}
 
 function generateAlerts(){
   var alerts=[],today=new Date();
@@ -2731,9 +2844,9 @@ function setSchedView(v){
   if(v==='cal')renderCalendar();
 }
 /* 投稿種別の設定 */
-var TYPE_ICON={video:'▶',image:'◼',reel:'◈',story:'◷',inf_visit:'🏃',inf_post:'✦'};
-var TYPE_LABEL={video:'動画',image:'画像',reel:'リール',story:'ストーリー',inf_visit:'来店予定',inf_post:'INF投稿'};
-var TYPE_BADGE={video:'b-gray',image:'b-gray',reel:'b-blue',story:'b-gray',inf_visit:'b-amber',inf_post:'b-purple'};
+var TYPE_ICON={video:'▶',image:'◼',reel:'◈',story:'◷',inf_visit:'🏃',inf_draft:'📝',inf_post:'✦'};
+var TYPE_LABEL={video:'動画',image:'画像',reel:'リール',story:'ストーリー',inf_visit:'来店予定',inf_draft:'初稿確認',inf_post:'INF投稿'};
+var TYPE_BADGE={video:'b-gray',image:'b-gray',reel:'b-blue',story:'b-gray',inf_visit:'b-amber',inf_draft:'b-green',inf_post:'b-purple'};
 
 function renderSchedule(){
   var activeFilters=Array.from(document.querySelectorAll('#schedFilter [data-active="1"]')).map(function(el){return el.getAttribute('data-sid');});
@@ -2755,7 +2868,7 @@ function renderSchedule(){
     var captCell=isInf
       ?(p.type==='inf_visit'?'<span style="color:var(--amber)">来店</span>':'<span style="color:var(--purple)">投稿予定</span>')
       :(p.caption?esc((p.caption||'').slice(0,40))+((p.caption||'').length>40?'…':''):'—');
-    var rowBg=p.type==='inf_visit'?'background:var(--amber-bg)':(p.type==='inf_post'?'background:var(--purple-bg)':'');
+    var rowBg=p.type==='inf_visit'?'background:var(--amber-bg)':p.type==='inf_draft'?'background:var(--green-bg)':(p.type==='inf_post'?'background:var(--purple-bg)':'');
     return'<tr style="'+rowBg+'">'
       +'<td><span class="badge '+TYPE_BADGE[p.type]+'">'+(TYPE_ICON[p.type]||'')+' '+(TYPE_LABEL[p.type]||p.type)+'</span></td>'
       +'<td><div style="display:flex;align-items:center;gap:5px"><span style="width:5px;height:5px;border-radius:50%;background:'+storeColor(p.storeId)+';display:inline-block;flex-shrink:0"></span>'+esc(storeName(p.storeId))+'</div></td>'
@@ -3055,10 +3168,28 @@ function renderInfluencers(){
 }
 
 function renderCasting(){
+  var search=(document.getElementById('globalSearch').value||'').toLowerCase();
   var list=DB.castings.slice().sort(function(a,b){return new Date(b.date)-new Date(a.date);});
+  if(search)list=list.filter(function(c){
+    return storeName(c.storeId).toLowerCase().includes(search)
+      ||infName(c.infId).toLowerCase().includes(search);
+  });
   var tb=document.getElementById('castBody');
-  if(!list.length){tb.innerHTML='<tr><td colspan="8" class="empty-state">キャスティング履歴がありません</td></tr>';return;}
-  tb.innerHTML=list.map(function(c){return'<tr><td>'+esc(storeName(c.storeId))+'</td><td>'+esc(infName(c.infId))+'</td><td class="td-mono">'+fmtD(c.date)+'</td><td>'+esc(c.platform||'')+'</td><td class="td-mono">'+fmtMoney(c.fee)+'</td><td class="td-mono">'+(c.reach?Number(c.reach).toLocaleString():'—')+'</td><td style="color:var(--text3);max-width:160px">'+esc((c.result||'').slice(0,50))+'</td><td><button class="btn-ghost-danger" onclick="deleteCasting(\''+c.id+'\')">削除</button></td></tr>';}).join('');
+  if(!list.length){tb.innerHTML='<tr><td colspan="10" class="empty-state">キャスティング履歴がありません</td></tr>';return;}
+  tb.innerHTML=list.map(function(c){
+    return'<tr>'
+      +'<td>'+esc(storeName(c.storeId))+'</td>'
+      +'<td style="color:var(--purple);font-weight:500">'+esc(infName(c.infId))+'</td>'
+      +'<td class="td-mono" style="color:var(--amber)">'+(c.visitDate?fmtD(c.visitDate):'—')+'</td>'
+      +'<td class="td-mono" style="color:var(--green)">'+(c.draftDate?fmtD(c.draftDate):'—')+'</td>'
+      +'<td class="td-mono">'+fmtD(c.date)+'</td>'
+      +'<td>'+esc(c.platform||'')+'</td>'
+      +'<td class="td-mono">'+fmtMoney(c.fee)+'</td>'
+      +'<td class="td-mono">'+(c.reach?Number(c.reach).toLocaleString():'—')+'</td>'
+      +'<td style="color:var(--text3);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc((c.result||'').slice(0,40))+'</td>'
+      +'<td onclick="event.stopPropagation()"><button class="btn-ghost-danger" onclick="deleteCasting(\''+c.id+'\')">削除</button></td>'
+    +'</tr>';
+  }).join('');
 }
 
 function globalSearchFn(){
