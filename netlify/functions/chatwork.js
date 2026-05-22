@@ -1,4 +1,16 @@
 exports.handler = async function(event) {
+  if(event.httpMethod === 'OPTIONS'){
+    return {
+      statusCode:200,
+      headers:{
+        'Access-Control-Allow-Origin':'*',
+        'Access-Control-Allow-Headers':'Content-Type',
+        'Access-Control-Allow-Methods':'POST, OPTIONS'
+      },
+      body:''
+    };
+  }
+
   if(event.httpMethod !== 'POST'){
     return {statusCode:405, body:'Method Not Allowed'};
   }
@@ -17,7 +29,6 @@ exports.handler = async function(event) {
     return {statusCode:400, body: JSON.stringify({error:'room_id and message are required'})};
   }
 
-  const fetch = require('node-fetch');
   const params = new URLSearchParams();
   params.append('body', message);
   if(type === 'task' && to_ids) params.append('to_ids', to_ids);
@@ -35,7 +46,10 @@ exports.handler = async function(event) {
     const data = await res.text();
     return {
       statusCode: res.status,
-      headers: {'Access-Control-Allow-Origin': '*'},
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type'
+      },
       body: data
     };
   } catch(e) {
