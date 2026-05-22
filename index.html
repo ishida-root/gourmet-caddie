@@ -928,6 +928,8 @@ tr:hover td{background:#fafaf8}
           <label>🏃 来店予定日</label>
           <div id="cVisitDateWrap" style="display:flex;gap:3px"></div>
           <input type="hidden" id="cVisitDate">
+          <div id="cVisitTimeWrap" style="margin-top:5px"></div>
+          <input type="hidden" id="cVisitTime" value="12:00">
         </div>
         <div class="field">
           <label>📝 初稿確認日</label>
@@ -2418,6 +2420,7 @@ function openCastingModal(opts){
   makeDatePicker('cVisitDateWrap','cVisitDate',{yearFrom:yr,yearTo:yr+2,yearLabel:'年'});
   makeDatePicker('cDraftDateWrap','cDraftDate',{yearFrom:yr,yearTo:yr+2,yearLabel:'年'});
   makeDatePicker('cDateWrap','cDate',{yearFrom:yr,yearTo:yr+2,yearLabel:'年'});
+  makeTimePicker('cVisitTimeWrap','cVisitTime');
   /* 編集時: 日付を復元 */
   if(opts&&opts.editId){
     var ec2=DB.castings.find(function(x){return x.id===opts.editId;});
@@ -2426,6 +2429,12 @@ function openCastingModal(opts){
         var wrap=document.getElementById(wrapId);if(wrap&&wrap._setDate)wrap._setDate(val||'');
       };
       setDp('cVisitDateWrap','cVisitDate',ec2.visitDate);
+      /* 来店時間復元 */
+      if(ec2.visitDate&&ec2.visitDate.includes('T')){
+        var vt=ec2.visitDate.split('T')[1].slice(0,5);
+        var vtWrap=document.getElementById('cVisitTimeWrap');
+        if(vtWrap&&vtWrap._setTime)vtWrap._setTime(vt);
+      }
       setDp('cDraftDateWrap','cDraftDate',ec2.draftDate);
       setDp('cDateWrap','cDate',ec2.date);
     }
@@ -2462,8 +2471,9 @@ function saveCasting(){
   /* 投稿スケジュールに3ステップを自動登録 */
   var newPosts=[];
   if(visitDate){
+    var visitTime=document.getElementById('cVisitTime')?document.getElementById('cVisitTime').value:'12:00';
     var vp={id:uid(),storeId:sid,infId:iid,type:'inf_visit',
-      date:visitDate+'T12:00',platform:platform,infFee:fee,
+      date:visitDate+'T'+visitTime,platform:platform,infFee:fee,
       status:'unbooked',note:'キャスティングID:'+c.id,castingId:c.id};
     DB.posts.push(vp);newPosts.push(vp);
   }
@@ -3559,6 +3569,113 @@ function skillValLabel(skillId,val){
    makeDatePicker(wrapperId, hiddenId, opts)
    - 年プルダウン + 月←→ボタン + カレンダーグリッドで日クリック
    ============================================================ */
+
+/* ============================================================
+   スクロール時間選択ウィジェット
+   makeTimePicker(wrapperId, hiddenId)
+   ============================================================ */
+function makeTimePicker(wrapperId, hiddenId){
+  var wrap = document.getElementById(wrapperId);
+  if(!wrap) return;
+  var hid = document.getElementById(hiddenId);
+
+  /* 選択肢リスト */
+  var times = [];
+  for(var h=0;h<24;h++){
+    times.push((h<10?'0':'')+h+':00');
+    times.push((h<10?'0':'')+h+':30');
+  }
+  times.push('未定');
+
+  var currentIdx = times.indexOf('12:00');
+  if(hid && hid.value && times.indexOf(hid.value)>=0) currentIdx = times.indexOf(hid.value);
+
+  function render(){
+    wrap.innerHTML = '';
+    var container = document.createElement('div');
+    container.style.cssText = 'position:relative;width:90px;height:100px;overflow:hidden;border:1px solid var(--border);border-radius:var(--r);background:var(--bg2);cursor:ns-resize;user-select:none';
+
+    /* グラデーションオーバーレイ */
+    var overlay = document.createElement('div');
+    overlay.style.cssText = 'position:absolute;inset:0;background:linear-gradient(to bottom,var(--bg2) 0%,transparent 30%,transparent 70%,var(--bg2) 100%);pointer-events:none;z-index:1';
+
+    /* 中央ライン */
+    var line = document.createElement('div');
+    line.style.cssText = 'position:absolute;top:50%;left:8px;right:8px;height:1px;background:var(--accent);opacity:0.4;transform:translateY(-50%);pointer-events:none;z-index:2';
+
+    /* アイテムリスト */
+    var list = document.createElement('div');
+    list.style.cssText = 'position:absolute;top:0;left:0;right:0;transition:transform .1s ease';
+
+    var ITEM_H = 20;
+    var VISIBLE = 5;
+    var CENTER = Math.floor(VISIBLE/2);
+
+    function updateList(){
+      list.innerHTML = '';
+      for(var i=-CENTER;i<=CENTER;i++){
+        var idx = currentIdx + i;
+        var item = document.createElement('div');
+        var t = (idx>=0 && idx<times.length) ? times[idx] : '';
+        item.textContent = t;
+        var dist = Math.abs(i);
+        var opacity = dist===0?1:dist===1?0.6:0.3;
+        var fontSize = dist===0?'13px':'11px';
+        var fontWeight = dist===0?'600':'400';
+        item.style.cssText = 'height:'+ITEM_H+'px;line-height:'+ITEM_H+'px;text-align:center;font-size:'+fontSize+';font-weight:'+fontWeight+';color:var(--text);opacity:'+opacity+';transition:all .1s';
+        list.appendChild(item);
+      }
+      if(hid) hid.value = (currentIdx>=0&&currentIdx<times.length)?times[currentIdx]:'12:00';
+    }
+    updateList();
+
+    /* マウスホイール */
+    container.addEventListener('wheel',function(e){
+      e.preventDefault();
+      if(e.deltaY>0) currentIdx=Math.min(currentIdx+1,times.length-1);
+      else currentIdx=Math.max(currentIdx-1,0);
+      updateList();
+    },{passive:false});
+
+    /* タッチ・ドラッグ */
+    var startY=0,startIdx=0;
+    container.addEventListener('mousedown',function(e){startY=e.clientY;startIdx=currentIdx;});
+    document.addEventListener('mousemove',function(e){
+      if(startY===null)return;
+      var diff=Math.round((startY-e.clientY)/ITEM_H);
+      if(diff!==0){
+        currentIdx=Math.max(0,Math.min(times.length-1,startIdx+diff));
+        updateList();
+      }
+    });
+    document.addEventListener('mouseup',function(){startY=null;});
+    container.addEventListener('touchstart',function(e){startY=e.touches[0].clientY;startIdx=currentIdx;},{passive:true});
+    container.addEventListener('touchmove',function(e){
+      var diff=Math.round((startY-e.touches[0].clientY)/ITEM_H);
+      if(diff!==0){currentIdx=Math.max(0,Math.min(times.length-1,startIdx+diff));updateList();}
+    },{passive:true});
+
+    container.style.height = (ITEM_H*VISIBLE)+'px';
+    list.style.paddingTop = (ITEM_H*CENTER)+'px';
+    list.style.paddingBottom = (ITEM_H*CENTER)+'px';
+
+    container.appendChild(list);
+    container.appendChild(overlay);
+    container.appendChild(line);
+    wrap.appendChild(container);
+
+    /* _setTime ユーティリティ */
+    wrap._setTime = function(val){
+      var idx = times.indexOf(val);
+      if(idx>=0) currentIdx=idx;
+      else currentIdx=times.indexOf('12:00');
+      if(hid) hid.value=val||'12:00';
+      updateList();
+    };
+  }
+  render();
+}
+
 function makeDatePicker(wrapperId,hiddenId,opts){
   var wrap=document.getElementById(wrapperId);
   if(!wrap)return;
