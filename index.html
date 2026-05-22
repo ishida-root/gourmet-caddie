@@ -568,15 +568,12 @@ tr:hover td{background:#fafaf8}
     <div class="page" id="page-settings">
       <div class="grid2">
         <div class="card">
-          <div class="card-header"><span class="card-title">Chatwork 連携設定（GitHub Actions経由）</span></div>
+          <div class="card-header"><span class="card-title">Chatwork 連携設定</span></div>
           <div style="font-size:12px;color:var(--text3);margin-bottom:14px;padding:8px 12px;background:var(--bg3);border-radius:var(--r)">
-            全て入力内容はブラウザのみに保存されます。<br>
+            APIトークンはGitHub Secretsで管理されています。ルームIDのみ設定してください。<br>
             ルームID：ChatworkのルームURL末尾の数字（例: chatwork.com/#!rid<strong>123456789</strong>）
           </div>
-          <div class="fr1 field" style="margin-bottom:10px">
-            <label>GitHub Personal Access Token <span style="font-size:10px;color:var(--text3);font-weight:400">workflow権限が必要</span></label>
-            <input id="cwGhPat" type="password" placeholder="ghp_XXXXXXXXXXXX">
-          </div>
+          <input type="hidden" id="cwGhPat">
           <div style="border-top:1px solid var(--border);padding-top:14px;margin-bottom:14px">
             <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px">📢 SNS局 — メッセージ送信</div>
             <div class="fr1 field"><label>ルームID</label><input id="cwSnsRoomId" type="text" placeholder="例: 123456789"></div>
@@ -590,6 +587,18 @@ tr:hover td{background:#fafaf8}
             <button class="btn btn-primary" onclick="saveChatworkSettings()">保存</button>
           </div>
           <div id="cwStatus" style="font-size:12px;margin-top:10px"></div>
+        </div>
+        <div class="card" id="ghPatCard">
+          <div class="card-header"><span class="card-title">🔐 GitHub PAT設定 <span style="font-size:10px;color:var(--text3);font-weight:400">管理者のみ</span></span></div>
+          <div style="font-size:12px;color:var(--text3);margin-bottom:12px">一度設定するとこのブラウザで保持されます。Chatwork通知の送信に使用します。</div>
+          <div class="fr1 field" style="margin-bottom:10px">
+            <label>GitHub Personal Access Token</label>
+            <input id="ghPatInput" type="password" placeholder="ghp_XXXXXXXXXXXX">
+          </div>
+          <div style="display:flex;gap:8px;justify-content:flex-end">
+            <button class="btn btn-primary" onclick="saveGhPat()">保存</button>
+          </div>
+          <div id="ghPatStatus" style="font-size:12px;margin-top:8px"></div>
         </div>
         <div class="card">
           <div class="card-header"><span class="card-title">👥 ユーザー管理</span></div>
@@ -1021,13 +1030,14 @@ function deleteGenre(idx){
 /* ============================================================
    Chatwork 連携
    ============================================================ */
+/* GitHub PATはlocalStorageで管理（設定画面から入力不要・ただし石田さんPCで一度保存必要） */
+var GH_PAT_KEY='gc_gh_pat';
 function loadChatworkSettings(){
   try{
     var d=localStorage.getItem('gc_cw_settings');
     if(d){
       var s=JSON.parse(d);
       var set=function(id,v){var el=document.getElementById(id);if(el)el.value=v||'';};
-      set('cwGhPat',s.ghPat);
       set('cwSnsRoomId',s.snsRoomId);
       set('cwCsRoomId',s.csRoomId);
     }
@@ -1035,7 +1045,7 @@ function loadChatworkSettings(){
 }
 function saveChatworkSettings(){
   var get=function(id){var el=document.getElementById(id);return el?el.value.trim():'';};
-  var s={ghPat:get('cwGhPat'),snsRoomId:get('cwSnsRoomId'),csRoomId:get('cwCsRoomId')};
+  var s={snsRoomId:get('cwSnsRoomId'),csRoomId:get('cwCsRoomId')};
   try{localStorage.setItem('gc_cw_settings',JSON.stringify(s));}catch(e){}
   var statusEl=document.getElementById('cwStatus');
   if(statusEl)statusEl.innerHTML='<span style="color:var(--green)">✓ 保存しました</span>';
@@ -1043,40 +1053,43 @@ function saveChatworkSettings(){
   renderCwPreview();
 }
 function getCwSettings(){
-  try{var d=localStorage.getItem('gc_cw_settings');return d?JSON.parse(d):{};}catch(e){return{};}
+  try{
+    var d=localStorage.getItem('gc_cw_settings');
+    var s=d?JSON.parse(d):{};
+    /* GH PATはセッションから取得 */
+    var sess=localStorage.getItem('gc_session');
+    if(sess){
+      var sessData=JSON.parse(sess);
+      s.ghPat=sessData.ghPat||s.ghPat||'';
+    }
+    return s;
+  }catch(e){return{};}
 }
 
 /* ---- GitHub Actions 経由でChatworkに送信 ---- */
 var GH_OWNER='ishida-root';
 var GH_REPO='gourmet-caddie';
 var GH_WORKFLOW='notify.yml';
+/* ルームIDを直接埋め込み（設定不要） */
+var CW_SNS_ROOM='429357836';
+var CW_CS_ROOM='380251579';
+/* Netlify Function URL */
+var NETLIFY_CW_URL='https://heroic-licorice-6af447.netlify.app/.netlify/functions/chatwork';
 
 async function ghDispatch(roomId,message,type,toIds){
-  var s=getCwSettings();
-  if(!s.ghPat||!roomId)return false;
+  if(!roomId)return false;
   try{
-    var res=await fetch(
-      'https://api.github.com/repos/'+GH_OWNER+'/'+GH_REPO+'/actions/workflows/'+GH_WORKFLOW+'/dispatches',
-      {
-        method:'POST',
-        headers:{
-          'Authorization':'Bearer '+s.ghPat,
-          'Accept':'application/vnd.github+json',
-          'Content-Type':'application/json'
-        },
-        body:JSON.stringify({
-          ref:'main',
-          inputs:{
-            room_id:String(roomId),
-            message:message,
-            type:type||'message',
-            to_ids:toIds||''
-          }
-        })
-      }
-    );
-    /* 204 No Content = 成功 */
-    return res.status===204||res.ok;
+    var res=await fetch(NETLIFY_CW_URL,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        room_id:String(roomId),
+        message:message,
+        type:type||'message',
+        to_ids:toIds||''
+      })
+    });
+    return res.ok;
   }catch(e){return false;}
 }
 
@@ -1100,15 +1113,17 @@ function buildCsTaskBody(corpName,storeName,planName,salesBy){
 
 async function notifyChatwork(storeName,plan,salesBy,contactName,tel,email,corpName){
   var s=getCwSettings();
+  var snsRoom=CW_SNS_ROOM||(s.snsRoomId||'');
+  var csRoom=CW_CS_ROOM||(s.csRoomId||'');
   var results=[];
-  if(s.snsRoomId){
+  if(snsRoom){
     var snsMsg=buildSnsMessage(storeName,plan,salesBy,contactName,tel,email);
-    var ok1=await ghDispatch(s.snsRoomId,snsMsg,'message','');
+    var ok1=await ghDispatch(snsRoom,snsMsg,'message','');
     results.push({to:'SNS局',ok:ok1});
   }
-  if(s.csRoomId){
+  if(csRoom){
     var taskBody=buildCsTaskBody(corpName||contactName||storeName,storeName,plan,salesBy);
-    var ok2=await ghDispatch(s.csRoomId,taskBody,'task','8306474');
+    var ok2=await ghDispatch(csRoom,taskBody,'task','8306474');
     results.push({to:'CSタスク',ok:ok2});
   }
   return results;
@@ -1468,6 +1483,21 @@ function applyRoleUI(){
    ユーザー管理（管理者のみ）
    ============================================================ */
 
+
+function saveGhPat(){
+  var pat=document.getElementById('ghPatInput').value.trim();
+  var statusEl=document.getElementById('ghPatStatus');
+  if(!pat){statusEl.innerHTML='<span style="color:var(--red)">PATを入力してください</span>';return;}
+  try{
+    var sess=JSON.parse(localStorage.getItem('gc_session')||'{}');
+    sess.ghPat=pat;
+    localStorage.setItem('gc_session',JSON.stringify(sess));
+    statusEl.innerHTML='<span style="color:var(--green)">✓ 保存しました</span>';
+    document.getElementById('ghPatInput').value='';
+    setTimeout(function(){statusEl.innerHTML='';},2000);
+  }catch(e){statusEl.innerHTML='<span style="color:var(--red)">エラー</span>';}
+}
+
 async function changePassword(){
   var pw=document.getElementById('newPassword').value;
   var pw2=document.getElementById('newPasswordConfirm').value;
@@ -1685,7 +1715,11 @@ function navigate(page){
   var btnLabels={dashboard:'＋ 店舗追加',sales:'＋ 店舗入力',stores:'＋ 店舗追加',schedule:'＋ 追加',check:'＋ 店舗追加',plans:'＋ プラン追加',influencers:'＋ インフルエンサー追加',casting:'＋ キャスティング記録',creators:'＋ クリエイター追加',corporations:'＋ 法人追加',settings:''};
   document.getElementById('addBtn').textContent=btnLabels[page]||'＋ 新規追加';
   document.getElementById('addBtn').style.display=page==='settings'?'none':'';
-  if(page==='settings'){loadChatworkSettings();renderCwPreview();loadUserList();}
+  if(page==='settings'){
+    loadChatworkSettings();renderCwPreview();loadUserList();
+    var ghCard=document.getElementById('ghPatCard');
+    if(ghCard)ghCard.style.display=(currentUser&&currentUser.email==='ishida@root-and-activation.co.jp')?'':'none';
+  }
   if(page==='sales'){updateSalesPlanSelect();updateSalesPersonSelects();}
   if(page==='dashboard')renderDashboard();
   if(page==='stores'){renderStoreTable();updateCorpSelects();}
@@ -2032,6 +2066,26 @@ function saveStore(){
   closeModal('storeModal');
   refreshAll();
   saveItem('stores',s);
+  /* 新規登録時はChatwork通知 */
+  if(!isEdit){
+    var plan=DB.plans.find(function(p){return p.id===s.planId;});
+    var planName=plan?plan.name:'未設定';
+    notifyChatwork(
+      s.name,planName,s.ourManager||'',
+      s.contactName||'',s.contactTel||'',s.contactEmail||'',
+      s.corp||''
+    ).then(function(results){
+      if(results.length){
+        var allOk=results.every(function(r){return r.ok;});
+        if(allOk){
+          setSyncStatus('ok','✓ Chatwork通知送信完了');
+          setTimeout(function(){setSyncStatus('ok','同期済み');},3000);
+        }else{
+          setSyncStatus('error','Chatwork通知失敗');
+        }
+      }
+    });
+  }
 }
 function deleteStore(id){
   if(!confirm('この店舗を削除しますか？'))return;
@@ -2488,10 +2542,11 @@ function submitSalesForm(){
   notifyChatwork(name,planName,sales,document.getElementById('sl-contact').value,document.getElementById('sl-tel').value,document.getElementById('sl-email').value,document.getElementById('sl-corp').value).then(function(results){
     if(results.length){
       var allOk=results.every(function(r){return r.ok;});
-      if(!allOk){
-        var statusEl=document.getElementById('syncStatus');
-        setSyncStatus('error','Webhook送信失敗 — 設定を確認してください');
-        setTimeout(function(){setSyncStatus('ok','');},4000);
+      if(allOk){
+        setSyncStatus('ok','✓ Chatwork通知送信完了');
+        setTimeout(function(){setSyncStatus('ok','同期済み');},3000);
+      }else{
+        setSyncStatus('error','Chatwork通知失敗');
       }
     }
   });
