@@ -663,7 +663,7 @@ tr:hover td{background:#fafaf8}
     <div class="page" id="page-casting">
       <div class="card">
         <div class="card-header"><span class="card-title">キャスティング履歴</span><button class="btn btn-primary btn-sm" onclick="openCastingModal()">＋ 記録追加</button></div>
-        <div class="table-wrap"><table><thead><tr><th>店舗</th><th>インフルエンサー</th><th>投稿日</th><th>媒体</th><th>PR費用</th><th>リーチ</th><th>成果メモ</th><th></th></tr></thead><tbody id="castBody"></tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>店舗</th><th>インフルエンサー</th><th>来店日</th><th>初稿確認日</th><th>投稿日</th><th>媒体</th><th>PR費用</th><th>リーチ</th><th>成果メモ</th><th></th></tr></thead><tbody id="castBody"></tbody></table></div>
       </div>
     </div>
 
@@ -761,14 +761,16 @@ tr:hover td{background:#fafaf8}
       <div class="fr"><div class="field"><label>月間動画本数</label><input id="sVideos" type="number" value="2"></div><div class="field"><label>広告配信</label><select id="sAdDelivery"><option value="yes">あり</option><option value="no">なし</option></select></div></div>
       <div class="field" style="margin-bottom:8px"><label>初期設定チェックリスト</label></div>
       <div class="checklist" id="setupChecklist">
-        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Meta ビジネスアカウント開設</span></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Facebookページ設定</span></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Meta広告アカウント開設</span></div>
         <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">広告アカウント設定</span></div>
-        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Facebook ピクセル設置</span></div>
-        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Instagram 連携</span></div>
-        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">SNS アカウント確認・権限付与</span></div>
-        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">クリエイター初回ブリーフィング</span></div>
-        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">初回撮影スケジュール確定</span></div>
-        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">店舗情報ヒアリングシート送付</span></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Instagramアカウント確認・権限取得</span></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">SNSアカウント確認・権限付与</span></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">楽々販売登録</span></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">クリエイター選出</span></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">ヒアリングシート送付</span></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">キックオフ会議</span></div>
+        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">初回撮影日確定</span></div>
       </div>
       <div class="fr1 field" style="margin-top:10px"><label>初期設定メモ</label><textarea id="sSetupMemo" placeholder="特記事項、注意点など..."></textarea></div>
     </div>
@@ -929,21 +931,21 @@ tr:hover td{background:#fafaf8}
     <!-- スケジュール3ステップ -->
     <div style="padding:12px;background:var(--bg3);border-radius:var(--r);margin-bottom:12px">
       <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:10px">📅 スケジュール <span style="font-weight:300;color:var(--text3)">（全て任意）</span></div>
-      <div class="fr">
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
         <div class="field">
-          <label>🏃 来店予定日</label>
+          <label style="font-size:11px">🏃 来店予定日</label>
           <div id="cVisitDateWrap" style="display:flex;gap:3px"></div>
           <input type="hidden" id="cVisitDate">
-          <div id="cVisitTimeWrap" style="margin-top:5px"></div>
+          <div id="cVisitTimeWrap" style="margin-top:4px;display:flex;align-items:center;gap:2px"></div>
           <input type="hidden" id="cVisitTime" value="12:00">
         </div>
         <div class="field">
-          <label>📝 初稿確認日</label>
+          <label style="font-size:11px">📝 初稿確認日</label>
           <div id="cDraftDateWrap" style="display:flex;gap:3px"></div>
           <input type="hidden" id="cDraftDate">
         </div>
         <div class="field">
-          <label>✦ 投稿予定日</label>
+          <label style="font-size:11px">✦ 投稿予定日</label>
           <div id="cDateWrap" style="display:flex;gap:3px"></div>
           <input type="hidden" id="cDate">
         </div>
@@ -2800,7 +2802,7 @@ function updateCastSelects(){
   document.getElementById('cStore').innerHTML='<option value="">選択...</option>'+DB.stores.map(function(s){return'<option value="'+s.id+'">'+esc(s.name)+'</option>';}).join('');
   document.getElementById('cInf').innerHTML='<option value="">選択...</option>'+DB.influencers.map(function(i){return'<option value="'+i.id+'">'+esc(i.name)+' '+esc(i.handle||'')+'</option>';}).join('');
 }
-function setupPct(s){if(!s.setupChecks||!s.setupChecks.length)return 0;return Math.round(s.setupChecks.filter(Boolean).length/s.setupChecks.length*100);}
+function setupPct(s){if(!s.setupChecks||!s.setupChecks.length)return 0;return Math.round(s.setupChecks.filter(Boolean).length/SETUP_LABELS.length*100);}
 function contractEndDate(s){if(!s.contractStart||!s.contractTerm)return null;var d=new Date(s.contractStart);d.setMonth(d.getMonth()+parseInt(s.contractTerm));return d;}
 function statusBadge(v){var m={active:'<span class="badge b-green">稼働中</span>',pending:'<span class="badge b-amber">準備中</span>',ended:'<span class="badge b-gray">終了</span>'};return m[v]||'—';}
 function postStatusBadge(v){var m={draft:'<span class="badge b-gray">下書き</span>',scheduled:'<span class="badge b-blue">予約済み</span>',done:'<span class="badge b-green">投稿済み</span>',unbooked:'<span class="badge b-gray">予約未</span>',booked:'<span class="badge b-amber">予約済み</span>',visited:'<span class="badge b-green">来店済み</span>',cancelled:'<span class="badge b-red">キャンセル</span>',pending_review:'<span class="badge b-amber">確認待ち</span>',approved:'<span class="badge b-green">承認済み</span>'};return m[v]||v;}
@@ -2871,9 +2873,29 @@ function renderDashboard(){
   var upcoming=DB.posts.filter(function(p){return p.status!=='done';}).sort(function(a,b){return new Date(a.date)-new Date(b.date);}).slice(0,5);
   var ue=document.getElementById('dash-upcoming');
   ue.innerHTML=upcoming.length?'<div class="timeline">'+upcoming.map(function(p){return'<div class="tl-item"><div class="tl-dot" style="background:'+storeColor(p.storeId)+'15;border-color:'+storeColor(p.storeId)+'"></div><div><div class="tl-date">'+fmtDT(p.date)+'</div><div class="tl-title">'+esc(storeName(p.storeId))+' — '+esc((p.caption||'').slice(0,36))+((p.caption||'').length>36?'…':'')+'</div></div></div>';}).join('')+'</div>':'<div class="empty-state" style="padding:16px">投稿予定なし</div>';
-  var setupPending=DB.stores.filter(function(s){return setupPct(s)<100;}).slice(0,4);
+  var setupPending=DB.stores.filter(function(s){return s.status==='active'&&setupPct(s)<100;}).slice(0,6);
   var se=document.getElementById('dash-setup');
-  se.innerHTML=setupPending.length?'<div class="grid2">'+setupPending.map(function(s){var p=setupPct(s);return'<div class="card-sm"><div style="display:flex;justify-content:space-between;margin-bottom:7px"><span style="font-size:12px;font-weight:500">'+esc(s.name)+'</span><span style="font-size:11px;color:var(--text3)">'+p+'%</span></div><div class="pbar-wrap"><div class="pbar" style="background:'+(p===100?'var(--green)':'var(--accent)')+';width:'+p+'%"></div></div></div>';}).join('')+'</div>':'<div class="empty-state" style="padding:16px">全店舗の初期設定完了 ✓</div>';
+  if(!setupPending.length){se.innerHTML='<div class="empty-state" style="padding:16px">全店舗の初期設定完了 ✓</div>';return;}
+  se.innerHTML=setupPending.map(function(s){
+    var checks=s.setupChecks||[];
+    var done=checks.filter(Boolean).length;
+    var total=SETUP_LABELS.length;
+    var pct=Math.round(done/total*100);
+    return'<div style="padding:10px 0;border-bottom:1px solid var(--border)">'
+      +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">'
+        +'<span style="font-size:12px;font-weight:500;cursor:pointer;color:var(--accent)" onclick="navigate(\'stores\');setTimeout(function(){showDetail(\''+s.id+'\');},100)">'+esc(s.name)+'</span>'
+        +'<div class="pbar-wrap" style="flex:1"><div class="pbar" style="width:'+pct+'%;background:'+(pct===100?'var(--green)':pct>=60?'var(--accent)':'var(--amber)')+'"></div></div>'
+        +'<span style="font-size:11px;color:var(--text3)">'+done+'/'+total+'</span>'
+        +'<button class="btn btn-sm" style="font-size:10px;padding:2px 7px" onclick="openStoreModal(\''+s.id+'\')" >設定</button>'
+      +'</div>'
+      +'<div style="display:flex;gap:3px;flex-wrap:wrap">'
+        +SETUP_LABELS.map(function(label,i){
+          var isDone=checks[i];
+          return'<span style="font-size:9px;padding:1px 5px;border-radius:10px;white-space:nowrap;background:'+(isDone?'var(--green-bg)':'var(--bg3)')+';color:'+(isDone?'var(--green)':'var(--text3)')+';border:1px solid '+(isDone?'var(--green-border)':'var(--border)')+';">'+(isDone?'✓ ':'')+esc(label)+'</span>';
+        }).join('')
+      +'</div>'
+    +'</div>';
+  }).join('');
 }
 
 function renderStoreTable(){
@@ -3007,7 +3029,22 @@ function showDetail(id){
     +(s.request?'<div style="margin-bottom:14px;padding:10px 12px;background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:var(--r);font-size:12px;white-space:pre-wrap">'+esc(s.request)+'</div>':'')
 
     /* 初期設定進捗 */
-    +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px"><span style="font-size:12px;color:var(--text2)">初期設定</span><div class="pbar-wrap" style="flex:1"><div class="pbar" style="background:'+(pct===100?'var(--green)':'var(--accent)')+';width:'+pct+'%"></div></div><span style="font-size:11px;color:var(--text3)">'+pct+'%</span></div>'
+    +'<div style="margin-bottom:14px">'
+      +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'
+        +'<span style="font-size:11px;font-weight:500;color:var(--text2)">初期設定</span>'
+        +'<div class="pbar-wrap" style="flex:1"><div class="pbar" style="background:'+(pct===100?'var(--green)':'var(--accent)')+';width:'+pct+'%"></div></div>'
+        +'<span style="font-size:11px;color:var(--text3)">'+pct+'%</span>'
+      +'</div>'
+      +'<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px">'
+        +SETUP_LABELS.map(function(label,i){
+          var done=s.setupChecks&&s.setupChecks[i];
+          return'<div style="display:flex;align-items:center;gap:4px;padding:4px 6px;border-radius:var(--r);background:'+(done?'var(--green-bg)':'var(--bg3)')+';border:1px solid '+(done?'var(--green-border)':'var(--border)')+'">'
+            +'<span style="font-size:10px;color:'+(done?'var(--green)':'var(--text3)')+'">'+(done?'✓':'○')+'</span>'
+            +'<span style="font-size:10px;color:'+(done?'var(--text)':'var(--text3)')+'">'+esc(label)+'</span>'
+          +'</div>';
+        }).join('')
+      +'</div>'
+    +'</div>'
 
     /* 投稿履歴 */
     +'<div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px">投稿履歴 ('+myPosts.length+'件)</div>'
@@ -3311,7 +3348,7 @@ function renderCheckPage(){
         +incomplete.map(function(s){
           var pct=setupPct(s);
           var checks=(s.setupChecks||[]);
-          var SETUP_LABELS=["Instagramログイン情報共有","Meta広告アカウント確認","食べログ掲載確認","ハイライト作成","固定投稿設定","楽々販売登録","初回撮影手配","プロフィール設定"];
+          var SETUP_LABELS=["Facebookページ設定","Meta広告アカウント開設","広告アカウント設定","Instagramアカウント確認・権限取得","SNSアカウント確認・権限付与","楽々販売登録","クリエイター選出","ヒアリングシート送付","キックオフ会議","初回撮影日確定"];
           var missing=SETUP_LABELS.filter(function(l,i){return!checks[i];});
           return'<div style="padding:10px 14px;border-bottom:1px solid var(--border)">'
             +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">'
@@ -3752,7 +3789,7 @@ function makeTimePicker(wrapperId, hiddenId){
   function makeScroll(items,getIdx,setIdx){
     var ITEM_H=18,VISIBLE=5,CENTER=2;
     var el=document.createElement('div');
-    el.style.cssText='position:relative;width:34px;height:'+(ITEM_H*VISIBLE)+'px;overflow:hidden;cursor:ns-resize;user-select:none;border:1px solid var(--border);border-radius:var(--r);background:var(--bg2)';
+    el.style.cssText='position:relative;width:28px;height:'+(ITEM_H*VISIBLE)+'px;overflow:hidden;cursor:ns-resize;user-select:none;border:1px solid var(--border);border-radius:var(--r);background:var(--bg2)';
 
     var overlay=document.createElement('div');
     overlay.style.cssText='position:absolute;inset:0;background:linear-gradient(to bottom,var(--bg2) 0%,transparent 28%,transparent 72%,var(--bg2) 100%);pointer-events:none;z-index:1';
