@@ -339,6 +339,11 @@ tr:hover td{background:#fafaf8}
       <span class="nav-badge" id="nb-creators">0</span>
     </div>
     <div class="nav-section">System</div>
+    <div class="nav-item" onclick="navigate('corporations')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="4" width="14" height="10" rx="1"/><path d="M4 4V3a1 1 0 011-1h6a1 1 0 011 1v1"/><path d="M1 8h14"/></svg>
+      法人管理
+      <span class="nav-badge" id="nb-corps">0</span>
+    </div>
     <div class="nav-item" onclick="navigate('settings')">
       <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="2.5"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2M3.05 3.05l1.41 1.41M11.54 11.54l1.41 1.41M3.05 12.95l1.41-1.41M11.54 4.46l1.41-1.41"/></svg>
       設定
@@ -619,6 +624,11 @@ tr:hover td{background:#fafaf8}
             <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px">登録済みユーザー</div>
             <div id="userList"><div style="font-size:12px;color:var(--text3)">読み込み中...</div></div>
           </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">👥 社員マスタ</span></div>
+          <div style="font-size:12px;color:var(--text2);margin-bottom:12px">営業・SNS・事務・社長などの役割を管理します。</div>
+          <button class="btn btn-primary" onclick="openSalesPersonModal()">社員マスタを開く</button>
         </div>
         <div class="card">
           <div class="card-header"><span class="card-title">🔑 パスワード変更</span></div>
@@ -2004,7 +2014,7 @@ function openStoreModal(id){
   if(id){
     var s=DB.stores.find(function(x){return x.id===id;});
     if(s){
-      var map={sName:'name',sCorpId:'corpId',sPref:'pref',sArea:'area',sSeats:'seats',sTabelog:'tabelog',sHp:'hp',sMemo:'memo',sIg:'ig',sIgFollowers:'igFollowers',sFb:'fb',sTw:'tw',sTt:'tt',sYt:'yt',sMetaId:'metaId',sMetaExp:'metaExp',sCreator:'creator',sContractStart:'contractStart',sContractTerm:'contractTerm',sMonthlyFee:'monthlyFee',sStatus:'status',sContactName:'contactName',sContactRole:'contactRole',sContactTel:'contactTel',sContactEmail:'contactEmail',sContactLine:'contactLine',sOurManager:'ourManager',sReviewCycle:'reviewCycle',sVideos:'videos',sAdDelivery:'adDelivery',sSetupMemo:'setupMemo',sPlanId:'planId'};
+      var map={sName:'name',sCorpId:'corpId',sGenre:'genre',sPref:'pref',sArea:'area',sZip:'zip',sSeats:'seats',sTabelog:'tabelog',sHp:'hp',sMemo:'memo',sIg:'ig',sIgFollowers:'igFollowers',sFb:'fb',sTw:'tw',sTt:'tt',sYt:'yt',sMetaId:'metaId',sMetaExp:'metaExp',sCreator:'creator',sContractStart:'contractStart',sContractTerm:'contractTerm',sMonthlyFee:'monthlyFee',sStatus:'status',sContactName:'contactName',sContactRole:'contactRole',sContactTel:'contactTel',sContactEmail:'contactEmail',sContactLine:'contactLine',sOurManager:'ourManager',sReviewCycle:'reviewCycle',sVideos:'videos',sAdDelivery:'adDelivery',sSetupMemo:'setupMemo',sPlanId:'planId'};
       Object.keys(map).forEach(function(elId){var el=document.getElementById(elId);if(el&&s[map[elId]]!==undefined)el.value=s[map[elId]];});
       if(document.getElementById('sOurManager')&&!document.getElementById('sOurManager').value&&s.salesBy){
         document.getElementById('sOurManager').value=s.salesBy;
@@ -2053,6 +2063,7 @@ function saveStore(){
     name:name,
     corpId:document.getElementById('sCorpId')?document.getElementById('sCorpId').value:'',
     genre:document.getElementById('sGenre').value,
+    zip:document.getElementById('sZip')?document.getElementById('sZip').value:'',
     pref:document.getElementById('sPref').value,
     area:document.getElementById('sArea').value,
     hours:document.getElementById('sHours').value,
