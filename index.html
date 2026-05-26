@@ -2550,12 +2550,20 @@ function saveCasting(){
     reach:document.getElementById('cReach').value,
     result:document.getElementById('cResult').value
   };
+  /* 既存の紐づきpostsを特定（新規・編集どちらも） */
+  var oldCastId=isEdit?editingCastId:null;
+  /* 新規の場合：同じ店舗×INFの組み合わせが既にあれば上書き扱いにする */
+  if(!isEdit){
+    var existing=DB.castings.find(function(x){return x.storeId===sid&&x.infId===iid;});
+    if(existing){oldCastId=existing.id;c.id=existing.id;isEdit=true;}
+  }
   if(isEdit){
-    var eidx=DB.castings.findIndex(function(x){return x.id===editingCastId;});
-    c.id=editingCastId;
+    var eidx=DB.castings.findIndex(function(x){return x.id===c.id;});
     if(eidx>=0){DB.castings[eidx]=c;}else{DB.castings.push(c);}
-    /* 既存のpostsから紐づいたものを削除して再生成 */
-    DB.posts=DB.posts.filter(function(p){return p.castingId!==editingCastId;});
+    /* 既存postsをメモリ＆Supabaseから削除 */
+    var toDelete=DB.posts.filter(function(p){return p.castingId===oldCastId;});
+    toDelete.forEach(function(p){deleteItem('posts',p.id);});
+    DB.posts=DB.posts.filter(function(p){return p.castingId!==oldCastId;});
   }else{
     DB.castings.push(c);
   }
@@ -2588,8 +2596,6 @@ function saveCasting(){
   });
   saveItem('castings',c);
   newPosts.forEach(function(p){saveItem('posts',p);});
-  /* 削除されたpostsをDBから消す */
-  if(isEdit){DB.posts.filter(function(p){return p.castingId===c.id;}).forEach(function(p){saveItem('posts',p);});}
   refreshAll();
 }
 function deleteCasting(id){DB.castings=DB.castings.filter(function(c){return c.id!==id;});refreshAll();deleteItem('castings',id);}
