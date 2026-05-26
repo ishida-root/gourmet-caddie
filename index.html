@@ -2560,7 +2560,7 @@ function saveCasting(){
   var oldCastId=isEdit?editingCastId:null;
   /* 新規の場合：同じ店舗×INFの組み合わせが既にあれば上書き扱いにする */
   if(!isEdit){
-    var existing=DB.castings.find(function(x){return x.storeId===sid&&x.infId===iid;});
+    var existing=DB.castings.find(function(x){return x.infId===iid;});
     if(existing){oldCastId=existing.id;c.id=existing.id;isEdit=true;}
   }
   /* 常に既存posts（同castingId）をSupabase＆メモリから先に削除してから再生成 */
@@ -2606,7 +2606,15 @@ function saveCasting(){
   newPosts.forEach(function(p){saveItem('posts',p);});
   refreshAll();
 }
-function deleteCasting(id){DB.castings=DB.castings.filter(function(c){return c.id!==id;});refreshAll();deleteItem('castings',id);}
+function deleteCasting(id){
+  /* 紐づくpostsもSupabase＆メモリから削除 */
+  var toDelete=DB.posts.filter(function(p){return p.castingId===id;});
+  toDelete.forEach(function(p){deleteItem('posts',p.id);});
+  DB.posts=DB.posts.filter(function(p){return p.castingId!==id;});
+  DB.castings=DB.castings.filter(function(c){return c.id!==id;});
+  refreshAll();
+  deleteItem('castings',id);
+}
 
 function updateSalesPlanSelect(){
   var sel=document.getElementById('sl-plan');
@@ -3179,12 +3187,12 @@ function renderSchedule(){
   var tb=document.getElementById('schedBody');
   if(!list.length){tb.innerHTML='<tr><td colspan="9" class="empty-state">スケジュールがありません</td></tr>';return;}
   tb.innerHTML=list.map(function(p){
-    var isInf=p.type==='inf_visit'||p.type==='inf_post';
+    var isInf=p.type==='inf_visit'||p.type==='inf_post'||p.type==='inf_draft';
     var infCell=isInf&&p.infId
       ?'<span style="color:var(--purple)">'+esc(infName(p.infId).split(' ')[0])+'</span>'
       :'<span style="color:var(--text3)">—</span>';
     var captCell=isInf
-      ?(p.type==='inf_visit'?'<span style="color:var(--amber)">来店</span>':'<span style="color:var(--purple)">投稿予定</span>')
+      ?(p.type==='inf_visit'?'<span style="color:var(--amber)">来店</span>':p.type==='inf_draft'?'<span style="color:var(--green)">初稿確認</span>':'<span style="color:var(--purple)">投稿予定</span>')
       :(p.caption?esc((p.caption||'').slice(0,40))+((p.caption||'').length>40?'…':''):'—');
     var rowBg=p.type==='inf_visit'?'background:var(--amber-bg)':p.type==='inf_draft'?'background:var(--green-bg)':(p.type==='inf_post'?'background:var(--purple-bg)':'');
     return'<tr style="'+rowBg+'">'
