@@ -2563,13 +2563,15 @@ function saveCasting(){
     var existing=DB.castings.find(function(x){return x.storeId===sid&&x.infId===iid;});
     if(existing){oldCastId=existing.id;c.id=existing.id;isEdit=true;}
   }
-  if(isEdit){
-    var eidx=DB.castings.findIndex(function(x){return x.id===c.id;});
-    if(eidx>=0){DB.castings[eidx]=c;}else{DB.castings.push(c);}
-    /* 既存postsをメモリ＆Supabaseから削除 */
+  /* 常に既存posts（同castingId）をSupabase＆メモリから先に削除してから再生成 */
+  if(oldCastId){
     var toDelete=DB.posts.filter(function(p){return p.castingId===oldCastId;});
     toDelete.forEach(function(p){deleteItem('posts',p.id);});
     DB.posts=DB.posts.filter(function(p){return p.castingId!==oldCastId;});
+  }
+  if(isEdit){
+    var eidx=DB.castings.findIndex(function(x){return x.id===c.id;});
+    if(eidx>=0){DB.castings[eidx]=c;}else{DB.castings.push(c);}
   }else{
     DB.castings.push(c);
   }
@@ -3829,8 +3831,7 @@ function makeTimePicker(wrapperId, hiddenId){
     var el=document.createElement('div');
     el.style.cssText='position:relative;width:32px;height:'+(ITEM_H*VISIBLE)+'px;overflow:hidden;cursor:ns-resize;user-select:none;border:1px solid var(--border);border-radius:var(--r);background:var(--bg2)';
 
-    var line=document.createElement('div');
-    line.style.cssText='position:absolute;left:0;right:0;top:'+(ITEM_H-1)+'px;height:1px;background:var(--border);pointer-events:none;z-index:2';
+
 
     var list=document.createElement('div');
     list.style.cssText='position:absolute;top:0;left:0;right:0';
@@ -3838,6 +3839,7 @@ function makeTimePicker(wrapperId, hiddenId){
     function renderList(){
       list.innerHTML='';
       var ci=getIdx();
+      /* i=0:前の候補(上・薄)、i=1:選択中(下・線の上・太) */
       for(var i=0;i<VISIBLE;i++){
         var idx=(ci+i+items.length)%items.length;
         var div=document.createElement('div');
@@ -3870,7 +3872,7 @@ function makeTimePicker(wrapperId, hiddenId){
       if(d!==0){setIdx(d-(getIdx()-si));si=getIdx();sy=e.touches[0].clientY;renderList();}
     },{passive:true});
 
-    el.appendChild(list);el.appendChild(line);
+    el.appendChild(list);
     el._renderList=renderList;
     return el;
   }
