@@ -3824,14 +3824,13 @@ function makeTimePicker(wrapperId, hiddenId){
   function syncHid(){if(hid)hid.value=(hours[curH]||'12')+':'+(mins[curM]||'00');}
 
   function makeScroll(items,getIdx,setIdx){
-    var ITEM_H=16,VISIBLE=3,CENTER=1;
+    /* 選択中を上段・次候補を下段の2行表示 */
+    var ITEM_H=20,VISIBLE=2,CENTER=0;
     var el=document.createElement('div');
-    el.style.cssText='position:relative;width:28px;height:'+(ITEM_H*VISIBLE)+'px;overflow:hidden;cursor:ns-resize;user-select:none;border:1px solid var(--border);border-radius:var(--r);background:var(--bg2)';
+    el.style.cssText='position:relative;width:32px;height:'+(ITEM_H*VISIBLE)+'px;overflow:hidden;cursor:ns-resize;user-select:none;border:1px solid var(--border);border-radius:var(--r);background:var(--bg2)';
 
-    var overlay=document.createElement('div');
-    overlay.style.cssText='position:absolute;inset:0;background:linear-gradient(to bottom,var(--bg2) 0%,transparent 28%,transparent 72%,var(--bg2) 100%);pointer-events:none;z-index:1';
     var line=document.createElement('div');
-    line.style.cssText='position:absolute;left:3px;right:3px;top:50%;height:1px;margin-top:-0.5px;background:var(--accent);opacity:0.5;pointer-events:none;z-index:2';
+    line.style.cssText='position:absolute;left:0;right:0;top:'+(ITEM_H-1)+'px;height:1px;background:var(--border);pointer-events:none;z-index:2';
 
     var list=document.createElement('div');
     list.style.cssText='position:absolute;top:0;left:0;right:0';
@@ -3839,15 +3838,14 @@ function makeTimePicker(wrapperId, hiddenId){
     function renderList(){
       list.innerHTML='';
       var ci=getIdx();
-      for(var i=-CENTER;i<=CENTER;i++){
+      for(var i=0;i<VISIBLE;i++){
         var idx=(ci+i+items.length)%items.length;
         var div=document.createElement('div');
         div.textContent=items[idx];
-        var dist=Math.abs(i);
-        div.style.cssText='height:'+ITEM_H+'px;line-height:'+ITEM_H+'px;text-align:center;font-size:'+(dist===0?'12px':'10px')+';font-weight:'+(dist===0?'600':'400')+';color:var(--text);opacity:'+(dist===0?'1':dist===1?'0.55':'0.25')+';transition:all .08s';
+        var isCur=i===0;
+        div.style.cssText='height:'+ITEM_H+'px;line-height:'+ITEM_H+'px;text-align:center;font-size:'+(isCur?'13px':'10px')+';font-weight:'+(isCur?'700':'400')+';color:'+(isCur?'var(--accent)':'var(--text3)')+';transition:all .08s';
         list.appendChild(div);
       }
-      list.style.paddingTop=(ITEM_H*CENTER)+'px';
       syncHid();
     }
     renderList();
@@ -3872,7 +3870,7 @@ function makeTimePicker(wrapperId, hiddenId){
       if(d!==0){setIdx(d-(getIdx()-si));si=getIdx();sy=e.touches[0].clientY;renderList();}
     },{passive:true});
 
-    el.appendChild(list);el.appendChild(overlay);el.appendChild(line);
+    el.appendChild(list);el.appendChild(line);
     el._renderList=renderList;
     return el;
   }
