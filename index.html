@@ -358,6 +358,7 @@ tr:hover td{background:#fafaf8}
 <!-- MAIN -->
 <main class="main">
   <div class="topbar">
+    <button class="hamburger" onclick="toggleSidebar()" aria-label="メニュー"><span></span><span></span><span></span></button>
     <div class="page-title" id="page-title">ダッシュボード</div>
     <div class="search-wrap">
       <svg class="search-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6.5" cy="6.5" r="4.5"/><path d="M10 10l3.5 3.5"/></svg>
@@ -1237,7 +1238,7 @@ function renderStaffList(){
   ae.innerHTML=active.length?active.map(function(p){
     return'<div style="display:flex;align-items:center;gap:6px;padding:7px 10px;background:var(--bg3);border-radius:var(--r);margin-bottom:5px">'
       +'<span style="flex:1;font-size:13px">'+esc(p.name)+'</span>'
-      +'<span class="badge '+(ROLE_BADGE[p.role]||'b-gray')+' style="font-size:10px">'+(ROLE_LABELS[p.role]||'—')+'</span>'
+      +'<span class="badge '+(ROLE_BADGE[p.role]||'b-gray')+'" style="font-size:10px">'+(ROLE_LABELS[p.role]||'—')+'</span>'
       +'<button class="btn btn-sm" onclick="openStaffEditModal(\''+p.id+'\')" style="font-size:11px">編集</button>'
       +'<button class="btn btn-sm" onclick="retireSalesPerson(\''+p.id+'\')" style="font-size:11px;color:var(--text3)">退職</button>'
       +'</div>';
