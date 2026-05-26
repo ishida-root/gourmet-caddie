@@ -2169,7 +2169,20 @@ function openPostModal(id){
       if(statusSel&&statusSel.querySelector('option[value="'+p.status+'"]'))statusSel.value=p.status;
       var isInf=p.type==='inf_visit'||p.type==='inf_post';
       if(isInf){
-        set('pInfId',p.infId);set('pInfFee',p.infFee);
+        /* infId復元：selectのoptionsが構築済みであることを確認してからセット */
+        var infSelEl=document.getElementById('pInfId');
+        if(infSelEl&&p.infId){
+          /* optionが存在しない場合（DBに削除済みINFなど）は一時的に追加 */
+          if(!infSelEl.querySelector('option[value="'+p.infId+'"]')){
+            var tmpOpt=document.createElement('option');
+            tmpOpt.value=p.infId;
+            var tmpInf=DB.influencers.find(function(x){return x.id===p.infId;});
+            tmpOpt.textContent=tmpInf?tmpInf.name:'（削除済み）';
+            infSelEl.appendChild(tmpOpt);
+          }
+          infSelEl.value=p.infId;
+        }
+        set('pInfFee',p.infFee);
       }else{
         set('pCaption',p.caption);set('pCreative',p.creative);
         set('pAd',p.ad);set('pBudget',p.budget);
