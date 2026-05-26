@@ -2203,21 +2203,26 @@ function openPostModal(id){
 }
 function initPostDatePicker(dateStr){
   var yr=new Date().getFullYear();
-  makeDatePicker('pDateWrap','pDateOnly',{yearFrom:yr-1,yearTo:yr+3,yearLabel:'年'});
-  makeTimePicker('pTimeWrap','pTimeOnly');
-  if(!document.getElementById('pDateOnly')){
-    var pd=document.createElement('input');pd.type='hidden';pd.id='pDateOnly';
-    var dw=document.getElementById('pDateWrap');if(dw)dw.appendChild(pd);
-  }
-  if(!document.getElementById('pTimeOnly')){
-    var pt=document.createElement('input');pt.type='hidden';pt.id='pTimeOnly';
-    var tw=document.getElementById('pTimeWrap');if(tw)tw.appendChild(pt);
-  }
+  /* ピッカーを毎回再構築してから値をセット */
+  var dateVal='',timeVal='12:00';
   if(dateStr){
     var parts=dateStr.split('T');
-    var dw2=document.getElementById('pDateWrap');if(dw2&&dw2._setDate)dw2._setDate(parts[0]||'');
-    var tw2=document.getElementById('pTimeWrap');if(tw2&&tw2._setTime)tw2._setTime(parts[1]?parts[1].slice(0,5):'12:00');
+    dateVal=parts[0]||'';
+    timeVal=parts[1]?parts[1].slice(0,5):'12:00';
   }
+  /* hidden inputに先に値を入れておくとmakeDatePicker/makeTimePickerが初期値として拾う */
+  var pdEl=document.getElementById('pDateOnly');
+  if(!pdEl){pdEl=document.createElement('input');pdEl.type='hidden';pdEl.id='pDateOnly';var dw0=document.getElementById('pDateWrap');if(dw0)dw0.appendChild(pdEl);}
+  pdEl.value=dateVal;
+  var ptEl=document.getElementById('pTimeOnly');
+  if(!ptEl){ptEl=document.createElement('input');ptEl.type='hidden';ptEl.id='pTimeOnly';var tw0=document.getElementById('pTimeWrap');if(tw0)tw0.appendChild(ptEl);}
+  ptEl.value=timeVal;
+  makeDatePicker('pDateWrap','pDateOnly',{yearFrom:yr-1,yearTo:yr+3,yearLabel:'年'});
+  makeTimePicker('pTimeWrap','pTimeOnly');
+  /* ピッカー構築後に確実に値を反映 */
+  var dw2=document.getElementById('pDateWrap');if(dw2&&dw2._setDate)dw2._setDate(dateVal);
+  var tw2=document.getElementById('pTimeWrap');if(tw2&&tw2._setTime)tw2._setTime(timeVal);
+  /* pDate hidden を結合値で常に最新に保つ */
   /* pDate hidden を結合値で常に最新に保つ */
   var pdOnly=document.getElementById('pDateOnly');
   var ptOnly=document.getElementById('pTimeOnly');
@@ -3813,13 +3818,13 @@ function makeTimePicker(wrapperId, hiddenId){
   if(hid&&hid.value&&hid.value!=='未定'&&hid.value.includes(':')){
     var parts=hid.value.split(':');
     curH=parseInt(parts[0])||12;
-    curM=Math.round(parseInt(parts[1]||'0')/10)*10%60;
+    curM=Math.round(parseInt(parts[1]||'0')/10)%6;
   }
 
   function syncHid(){if(hid)hid.value=(hours[curH]||'12')+':'+(mins[curM]||'00');}
 
   function makeScroll(items,getIdx,setIdx){
-    var ITEM_H=18,VISIBLE=5,CENTER=2;
+    var ITEM_H=16,VISIBLE=3,CENTER=1;
     var el=document.createElement('div');
     el.style.cssText='position:relative;width:28px;height:'+(ITEM_H*VISIBLE)+'px;overflow:hidden;cursor:ns-resize;user-select:none;border:1px solid var(--border);border-radius:var(--r);background:var(--bg2)';
 
