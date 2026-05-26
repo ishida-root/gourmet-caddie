@@ -884,6 +884,8 @@ tr:hover td{background:#fafaf8}
     <div id="pTimeWrap" style="display:flex;align-items:center;gap:2px"></div>
   </div>
   <input type="hidden" id="pDate">
+  <input type="hidden" id="pDateOnly">
+  <input type="hidden" id="pTimeOnly">
 </div><div class="field"><label>ステータス</label><select id="pStatus"><option value="draft">下書き</option><option value="scheduled">予約済み</option><option value="done">完了</option></select></div></div>
     <!-- 通常投稿のみ -->
     <div id="pPostFields">
@@ -2219,30 +2221,17 @@ function initPostDatePicker(dateStr){
     dateVal=parts[0]||'';
     timeVal=parts[1]?parts[1].slice(0,5):'12:00';
   }
-  /* hidden inputに先に値を入れておくとmakeDatePicker/makeTimePickerが初期値として拾う */
+  /* hidden inputに値をセット（wrapの外にあるので消えない） */
   var pdEl=document.getElementById('pDateOnly');
-  if(!pdEl){pdEl=document.createElement('input');pdEl.type='hidden';pdEl.id='pDateOnly';var dw0=document.getElementById('pDateWrap');if(dw0)dw0.appendChild(pdEl);}
-  pdEl.value=dateVal;
+  if(pdEl)pdEl.value=dateVal;
   var ptEl=document.getElementById('pTimeOnly');
-  if(!ptEl){ptEl=document.createElement('input');ptEl.type='hidden';ptEl.id='pTimeOnly';var tw0=document.getElementById('pTimeWrap');if(tw0)tw0.appendChild(ptEl);}
-  ptEl.value=timeVal;
+  if(ptEl)ptEl.value=timeVal;
+  /* ピッカー構築（hiddenIdの値を初期値として読み取る） */
   makeDatePicker('pDateWrap','pDateOnly',{yearFrom:yr-1,yearTo:yr+3,yearLabel:'年'});
   makeTimePicker('pTimeWrap','pTimeOnly');
-  /* ピッカー構築後に確実に値を反映 */
+  /* ピッカー構築後に_setDateで確実に反映 */
   var dw2=document.getElementById('pDateWrap');if(dw2&&dw2._setDate)dw2._setDate(dateVal);
   var tw2=document.getElementById('pTimeWrap');if(tw2&&tw2._setTime)tw2._setTime(timeVal);
-  /* pDate hidden を結合値で常に最新に保つ */
-  /* pDate hidden を結合値で常に最新に保つ */
-  var pdOnly=document.getElementById('pDateOnly');
-  var ptOnly=document.getElementById('pTimeOnly');
-  if(pdOnly&&ptOnly){
-    var upd=function(){
-      var hid=document.getElementById('pDate');
-      if(hid)hid.value=(pdOnly.value&&ptOnly.value)?pdOnly.value+'T'+ptOnly.value:'';
-    };
-    pdOnly.addEventListener('change',upd);
-    ptOnly.addEventListener('change',upd);
-  }
 }
 function onPostTypeChange(){
   var sel=document.querySelector('input[name="pTypeRadio"]:checked');
@@ -2286,9 +2275,11 @@ function savePost(){
   var sid=document.getElementById('pStore').value;
   var _pdOnly=document.getElementById('pDateOnly');
   var _ptOnly=document.getElementById('pTimeOnly');
-  var dt=(_pdOnly&&_pdOnly.value)
-    ?_pdOnly.value+'T'+(_ptOnly&&_ptOnly.value?_ptOnly.value:'12:00')
-    :document.getElementById('pDate').value;
+  /* pDateOnly/pTimeOnlyから取得。空の場合はwrapの_getDateも試みる */
+  var _dateVal=_pdOnly?_pdOnly.value:'';
+  var _timeVal=(_ptOnly&&_ptOnly.value)?_ptOnly.value:'12:00';
+  if(!_dateVal){var _dw=document.getElementById('pDateWrap');if(_dw&&_dw._getDate)_dateVal=_dw._getDate();}
+  var dt=_dateVal?(_dateVal+'T'+_timeVal):document.getElementById('pDate').value;
   var type=document.getElementById('pType').value;
   var isInf=type==='inf_visit'||type==='inf_post';
   if(!sid||!dt){alert('店舗と日時は必須です');return;}
@@ -4051,6 +4042,7 @@ function makeDatePicker(wrapperId,hiddenId,opts){
       }else{state.d=0;}
       render();
     };
+    wrap._getDate=function(){return hid?hid.value:'';};
   }
   render();
 }
