@@ -121,6 +121,7 @@ button{cursor:pointer;border:none;border-radius:var(--r);transition:all .15s;fon
 .b-blue{background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-border)}
 .b-purple{background:var(--purple-bg);color:var(--purple);border:1px solid var(--purple-border)}
 .b-red{background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)}
+.b-pink{background:#fdf2f8;color:#be185d;border:1px solid #fbcfe8}
 
 /* TABLE */
 .table-wrap{overflow-x:auto}
@@ -706,6 +707,7 @@ tr:hover td{background:#fafaf8}
       <button class="tab-btn" onclick="switchStoreTab(2)">契約・担当</button>
       <button class="tab-btn" onclick="switchStoreTab(3)">初期設定</button>
       <button class="tab-btn" onclick="switchStoreTab(4)">ヒアリング</button>
+      <button class="tab-btn" onclick="switchStoreTab(5)">📷 撮影予定</button>
     </div>
     <div class="tab-pane active" id="stab0">
       <div class="fr"><div class="field"><label>店舗名 *</label><input id="sName" type="text" placeholder="例: 炭火焼 竹山 渋谷店"></div><div class="field"><label>業種 <button type="button" onclick="openGenreModal()" style="font-size:10px;padding:2px 7px;margin-left:6px;background:var(--bg3);border:1px solid var(--border2);border-radius:4px;cursor:pointer;color:var(--text2)">＋ 編集</button></label><input id="sGenre" type="text" list="genreList" placeholder="例: 焼肉"><datalist id="genreList"></datalist></div></div>
@@ -847,6 +849,13 @@ tr:hover td{background:#fafaf8}
       <div class="fr"><div class="field"><label>投稿開始希望日</label><input id="hPostStart" type="date"></div><div class="field"><label>広告開始希望日</label><input id="hAdStart2" type="date"></div></div>
       <div class="fr1 field"><label>インフルエンサー投稿日希望</label><input id="hInfPostDate" type="date"></div>
       <div class="fr1 field"><label>その他要望</label><textarea id="hOther" style="min-height:52px"></textarea></div>
+    </div>
+    <div class="tab-pane" id="stab5">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <span style="font-size:12px;color:var(--text3)">この店舗の撮影予定を管理します</span>
+        <button class="btn btn-sm btn-primary" onclick="openShootingModal()">＋ 撮影予定を追加</button>
+      </div>
+      <div id="shootingList" style="display:flex;flex-direction:column;gap:6px"></div>
     </div>
 
     <div class="form-actions"><button class="btn" onclick="closeModal('storeModal')">キャンセル</button><button class="btn btn-primary" onclick="saveStore()">保存</button></div>
@@ -1792,7 +1801,8 @@ function topAddBtn(){
 
 function switchStoreTab(idx){
   document.querySelectorAll('#storeTabBtns .tab-btn').forEach(function(b,i){b.classList.toggle('active',i===idx);});
-  [0,1,2,3,4].forEach(function(i){var el=document.getElementById('stab'+i);if(el)el.classList.toggle('active',i===idx);});
+  [0,1,2,3,4,5].forEach(function(i){var el=document.getElementById('stab'+i);if(el)el.classList.toggle('active',i===idx);});
+  if(idx===5)renderShootingList();
 }
 function toggleCheck(el){el.classList.toggle('done');el.querySelector('.check-box').textContent=el.classList.contains('done')?'✓':'';}
 
@@ -2628,6 +2638,119 @@ function deleteCasting(id){
   deleteItem('castings',id);
 }
 
+/* ============================================================
+   撮影予定管理
+   ============================================================ */
+var editingShootId=null;
+
+function openShootingModal(id){
+  editingShootId=id||null;
+  var yr=new Date().getFullYear();
+  makeDatePicker('shootDateWrap','shootDate',{yearFrom:yr-1,yearTo:yr+3,yearLabel:'年'});
+
+  /* クリエイターselect更新 */
+  var sel=document.getElementById('shootCreator');
+  if(sel){
+    sel.innerHTML='<option value="">（未設定）</option>';
+    DB.creators.slice().sort(function(a,b){return(a.crName||'').localeCompare(b.crName||'');}).forEach(function(cr){
+      var opt=document.createElement('option');opt.value=cr.id;
+      opt.textContent=cr.crName+(cr.crRealName?' ('+cr.crRealName+')':'');
+      sel.appendChild(opt);
+    });
+  }
+
+  if(id){
+    /* 編集 */
+    var p=DB.posts.find(function(x){return x.id===id;});
+    if(p){
+      document.getElementById('shootModalTitle') && (document.getElementById('shootingModalTitle').textContent='撮影予定を編集');
+      var dw=document.getElementById('shootDateWrap');
+      if(dw&&dw._setDate)dw._setDate((p.date||'').split('T')[0]);
+      if(sel&&p.creatorId)sel.value=p.creatorId;
+      document.getElementById('shootMemo').value=p.note||'';
+    }
+  } else {
+    /* 新規：前回と同じクリエイターをデフォルト */
+    document.getElementById('shootingModalTitle').textContent='撮影予定を追加';
+    document.getElementById('shootMemo').value='';
+    var sid=editingStoreId;
+    if(sid&&sel){
+      var lastShoot=DB.posts.filter(function(p){return p.type==='shooting'&&p.storeId===sid;})
+        .sort(function(a,b){return new Date(b.date)-new Date(a.date);})[0];
+      if(lastShoot&&lastShoot.creatorId)sel.value=lastShoot.creatorId;
+    }
+  }
+  openModal('shootingModal');
+}
+
+function saveShooting(){
+  var dateVal=document.getElementById('shootDate').value;
+  if(!dateVal){alert('撮影日を入力してください');return;}
+  var creatorId=document.getElementById('shootCreator').value;
+  var memo=document.getElementById('shootMemo').value;
+  var sid=editingStoreId;
+
+  /* クリエイター選択がある場合は確認 */
+  if(creatorId&&!editingShootId){
+    var cr=DB.creators.find(function(x){return x.id===creatorId;});
+    var crName=cr?cr.crName:'クリエイター';
+    if(!confirm(crName+'で撮影予定を登録しますか？'))return;
+  }
+
+  var p={
+    id:editingShootId||uid(),
+    storeId:sid,
+    type:'shooting',
+    date:dateVal+'T10:00',
+    creatorId:creatorId,
+    note:memo,
+    status:'scheduled'
+  };
+
+  if(editingShootId){
+    var idx=DB.posts.findIndex(function(x){return x.id===editingShootId;});
+    if(idx>=0)DB.posts[idx]=p;
+  } else {
+    DB.posts.push(p);
+  }
+
+  saveItem('posts',p);
+  closeModal('shootingModal');
+  renderShootingList();
+  refreshAll();
+}
+
+function deleteShooting(id){
+  if(!confirm('この撮影予定を削除しますか？'))return;
+  DB.posts=DB.posts.filter(function(p){return p.id!==id;});
+  deleteItem('posts',id);
+  renderShootingList();
+  refreshAll();
+}
+
+function renderShootingList(){
+  var el=document.getElementById('shootingList');
+  if(!el)return;
+  var sid=editingStoreId;
+  var list=DB.posts.filter(function(p){return p.type==='shooting'&&p.storeId===sid;})
+    .sort(function(a,b){return new Date(b.date)-new Date(a.date);});
+  if(!list.length){
+    el.innerHTML='<div style="font-size:12px;color:var(--text3);padding:8px">撮影予定はありません</div>';
+    return;
+  }
+  el.innerHTML=list.map(function(p){
+    var cr=DB.creators.find(function(x){return x.id===p.creatorId;});
+    var crName=cr?cr.crName:'—';
+    return'<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg3);border-radius:var(--r);border:1px solid var(--border)">'
+      +'<span style="font-size:13px;font-weight:500;color:var(--accent)">📷 '+fmtD((p.date||'').split('T')[0])+'</span>'
+      +'<span style="font-size:12px;color:var(--purple);flex:1">'+esc(crName)+'</span>'
+      +(p.note?'<span style="font-size:11px;color:var(--text3)">'+esc(p.note)+'</span>':'')
+      +'<button class="btn btn-sm" style="margin-right:4px" onclick="openShootingModal(\''+p.id+'\')" >編集</button>'
+      +'<button class="btn-ghost-danger" onclick="deleteShooting(\''+p.id+'\')" >削除</button>'
+      +'</div>';
+  }).join('');
+}
+
 function updateSalesPlanSelect(){
   var sel=document.getElementById('sl-plan');
   if(!sel)return;
@@ -3182,9 +3305,9 @@ function setSchedView(v){
   if(v==='cal')renderCalendar();
 }
 /* 投稿種別の設定 */
-var TYPE_ICON={video:'▶',image:'◼',reel:'◈',story:'◷',inf_visit:'🏃',inf_draft:'📝',inf_post:'✦'};
-var TYPE_LABEL={video:'動画',image:'画像',reel:'リール',story:'ストーリー',inf_visit:'来店予定',inf_draft:'初稿確認',inf_post:'INF投稿'};
-var TYPE_BADGE={video:'b-gray',image:'b-gray',reel:'b-blue',story:'b-gray',inf_visit:'b-amber',inf_draft:'b-green',inf_post:'b-purple'};
+var TYPE_ICON={video:'▶',image:'◼',reel:'◈',story:'◷',inf_visit:'🏃',inf_draft:'📝',inf_post:'✦',shooting:'📷'};
+var TYPE_LABEL={video:'動画',image:'画像',reel:'リール',story:'ストーリー',inf_visit:'来店予定',inf_draft:'初稿確認',inf_post:'INF投稿',shooting:'撮影'};
+var TYPE_BADGE={video:'b-gray',image:'b-gray',reel:'b-blue',story:'b-gray',inf_visit:'b-amber',inf_draft:'b-green',inf_post:'b-purple',shooting:'b-pink'};
 
 function renderSchedule(){
   var activeFilters=Array.from(document.querySelectorAll('#schedFilter [data-active="1"]')).map(function(el){return el.getAttribute('data-sid');});
@@ -4275,6 +4398,25 @@ function openCreatorDetail(id){
       ?'<div style="padding:10px 12px;background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:var(--r);font-size:12px;white-space:pre-wrap;line-height:1.7;margin-bottom:12px">'+esc(cr.crImpression)+'</div>'
       :'')
 
+
+    /* 撮影履歴 */
+    +(function(){
+      var shoots=DB.posts.filter(function(p){return p.type==='shooting'&&p.creatorId===id;})
+        .sort(function(a,b){return new Date(b.date)-new Date(a.date);});
+      if(!shoots.length)return'';
+      return'<div style="border-top:1px solid var(--border);margin-top:12px;padding-top:12px">'
+        +'<div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:8px">📷 撮影履歴</div>'
+        +shoots.map(function(p){
+          var sName=storeName(p.storeId);
+          return'<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:var(--bg3);border-radius:var(--r);margin-bottom:4px">'
+            +'<span style="font-size:12px;font-weight:500;color:var(--accent)">'+fmtD((p.date||'').split('T')[0])+'</span>'
+            +'<span style="font-size:12px;color:var(--text2);flex:1">'+esc(sName)+'</span>'
+            +(p.note?'<span style="font-size:11px;color:var(--text3)">'+esc(p.note)+'</span>':'')
+            +'</div>';
+        }).join('')
+        +'</div>';
+    })()
+
     +'<div class="form-actions" style="border-top:1px solid var(--border);margin-top:4px;padding-top:14px">'
       +'<button class="btn-ghost-danger" onclick="deleteCreator(\''+id+'\')">削除</button>'
       +'<button class="btn" onclick="closeModal(\'creatorDetailModal\')">閉じる</button>'
@@ -4780,5 +4922,35 @@ checkSession();
 </div>
 
   </div><!-- /mainApp -->
+
+<!-- SHOOTING MODAL -->
+<div class="modal-overlay" id="shootingModal">
+<div class="modal" style="width:420px">
+  <div class="modal-header">
+    <span class="modal-title" id="shootingModalTitle">撮影予定を追加</span>
+    <button class="modal-close" onclick="closeModal('shootingModal')">✕</button>
+  </div>
+  <div class="modal-body">
+    <div class="field" style="margin-bottom:10px">
+      <label>撮影日 *</label>
+      <div style="display:flex;gap:4px;align-items:center" id="shootDateWrap"></div>
+      <input type="hidden" id="shootDate">
+    </div>
+    <div class="field" style="margin-bottom:10px">
+      <label>担当クリエイター</label>
+      <select id="shootCreator"><option value="">（未設定）</option></select>
+    </div>
+    <div class="field" style="margin-bottom:10px">
+      <label>メモ</label>
+      <input id="shootMemo" type="text" placeholder="撮影内容など">
+    </div>
+  </div>
+  <div class="form-actions">
+    <button class="btn" onclick="closeModal('shootingModal')">キャンセル</button>
+    <button class="btn btn-primary" onclick="saveShooting()">保存</button>
+  </div>
+</div>
+</div>
+
 </body>
 </html>
