@@ -2560,20 +2560,21 @@ function saveCasting(){
   var draftDate=document.getElementById('cDraftDate').value;
   var platform=document.getElementById('cPlatform').value;
   var fee=document.getElementById('cFee').value;
+  /* 編集時は既存IDを使う、新規時のみuid()生成 */
+  var castId=isEdit?editingCastId:uid();
+  /* 新規の場合：同じINFが既にあれば上書き扱いにする */
+  if(!isEdit){
+    var existing=DB.castings.find(function(x){return x.infId===iid;});
+    if(existing){castId=existing.id;isEdit=true;}
+  }
+  var oldCastId=isEdit?castId:null;
   var c={
-    id:uid(),storeId:sid,infId:iid,date:dt,
+    id:castId,storeId:sid,infId:iid,date:dt,
     visitDate:visitDate,draftDate:draftDate,
     platform:platform,fee:fee,
     reach:document.getElementById('cReach').value,
     result:document.getElementById('cResult').value
   };
-  /* 既存の紐づきpostsを特定（新規・編集どちらも） */
-  var oldCastId=isEdit?editingCastId:null;
-  /* 新規の場合：同じ店舗×INFの組み合わせが既にあれば上書き扱いにする */
-  if(!isEdit){
-    var existing=DB.castings.find(function(x){return x.infId===iid;});
-    if(existing){oldCastId=existing.id;c.id=existing.id;isEdit=true;}
-  }
   /* 常に既存posts（同castingId）をSupabase＆メモリから先に削除してから再生成 */
   if(oldCastId){
     var toDelete=DB.posts.filter(function(p){return p.castingId===oldCastId;});
@@ -4303,7 +4304,7 @@ function renderCreators(){
       +'<td style="font-size:12px">'+(cr.crInterviewDate?fmtD(cr.crInterviewDate):'—')+'</td>'
       +'<td>'+(cr.crPromanage?'<span class="badge '+proColors[cr.crPromanage]+'">'+proLabels[cr.crPromanage]+'</span>':'—')+'</td>'
       +'<td style="font-size:11px;color:var(--text2);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(cr.crTel||cr.crEmail||'—')+'</td>'
-      +'<td onclick="event.stopPropagation()"><button class="btn btn-sm" onclick="openCreatorModal(\''+cr.id+'\')">編集</button></td>'
+      +'<td onclick="event.stopPropagation()" style="white-space:nowrap"><button class="btn btn-sm" style="margin-right:4px" onclick="openCreatorModal(\''+cr.id+'\')">編集</button><button class="btn-ghost-danger" onclick="deleteCreator(\''+cr.id+'\')">削除</button></td>'
       +'</tr>';
   }).join('');
 }
