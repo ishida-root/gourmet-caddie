@@ -3053,9 +3053,21 @@ function renderDashboard(){
     var extra=a.storeId?'<button class="btn btn-sm" style="margin-left:auto;flex-shrink:0" onclick="openStoreFromNotif(\''+a.storeId+'\')">詳細</button>':'';
     return'<div class="alert-item '+style+'" style="justify-content:space-between">'+esc(a.msg)+extra+'</div>';
   }).join(''):'<div class="empty-state" style="padding:16px">問題なし ✓</div>';
-  var upcoming=DB.posts.filter(function(p){return p.status!=='done';}).sort(function(a,b){return new Date(a.date)-new Date(b.date);}).slice(0,5);
+  var upcoming=DB.posts.filter(function(p){return p.status!=='done';}).sort(function(a,b){return new Date(a.date)-new Date(b.date);}).slice(0,8);
   var ue=document.getElementById('dash-upcoming');
-  ue.innerHTML=upcoming.length?'<div class="timeline">'+upcoming.map(function(p){return'<div class="tl-item"><div class="tl-dot" style="background:'+storeColor(p.storeId)+'15;border-color:'+storeColor(p.storeId)+'"></div><div><div class="tl-date">'+fmtDT(p.date)+'</div><div class="tl-title">'+esc(storeName(p.storeId))+' — '+esc((p.caption||'').slice(0,36))+((p.caption||'').length>36?'…':'')+'</div></div></div>';}).join('')+'</div>':'<div class="empty-state" style="padding:16px">投稿予定なし</div>';
+  ue.innerHTML=upcoming.length?'<div class="timeline">'+upcoming.map(function(p){
+    var badge='<span class="badge '+(TYPE_BADGE[p.type]||'b-gray')+'" style="font-size:10px;padding:1px 6px;margin-right:4px">'+(TYPE_ICON[p.type]||'')+' '+(TYPE_LABEL[p.type]||p.type)+'</span>';
+    var isInf=p.type==='inf_visit'||p.type==='inf_post'||p.type==='inf_draft';
+    var isShooting=p.type==='shooting';
+    var sub='';
+    if(isInf&&p.infId){var inf=DB.influencers.find(function(x){return x.id===p.infId;});sub=inf?esc(inf.name.split(' ')[0]):'—';}
+    else if(isShooting&&p.creatorId){var cr=DB.creators.find(function(x){return x.id===p.creatorId;});sub=cr?esc(cr.crName):'—';}
+    else if(p.caption){sub=esc((p.caption||'').slice(0,30))+((p.caption||'').length>30?'…':'');}
+    return'<div class="tl-item"><div class="tl-dot" style="background:'+storeColor(p.storeId)+'15;border-color:'+storeColor(p.storeId)+'"></div>'
+      +'<div style="flex:1"><div class="tl-date">'+fmtDT(p.date)+'</div>'
+      +'<div class="tl-title" style="display:flex;align-items:center;flex-wrap:wrap;gap:3px">'+badge+'<span>'+esc(storeName(p.storeId))+(sub?' / '+sub:'')+'</span></div>'
+      +'</div></div>';
+  }).join('')+'</div>':'<div class="empty-state" style="padding:16px">予定なし</div>';
   var setupPending=DB.stores.filter(function(s){return s.status==='active'&&setupPct(s)<100;}).slice(0,6);
   var se=document.getElementById('dash-setup');
   if(!setupPending.length){se.innerHTML='<div class="empty-state" style="padding:16px">全店舗の初期設定完了 ✓</div>';return;}
@@ -4671,6 +4683,7 @@ function updateSidebarStats(){
   if(el=document.getElementById('ss-posts'))el.textContent=thisMon.length;
   if(el=document.getElementById('nb-stores'))el.textContent=DB.stores.length;
   if(el=document.getElementById('nb-inf'))el.textContent=DB.influencers.length;
+  if(el=document.getElementById('nb-creators'))el.textContent=DB.creators?DB.creators.length:0;
   if(el=document.getElementById('nb-plans'))el.textContent=DB.plans.length;
   var alerts=generateAlerts();
   if(el=document.getElementById('nb-alerts'))el.textContent=alerts.length;
