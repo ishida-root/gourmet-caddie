@@ -751,7 +751,7 @@ tr:hover td{background:#fafaf8}
       <div class="fr"><div class="field"><label>Facebook</label><input id="sFb" type="text" placeholder="ページ名 or URL"></div><div class="field"><label>X (Twitter)</label><input id="sTw" type="text" placeholder="@handle"></div></div>
       <div class="fr"><div class="field"><label>TikTok</label><input id="sTt" type="text" placeholder="@handle"></div><div class="field"><label>YouTube</label><input id="sYt" type="text" placeholder="チャンネル URL"></div></div>
       <div class="fr"><div class="field"><label>Meta 広告アカウント ID</label><input id="sMetaId" type="text" placeholder="act_XXXXXXXXXX"></div><div class="field"><label>Meta 広告経験</label><select id="sMetaExp"><option value="none">なし</option><option value="basic">基礎あり</option><option value="advanced">豊富</option></select></div></div>
-      <div class="fr1 field"><label>担当クリエイター</label><input id="sCreator" type="text" placeholder="制作会社名 or 担当者名"></div>
+      <div class="fr1 field"><label>担当クリエイター</label><select id="sCreator"><option value="">（未設定）</option></select></div>
     </div>
     <div class="tab-pane" id="stab2">
       <div class="fr"><div class="field"><label>契約開始日</label><div style="display:flex;gap:4px;align-items:center" id="sContractStartWrap"></div><input type="hidden" id="sContractStart"></div><div class="field"><label>契約期間</label><select id="sContractTerm"><option value="3">3ヶ月</option><option value="6">6ヶ月</option><option value="12">12ヶ月</option></select></div></div>
@@ -2023,6 +2023,17 @@ function openStoreModal(id){
   updateGenreDatalist();
   updatePlanSelect();
   updateSalesPersonSelects();
+  /* クリエイターselectを最新のDB.creatorsで更新 */
+  var crSel=document.getElementById('sCreator');
+  if(crSel){
+    crSel.innerHTML='<option value="">（未設定）</option>';
+    DB.creators.slice().sort(function(a,b){return(a.crName||'').localeCompare(b.crName||'');}).forEach(function(cr){
+      var opt=document.createElement('option');
+      opt.value=cr.id;
+      opt.textContent=cr.crName+(cr.crRealName?' ('+cr.crRealName+')':'');
+      crSel.appendChild(opt);
+    });
+  }
   document.getElementById('storeModalTitle').textContent=id?'店舗を編集':'店舗を追加';
   if(id){
     var s=DB.stores.find(function(x){return x.id===id;});
@@ -3054,7 +3065,7 @@ function showDetail(id){
     +'<div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px">弊社情報</div>'
     +'<div style="margin-bottom:14px">'
       +row('営業担当',s.ourManager||s.salesBy)
-      +row('クリエイター',s.creator)
+      +row('クリエイター',(function(){var cr=DB.creators.find(function(x){return x.id===s.creator;});return cr?cr.crName:(s.creator||'—');})())
       +row('契約開始',s.contractStart)
       +row('契約期間',s.contractTerm?s.contractTerm+'ヶ月':null)
       +row('Meta広告ID',s.metaId)
