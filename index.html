@@ -1633,7 +1633,11 @@ var TABLES=['stores','posts','influencers','castings','plans','salesnotifs','cre
    APIレイヤー（ここを将来書き換えると別サーバーに移行できる）
    ============================================================ */
 function apiUrl(table){return SUPA_URL+'/rest/v1/'+table;}
-function apiHeaders(){return{'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+SUPA_KEY,'Prefer':'return=minimal'};}
+function apiHeaders(){
+  var token=SUPA_KEY;
+  try{var sess=JSON.parse(localStorage.getItem('gc_session')||'{}');if(sess.access_token)token=sess.access_token;}catch(e){}
+  return{'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+token,'Prefer':'return=minimal'};
+}
 
 async function apiFetch(table){
   var r=await fetch(apiUrl(table)+'?select=*&order=updated_at.asc',{headers:apiHeaders()});
