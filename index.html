@@ -1870,7 +1870,7 @@ function navigate(page){
     if(item.getAttribute('onclick')==="navigate('"+page+"')")item.classList.add('active');
   });
   currentPage=page;
-  var titles={dashboard:'ダッシュボード',sales:'営業入力',stores:'店舗管理',schedule:'投稿スケジュール',check:'事前チェック',plans:'プラン管理',influencers:'インフルエンサー管理',casting:'キャスティング履歴',creators:'クリエイター管理',corporations:'法人管理',settings:'設定'};
+  var titles={dashboard:'ダッシュボード',sales:'営業入力',stores:'店舗管理',schedule:'投稿スケジュール',check:'事前チェック',plans:'プラン管理',influencers:'インフルエンサー管理',casting:'キャスティング履歴',creators:'クリエイター管理',corporations:'法人管理',settings:'設定',accounting:'経理管理'};
   document.getElementById('page-title').textContent=titles[page]||page;
   var btnLabels={dashboard:'＋ 店舗追加',sales:'＋ 店舗入力',stores:'＋ 店舗追加',schedule:'＋ 追加',check:'＋ 店舗追加',plans:'＋ プラン追加',influencers:'＋ インフルエンサー追加',casting:'＋ キャスティング記録',creators:'＋ クリエイター追加',corporations:'＋ 法人追加',settings:''};
   document.getElementById('addBtn').textContent=btnLabels[page]||'＋ 新規追加';
