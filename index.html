@@ -2286,10 +2286,19 @@ function saveStore(){
   }
 }
 function deleteStore(id){
-  if(!confirm('この店舗を削除しますか？'))return;
-  DB.stores=DB.stores.filter(function(s){return s.id!==id;});
+  if(!confirm('この店舗を削除しますか？\n関連する投稿・営業通知も全て削除されます。'))return;
+  /* 関連する営業通知も削除 */
+  var relatedNotifs=DB.salesNotifs?DB.salesNotifs.filter(function(n){return n.storeId===id;}):[];
+  relatedNotifs.forEach(function(n){deleteItem('salesnotifs',n.id);});
+  if(DB.salesNotifs)DB.salesNotifs=DB.salesNotifs.filter(function(n){return n.storeId!==id;});
+  /* 関連する投稿・キャスティングも削除 */
+  var relatedPosts=DB.posts.filter(function(p){return p.storeId===id;});
+  relatedPosts.forEach(function(p){deleteItem('posts',p.id);});
   DB.posts=DB.posts.filter(function(p){return p.storeId!==id;});
-  refreshAll();deleteItem('stores',id);
+  /* 店舗本体を削除 */
+  DB.stores=DB.stores.filter(function(s){return s.id!==id;});
+  refreshAll();
+  deleteItem('stores',id);
 }
 
 var editingPostId=null;
