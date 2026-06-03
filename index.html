@@ -400,6 +400,7 @@ tr:hover td{background:#fafaf8}
         <div class="card"><div class="card-header"><span class="card-title">📬 営業からの通知</span><button class="btn btn-sm" onclick="clearSalesNotifs()">全て既読</button></div><div id="salesNotifList"></div></div>
         <div class="card"><div class="card-header"><span class="card-title">直近の投稿予定</span><button class="btn btn-sm" onclick="navigate('schedule')">全て見る</button></div><div id="dash-upcoming"></div></div>
       </div>
+      <div class="card"><div class="card-header"><span class="card-title">📊 経理処理待ち</span><button class="btn btn-sm" onclick="navigate('accounting')">経理管理へ</button></div><div id="dash-accounting"></div></div>
       <div class="card"><div class="card-header"><span class="card-title">初期設定 進捗</span></div><div id="dash-setup"></div></div>
     </div>
 
@@ -601,8 +602,10 @@ tr:hover td{background:#fafaf8}
           <div style="display:flex;gap:6px;align-items:center">
             <select id="accFilterStatus" onchange="renderAccounting()" style="font-size:12px;padding:4px 8px;width:auto">
               <option value="">すべて</option>
-              <option value="pending">未受領</option>
-              <option value="received">受領済み</option>
+              <option value="pending">📄 未受領</option>
+              <option value="sns_received">✅ SNS受領済み</option>
+              <option value="accounting_submitted">📊 経理申請済み</option>
+              <option value="done">🎉 経理処理済み</option>
             </select>
             <select id="accFilterMonth" onchange="renderAccounting()" style="font-size:12px;padding:4px 8px;width:auto">
               <option value="">全期間</option>
@@ -618,7 +621,7 @@ tr:hover td{background:#fafaf8}
               <th style="text-align:right">交通費</th>
               <th style="text-align:right">飲食代</th>
               <th style="text-align:right">合計</th>
-              <th>ステータス</th><th>備考</th><th></th>
+              <th>進捗フロー</th><th>備考</th><th></th>
             </tr></thead>
             <tbody id="accBody"></tbody>
           </table>
@@ -1008,10 +1011,12 @@ tr:hover td{background:#fafaf8}
         <input type="date" id="invReceivedDate">
       </div>
       <div class="field">
-        <label>ステータス</label>
+        <label>進捗ステータス</label>
         <select id="invStatus">
-          <option value="pending">未受領</option>
-          <option value="received">受領済み</option>
+          <option value="pending">📄 未受領</option>
+          <option value="sns_received">✅ SNS局 受領済み</option>
+          <option value="accounting_submitted">📊 経理申請済み</option>
+          <option value="done">🎉 経理処理済み</option>
         </select>
       </div>
     </div>
@@ -2564,6 +2569,51 @@ function reschedulePost(id){
   openPostModal(id);
 }
 
+var INV_FLOW=[
+  {key:'pending',           label:'未受領',      icon:'📄', color:'var(--text3)',    bg:'var(--bg3)',        border:'var(--border)'},
+  {key:'sns_received',      label:'SNS受領',     icon:'✅', color:'var(--accent)',   bg:'var(--accent-bg)', border:'var(--accent-border)'},
+  {key:'accounting_submitted',label:'経理申請',  icon:'📊', color:'var(--amber)',    bg:'var(--amber-bg)',  border:'var(--amber-border)'},
+  {key:'done',              label:'経理処理済み', icon:'🎉', color:'var(--green)',    bg:'var(--green-bg)',  border:'var(--green-border)'}
+];
+
+function renderInvFlow(inv){
+  var cur=inv.status||'pending';
+  var curIdx=INV_FLOW.findIndex(function(s){return s.key===cur;});
+  return'<div style="display:flex;align-items:center;gap:3px">'
+    +INV_FLOW.map(function(step,i){
+      var done=i<=curIdx;
+      var isNext=i===curIdx+1;
+      var style='font-size:11px;padding:3px 7px;border-radius:5px;border:1px solid;white-space:nowrap;'
+        +'background:'+(done?step.bg:'var(--bg3)')
+        +';color:'+(done?step.color:'var(--text3)')
+        +';border-color:'+(done?step.border:'var(--border)')
+        +(isNext?';cursor:pointer;opacity:0.7':'');
+      var click=isNext?'onclick="advanceInvFlow(\''+inv.id+'\',\''+step.key+'\')"':'';
+      return'<span style="'+style+'" '+click+' title="'+(isNext?'クリックで次へ':'')+'">'+step.icon+' '+step.label+'</span>'
+        +(i<INV_FLOW.length-1?'<span style="color:var(--text3);font-size:10px">›</span>':'');
+    }).join('')
+  +'</div>';
+}
+
+function markInvDone(invId){
+  if(!DB.invoices)return;
+  var inv=DB.invoices.find(function(x){return x.id===invId;});
+  if(!inv)return;
+  inv.status='done';
+  saveItem('invoices',inv);
+  refreshAll();
+  if(currentPage==='accounting')renderAccounting();
+}
+
+function advanceInvFlow(invId,newStatus){
+  if(!DB.invoices)return;
+  var inv=DB.invoices.find(function(x){return x.id===invId;});
+  if(!inv)return;
+  inv.status=newStatus;
+  saveItem('invoices',inv);
+  renderAccounting();
+}
+
 function toggleContractSent(infId){
   var inf=DB.influencers.find(function(x){return x.id===infId;});
   if(!inf)return;
@@ -3243,6 +3293,35 @@ function renderDashboard(){
       +btnRow
       +'</div></div>';
   }).join('')+'</div>':'<div class="empty-state" style="padding:16px">予定なし</div>';
+  /* 経理処理待ち */
+  var accPending=(DB.invoices||[]).filter(function(inv){return inv.status==='accounting_submitted';});
+  var accEl=document.getElementById('dash-accounting');
+  if(accEl){
+    if(!accPending.length){
+      accEl.innerHTML='<div class="empty-state" style="padding:16px">✓ 経理処理待ちはありません</div>';
+    }else{
+      accEl.innerHTML='<div style="border-radius:0 0 var(--r) var(--r);overflow:hidden">'
+        +accPending.map(function(inv){
+          var infObj=DB.influencers.find(function(x){return x.id===inv.infId;})||{};
+          var storeObj=DB.stores.find(function(x){return x.id===inv.storeId;})||{};
+          var total=(inv.prFee||0)+(inv.transport||0)+(inv.food||0);
+          return'<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--amber-bg)">'
+            +'<div style="flex:1;min-width:0">'
+              +'<div style="font-size:13px;font-weight:500">'+esc(infObj.name||'—')+'</div>'
+              +'<div style="font-size:11px;color:var(--text2);margin-top:2px">'
+                +esc(storeObj.name||'—')
+                +(inv.receivedDate?' | 受領日：'+inv.receivedDate:'')
+                +' | 合計：¥'+total.toLocaleString()
+              +'</div>'
+            +'</div>'
+            +'<button class="btn btn-sm" style="background:var(--green-bg);color:var(--green);border-color:var(--green-border);white-space:nowrap" '
+              +'onclick="markInvDone(\''+inv.id+'\')">✓ 処理済み</button>'
+          +'</div>';
+        }).join('')
+      +'</div>';
+    }
+  }
+
   var setupPending=DB.stores.filter(function(s){return s.status==='active'&&setupPct(s)<100;}).slice(0,6);
   var se=document.getElementById('dash-setup');
   if(!setupPending.length){se.innerHTML='<div class="empty-state" style="padding:16px">全店舗の初期設定完了 ✓</div>';return;}
@@ -3841,6 +3920,7 @@ function openInvoiceModal(id){
   ['invPrFee','invTransport','invFood','invNote'].forEach(function(fid){var el=document.getElementById(fid);if(el)el.value='';});
   document.getElementById('invReceivedDate').value='';
   document.getElementById('invStatus').value='pending';
+  document.getElementById('invAccountingDone').checked=false;
   document.getElementById('invTotal').textContent='¥0';
   if(id){
     var inv=DB.invoices.find(function(x){return x.id===id;});
@@ -3853,6 +3933,7 @@ function openInvoiceModal(id){
       document.getElementById('invTransport').value=inv.transport||'';
       document.getElementById('invFood').value=inv.food||'';
       document.getElementById('invNote').value=inv.note||'';
+      document.getElementById('invAccountingDone').checked=!!inv.accountingDone;
       calcInvTotal();
     }
   }
@@ -3880,7 +3961,8 @@ function saveInvoice(){
     prFee:Number(document.getElementById('invPrFee').value)||0,
     transport:Number(document.getElementById('invTransport').value)||0,
     food:Number(document.getElementById('invFood').value)||0,
-    note:document.getElementById('invNote').value
+    note:document.getElementById('invNote').value,
+    accountingDone:document.getElementById('invAccountingDone').checked
   };
   if(!DB.invoices)DB.invoices=[];
   if(isEdit){
@@ -3949,7 +4031,9 @@ function renderAccounting(){
       +'<td class="td-mono" style="text-align:right">'+(inv.transport?'¥'+Number(inv.transport).toLocaleString():'—')+'</td>'
       +'<td class="td-mono" style="text-align:right">'+(inv.food?'¥'+Number(inv.food).toLocaleString():'—')+'</td>'
       +'<td class="td-mono" style="text-align:right;font-weight:500;color:var(--accent)">¥'+total.toLocaleString()+'</td>'
-      +'<td>'+statusBadge2+'</td>'
+      +'<td onclick="event.stopPropagation()" style="min-width:220px">'
+        +renderInvFlow(inv)
+      +'</td>'
       +'<td style="color:var(--text2);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(inv.note||'—')+'</td>'
       +'<td onclick="event.stopPropagation()" style="white-space:nowrap">'
         +'<button class="btn btn-sm" onclick="openInvoiceModal(\''+inv.id+'\')" style="margin-right:4px">編集</button>'
