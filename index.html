@@ -497,7 +497,7 @@ tr:hover td{background:#fafaf8}
       <!-- クリエイティブ未設定 -->
       <div class="card" style="margin-bottom:12px">
         <div class="card-header">
-          <span class="card-title">🎬 クリエイティブ未設定の投稿</span>
+          <span class="card-title">🎬 クリエイティブ未設定の投稿（動画・画像・リール）</span>
           <span id="chk-creative-count" style="font-size:11px;color:var(--text3)"></span>
         </div>
         <div id="chk-creative"></div>
@@ -510,10 +510,10 @@ tr:hover td{background:#fafaf8}
         </div>
         <div id="chk-setup"></div>
       </div>
-      <!-- インフルエンサー来店前チェック -->
+      <!-- インフルエンサー進捗 -->
       <div class="card">
         <div class="card-header">
-          <span class="card-title">🏃 インフルエンサー来店前チェック</span>
+          <span class="card-title">👤 インフルエンサー進捗チェック</span>
           <span id="chk-inf-count" style="font-size:11px;color:var(--text3)"></span>
         </div>
         <div id="chk-inf"></div>
@@ -3687,10 +3687,10 @@ function renderCheckPage(){
   }).sort(function(a,b){return new Date(a.date)-new Date(b.date);});
   setSection('chk-month','chk-month-count',monthPosts,'今月の投稿予定はありません');
 
-  /* ③ クリエイティブ未設定（動画・画像・リール系で未設定かつ未投稿） */
+  /* ③ クリエイティブ未設定（動画・画像・リール・ストーリー系のみ。INF系は除外） */
   var noCreative=DB.posts.filter(function(p){
-    var isNormal=p.type!=='inf_visit'&&p.type!=='inf_post';
-    return isNormal&&!p.creative&&p.status!=='done';
+    var isCreative=p.type==='video'||p.type==='image'||p.type==='reel'||p.type==='story'||p.type==='shooting';
+    return isCreative&&!p.creative&&p.status!=='done';
   }).sort(function(a,b){return new Date(a.date)-new Date(b.date);});
   setSection('chk-creative','chk-creative-count',noCreative,'クリエイティブ未設定の投稿はありません ✓');
 
@@ -3727,53 +3727,90 @@ function renderCheckPage(){
     }
   }
 
-  /* ⑤ インフルエンサー来店前チェック（14日以内の来店予定） */
+  /* ⑤ インフルエンサー進捗チェック */
   var in14=new Date(today.getTime()+14*86400000);
-  var infVisits=DB.posts.filter(function(p){
-    if(p.type!=='inf_visit')return false;
-    var d=new Date(p.date);
-    return d>=today&&d<=in14&&p.status!=='visited'&&p.status!=='cancelled';
-  }).sort(function(a,b){return new Date(a.date)-new Date(b.date);});
+  var in7=new Date(today.getTime()+7*86400000);
   var infEl=document.getElementById('chk-inf');
   var infCntEl=document.getElementById('chk-inf-count');
-  if(infCntEl)infCntEl.textContent=infVisits.length+'件';
-  if(infEl){
-    if(!infVisits.length){
-      infEl.innerHTML='<div style="padding:12px 14px;font-size:12px;color:var(--text3)">14日以内の来店予定はありません</div>';
-    }else{
-      infEl.innerHTML='<div style="border-radius:0 0 var(--r) var(--r);overflow:hidden">'
-        +infVisits.map(function(p){
-          var inf=DB.influencers.find(function(x){return x.id===p.infId;})||{};
-          var daysLeft=Math.ceil((new Date(p.date)-today)/86400000);
-          var urgent=daysLeft<=3;
-          return'<div style="padding:12px 14px;border-bottom:1px solid var(--border);'+(urgent?'background:var(--red-bg)':'')+'">'
-            +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">'
-              +'<span style="font-size:11px;font-weight:500;'+(urgent?'color:var(--red)':'color:var(--amber)')+'">あと'+daysLeft+'日</span>'
-              +'<span class="td-mono" style="color:var(--text3)">'+fmtDT(p.date)+'</span>'
-              +'<span style="font-size:12px;font-weight:500">'+esc(storeName(p.storeId))+'</span>'
-              +'<span style="font-size:12px;color:var(--purple)">'+esc(inf.name||'—')+'</span>'
-              +postStatusBadge(p.status)
-              +'<button class="btn btn-sm" onclick="openPostModal(\''+p.id+'\')">ステータス変更</button>'
-            +'</div>'
-            +'<div style="display:flex;gap:4px;flex-wrap:wrap">'
-              +[
-                {label:'連絡先確認',ok:!!inf.contact},
-                {label:'来店時間共有',ok:p.status==='booked'},
-                {label:'撮影リスト準備',ok:false},
-                {label:'商品・席準備',ok:false},
-                {label:'PR費用確認',ok:!!(p.infFee||inf.feeLow)},
-              ].map(function(item){
-                return'<span style="font-size:10px;padding:2px 8px;border-radius:10px;background:'+(item.ok?'var(--green-bg)':'var(--bg3)')+';color:'+(item.ok?'var(--green)':'var(--text3)')+';border:1px solid '+(item.ok?'var(--green-border)':'var(--border)')+';">'
-                  +(item.ok?'✓ ':'')
-                  +esc(item.label)
-                +'</span>';
-              }).join('')
-            +'</div>'
-            +(p.note?'<div style="font-size:11px;color:var(--text2);margin-top:6px">メモ: '+esc(p.note)+'</div>':'')
-          +'</div>';
-        }).join('')
-      +'</div>';
+
+  /* ── アラート行を生成するヘルパー ── */
+  function infAlertRow(level,icon,title,detail,actionHtml){
+    var bg=level==='red'?'var(--red-bg)':level==='amber'?'var(--amber-bg)':'var(--accent-bg)';
+    var col=level==='red'?'var(--red)':level==='amber'?'var(--amber)':'var(--accent)';
+    var border=level==='red'?'var(--red-border)':level==='amber'?'var(--amber-border)':'var(--accent-border)';
+    return'<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);background:'+bg+';border-left:3px solid '+col+'">'
+      +'<span style="font-size:16px;flex-shrink:0">'+icon+'</span>'
+      +'<div style="flex:1;min-width:0">'
+        +'<div style="font-size:12px;font-weight:500;color:'+col+'">'+title+'</div>'
+        +'<div style="font-size:11px;color:var(--text2);margin-top:1px">'+detail+'</div>'
+      +'</div>'
+      +(actionHtml||'')
+    +'</div>';
+  }
+
+  var rows=[];
+
+  /* ① 契約書未送付（castingが登録されているのに contractSent=false のINF） */
+  var castingInfIds=[...new Set(DB.castings.map(function(c){return c.infId;}).filter(Boolean))];
+  castingInfIds.forEach(function(infId){
+    var inf=DB.influencers.find(function(x){return x.id===infId;});
+    if(inf&&!inf.contractSent){
+      rows.push(infAlertRow('red','📄',
+        '契約書が未送付：'+esc(inf.name),
+        '対応するキャスティングが登録されていますが、契約書の送付が完了していません。',
+        '<button class="btn btn-sm" onclick="navigate(\'influencers\')" style="white-space:nowrap;flex-shrink:0">INF管理へ</button>'
+      ));
     }
+  });
+
+  /* ② 予約が取れていない来店予定（unbooked） */
+  DB.posts.filter(function(p){
+    return p.type==='inf_visit'&&p.status==='unbooked'&&new Date(p.date)>=today;
+  }).sort(function(a,b){return new Date(a.date)-new Date(b.date);}).forEach(function(p){
+    var inf=DB.influencers.find(function(x){return x.id===p.infId;})||{};
+    var daysLeft=Math.ceil((new Date(p.date)-today)/86400000);
+    rows.push(infAlertRow('amber','📅',
+      '予約が取れていません：'+esc(inf.name||'—')+'（'+esc(storeName(p.storeId))+'）',
+      '来店予定日：'+fmtDT(p.date)+'（あと'+daysLeft+'日）　予約ステータス：未',
+      '<button class="btn btn-sm" onclick="openPostModal(\''+p.id+'\')" style="white-space:nowrap;flex-shrink:0">予約登録</button>'
+    ));
+  });
+
+  /* ③ 来店日が近い（14日以内・booked） */
+  DB.posts.filter(function(p){
+    if(p.type!=='inf_visit'||p.status!=='booked')return false;
+    var d=new Date(p.date);return d>=today&&d<=in14;
+  }).sort(function(a,b){return new Date(a.date)-new Date(b.date);}).forEach(function(p){
+    var inf=DB.influencers.find(function(x){return x.id===p.infId;})||{};
+    var daysLeft=Math.ceil((new Date(p.date)-today)/86400000);
+    var urgent=daysLeft<=3;
+    rows.push(infAlertRow(urgent?'red':'amber','🏃',
+      '来店日が近づいています：'+esc(inf.name||'—')+'（'+esc(storeName(p.storeId))+'）',
+      '来店日：'+fmtDT(p.date)+'　あと'+daysLeft+'日',
+      '<button class="btn btn-sm" onclick="openPostModal(\''+p.id+'\')" style="white-space:nowrap;flex-shrink:0">確認</button>'
+    ));
+  });
+
+  /* ④ 投稿日が近い（14日以内の inf_post） */
+  DB.posts.filter(function(p){
+    if(p.type!=='inf_post'||p.status==='done')return false;
+    var d=new Date(p.date);return d>=today&&d<=in14;
+  }).sort(function(a,b){return new Date(a.date)-new Date(b.date);}).forEach(function(p){
+    var inf=DB.influencers.find(function(x){return x.id===p.infId;})||{};
+    var daysLeft=Math.ceil((new Date(p.date)-today)/86400000);
+    var urgent=daysLeft<=3;
+    rows.push(infAlertRow(urgent?'red':'blue','✦',
+      '投稿日が近づいています：'+esc(inf.name||'—')+'（'+esc(storeName(p.storeId))+'）',
+      '投稿予定日：'+fmtDT(p.date)+'　あと'+daysLeft+'日',
+      '<button class="btn btn-sm" onclick="openPostModal(\''+p.id+'\')" style="white-space:nowrap;flex-shrink:0">確認</button>'
+    ));
+  });
+
+  if(infCntEl)infCntEl.textContent=rows.length+'件';
+  if(infEl){
+    infEl.innerHTML=rows.length
+      ?'<div style="border-radius:0 0 var(--r) var(--r);overflow:hidden">'+rows.join('')+'</div>'
+      :'<div style="padding:12px 14px;font-size:12px;color:var(--text3)">✓ インフルエンサー関連の要対応項目はありません</div>';
   }
 }
 
