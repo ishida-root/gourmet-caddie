@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>グルメキャディ</title>
 <link rel="icon" type="image/png" href="gourmet_caddie_logo.png">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#fafaf8;--bg2:#ffffff;--bg3:#f4f3ef;--bg4:#eeede8;
@@ -61,20 +61,20 @@ button{cursor:pointer;border:none;border-radius:var(--r);transition:all .15s;fon
 .logo-icon{width:28px;height:28px;background:var(--accent);border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .logo-icon svg{width:14px;height:14px;fill:#fff}
 .logo-text{font-size:14px;font-weight:500;letter-spacing:-.3px}
-.logo-sub{font-size:9px;color:var(--text3);font-family:'DM Mono',monospace;letter-spacing:.5px}
+.logo-sub{font-size:9px;color:var(--text3);font-family:'Roboto Mono',monospace;letter-spacing:.5px}
 .nav{flex:1;overflow-y:auto;padding:6px 8px}
-.nav-section{font-size:9px;font-family:'DM Mono',monospace;letter-spacing:1.5px;color:var(--text3);padding:14px 8px 4px;text-transform:uppercase}
+.nav-section{font-size:9px;font-family:'Roboto Mono',monospace;letter-spacing:1.5px;color:var(--text3);padding:14px 8px 4px;text-transform:uppercase}
 .nav-item{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:var(--r);cursor:pointer;color:var(--text2);font-size:13px;transition:all .1s;margin-bottom:1px;user-select:none}
 .nav-item:hover{background:var(--bg3);color:var(--text)}
 .nav-item.active{background:var(--accent-bg);color:var(--accent);font-weight:500}
 .nav-icon{width:16px;height:16px;flex-shrink:0;opacity:.7}
 .nav-item.active .nav-icon{opacity:1}
-.nav-badge{margin-left:auto;font-size:10px;font-weight:500;padding:1px 6px;border-radius:20px;font-family:'DM Mono',monospace;background:var(--bg3);color:var(--text2)}
+.nav-badge{margin-left:auto;font-size:10px;font-weight:500;padding:1px 6px;border-radius:20px;font-family:'Roboto Mono',monospace;background:var(--bg3);color:var(--text2)}
 .nav-item.active .nav-badge{background:var(--accent-border);color:var(--accent)}
 .nav-badge-red{background:var(--red-bg);color:var(--red)}
 .sidebar-footer{padding:12px;border-top:1px solid var(--border);display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .sf-card{background:var(--bg3);border-radius:var(--r);padding:8px 10px}
-.sf-val{font-size:17px;font-weight:500;font-family:'DM Mono',monospace;color:var(--text)}
+.sf-val{font-size:17px;font-weight:500;font-family:'Roboto Mono',monospace;color:var(--text)}
 .sf-label{font-size:10px;color:var(--text3);margin-top:1px}
 
 /* MAIN */
@@ -107,7 +107,7 @@ button{cursor:pointer;border:none;border-radius:var(--r);transition:all .15s;fon
 /* STATS */
 .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
 .stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:16px 18px}
-.stat-val{font-size:26px;font-weight:300;font-family:'DM Mono',monospace;color:var(--text)}
+.stat-val{font-size:26px;font-weight:300;font-family:'Roboto Mono',monospace;color:var(--text)}
 .stat-label{font-size:12px;color:var(--text2);margin-top:3px}
 .stat-card.blue{background:var(--accent-bg);border-color:var(--accent-border)}
 .stat-card.blue .stat-val{color:var(--accent)}
@@ -130,7 +130,7 @@ th{font-size:12px;color:var(--text2);font-weight:500;text-align:left;padding:7px
 td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle;color:var(--text);font-size:13px}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:#fafaf8}
-.td-mono{font-family:'DM Mono',monospace;font-size:11px}
+.td-mono{font-family:'Roboto Mono',monospace;font-size:11px}
 
 /* MODAL */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(26,25,22,.35);z-index:100;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
@@ -153,7 +153,7 @@ tr:hover td{background:#fafaf8}
 .tl-item{display:flex;gap:12px;padding-bottom:12px;position:relative}
 .tl-item:not(:last-child)::before{content:'';position:absolute;left:9px;top:20px;bottom:0;width:1px;background:var(--border)}
 .tl-dot{width:18px;height:18px;border-radius:50%;flex-shrink:0;border:1.5px solid var(--border);margin-top:2px;display:flex;align-items:center;justify-content:center}
-.tl-date{font-size:10px;color:var(--text3);font-family:'DM Mono',monospace}
+.tl-date{font-size:10px;color:var(--text3);font-family:'Roboto Mono',monospace}
 .tl-title{font-size:12px;color:var(--text);margin-top:1px}
 
 /* CHECKLIST */
@@ -175,11 +175,11 @@ tr:hover td{background:#fafaf8}
 /* CALENDAR */
 .cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
-.cal-head{font-size:10px;color:var(--text3);text-align:center;padding:5px 2px;font-family:'DM Mono',monospace}
+.cal-head{font-size:10px;color:var(--text3);text-align:center;padding:5px 2px;font-family:'Roboto Mono',monospace}
 .cal-cell{min-height:64px;background:var(--bg3);border-radius:5px;padding:4px;border:1px solid transparent}
 .cal-cell.today{border-color:var(--accent);background:var(--accent-bg)}
 .cal-cell.empty{background:transparent;border-color:transparent}
-.cal-num{color:var(--text3);font-size:10px;font-family:'DM Mono',monospace;margin-bottom:2px}
+.cal-num{color:var(--text3);font-size:10px;font-family:'Roboto Mono',monospace;margin-bottom:2px}
 .cal-cell.today .cal-num{color:var(--accent);font-weight:500}
 .cal-chip{border-radius:3px;padding:1px 4px;font-size:10px;margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
@@ -188,6 +188,9 @@ tr:hover td{background:#fafaf8}
 .pbar{height:4px;border-radius:2px;transition:width .3s}
 
 .empty-state{text-align:center;padding:32px;color:var(--text3);font-size:12px}
+.sched-type-btn{padding:5px 12px;font-size:12px;border-radius:20px;border:1px solid var(--border);background:var(--bg2);color:var(--text2);cursor:pointer;transition:all .1s}
+.sched-type-btn:hover{background:var(--bg3)}
+.sched-type-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
 
 /* ============================================================
    MOBILE RESPONSIVE
@@ -382,7 +385,7 @@ tr:hover td{background:#fafaf8}
     </div>
     <button class="btn btn-primary" id="addBtn" onclick="topAddBtn()">＋ 新規追加</button>
     <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()">☀ ライト</button>
-    <span id="syncStatus" style="font-size:11px;font-family:'DM Mono',monospace;color:var(--text3);padding:2px 8px"></span>
+    <span id="syncStatus" style="font-size:11px;font-family:'Roboto Mono',monospace;color:var(--text3);padding:2px 8px"></span>
   </div>
 
   <div class="content">
@@ -397,10 +400,10 @@ tr:hover td{background:#fafaf8}
       </div>
       <div class="grid2">
         <div class="card"><div class="card-header"><span class="card-title">要対応アラート</span><button class="btn btn-sm" onclick="navigate('check')">チェック実行</button></div><div id="dash-alerts"></div></div>
-        <div class="card"><div class="card-header"><span class="card-title">📬 営業からの通知</span><button class="btn btn-sm" onclick="clearSalesNotifs()">全て既読</button></div><div id="salesNotifList"></div></div>
+        <div class="card"><div class="card-header"><span class="card-title">🎯 売上目標トラッカー</span><button class="btn btn-sm" onclick="openGoalEdit()">目標変更</button></div><div id="dash-goal"></div></div>
         <div class="card"><div class="card-header"><span class="card-title">直近の投稿予定</span><button class="btn btn-sm" onclick="navigate('schedule')">全て見る</button></div><div id="dash-upcoming"></div></div>
       </div>
-      <div class="card"><div class="card-header"><span class="card-title">🎯 売上目標トラッカー</span><button class="btn btn-sm" onclick="openGoalEdit()">目標変更</button></div><div id="dash-goal"></div></div>
+      <div class="card"><div class="card-header"><span class="card-title">📬 営業からの通知</span><button class="btn btn-sm" onclick="clearSalesNotifs()">全て既読</button></div><div id="salesNotifList"></div></div>
       <div class="card"><div class="card-header"><span class="card-title">📊 経理処理待ち</span><button class="btn btn-sm" onclick="navigate('accounting')">経理管理へ</button></div><div id="dash-accounting"></div></div>
       <div class="card"><div class="card-header"><span class="card-title">初期設定 進捗</span></div><div id="dash-setup"></div></div>
     </div>
@@ -455,6 +458,13 @@ tr:hover td{background:#fafaf8}
             </div>
             <button class="btn btn-primary btn-sm" onclick="openPostModal()">＋ 追加</button>
           </div>
+        </div>
+        <!-- 種別フィルタ -->
+        <div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px;padding-bottom:8px;border-bottom:1px solid var(--border)">
+          <button class="sched-type-btn active" data-type="" onclick="setSchedTypeFilter(this,'')">すべて</button>
+          <button class="sched-type-btn" data-type="influencer" onclick="setSchedTypeFilter(this,'influencer')">👤 インフルエンサー</button>
+          <button class="sched-type-btn" data-type="creator" onclick="setSchedTypeFilter(this,'creator')">📷 クリエイター</button>
+          <button class="sched-type-btn" data-type="normal" onclick="setSchedTypeFilter(this,'normal')">▶ 通常投稿</button>
         </div>
         <!-- 店舗フィルタ -->
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px" id="schedFilter"></div>
@@ -1030,7 +1040,7 @@ tr:hover td{background:#fafaf8}
       </div>
       <div style="display:flex;justify-content:flex-end;align-items:center;gap:8px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">
         <span style="font-size:12px;color:var(--text2)">合計</span>
-        <span id="invTotal" style="font-size:18px;font-weight:500;font-family:'DM Mono',monospace;color:var(--text)">¥0</span>
+        <span id="invTotal" style="font-size:18px;font-weight:500;font-family:'Roboto Mono',monospace;color:var(--text)">¥0</span>
       </div>
     </div>
     <div class="fr1 field"><label>備考</label><input type="text" id="invNote" placeholder="メモ・伝票番号など"></div>
@@ -3640,11 +3650,27 @@ var TYPE_ICON={video:'▶',image:'◼',reel:'◈',story:'◷',inf_visit:'🏃',i
 var TYPE_LABEL={video:'動画',image:'画像',reel:'リール',story:'ストーリー',inf_visit:'来店予定',inf_draft:'初稿確認',inf_post:'INF投稿',shooting:'撮影'};
 var TYPE_BADGE={video:'b-gray',image:'b-gray',reel:'b-blue',story:'b-gray',inf_visit:'b-amber',inf_draft:'b-green',inf_post:'b-purple',shooting:'b-pink'};
 
+var schedTypeFilter='';
+function setSchedTypeFilter(el,type){
+  schedTypeFilter=type;
+  document.querySelectorAll('.sched-type-btn').forEach(function(b){b.classList.remove('active');});
+  el.classList.add('active');
+  renderSchedule();
+}
+
 function renderSchedule(){
   var activeFilters=Array.from(document.querySelectorAll('#schedFilter [data-active="1"]')).map(function(el){return el.getAttribute('data-sid');});
   var search=(document.getElementById('globalSearch').value||'').toLowerCase();
   var list=DB.posts.slice().sort(function(a,b){return new Date(a.date)-new Date(b.date);});
   if(activeFilters.length)list=list.filter(function(p){return activeFilters.includes(p.storeId);});
+  /* 種別フィルター */
+  if(schedTypeFilter==='influencer'){
+    list=list.filter(function(p){return p.type==='inf_visit'||p.type==='inf_post'||p.type==='inf_draft';});
+  }else if(schedTypeFilter==='creator'){
+    list=list.filter(function(p){return p.type==='shooting';});
+  }else if(schedTypeFilter==='normal'){
+    list=list.filter(function(p){return p.type==='video'||p.type==='image'||p.type==='reel'||p.type==='story';});
+  }
   if(search)list=list.filter(function(p){
     return storeName(p.storeId).toLowerCase().includes(search)
       ||(p.caption||'').toLowerCase().includes(search)
@@ -3660,7 +3686,14 @@ function renderSchedule(){
     var captCell=isInf
       ?(p.type==='inf_visit'?'<span style="color:var(--amber)">来店</span>':p.type==='inf_draft'?'<span style="color:var(--green)">初稿確認</span>':'<span style="color:var(--purple)">投稿予定</span>')
       :(p.caption?esc((p.caption||'').slice(0,40))+((p.caption||'').length>40?'…':''):'—');
-    var rowBg=p.type==='inf_visit'?'background:var(--amber-bg)':p.type==='inf_draft'?'background:var(--green-bg)':(p.type==='inf_post'?'background:var(--purple-bg)':'');
+    /* 行色：状態・遅延ベース */
+    var now2=new Date();
+    var postDate=new Date(p.date);
+    var daysLeft2=Math.ceil((postDate-now2)/86400000);
+    var isDone=p.status==='done'||p.status==='visited'||p.status==='approved';
+    var isOverdue=postDate<now2&&!isDone;
+    var isUrgent=daysLeft2>=0&&daysLeft2<=3&&!isDone;
+    var rowBg=isDone?'background:#f6fff8;opacity:0.7':isOverdue?'background:var(--red-bg)':isUrgent?'background:var(--amber-bg)':'';
     return'<tr style="'+rowBg+'">'
       +'<td><span class="badge '+TYPE_BADGE[p.type]+'">'+(TYPE_ICON[p.type]||'')+' '+(TYPE_LABEL[p.type]||p.type)+'</span></td>'
       +'<td><div style="display:flex;align-items:center;gap:5px"><span style="width:5px;height:5px;border-radius:50%;background:'+storeColor(p.storeId)+';display:inline-block;flex-shrink:0"></span>'+esc(storeName(p.storeId))+'</div></td>'
@@ -3700,23 +3733,43 @@ function renderCalendar(){
       return dt.getDate()===dd&&dt.getMonth()===calMonth&&dt.getFullYear()===calYear
         &&!calActiveStores[p.storeId];
     });
-    /* 種別ごとに色分け */
+    /* 種別ごとに色分け（固定カラー） */
+    /* INF系=紫、クリエイター=ピンク、通常=青 */
+    var CAL_COLOR={
+      inf_visit: {bg:'#ede9fe',col:'#6d28d9'},
+      inf_draft: {bg:'#ddd6fe',col:'#4c1d95'},
+      inf_post:  {bg:'#c4b5fd',col:'#3b0764'},
+      shooting:  {bg:'#fce7f3',col:'#9d174d'},
+      video:     {bg:'#dbeafe',col:'#1e40af'},
+      image:     {bg:'#dbeafe',col:'#1e40af'},
+      reel:      {bg:'#dbeafe',col:'#1e40af'},
+      story:     {bg:'#dbeafe',col:'#1e40af'}
+    };
     var chips=dayItems.slice(0,4).map(function(p){
-      var isInf=p.type==='inf_visit'||p.type==='inf_post';
-      var bg=isInf
-        ?(p.type==='inf_visit'?'var(--amber-bg)':'var(--purple-bg)')
-        :storeColor(p.storeId)+'18';
-      var col=isInf
-        ?(p.type==='inf_visit'?'var(--amber)':'var(--purple)')
-        :storeColor(p.storeId);
-      var icon=TYPE_ICON[p.type]||'';
-      var label=isInf
-        ?icon+' '+esc(infName(p.infId).split(' ')[0])
-        :icon+' '+esc(storeName(p.storeId).slice(0,5));
+      var cc=CAL_COLOR[p.type]||{bg:'#f3f4f6',col:'#374151'};
+      /* ラベル生成 */
+      var shortName='';
+      var typeTag='';
+      if(p.type==='inf_visit'||p.type==='inf_draft'||p.type==='inf_post'){
+        var iObj=DB.influencers.find(function(x){return x.id===p.infId;})||{};
+        shortName=esc((iObj.name||'').split(/[\s　]/)[0].slice(0,6));
+        typeTag=p.type==='inf_visit'?'来店':p.type==='inf_draft'?'初稿':'投稿';
+        var label=shortName?shortName+'：'+typeTag:'INF '+typeTag;
+      }else if(p.type==='shooting'){
+        var label='📷 '+esc(storeName(p.storeId).slice(0,6));
+      }else{
+        var icon2=TYPE_ICON[p.type]||'';
+        var label=icon2+' '+esc(storeName(p.storeId).slice(0,6));
+      }
+      /* 遅延チェック */
+      var isDone2=p.status==='done'||p.status==='visited'||p.status==='approved';
+      var isLate=new Date(p.date)<new Date()&&!isDone2;
+      var chipBg=isLate?'#fee2e2':isDone2?'#f0fdf4':cc.bg;
+      var chipCol=isLate?'#991b1b':isDone2?'#166534':cc.col;
       return'<div class="cal-chip" draggable="true" '
         +'ondragstart="calChipDragStart(event,\''+p.id+'\','+dd+')" '
         +'onclick="event.stopPropagation();openPostModal(\''+p.id+'\')" '
-        +'style="background:'+bg+';color:'+col+';cursor:grab;user-select:none" '
+        +'style="background:'+chipBg+';color:'+chipCol+';cursor:grab;user-select:none;font-weight:500" '
         +'title="ドラッグで日程移動・クリックで編集">'+label+'</div>';
     }).join('');
     var more=dayItems.length>4?'<div style="font-size:9px;color:var(--text3)">+'+(dayItems.length-4)+'</div>':'';
