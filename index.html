@@ -11,7 +11,7 @@
 <link rel="apple-touch-icon" sizes="180x180" href="gourmet_caddie_logo.png">
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
-<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 :root{
   --bg:#fafaf8;--bg2:#ffffff;--bg3:#f4f3ef;--bg4:#eeede8;
@@ -67,20 +67,20 @@ button{cursor:pointer;border:none;border-radius:var(--r);transition:all .15s;fon
 .logo-icon{width:28px;height:28px;background:var(--accent);border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .logo-icon svg{width:14px;height:14px;fill:#fff}
 .logo-text{font-size:14px;font-weight:500;letter-spacing:-.3px}
-.logo-sub{font-size:9px;color:var(--text3);font-family:'Roboto Mono',monospace;letter-spacing:.5px}
+.logo-sub{font-size:9px;color:var(--text3);font-family:'Noto Sans JP',sans-serif;letter-spacing:.5px}
 .nav{flex:1;overflow-y:auto;padding:6px 8px}
-.nav-section{font-size:9px;font-family:'Roboto Mono',monospace;letter-spacing:1.5px;color:var(--text3);padding:14px 8px 4px;text-transform:uppercase}
+.nav-section{font-size:9px;font-family:'Noto Sans JP',sans-serif;letter-spacing:1.5px;color:var(--text3);padding:14px 8px 4px;text-transform:uppercase}
 .nav-item{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:var(--r);cursor:pointer;color:var(--text2);font-size:13px;transition:all .1s;margin-bottom:1px;user-select:none}
 .nav-item:hover{background:var(--bg3);color:var(--text)}
 .nav-item.active{background:var(--accent-bg);color:var(--accent);font-weight:500}
 .nav-icon{width:16px;height:16px;flex-shrink:0;opacity:.7}
 .nav-item.active .nav-icon{opacity:1}
-.nav-badge{margin-left:auto;font-size:10px;font-weight:500;padding:1px 6px;border-radius:20px;font-family:'Roboto Mono',monospace;background:var(--bg3);color:var(--text2)}
+.nav-badge{margin-left:auto;font-size:10px;font-weight:500;padding:1px 6px;border-radius:20px;font-family:'Noto Sans JP',sans-serif;background:var(--bg3);color:var(--text2)}
 .nav-item.active .nav-badge{background:var(--accent-border);color:var(--accent)}
 .nav-badge-red{background:var(--red-bg);color:var(--red)}
 .sidebar-footer{padding:12px;border-top:1px solid var(--border);display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .sf-card{background:var(--bg3);border-radius:var(--r);padding:8px 10px}
-.sf-val{font-size:17px;font-weight:500;font-family:'Roboto Mono',monospace;color:var(--text)}
+.sf-val{font-size:17px;font-weight:500;font-family:'Noto Sans JP',sans-serif;color:var(--text)}
 .sf-label{font-size:10px;color:var(--text3);margin-top:1px}
 
 /* MAIN */
@@ -113,7 +113,7 @@ button{cursor:pointer;border:none;border-radius:var(--r);transition:all .15s;fon
 /* STATS */
 .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
 .stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:16px 18px}
-.stat-val{font-size:26px;font-weight:300;font-family:'Roboto Mono',monospace;color:var(--text)}
+.stat-val{font-size:26px;font-weight:300;font-family:'Noto Sans JP',sans-serif;color:var(--text)}
 .stat-label{font-size:12px;color:var(--text2);margin-top:3px}
 .stat-card.blue{background:var(--accent-bg);border-color:var(--accent-border)}
 .stat-card.blue .stat-val{color:var(--accent)}
@@ -136,7 +136,7 @@ th{font-size:12px;color:var(--text2);font-weight:500;text-align:left;padding:7px
 td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle;color:var(--text);font-size:13px}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:#fafaf8}
-.td-mono{font-family:'Roboto Mono',monospace;font-size:11px}
+.td-mono{font-family:'Noto Sans JP',sans-serif;font-size:11px}
 
 /* MODAL */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(26,25,22,.35);z-index:100;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
@@ -159,7 +159,7 @@ tr:hover td{background:#fafaf8}
 .tl-item{display:flex;gap:12px;padding-bottom:12px;position:relative}
 .tl-item:not(:last-child)::before{content:'';position:absolute;left:9px;top:20px;bottom:0;width:1px;background:var(--border)}
 .tl-dot{width:18px;height:18px;border-radius:50%;flex-shrink:0;border:1.5px solid var(--border);margin-top:2px;display:flex;align-items:center;justify-content:center}
-.tl-date{font-size:10px;color:var(--text3);font-family:'Roboto Mono',monospace}
+.tl-date{font-size:10px;color:var(--text3);font-family:'Noto Sans JP',sans-serif}
 .tl-title{font-size:12px;color:var(--text);margin-top:1px}
 
 /* CHECKLIST */
@@ -181,11 +181,11 @@ tr:hover td{background:#fafaf8}
 /* CALENDAR */
 .cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
-.cal-head{font-size:10px;color:var(--text3);text-align:center;padding:5px 2px;font-family:'Roboto Mono',monospace}
+.cal-head{font-size:10px;color:var(--text3);text-align:center;padding:5px 2px;font-family:'Noto Sans JP',sans-serif}
 .cal-cell{min-height:64px;background:var(--bg3);border-radius:5px;padding:4px;border:1px solid transparent}
 .cal-cell.today{border-color:var(--accent);background:var(--accent-bg)}
 .cal-cell.empty{background:transparent;border-color:transparent}
-.cal-num{color:var(--text3);font-size:10px;font-family:'Roboto Mono',monospace;margin-bottom:2px}
+.cal-num{color:var(--text3);font-size:10px;font-family:'Noto Sans JP',sans-serif;margin-bottom:2px}
 .cal-cell.today .cal-num{color:var(--accent);font-weight:500}
 .cal-chip{border-radius:3px;padding:1px 4px;font-size:10px;margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
@@ -423,7 +423,7 @@ tr:hover td{background:#fafaf8}
     </div>
     <button class="btn btn-primary" id="addBtn" onclick="topAddBtn()">＋ 新規追加</button>
     <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()">☀ ライト</button>
-    <span id="syncStatus" style="font-size:11px;font-family:'Roboto Mono',monospace;color:var(--text3);padding:2px 8px"></span>
+    <span id="syncStatus" style="font-size:11px;font-family:'Noto Sans JP',sans-serif;color:var(--text3);padding:2px 8px"></span>
   </div>
 
   <div class="content">
@@ -1078,7 +1078,7 @@ tr:hover td{background:#fafaf8}
       </div>
       <div style="display:flex;justify-content:flex-end;align-items:center;gap:8px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">
         <span style="font-size:12px;color:var(--text2)">合計</span>
-        <span id="invTotal" style="font-size:18px;font-weight:500;font-family:'Roboto Mono',monospace;color:var(--text)">¥0</span>
+        <span id="invTotal" style="font-size:18px;font-weight:500;font-family:'Noto Sans JP',sans-serif;color:var(--text)">¥0</span>
       </div>
     </div>
     <div class="fr1 field"><label>備考</label><input type="text" id="invNote" placeholder="メモ・伝票番号など"></div>
@@ -1834,7 +1834,7 @@ function setSyncStatus(state,msg){
   if(!el)return;
   var styles={ok:'color:var(--green)',saving:'color:var(--amber)',error:'color:var(--red)'};
   var icons={ok:'✓',saving:'↑',error:'✗'};
-  el.style.cssText='font-size:11px;font-family:"DM Mono",monospace;padding:2px 8px;border-radius:4px;transition:all .3s;'+styles[state];
+  el.style.cssText='font-size:11px;font-family:"Noto Sans JP",sans-serif;padding:2px 8px;border-radius:4px;transition:all .3s;'+styles[state];
   el.textContent=(icons[state]||'')+(msg?' '+msg:'');
 }
 
@@ -2834,9 +2834,9 @@ function openInfluencerDetail(id){
     +'</div>'
     /* 数値サマリー */
     +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px">'
-      +'<div class="card-sm" style="text-align:center"><div style="font-size:18px;font-weight:500;font-family:\"DM Mono\",monospace;color:var(--text)">'+(inf.followers?Number(inf.followers).toLocaleString():'—')+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">フォロワー</div></div>'
-      +'<div class="card-sm" style="text-align:center"><div style="font-size:14px;font-weight:500;font-family:\"DM Mono\",monospace;color:var(--accent)">'+fmtFeeRange(inf)+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">PR 費用</div></div>'
-      +'<div class="card-sm" style="text-align:center"><div style="font-size:18px;font-weight:500;font-family:\"DM Mono\",monospace;color:var(--green)">'+castings.length+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">起用回数</div></div>'
+      +'<div class="card-sm" style="text-align:center"><div style="font-size:18px;font-weight:500;font-family:"Noto Sans JP",sans-serif;color:var(--text)">'+(inf.followers?Number(inf.followers).toLocaleString():'—')+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">フォロワー</div></div>'
+      +'<div class="card-sm" style="text-align:center"><div style="font-size:14px;font-weight:500;font-family:"Noto Sans JP",sans-serif;color:var(--accent)">'+fmtFeeRange(inf)+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">PR 費用</div></div>'
+      +'<div class="card-sm" style="text-align:center"><div style="font-size:18px;font-weight:500;font-family:"Noto Sans JP",sans-serif;color:var(--green)">'+castings.length+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">起用回数</div></div>'
     +'</div>'
     /* 連絡先 */
     +(inf.contact?'<div style="margin-bottom:12px;padding:10px 12px;background:var(--bg3);border-radius:var(--r);font-size:12px"><span style="color:var(--text3)">連絡先：</span><span style="color:var(--accent)">'+esc(inf.contact)+'</span></div>':'')
@@ -3431,7 +3431,7 @@ function renderDashboard(){
         +'<div style="text-align:right;flex-shrink:0">'
           +(remaining<=0
             ?'<span style="color:var(--green);font-weight:500;font-size:13px">✓ 達成！</span>'
-            :'<span style="font-size:18px;font-weight:500;font-family:\'DM Mono\',monospace;color:var(--accent)">'+needed+'件</span><div style="font-size:10px;color:var(--text3)">追加で必要</div>'
+            :'<span style="font-size:18px;font-weight:500;font-family:"Noto Sans JP",sans-serif;color:var(--accent)">'+needed+'件</span><div style="font-size:10px;color:var(--text3)">追加で必要</div>'
           )
         +'</div>'
       +'</div>';
@@ -3442,11 +3442,11 @@ function renderDashboard(){
         +'<div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:6px">'
           +'<div>'
             +'<div style="font-size:11px;color:var(--text3);margin-bottom:2px">現在の年間売上見込み（稼働店舗 × 月額 × 12）</div>'
-            +'<div style="font-size:26px;font-weight:500;font-family:\'DM Mono\',monospace;color:var(--accent)">'+fmtMoney(currentAnnual)+'</div>'
+            +'<div style="font-size:26px;font-weight:500;font-family:"Noto Sans JP",sans-serif;color:var(--accent)">'+fmtMoney(currentAnnual)+'</div>'
           +'</div>'
           +'<div style="text-align:right">'
             +'<div style="font-size:11px;color:var(--text3)">目標</div>'
-            +'<div style="font-size:16px;font-weight:500;font-family:\'DM Mono\',monospace">'+fmtMoney(GOAL)+'</div>'
+            +'<div style="font-size:16px;font-weight:500;font-family:"Noto Sans JP",sans-serif">'+fmtMoney(GOAL)+'</div>'
           +'</div>'
         +'</div>'
         +'<div style="background:var(--bg4);border-radius:4px;height:8px;margin-bottom:6px">'
@@ -4485,9 +4485,9 @@ function renderRevSummary(){
     var p=DB.plans.find(function(x){return x.id===pid;});
     var label=p?p.name:'プランなし';
     var d=byPlan[pid];
-    return'<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border)"><div><div style="font-size:12px;font-weight:400">'+esc(label)+'</div><div style="font-size:11px;color:var(--text3)">'+d.count+'店舗</div></div><div style="text-align:right"><div style="font-size:13px;font-weight:500;font-family:\'DM Mono\',monospace">'+fmtMoney(d.revenue)+'</div><div style="font-size:10px;color:var(--text3)">/月</div></div></div>';
+    return'<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border)"><div><div style="font-size:12px;font-weight:400">'+esc(label)+'</div><div style="font-size:11px;color:var(--text3)">'+d.count+'店舗</div></div><div style="text-align:right"><div style="font-size:13px;font-weight:500;font-family:"Noto Sans JP",sans-serif">'+fmtMoney(d.revenue)+'</div><div style="font-size:10px;color:var(--text3)">/月</div></div></div>';
   }).join('');
-  el.innerHTML='<div style="padding-bottom:10px;margin-bottom:10px;border-bottom:2px solid var(--border)"><div style="font-size:11px;color:var(--text3);margin-bottom:2px">稼働中 月次合計</div><div style="font-size:24px;font-weight:500;font-family:\'DM Mono\',monospace;color:var(--accent)">'+fmtMoney(totalMonthly)+'</div><div style="font-size:11px;color:var(--text3)">'+active.length+'店舗</div></div>'+rows+(rows?'':'<div class="empty-state" style="padding:16px">稼働中の店舗がありません</div>');
+  el.innerHTML='<div style="padding-bottom:10px;margin-bottom:10px;border-bottom:2px solid var(--border)"><div style="font-size:11px;color:var(--text3);margin-bottom:2px">稼働中 月次合計</div><div style="font-size:24px;font-weight:500;font-family:"Noto Sans JP",sans-serif;color:var(--accent)">'+fmtMoney(totalMonthly)+'</div><div style="font-size:11px;color:var(--text3)">'+active.length+'店舗</div></div>'+rows+(rows?'':'<div class="empty-state" style="padding:16px">稼働中の店舗がありません</div>');
 }
 
 /* ============================================================
@@ -5230,9 +5230,9 @@ function openCorpDetail(id){
   document.getElementById('corpDetailTitle').textContent=corp.name;
   document.getElementById('corpDetailBody').innerHTML=
     '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px">'
-      +'<div class="card-sm" style="text-align:center"><div style="font-size:22px;font-weight:500;font-family:\'DM Mono\',monospace">'+stores.length+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">契約店舗数</div></div>'
-      +'<div class="card-sm" style="text-align:center"><div style="font-size:22px;font-weight:500;font-family:\'DM Mono\',monospace;color:var(--green)">'+active.length+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">稼働中</div></div>'
-      +'<div class="card-sm" style="text-align:center"><div style="font-size:14px;font-weight:500;font-family:\'DM Mono\',monospace;color:var(--accent)">'+totalRev.toLocaleString()+'円</div><div style="font-size:10px;color:var(--text3);margin-top:2px">月次売上</div></div>'
+      +'<div class="card-sm" style="text-align:center"><div style="font-size:22px;font-weight:500;font-family:"Noto Sans JP",sans-serif">'+stores.length+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">契約店舗数</div></div>'
+      +'<div class="card-sm" style="text-align:center"><div style="font-size:22px;font-weight:500;font-family:"Noto Sans JP",sans-serif;color:var(--green)">'+active.length+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">稼働中</div></div>'
+      +'<div class="card-sm" style="text-align:center"><div style="font-size:14px;font-weight:500;font-family:"Noto Sans JP",sans-serif;color:var(--accent)">'+totalRev.toLocaleString()+'円</div><div style="font-size:10px;color:var(--text3);margin-top:2px">月次売上</div></div>'
     +'</div>'
     +'<div class="grid2" style="margin-bottom:16px">'
       +'<div>'
