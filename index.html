@@ -2,7 +2,9 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>グルメキャディ</title>
 <link rel="icon" type="image/png" href="gourmet_caddie_logo.png">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -200,6 +202,10 @@ tr:hover td{background:#fafaf8}
 .sidebar-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:49}
 
 @media(max-width:768px){
+  /* ベースフォントをモバイル最適サイズに */
+  body{font-size:13px}
+  input,select,textarea,button{font-size:13px}
+
   /* ハンバーガーボタン表示 */
   .hamburger{display:flex}
 
@@ -220,10 +226,10 @@ tr:hover td{background:#fafaf8}
 
   /* トップバー：コンパクトに */
   .topbar{padding:0 10px;gap:6px;height:46px}
-  .page-title{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:80px}
+  .page-title{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100px}
   .search-wrap{flex:1;min-width:0}
-  .search-input{width:100%;font-size:11px}
-  #addBtn{padding:5px 10px;font-size:11px;white-space:nowrap}
+  .search-input{width:100%;font-size:12px}
+  #addBtn{padding:5px 10px;font-size:12px;white-space:nowrap}
   .theme-toggle{padding:4px 7px;font-size:11px}
   #syncStatus{display:none}
 
@@ -232,32 +238,60 @@ tr:hover td{background:#fafaf8}
 
   /* stats-rowは2×2グリッド */
   .stats-row{grid-template-columns:1fr 1fr;gap:8px}
-  .stat-card{padding:12px 14px}
+  .stat-card{padding:10px 12px}
   .stat-val{font-size:20px}
-  .stat-label{font-size:10px}
+  .stat-label{font-size:11px}
 
   /* その他グリッドを1カラムに */
   .grid2,.grid3,.grid4,.fr,.fr3{grid-template-columns:1fr}
 
   /* カード */
-  .card{padding:12px}
+  .card{padding:12px;margin-bottom:10px}
+  .card-title{font-size:12px}
+
+  /* テーブル */
+  td{font-size:12px;padding:8px 10px}
+  th{font-size:11px;padding:6px 10px}
+
+  /* バッジ */
+  .badge{font-size:11px}
+
+  /* ボタン */
+  .btn{font-size:12px;padding:6px 12px}
+  .btn-sm{font-size:11px;padding:3px 8px}
 
   /* モーダルをフルスクリーンに近く */
   .modal{width:100%!important;max-width:100vw;max-height:95vh;border-radius:var(--rl) var(--rl) 0 0}
   .modal-overlay{align-items:flex-end}
+  .modal-body{padding:14px 16px 20px}
+  .modal-header{padding:14px 16px 12px}
 
   /* テーブルは横スクロール */
   .table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
 
   /* カレンダーセルを小さく */
   .cal-cell{min-height:44px}
-  .cal-chip{font-size:9px}
+  .cal-chip{font-size:9px;padding:1px 3px}
 
   /* タブのフォントサイズ */
-  .tab-btn{padding:6px 10px;font-size:11px}
+  .tab-btn{padding:6px 10px;font-size:12px}
+
+  /* フォームフィールド */
+  .field label{font-size:11px}
+
+  /* ナビ */
+  .nav-item{font-size:12px}
+  .nav-section{font-size:9px}
 
   /* ログイン画面 */
-  #loginScreen > div{width:calc(100vw - 32px);padding:28px 20px}
+  #loginScreen > div{width:calc(100vw - 32px);padding:24px 18px}
+
+  /* 種別フィルターボタン */
+  .sched-type-btn{font-size:11px;padding:4px 10px}
+
+  /* ダッシュボードの数値 */
+  .sf-val{font-size:15px}
+  .sf-label{font-size:10px}
 }
 </style>
 </head>
