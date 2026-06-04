@@ -400,6 +400,7 @@ tr:hover td{background:#fafaf8}
         <div class="card"><div class="card-header"><span class="card-title">📬 営業からの通知</span><button class="btn btn-sm" onclick="clearSalesNotifs()">全て既読</button></div><div id="salesNotifList"></div></div>
         <div class="card"><div class="card-header"><span class="card-title">直近の投稿予定</span><button class="btn btn-sm" onclick="navigate('schedule')">全て見る</button></div><div id="dash-upcoming"></div></div>
       </div>
+      <div class="card"><div class="card-header"><span class="card-title">🎯 売上目標トラッカー</span><button class="btn btn-sm" onclick="openGoalEdit()">目標変更</button></div><div id="dash-goal"></div></div>
       <div class="card"><div class="card-header"><span class="card-title">📊 経理処理待ち</span><button class="btn btn-sm" onclick="navigate('accounting')">経理管理へ</button></div><div id="dash-accounting"></div></div>
       <div class="card"><div class="card-header"><span class="card-title">初期設定 進捗</span></div><div id="dash-setup"></div></div>
     </div>
@@ -424,7 +425,7 @@ tr:hover td{background:#fafaf8}
           <div class="fr1 field"><label>要望 <span style="font-size:10px;color:var(--text3);font-weight:400">店舗からの要望・特記事項</span></label><textarea id="sl-request" placeholder="例: 夜の雰囲気重視、料理写真は明るく、など..." style="min-height:52px"></textarea></div>
           <div class="fr1 field"><label>営業担当者名 *</label><div style="display:flex;gap:8px"><select id="sl-sales" style="flex:1"><option value="">選択...</option></select><button type="button" class="btn btn-sm" onclick="openSalesPersonModal()" style="white-space:nowrap;flex-shrink:0">＋ 管理</button></div></div>
           <div style="display:flex;justify-content:flex-end;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
-            <button class="btn btn-primary" onclick="submitSalesForm()">登録してSNS局に通知</button>
+            <button class="btn btn-primary" onclick="submitSalesForm()">登録</button>
           </div>
         </div>
       </div>
@@ -2595,6 +2596,16 @@ function renderInvFlow(inv){
   +'</div>';
 }
 
+function openGoalEdit(){
+  var current=localStorage.getItem('gc_sales_goal')||'100000000';
+  var val=prompt('年間売上目標を入力してください（円）\n例：100000000 → 1億円',current);
+  if(val===null)return;
+  var num=Number(val.replace(/[,，円]/g,''));
+  if(!num||num<1){alert('正しい金額を入力してください');return;}
+  localStorage.setItem('gc_sales_goal',String(num));
+  refreshAll();
+}
+
 function markInvDone(invId){
   if(!DB.invoices)return;
   var inv=DB.invoices.find(function(x){return x.id===invId;});
@@ -3293,6 +3304,60 @@ function renderDashboard(){
       +btnRow
       +'</div></div>';
   }).join('')+'</div>':'<div class="empty-state" style="padding:16px">予定なし</div>';
+  /* 売上目標トラッカー */
+  var goalEl=document.getElementById('dash-goal');
+  if(goalEl){
+    var GOAL=Number(localStorage.getItem('gc_sales_goal')||100000000);
+    var active=DB.stores.filter(function(s){return s.status==='active';});
+    var currentAnnual=active.reduce(function(sum,s){return sum+(Number(s.monthlyFee)||0);},0)*12;
+    var remaining=Math.max(0,GOAL-currentAnnual);
+    var pct=Math.min(100,Math.round(currentAnnual/GOAL*100));
+    var barColor=pct>=100?'var(--green)':pct>=60?'var(--accent)':'var(--amber)';
+
+    /* プラン別 あと何件 */
+    var planRows=DB.plans.filter(function(p){return Number(p.price)>0;}).map(function(p){
+      var monthly=Number(p.price);
+      var perContract=monthly*6;
+      var needed=perContract>0?Math.ceil(remaining/perContract):0;
+      var currentCount=active.filter(function(s){return s.planId===p.id;}).length;
+      return'<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 10px;background:var(--bg3);border-radius:var(--r);margin-bottom:5px">'
+        +'<div>'
+          +'<div style="font-size:12px;font-weight:500">'+esc(p.name)+'</div>'
+          +'<div style="font-size:11px;color:var(--text3)">月額'+fmtMoney(monthly)+' × 6ヶ月 = '+fmtMoney(perContract)+'/契約　現在'+currentCount+'件</div>'
+        +'</div>'
+        +'<div style="text-align:right;flex-shrink:0">'
+          +(remaining<=0
+            ?'<span style="color:var(--green);font-weight:500;font-size:13px">✓ 達成！</span>'
+            :'<span style="font-size:18px;font-weight:500;font-family:\'DM Mono\',monospace;color:var(--accent)">'+needed+'件</span><div style="font-size:10px;color:var(--text3)">追加で必要</div>'
+          )
+        +'</div>'
+      +'</div>';
+    }).join('');
+
+    goalEl.innerHTML=
+      '<div style="margin-bottom:14px">'
+        +'<div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:6px">'
+          +'<div>'
+            +'<div style="font-size:11px;color:var(--text3);margin-bottom:2px">現在の年間売上見込み（稼働店舗 × 月額 × 12）</div>'
+            +'<div style="font-size:26px;font-weight:500;font-family:\'DM Mono\',monospace;color:var(--accent)">'+fmtMoney(currentAnnual)+'</div>'
+          +'</div>'
+          +'<div style="text-align:right">'
+            +'<div style="font-size:11px;color:var(--text3)">目標</div>'
+            +'<div style="font-size:16px;font-weight:500;font-family:\'DM Mono\',monospace">'+fmtMoney(GOAL)+'</div>'
+          +'</div>'
+        +'</div>'
+        +'<div style="background:var(--bg4);border-radius:4px;height:8px;margin-bottom:6px">'
+          +'<div style="height:8px;border-radius:4px;background:'+barColor+';width:'+pct+'%;transition:width .3s"></div>'
+        +'</div>'
+        +'<div style="display:flex;justify-content:space-between;font-size:11px">'
+          +'<span style="color:'+barColor+';font-weight:500">達成率 '+pct+'%</span>'
+          +(remaining>0?'<span style="color:var(--text2)">残り <b>'+fmtMoney(remaining)+'</b></span>':'<span style="color:var(--green);font-weight:500">🎉 目標達成！</span>')
+        +'</div>'
+      +'</div>'
+      +'<div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px">📋 プラン別 あと何件必要か（6ヶ月契約）</div>'
+      +(planRows||'<div style="font-size:12px;color:var(--text3)">プランを登録すると表示されます</div>');
+  }
+
   /* 経理処理待ち */
   var accPending=(DB.invoices||[]).filter(function(inv){return inv.status==='accounting_submitted';});
   var accEl=document.getElementById('dash-accounting');
@@ -3920,7 +3985,6 @@ function openInvoiceModal(id){
   ['invPrFee','invTransport','invFood','invNote'].forEach(function(fid){var el=document.getElementById(fid);if(el)el.value='';});
   document.getElementById('invReceivedDate').value='';
   document.getElementById('invStatus').value='pending';
-  document.getElementById('invAccountingDone').checked=false;
   document.getElementById('invTotal').textContent='¥0';
   if(id){
     var inv=DB.invoices.find(function(x){return x.id===id;});
@@ -3933,7 +3997,6 @@ function openInvoiceModal(id){
       document.getElementById('invTransport').value=inv.transport||'';
       document.getElementById('invFood').value=inv.food||'';
       document.getElementById('invNote').value=inv.note||'';
-      document.getElementById('invAccountingDone').checked=!!inv.accountingDone;
       calcInvTotal();
     }
   }
@@ -3961,8 +4024,7 @@ function saveInvoice(){
     prFee:Number(document.getElementById('invPrFee').value)||0,
     transport:Number(document.getElementById('invTransport').value)||0,
     food:Number(document.getElementById('invFood').value)||0,
-    note:document.getElementById('invNote').value,
-    accountingDone:document.getElementById('invAccountingDone').checked
+    note:document.getElementById('invNote').value
   };
   if(!DB.invoices)DB.invoices=[];
   if(isEdit){
