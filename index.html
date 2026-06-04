@@ -3280,8 +3280,8 @@ function generateAlerts(){
 
   /* 予約済みなのに過去 */
   DB.posts.forEach(function(p){
-    if(p.status==='scheduled'&&new Date(p.date)<today)alerts.push({level:'danger',msg:'⚠ 投稿日が過去【'+storeName(p.storeId)+'】'+fmtDT(p.date)});
-    if(!p.creative&&p.type==='video')alerts.push({level:'warn',msg:'🎬 クリエイティブ未設定【'+storeName(p.storeId)+'】'+fmtDT(p.date)});
+    if(p.status==='scheduled'&&new Date(p.date)<today)alerts.push({level:'danger',msg:'⚠ 投稿日が過去【'+storeName(p.storeId)+'】'+fmtDT(p.date),postId:p.id,action:'done'});
+    if(!p.creative&&p.type==='video')alerts.push({level:'warn',msg:'🎬 クリエイティブ未設定【'+storeName(p.storeId)+'】'+fmtDT(p.date),postId:p.id,action:'edit'});
   });
 
   /* 同日重複 */
@@ -3314,8 +3314,15 @@ function renderDashboard(){
   var ae=document.getElementById('dash-alerts');
   ae.innerHTML=alerts.length?alerts.map(function(a){
     var style=a.level==='danger'?'alert-danger':a.level==='info'?'alert-info':'alert-warn';
-    var extra=a.storeId?'<button class="btn btn-sm" style="margin-left:auto;flex-shrink:0" onclick="openStoreFromNotif(\''+a.storeId+'\')">詳細</button>':'';
-    return'<div class="alert-item '+style+'" style="justify-content:space-between">'+esc(a.msg)+extra+'</div>';
+    var btns='';
+    if(a.postId&&a.action==='done'){
+      btns+='<button class="btn btn-sm" style="margin-left:auto;flex-shrink:0;background:var(--green-bg);color:var(--green);border-color:var(--green-border)" onclick="updatePostStatus(\''+a.postId+'\',\'done\')">✓ 完了</button>';
+    }else if(a.postId&&a.action==='edit'){
+      btns+='<button class="btn btn-sm" style="margin-left:auto;flex-shrink:0" onclick="openPostModal(\''+a.postId+'\')">編集</button>';
+    }else if(a.storeId){
+      btns+='<button class="btn btn-sm" style="margin-left:auto;flex-shrink:0" onclick="openStoreFromNotif(\''+a.storeId+'\')">詳細</button>';
+    }
+    return'<div class="alert-item '+style+'" style="justify-content:space-between">'+esc(a.msg)+btns+'</div>';
   }).join(''):'<div class="empty-state" style="padding:16px">問題なし ✓</div>';
   var upcoming=DB.posts.filter(function(p){
     if(p.status==='done'||p.status==='visited'||p.status==='cancelled'||p.status==='approved')return false;
@@ -3345,6 +3352,8 @@ function renderDashboard(){
       btns+='<button style="'+bs+'background:var(--green-bg);color:var(--green);border-color:var(--green-border)" onclick="updatePostStatus(\''+p.id+'\',\'approved\')">✓ 確認完了</button>';
     }else if(p.type==='inf_post'||p.type==='video'||p.type==='image'||p.type==='reel'||p.type==='story'){
       btns+='<button style="'+bs+'background:var(--green-bg);color:var(--green);border-color:var(--green-border)" onclick="updatePostStatus(\''+p.id+'\',\'done\')">✓ 投稿完了</button>';
+    }else if(p.type==='shooting'){
+      btns+='<button style="'+bs+'background:var(--green-bg);color:var(--green);border-color:var(--green-border)" onclick="updatePostStatus(\''+p.id+'\',\'done\')">✓ 撮影完了</button>';
     }
     var btnRow=btns?'<div style="margin-top:2px">'+btns+'</div>':'';
     return'<div class="tl-item"><div class="tl-dot" style="background:'+storeColor(p.storeId)+'15;border-color:'+storeColor(p.storeId)+'"></div>'
