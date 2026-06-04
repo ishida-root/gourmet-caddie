@@ -510,7 +510,7 @@ tr:hover td{background:#fafaf8}
         <!-- リストビュー -->
         <div id="schedListView">
           <div class="table-wrap"><table>
-            <thead><tr><th>種別</th><th>店舗</th><th>日時</th><th>インフルエンサー</th><th>キャプション</th><th>クリエイティブ</th><th>広告</th><th>ステータス</th><th></th></tr></thead>
+            <thead><tr><th>種別</th><th>店舗</th><th>日時</th><th>インフルエンサー</th><th>広告配信</th><th>ステータス</th><th></th></tr></thead>
             <tbody id="schedBody"></tbody>
           </table></div>
         </div>
@@ -3744,7 +3744,7 @@ function renderSchedule(){
       ||(p.infId?infName(p.infId).toLowerCase().includes(search):false);
   });
   var tb=document.getElementById('schedBody');
-  if(!list.length){tb.innerHTML='<tr><td colspan="9" class="empty-state">スケジュールがありません</td></tr>';return;}
+  if(!list.length){tb.innerHTML='<tr><td colspan="7" class="empty-state">スケジュールがありません</td></tr>';return;}
   tb.innerHTML=list.map(function(p){
     var isInf=p.type==='inf_visit'||p.type==='inf_post'||p.type==='inf_draft';
     var infCell=isInf&&p.infId
@@ -3766,9 +3766,7 @@ function renderSchedule(){
       +'<td><div style="display:flex;align-items:center;gap:5px"><span style="width:5px;height:5px;border-radius:50%;background:'+storeColor(p.storeId)+';display:inline-block;flex-shrink:0"></span>'+esc(storeName(p.storeId))+'</div></td>'
       +'<td class="td-mono" style="white-space:nowrap;cursor:pointer" title="クリックで日時変更" onclick="inlineDateEdit(event,\''+p.id+'\')">'+fmtDT(p.date)+'</td>'
       +'<td>'+infCell+'</td>'
-      +'<td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+captCell+'</td>'
-      +'<td style="color:var(--text3)">'+esc(p.creative||'—')+'</td>'
-      +'<td>'+(p.ad==='yes'?'<span class="badge b-blue">あり</span>':'—')+'</td>'
+      +'<td>'+(p.ad==='yes'?'<span class="badge b-blue" style="font-size:11px">📢 広告配信あり</span>':'<span style="color:var(--text3);font-size:12px">—</span>')+'</td>'
       +'<td>'+postStatusBadge(p.status)+'</td>'
       +'<td style="white-space:nowrap">'
         +'<button class="btn btn-sm" style="margin-right:4px" onclick="openPostModal(\''+p.id+'\')">編集</button>'
