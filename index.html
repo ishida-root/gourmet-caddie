@@ -3416,75 +3416,67 @@ function renderDashboard(){
     var thisYear=now.getFullYear();
     var remainMonths=12-now.getMonth(); /* 今月〜12月 */
     var monthlyTotal=active.reduce(function(sum,s){return sum+(Number(s.monthlyFee)||0);},0);
-
-    /* 2026年（残りN月）*/
-    var proj26=monthlyTotal*remainMonths;
-    var rem26=Math.max(0,GOAL-proj26);
-    var pct26=Math.min(100,Math.round(proj26/GOAL*100));
-    var col26=pct26>=100?'var(--green)':pct26>=60?'var(--accent)':'var(--amber)';
-
-    /* 2027年（年間×12）*/
-    var proj27=monthlyTotal*12;
-    var rem27=Math.max(0,GOAL-proj27);
-    var pct27=Math.min(100,Math.round(proj27/GOAL*100));
-    var col27=pct27>=100?'var(--green)':pct27>=60?'var(--accent)':'var(--amber)';
-
-    function goalBar(proj,pct,col,rem,label){
-      return'<div style="margin-bottom:14px;padding:12px;background:var(--bg3);border-radius:var(--r)">'
-        +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'
-          +'<span style="font-size:12px;font-weight:500;color:var(--text2)">'+label+'</span>'
-          +'<span style="font-size:11px;color:var(--text3)">目標 '+fmtMoney(GOAL)+'</span>'
-        +'</div>'
-        +'<div style="font-size:22px;font-weight:500;color:'+col+';margin-bottom:5px">'+fmtMoney(proj)+'</div>'
-        +'<div style="background:var(--bg4);border-radius:4px;height:6px;margin-bottom:5px">'
-          +'<div style="height:6px;border-radius:4px;background:'+col+';width:'+pct+'%;transition:width .3s"></div>'
-        +'</div>'
-        +'<div style="display:flex;justify-content:space-between;font-size:11px">'
-          +'<span style="color:'+col+';font-weight:500">'+pct+'%</span>'
-          +(rem>0?'<span style="color:var(--text2)">残り <b>'+fmtMoney(rem)+'</b></span>':'<span style="color:var(--green);font-weight:500">🎉 達成！</span>')
-        +'</div>'
-      +'</div>';
-    }
+    var proj=monthlyTotal*remainMonths;
+    var rem=Math.max(0,GOAL-proj);
+    var pct=Math.min(100,Math.round(proj/GOAL*100));
+    var barCol=pct>=100?'var(--green)':pct>=60?'var(--accent)':'var(--amber)';
 
     /* プラン別テーブル */
     var planPlans=DB.plans.filter(function(p){return Number(p.price)>0;});
-    var planTable=planPlans.length?
-      '<div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:6px">📋 プラン別 必要件数</div>'
-      +'<div style="border:1px solid var(--border);border-radius:var(--r);overflow:hidden">'
-      +'<table style="width:100%;border-collapse:collapse;font-size:11px">'
-      +'<thead><tr style="background:var(--bg3)">'
-        +'<th style="padding:6px 10px;text-align:left;font-weight:500;color:var(--text2)">プラン</th>'
-        +'<th style="padding:6px 10px;text-align:center;color:var(--text2)">月額</th>'
-        +'<th style="padding:6px 10px;text-align:center;color:var(--amber);white-space:nowrap">'+thisYear+'残り<br>合計/月</th>'
-        +'<th style="padding:6px 10px;text-align:center;color:var(--accent);white-space:nowrap">'+(thisYear+1)+'年<br>合計/月</th>'
-      +'</tr></thead><tbody>'
-      +planPlans.map(function(p,i){
-        var monthly=Number(p.price);
-        var cur=active.filter(function(s){return s.planId===p.id;}).length;
-        var need26=rem26>0&&monthly>0?Math.ceil(rem26/(monthly*remainMonths)):0;
-        var perMon26=remainMonths>0?Math.ceil(need26/remainMonths):0;
-        var need27=rem27>0&&monthly>0?Math.ceil(rem27/(monthly*12)):0;
-        var perMon27=Math.ceil(need27/12);
-        var bg=i%2===0?'':'background:var(--bg3)';
-        return'<tr style="'+bg+'">'
-          +'<td style="padding:7px 10px"><div style="font-weight:500">'+esc(p.name)+'</div><div style="color:var(--text3);font-size:10px">現在'+cur+'件</div></td>'
-          +'<td style="padding:7px 10px;text-align:center;color:var(--text2)">'+fmtMoney(monthly)+'</td>'
-          +'<td style="padding:7px 10px;text-align:center">'
-            +(need26<=0?'<span style="color:var(--green);font-weight:500">✓</span>'
-              :'<span style="font-size:14px;font-weight:500;color:var(--amber)">'+need26+'件</span><br><span style="color:var(--text3)">月'+perMon26+'件</span>')
-          +'</td>'
-          +'<td style="padding:7px 10px;text-align:center">'
-            +(need27<=0?'<span style="color:var(--green);font-weight:500">✓</span>'
-              :'<span style="font-size:14px;font-weight:500;color:var(--accent)">'+need27+'件</span><br><span style="color:var(--text3)">月'+perMon27+'件</span>')
-          +'</td>'
-        +'</tr>';
-      }).join('')
-      +'</tbody></table></div>'
+    var planTable=planPlans.length
+      ?'<div style="font-size:11px;font-weight:500;color:var(--text2);margin:12px 0 6px">📋 プラン別 あと何件必要か</div>'
+        +'<div style="border:1px solid var(--border);border-radius:var(--r);overflow:hidden">'
+        +'<table style="width:100%;border-collapse:collapse;font-size:12px">'
+        +'<thead><tr style="background:var(--bg3)">'
+          +'<th style="padding:7px 10px;text-align:left;font-weight:500;color:var(--text2)">プラン</th>'
+          +'<th style="padding:7px 10px;text-align:right;font-weight:400;color:var(--text2)">月額</th>'
+          +'<th style="padding:7px 10px;text-align:right;font-weight:400;color:var(--amber)">年内合計</th>'
+          +'<th style="padding:7px 10px;text-align:right;font-weight:400;color:var(--accent)">月当たり</th>'
+        +'</tr></thead><tbody>'
+        +planPlans.map(function(p,i){
+          var monthly=Number(p.price);
+          var cur=active.filter(function(s){return s.planId===p.id;}).length;
+          var needed=rem>0&&monthly>0?Math.ceil(rem/(monthly*remainMonths)):0;
+          var perMonth=remainMonths>0&&needed>0?Math.ceil(needed/remainMonths):0;
+          var bg=i%2===1?'background:var(--bg3)':'';
+          return'<tr style="'+bg+'">'
+            +'<td style="padding:8px 10px"><span style="font-weight:500">'+esc(p.name)+'</span>'
+              +'<span style="font-size:11px;color:var(--text3);margin-left:6px">現在'+cur+'件</span></td>'
+            +'<td style="padding:8px 10px;text-align:right;color:var(--text2)">'+fmtMoney(monthly)+'</td>'
+            +'<td style="padding:8px 10px;text-align:right">'
+              +(needed<=0?'<span style="color:var(--green);font-weight:500">✓ 達成</span>'
+                :'<span style="font-size:15px;font-weight:600;color:var(--amber)">'+needed+'件</span>')
+            +'</td>'
+            +'<td style="padding:8px 10px;text-align:right">'
+              +(needed<=0?'—'
+                :'<span style="font-weight:500;color:var(--accent)">'+perMonth+'件/月</span>')
+            +'</td>'
+          +'</tr>';
+        }).join('')
+        +'</tbody></table></div>'
       :'<div style="font-size:12px;color:var(--text3)">プランを登録すると表示されます</div>';
 
     goalEl.innerHTML=
-      goalBar(proj26,pct26,col26,rem26,thisYear+'年（残り'+remainMonths+'ヶ月）')
-      +goalBar(proj27,pct27,col27,rem27,(thisYear+1)+'年（年間 ×12）')
+      '<div style="margin-bottom:12px">'
+        +'<div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:6px">'
+          +'<div>'
+            +'<div style="font-size:11px;color:var(--text3);margin-bottom:2px">'+thisYear+'年 売上見込み</div>'
+            +'<div style="font-size:26px;font-weight:500;color:'+barCol+'">'+fmtMoney(proj)+'</div>'
+          +'</div>'
+          +'<div style="text-align:right">'
+            +'<div style="font-size:11px;color:var(--text3)">目標</div>'
+            +'<div style="font-size:15px;font-weight:500">'+fmtMoney(GOAL)+'</div>'
+          +'</div>'
+        +'</div>'
+        +'<div style="background:var(--bg4);border-radius:4px;height:8px;margin-bottom:6px">'
+          +'<div style="height:8px;border-radius:4px;background:'+barCol+';width:'+pct+'%;transition:width .3s"></div>'
+        +'</div>'
+        +'<div style="display:flex;justify-content:space-between;font-size:12px">'
+          +'<span style="color:'+barCol+';font-weight:500">達成率 '+pct+'%</span>'
+          +(rem>0?'<span style="color:var(--text2)">残り <b>'+fmtMoney(rem)+'</b></span>'
+            :'<span style="color:var(--green);font-weight:500">🎉 目標達成！</span>')
+        +'</div>'
+      +'</div>'
       +planTable;
   }
 
