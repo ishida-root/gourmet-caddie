@@ -437,9 +437,8 @@ tr:hover td{background:#fafaf8}
         <div class="stat-card"><div class="stat-val" id="ds-inf">0</div><div class="stat-label">インフルエンサー</div></div>
       </div>
       <div class="grid2">
-        <div class="card"><div class="card-header"><span class="card-title">要対応アラート</span><button class="btn btn-sm" onclick="navigate('check')">チェック実行</button></div><div id="dash-alerts"></div></div>
+        <div class="card"><div class="card-header"><span class="card-title">📋 やること一覧</span><button class="btn btn-sm" onclick="navigate('schedule')">スケジュール</button></div><div id="dash-todo"></div></div>
         <div class="card"><div class="card-header"><span class="card-title">🎯 売上目標トラッカー</span><button class="btn btn-sm" onclick="openGoalEdit()">目標変更</button></div><div id="dash-goal"></div></div>
-        <div class="card"><div class="card-header"><span class="card-title">直近の投稿予定</span><button class="btn btn-sm" onclick="navigate('schedule')">全て見る</button></div><div id="dash-upcoming"></div></div>
       </div>
       <div class="card"><div class="card-header"><span class="card-title">📬 営業からの通知</span><button class="btn btn-sm" onclick="clearSalesNotifs()">全て既読</button></div><div id="salesNotifList"></div></div>
       <div class="card"><div class="card-header"><span class="card-title">📊 経理処理待ち</span><button class="btn btn-sm" onclick="navigate('accounting')">経理管理へ</button></div><div id="dash-accounting"></div></div>
@@ -2645,6 +2644,100 @@ function renderInvFlow(inv){
   +'</div>';
 }
 
+function renderTodoList(){
+  var el=document.getElementById('dash-todo');
+  if(!el)return;
+  var today=new Date(); today.setHours(0,0,0,0);
+  var items=[];
+  var bs='font-size:12px;padding:4px 10px;border-radius:6px;cursor:pointer;border:1px solid;white-space:nowrap;flex-shrink:0;';
+
+  /* ① 楽々販売未登録の店舗 */
+  DB.stores.filter(function(s){return s.status==='active'&&!s.rakurakuRegistered;}).forEach(function(s){
+    items.push({
+      priority:1,date:today,
+      main:esc(s.name),
+      sub:'楽々販売 未登録',
+      subColor:'var(--red)',
+      btns:'<button style="'+bs+'background:var(--green-bg);color:var(--green);border-color:var(--green-border)" onclick="markRakurakuDone(\''+s.id+'\')">登録完了</button>'
+           +'<button style="'+bs+'background:var(--bg3);color:var(--text2);border-color:var(--border);margin-left:4px" onclick="openStoreFromNotif(\''+s.id+'\')">詳細</button>'
+    });
+  });
+
+  /* ② 投稿スケジュール関連 */
+  DB.posts.filter(function(p){
+    return p.status!=='done'&&p.status!=='visited'&&p.status!=='cancelled'&&p.status!=='approved';
+  }).sort(function(a,b){return new Date(a.date)-new Date(b.date);}).forEach(function(p){
+    var dt=new Date(p.date);
+    var daysLeft=Math.ceil((dt-today)/86400000);
+    var isOverdue=dt<today;
+    var priority=isOverdue?0:daysLeft<=3?1:daysLeft<=7?2:3;
+    var dateStr=(dt.getMonth()+1)+'/'+dt.getDate()+' '+String(dt.getHours()).padStart(2,'0')+':'+String(dt.getMinutes()).padStart(2,'0');
+    var inf=p.infId?DB.influencers.find(function(x){return x.id===p.infId;}):null;
+    var cr=p.creatorId?DB.creators.find(function(x){return x.id===p.creatorId;}):null;
+    var btnHtml='';
+
+    if(p.type==='inf_visit'){
+      var mainName=inf?esc(inf.name.split(/[\s　]/)[0]):'インフルエンサー';
+      var sub=dateStr+' 来店（'+esc(storeName(p.storeId))+'）';
+      if(p.status==='unbooked'){
+        sub+=' ⚠ 予約未';
+        btnHtml='<button style="'+bs+'background:var(--accent-bg);color:var(--accent);border-color:var(--accent-border)" onclick="updatePostStatus(\''+p.id+'\',\'booked\')">予約完了</button>';
+      }else{
+        btnHtml='<button style="'+bs+'background:var(--green-bg);color:var(--green);border-color:var(--green-border)" onclick="updatePostStatus(\''+p.id+'\',\'visited\')">来店完了</button>'
+               +'<button style="'+bs+'background:var(--amber-bg);color:var(--amber);border-color:var(--amber-border);margin-left:4px" onclick="reschedulePost(\''+p.id+'\')">リスケ</button>'
+               +'<button style="'+bs+'background:var(--red-bg);color:var(--red);border-color:var(--red-border);margin-left:4px" onclick="updatePostStatus(\''+p.id+'\',\'cancelled\')">キャンセル</button>';
+      }
+      items.push({priority:priority,date:dt,main:mainName,sub:sub,subColor:isOverdue?'var(--red)':'var(--amber)',btns:btnHtml});
+
+    }else if(p.type==='inf_draft'){
+      var mainName=inf?esc(inf.name.split(/[\s　]/)[0]):'インフルエンサー';
+      btnHtml='<button style="'+bs+'background:var(--green-bg);color:var(--green);border-color:var(--green-border)" onclick="updatePostStatus(\''+p.id+'\',\'approved\')">確認完了</button>';
+      items.push({priority:priority,date:dt,main:mainName,sub:dateStr+' 初稿確認（'+esc(storeName(p.storeId))+'）',subColor:'var(--text2)',btns:btnHtml});
+
+    }else if(p.type==='inf_post'){
+      var mainName=inf?esc(inf.name.split(/[\s　]/)[0]):'インフルエンサー';
+      btnHtml='<button style="'+bs+'background:var(--green-bg);color:var(--green);border-color:var(--green-border)" onclick="updatePostStatus(\''+p.id+'\',\'done\')">投稿完了</button>';
+      items.push({priority:priority,date:dt,main:mainName,sub:dateStr+' 投稿（'+esc(storeName(p.storeId))+'）',subColor:isOverdue?'var(--red)':'var(--text2)',btns:btnHtml});
+
+    }else if(p.type==='shooting'){
+      var crName=cr?esc(cr.crName):'クリエイター';
+      btnHtml='<button style="'+bs+'background:var(--green-bg);color:var(--green);border-color:var(--green-border)" onclick="updatePostStatus(\''+p.id+'\',\'done\')">撮影完了</button>';
+      items.push({priority:priority,date:dt,main:esc(storeName(p.storeId)),sub:dateStr+' 撮影（'+crName+'）',subColor:isOverdue?'var(--red)':'var(--text2)',btns:btnHtml});
+
+    }else if(p.type==='video'||p.type==='image'||p.type==='reel'||p.type==='story'){
+      btnHtml='<button style="'+bs+'background:var(--green-bg);color:var(--green);border-color:var(--green-border)" onclick="updatePostStatus(\''+p.id+'\',\'done\')">投稿完了</button>';
+      var typeL=TYPE_LABEL[p.type]||p.type;
+      items.push({priority:priority,date:dt,main:esc(storeName(p.storeId)),sub:dateStr+' '+typeL,subColor:isOverdue?'var(--red)':'var(--text2)',btns:btnHtml});
+    }
+  });
+
+  /* 優先度→日付でソート */
+  items.sort(function(a,b){return a.priority-b.priority||(a.date-b.date);});
+
+  if(!items.length){
+    el.innerHTML='<div class="empty-state" style="padding:20px">✓ 今のところやることはありません</div>';
+    return;
+  }
+  el.innerHTML=items.map(function(item){
+    var urgentBg=item.priority===0?'background:var(--red-bg);border-left:3px solid var(--red)':item.priority===1?'background:var(--amber-bg);border-left:3px solid var(--amber)':'border-left:3px solid var(--border)';
+    return'<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);'+urgentBg+'">'
+      +'<div style="flex:1;min-width:0">'
+        +'<div style="font-size:13px;font-weight:500;color:var(--text)">'+item.main+'</div>'
+        +'<div style="font-size:12px;color:'+item.subColor+';margin-top:2px">'+item.sub+'</div>'
+      +'</div>'
+      +'<div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end">'+item.btns+'</div>'
+    +'</div>';
+  }).join('');
+}
+
+function markRakurakuDone(storeId){
+  var s=DB.stores.find(function(x){return x.id===storeId;});
+  if(!s)return;
+  s.rakurakuRegistered=true;
+  saveItem('stores',s);
+  refreshAll();
+}
+
 function openGoalEdit(){
   var current=localStorage.getItem('gc_sales_goal')||'100000000';
   var val=prompt('年間売上目標を入力してください（円）\n例：100000000 → 1億円',current);
@@ -3309,59 +3402,11 @@ function renderDashboard(){
   document.getElementById('ss-posts').textContent=thisMon.length;
   document.getElementById('nb-stores').textContent=DB.stores.length;
   document.getElementById('nb-inf').textContent=DB.influencers.length;
+  /* アラートバッジ更新 */
   var alerts=generateAlerts();
   document.getElementById('nb-alerts').textContent=alerts.length;
-  var ae=document.getElementById('dash-alerts');
-  ae.innerHTML=alerts.length?alerts.map(function(a){
-    var style=a.level==='danger'?'alert-danger':a.level==='info'?'alert-info':'alert-warn';
-    var btns='';
-    if(a.postId&&a.action==='done'){
-      btns+='<button class="btn btn-sm" style="margin-left:auto;flex-shrink:0;background:var(--green-bg);color:var(--green);border-color:var(--green-border)" onclick="updatePostStatus(\''+a.postId+'\',\'done\')">✓ 完了</button>';
-    }else if(a.postId&&a.action==='edit'){
-      btns+='<button class="btn btn-sm" style="margin-left:auto;flex-shrink:0" onclick="openPostModal(\''+a.postId+'\')">編集</button>';
-    }else if(a.storeId){
-      btns+='<button class="btn btn-sm" style="margin-left:auto;flex-shrink:0" onclick="openStoreFromNotif(\''+a.storeId+'\')">詳細</button>';
-    }
-    return'<div class="alert-item '+style+'" style="justify-content:space-between">'+esc(a.msg)+btns+'</div>';
-  }).join(''):'<div class="empty-state" style="padding:16px">問題なし ✓</div>';
-  var upcoming=DB.posts.filter(function(p){
-    if(p.status==='done'||p.status==='visited'||p.status==='cancelled'||p.status==='approved')return false;
-    return true;
-  }).sort(function(a,b){return new Date(a.date)-new Date(b.date);}).slice(0,8);
-  var ue=document.getElementById('dash-upcoming');
-  ue.innerHTML=upcoming.length?'<div class="timeline">'+upcoming.map(function(p){
-    var badge='<span class="badge '+(TYPE_BADGE[p.type]||'b-gray')+'" style="font-size:10px;padding:1px 6px;margin-right:4px">'+(TYPE_ICON[p.type]||'')+' '+(TYPE_LABEL[p.type]||p.type)+'</span>';
-    var isInf=p.type==='inf_visit'||p.type==='inf_post'||p.type==='inf_draft';
-    var isShooting=p.type==='shooting';
-    var sub='';
-    if(isInf&&p.infId){var inf=DB.influencers.find(function(x){return x.id===p.infId;});sub=inf?esc(inf.name.split(' ')[0]):'—';}
-    else if(isShooting&&p.creatorId){var cr=DB.creators.find(function(x){return x.id===p.creatorId;});sub=cr?esc(cr.crName):'—';}
-    else if(p.caption){sub=esc((p.caption||'').slice(0,30))+((p.caption||'').length>30?'…':'');}
-    /* フローボタン */
-    var btns='';
-    var bs='font-size:11px;padding:3px 9px;border-radius:5px;cursor:pointer;border:1px solid;margin-right:4px;margin-top:4px;display:inline-block;';
-    if(p.type==='inf_visit'){
-      if(p.status==='unbooked'){
-        btns+='<button style="'+bs+'background:var(--accent-bg);color:var(--accent);border-color:var(--accent-border)" onclick="updatePostStatus(\''+p.id+'\',\'booked\')">予約済みにする</button>';
-      }else if(p.status==='booked'){
-        btns+='<button style="'+bs+'background:var(--green-bg);color:var(--green);border-color:var(--green-border)" onclick="updatePostStatus(\''+p.id+'\',\'visited\')">✓ 来店</button>';
-        btns+='<button style="'+bs+'background:var(--red-bg);color:var(--red);border-color:var(--red-border)" onclick="updatePostStatus(\''+p.id+'\',\'cancelled\')">キャンセル</button>';
-        btns+='<button style="'+bs+'background:var(--amber-bg);color:var(--amber);border-color:var(--amber-border)" onclick="reschedulePost(\''+p.id+'\')">リスケ</button>';
-      }
-    }else if(p.type==='inf_draft'){
-      btns+='<button style="'+bs+'background:var(--green-bg);color:var(--green);border-color:var(--green-border)" onclick="updatePostStatus(\''+p.id+'\',\'approved\')">✓ 確認完了</button>';
-    }else if(p.type==='inf_post'||p.type==='video'||p.type==='image'||p.type==='reel'||p.type==='story'){
-      btns+='<button style="'+bs+'background:var(--green-bg);color:var(--green);border-color:var(--green-border)" onclick="updatePostStatus(\''+p.id+'\',\'done\')">✓ 投稿完了</button>';
-    }else if(p.type==='shooting'){
-      btns+='<button style="'+bs+'background:var(--green-bg);color:var(--green);border-color:var(--green-border)" onclick="updatePostStatus(\''+p.id+'\',\'done\')">✓ 撮影完了</button>';
-    }
-    var btnRow=btns?'<div style="margin-top:2px">'+btns+'</div>':'';
-    return'<div class="tl-item"><div class="tl-dot" style="background:'+storeColor(p.storeId)+'15;border-color:'+storeColor(p.storeId)+'"></div>'
-      +'<div style="flex:1"><div class="tl-date">'+fmtDT(p.date)+'</div>'
-      +'<div class="tl-title" style="display:flex;align-items:center;flex-wrap:wrap;gap:3px">'+badge+'<span>'+esc(storeName(p.storeId))+(sub?' / '+sub:'')+'</span></div>'
-      +btnRow
-      +'</div></div>';
-  }).join('')+'</div>':'<div class="empty-state" style="padding:16px">予定なし</div>';
+  /* やること一覧 */
+  renderTodoList();
   /* 売上目標トラッカー */
   var goalEl=document.getElementById('dash-goal');
   if(goalEl){
@@ -5309,7 +5354,7 @@ function updateSidebarStats(){
 }
 function refreshAll(){
   updateSidebarStats();
-  if(currentPage==='dashboard'){renderDashboard();renderSalesNotifs();}
+  if(currentPage==='dashboard'){renderDashboard();renderSalesNotifs();renderTodoList();}
   if(currentPage==='stores')renderStoreTable();
   if(currentPage==='schedule'){renderSchedFilter();renderSchedule();renderCalendar();}
   if(currentPage==='influencers')renderInfluencers();
