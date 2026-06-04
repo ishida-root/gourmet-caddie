@@ -7,6 +7,10 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>グルメキャディ</title>
 <link rel="icon" type="image/png" href="gourmet_caddie_logo.png">
+<link rel="apple-touch-icon" href="gourmet_caddie_logo.png">
+<link rel="apple-touch-icon" sizes="180x180" href="gourmet_caddie_logo.png">
+<meta name="apple-mobile-web-app-title" content="グルメキャディ">
+<meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -486,6 +490,7 @@ tr:hover td{background:#fafaf8}
         <div class="card-header">
           <span class="card-title">投稿スケジュール</span>
           <div style="display:flex;gap:6px;align-items:center">
+            <button id="schedPastBtn" onclick="toggleSchedPast()" style="padding:4px 10px;font-size:11px;border-radius:20px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer">過去を表示</button>
             <div style="display:flex;border:1px solid var(--border);border-radius:var(--r);overflow:hidden">
               <button id="viewTabList" onclick="setSchedView('list')" style="padding:4px 12px;font-size:11px;background:var(--accent);color:#fff;border:none;cursor:pointer">リスト</button>
               <button id="viewTabCal" onclick="setSchedView('cal')" style="padding:4px 12px;font-size:11px;background:var(--bg3);color:var(--text2);border:none;cursor:pointer">カレンダー</button>
@@ -3685,6 +3690,20 @@ var TYPE_LABEL={video:'動画',image:'画像',reel:'リール',story:'ストー�
 var TYPE_BADGE={video:'b-gray',image:'b-gray',reel:'b-blue',story:'b-gray',inf_visit:'b-amber',inf_draft:'b-green',inf_post:'b-purple',shooting:'b-pink'};
 
 var schedTypeFilter='';
+var schedShowPast=false;
+
+function toggleSchedPast(){
+  schedShowPast=!schedShowPast;
+  var btn=document.getElementById('schedPastBtn');
+  if(btn){
+    btn.textContent=schedShowPast?'過去を非表示':'過去を表示';
+    btn.style.background=schedShowPast?'var(--accent-bg)':'var(--bg3)';
+    btn.style.color=schedShowPast?'var(--accent)':'var(--text2)';
+    btn.style.borderColor=schedShowPast?'var(--accent-border)':'var(--border)';
+  }
+  renderSchedule();
+}
+
 function setSchedTypeFilter(el,type){
   schedTypeFilter=type;
   document.querySelectorAll('.sched-type-btn').forEach(function(b){b.classList.remove('active');});
@@ -3697,6 +3716,11 @@ function renderSchedule(){
   var search=(document.getElementById('globalSearch').value||'').toLowerCase();
   var list=DB.posts.slice().sort(function(a,b){return new Date(a.date)-new Date(b.date);});
   if(activeFilters.length)list=list.filter(function(p){return activeFilters.includes(p.storeId);});
+  /* 過去非表示フィルター（デフォルト：今月1日以降のみ） */
+  if(!schedShowPast){
+    var monthStart=new Date();monthStart.setDate(1);monthStart.setHours(0,0,0,0);
+    list=list.filter(function(p){return new Date(p.date)>=monthStart;});
+  }
   /* 種別フィルター */
   if(schedTypeFilter==='influencer'){
     list=list.filter(function(p){return p.type==='inf_visit'||p.type==='inf_post'||p.type==='inf_draft';});
