@@ -3214,6 +3214,7 @@ function openShootingModal(id){
   editingShootId=id||null;
   var yr=new Date().getFullYear();
   makeDatePicker('shootDateWrap','shootDate',{yearFrom:yr-1,yearTo:yr+3,yearLabel:'年'});
+  makeTimePicker('shootTimeWrap','shootTime');
 
   /* クリエイターselect更新 */
   var sel=document.getElementById('shootCreator');
@@ -3233,6 +3234,9 @@ function openShootingModal(id){
       document.getElementById('shootModalTitle') && (document.getElementById('shootingModalTitle').textContent='撮影予定を編集');
       var dw=document.getElementById('shootDateWrap');
       if(dw&&dw._setDate)dw._setDate((p.date||'').split('T')[0]);
+      var tw=document.getElementById('shootTimeWrap');
+      var existTime=(p.date||'').includes('T')?(p.date.split('T')[1]||'').slice(0,5):'10:00';
+      if(tw&&tw._setTime)tw._setTime(existTime);
       if(sel&&p.creatorId)sel.value=p.creatorId;
       document.getElementById('shootMemo').value=p.note||'';
     }
@@ -3268,7 +3272,7 @@ function saveShooting(){
     id:editingShootId||uid(),
     storeId:sid,
     type:'shooting',
-    date:dateVal+'T10:00',
+    date:dateVal+'T'+(document.getElementById('shootTime').value||'10:00'),
     creatorId:creatorId,
     note:memo,
     status:'scheduled'
@@ -4187,6 +4191,26 @@ function calCellDrop(e,toDay){
 
 function runChecks(){}/* 旧runChecksは廃止 */
 
+function toggleWeekDone(){
+  var wrap=document.getElementById('chk-week-done-wrap');
+  var btn=document.getElementById('chk-week-done-btn');
+  if(!wrap||!btn)return;
+  var isOpen=wrap.style.display!=='none';
+  wrap.style.display=isOpen?'none':'block';
+  var count=wrap.children.length;
+  btn.textContent=isOpen?'▼ 完了済みを表示（'+count+'件）':'▲ 完了済みを非表示';
+}
+
+function toggleMonthDone(){
+  var wrap=document.getElementById('chk-month-done-wrap');
+  var btn=document.getElementById('chk-month-done-btn');
+  if(!wrap||!btn)return;
+  var isOpen=wrap.style.display!=='none';
+  wrap.style.display=isOpen?'none':'block';
+  var count=wrap.children.length;
+  btn.textContent=isOpen?'▼ 完了済みを表示（'+count+'件）':'▲ 完了済みを非表示';
+}
+
 function renderCheckPage(){
   var today=new Date();
   today.setHours(0,0,0,0);
@@ -4231,17 +4255,81 @@ function renderCheckPage(){
     }
   }
 
-  /* ① 今週の投稿 */
-  var weekPosts=DB.posts.filter(function(p){
+  var DONE_ST=['done','visited','approved','cancelled'];
+
+  /* ① 今週の投稿（未完了／完了で分ける） */
+  var weekAll=DB.posts.filter(function(p){
     var d=new Date(p.date);return d>=weekStart&&d<=weekEnd;
   }).sort(function(a,b){return new Date(a.date)-new Date(b.date);});
-  setSection('chk-week','chk-week-count',weekPosts,'今週の投稿予定はありません');
+  var weekActive=weekAll.filter(function(p){return DONE_ST.indexOf(p.status)<0;});
+  var weekDone=weekAll.filter(function(p){return DONE_ST.indexOf(p.status)>=0;});
+  var weekEl=document.getElementById('chk-week');
+  var weekCntEl=document.getElementById('chk-week-count');
+  if(weekCntEl)weekCntEl.textContent=weekAll.length+'件（完了'+weekDone.length+'件）';
+  if(weekEl){
+    if(!weekAll.length){
+      weekEl.innerHTML='<div style="padding:12px 14px;font-size:12px;color:var(--text3)">今週の投稿予定はありません</div>';
+    }else{
+      var weekActiveHtml=weekActive.length
+        ?weekActive.map(postRow).join('')
+        :'<div style="padding:12px 14px;font-size:12px;color:var(--text3)">未完了の投稿はありません ✓</div>';
+      var weekDoneHtml=weekDone.length
+        ?'<div id="chk-week-done-wrap" style="display:none">'
+          +weekDone.map(function(p){
+            return'<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--border);font-size:12px;opacity:0.45;background:var(--bg3)">'
+              +'<span style="width:5px;height:5px;border-radius:50%;background:'+storeColor(p.storeId)+';display:inline-block;flex-shrink:0"></span>'
+              +'<span class="td-mono" style="color:var(--text3);white-space:nowrap;width:110px;text-decoration:line-through">'+fmtDT(p.date)+'</span>'
+              +'<span style="font-weight:500;min-width:80px;text-decoration:line-through">'+esc(storeName(p.storeId))+'</span>'
+              +'<span class="badge b-gray">'+(TYPE_LABEL[p.type]||p.type)+'</span>'
+              +postStatusBadge(p.status)
+              +'<button class="btn btn-sm" onclick="openPostModal(\''+p.id+'\')">編集</button>'
+            +'</div>';
+          }).join('')
+        +'</div>'
+        +'<div style="padding:8px 14px;text-align:center;border-top:1px solid var(--border)">'
+          +'<button onclick="toggleWeekDone()" id="chk-week-done-btn" style="font-size:11px;color:var(--text3);background:none;border:none;cursor:pointer">▼ 完了済みを表示（'+weekDone.length+'件）</button>'
+        +'</div>'
+        :''
+      weekEl.innerHTML='<div style="border-radius:0 0 var(--r) var(--r);overflow:hidden">'+weekActiveHtml+weekDoneHtml+'</div>';
+    }
+  }
 
-  /* ② 今月の投稿 */
-  var monthPosts=DB.posts.filter(function(p){
+  /* ② 今月の投稿（未完了／完了で分ける） */
+  var monthAll=DB.posts.filter(function(p){
     var d=new Date(p.date);return d>=monthStart&&d<=monthEnd;
   }).sort(function(a,b){return new Date(a.date)-new Date(b.date);});
-  setSection('chk-month','chk-month-count',monthPosts,'今月の投稿予定はありません');
+  var monthActive=monthAll.filter(function(p){return DONE_ST.indexOf(p.status)<0;});
+  var monthDone=monthAll.filter(function(p){return DONE_ST.indexOf(p.status)>=0;});
+  var monthEl=document.getElementById('chk-month');
+  var monthCntEl=document.getElementById('chk-month-count');
+  if(monthCntEl)monthCntEl.textContent=monthAll.length+'件（完了'+monthDone.length+'件）';
+  if(monthEl){
+    if(!monthAll.length){
+      monthEl.innerHTML='<div style="padding:12px 14px;font-size:12px;color:var(--text3)">今月の投稿予定はありません</div>';
+    }else{
+      var activeHtml=monthActive.length
+        ?monthActive.map(postRow).join('')
+        :'<div style="padding:12px 14px;font-size:12px;color:var(--text3)">未完了の投稿はありません ✓</div>';
+      var doneHtml=monthDone.length
+        ?'<div id="chk-month-done-wrap" style="display:none">'
+          +monthDone.map(function(p){
+            return'<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--border);font-size:12px;opacity:0.45;background:var(--bg3)">'
+              +'<span style="width:5px;height:5px;border-radius:50%;background:'+storeColor(p.storeId)+';display:inline-block;flex-shrink:0"></span>'
+              +'<span class="td-mono" style="color:var(--text3);white-space:nowrap;width:110px;text-decoration:line-through">'+fmtDT(p.date)+'</span>'
+              +'<span style="font-weight:500;min-width:80px;text-decoration:line-through">'+esc(storeName(p.storeId))+'</span>'
+              +'<span class="badge b-gray">'+(TYPE_LABEL[p.type]||p.type)+'</span>'
+              +postStatusBadge(p.status)
+              +'<button class="btn btn-sm" onclick="openPostModal(\''+p.id+'\')">編集</button>'
+            +'</div>';
+          }).join('')
+        +'</div>'
+        +'<div style="padding:8px 14px;text-align:center;border-top:1px solid var(--border)">'
+          +'<button onclick="toggleMonthDone()" id="chk-month-done-btn" style="font-size:11px;color:var(--text3);background:none;border:none;cursor:pointer">▼ 完了済みを表示（'+monthDone.length+'件）</button>'
+        +'</div>'
+        :''
+      monthEl.innerHTML='<div style="border-radius:0 0 var(--r) var(--r);overflow:hidden">'+activeHtml+doneHtml+'</div>';
+    }
+  }
 
   /* ③ クリエイティブ未設定（動画・画像・リール・ストーリー系のみ。INF系は除外） */
   var noCreative=DB.posts.filter(function(p){
@@ -5848,9 +5936,13 @@ checkSession();
   </div>
   <div class="modal-body">
     <div class="field" style="margin-bottom:10px">
-      <label>撮影日 *</label>
-      <div style="display:flex;gap:4px;align-items:center" id="shootDateWrap"></div>
+      <label>撮影日時 *</label>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <div style="display:flex;gap:4px;align-items:center" id="shootDateWrap"></div>
+        <div id="shootTimeWrap" style="display:flex;align-items:center;gap:2px"></div>
+      </div>
       <input type="hidden" id="shootDate">
+      <input type="hidden" id="shootTime" value="10:00">
     </div>
     <div class="field" style="margin-bottom:10px">
       <label>担当クリエイター</label>
