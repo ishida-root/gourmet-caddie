@@ -1028,6 +1028,13 @@ tr:hover td{background:#fafaf8}
     </div>
     <div class="fr"><div class="field"><label>所属事務所</label><input id="iAgency" type="text" placeholder="なし"></div><div class="field"><label>評価</label><select id="iRating"><option value="">—</option><option value="5">★★★★★ 最高</option><option value="4">★★★★ 良い</option><option value="3">★★★ 普通</option><option value="2">★★ 要注意</option><option value="1">★ NG</option></select></div></div>
     <div class="fr1 field"><label>備考・注意点</label><textarea id="iMemo" placeholder="得意ジャンル、投稿スタイル、注意点など..."></textarea></div>
+
+    <!-- 対応媒体・費用設定 -->
+    <div style="margin-bottom:12px">
+      <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:8px">対応媒体・費用設定</div>
+      <div id="iPlatformDetails" style="border:1px solid var(--border);border-radius:var(--r);overflow:hidden"></div>
+    </div>
+
     <div style="margin-bottom:10px;padding:10px 12px;background:var(--bg3);border-radius:var(--r);border:1px solid var(--border)">
       <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
         <input type="checkbox" id="iContractSent" style="width:16px;height:16px;cursor:pointer;accent-color:var(--green)">
@@ -2542,6 +2549,104 @@ function commitInlineDate(id,val){
   refreshAll();
 }
 
+var INF_PLATFORM_LIST=[
+  {id:'ig_feed',       label:'Instagram フィード'},
+  {id:'ig_reel',       label:'Instagram リール'},
+  {id:'ig_story',      label:'Instagram ストーリーズ'},
+  {id:'ig_pin',        label:'Instagram ピン留め'},
+  {id:'ig_collab',     label:'Instagram コラボ投稿'},
+  {id:'tiktok',        label:'TikTok'},
+  {id:'lemon8',        label:'Lemon8'},
+  {id:'google_review', label:'Googleマップ クチコミ'},
+  {id:'tabelog',       label:'食べログ'},
+  {id:'yt_shorts',     label:'YouTube Shorts'},
+];
+
+function renderPlatformDetails(saved){
+  var el=document.getElementById('iPlatformDetails');
+  if(!el)return;
+  el.innerHTML=INF_PLATFORM_LIST.map(function(pl,i){
+    var d=saved&&saved[pl.id]?saved[pl.id]:{};
+    var checked=!!d.enabled;
+    var fee=d.fee||'';
+    var taxIncl=d.taxIncl!==undefined?d.taxIncl:false;
+    var transIncl=d.transIncl!==undefined?d.transIncl:false;
+    var rowBg=i%2===1?'background:var(--bg3)':'background:var(--bg2)';
+    return'<div style="'+rowBg+';border-bottom:1px solid var(--border);padding:8px 12px" id="plrow_'+pl.id+'">'
+      +'<div style="display:flex;align-items:center;gap:10px">'
+        +'<input type="checkbox" id="plchk_'+pl.id+'" '+(checked?'checked':'')+' onchange="onPlatformCheck(\''+pl.id+'\')" style="width:15px;height:15px;cursor:pointer;accent-color:var(--accent);flex-shrink:0">'
+        +'<label for="plchk_'+pl.id+'" style="font-size:13px;font-weight:'+(checked?'500':'400')+';cursor:pointer;flex:1">'+pl.label+'</label>'
+      +'</div>'
+      +'<div id="pldetail_'+pl.id+'" style="display:'+(checked?'block':'none')+';margin-top:8px;padding-left:25px">'
+        +'<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">'
+          +'<div style="display:flex;align-items:center;gap:6px">'
+            +'<span style="font-size:12px;color:var(--text2)">PR費用</span>'
+            +'<input type="number" id="plfee_'+pl.id+'" value="'+fee+'" placeholder="例: 50000" style="width:110px;font-size:12px;padding:4px 8px">'
+            +'<span style="font-size:12px;color:var(--text3)">円</span>'
+          +'</div>'
+          +'<div style="display:flex;gap:4px">'
+            +'<label style="font-size:11px;padding:3px 8px;border-radius:4px;cursor:pointer;border:1px solid var(--border);background:'+(taxIncl?'var(--accent)':'var(--bg3)')+';color:'+(taxIncl?'#fff':'var(--text2)')+'" onclick="setPlatformTax(\''+pl.id+'\',true)">'
+              +'<input type="radio" name="pltax_'+pl.id+'" value="1" '+(taxIncl?'checked':'')+' style="display:none"> 税込</label>'
+            +'<label style="font-size:11px;padding:3px 8px;border-radius:4px;cursor:pointer;border:1px solid var(--border);background:'+(!taxIncl?'var(--accent)':'var(--bg3)')+';color:'+(!taxIncl?'#fff':'var(--text2)')+'" onclick="setPlatformTax(\''+pl.id+'\',false)">'
+              +'<input type="radio" name="pltax_'+pl.id+'" value="0" '+(!taxIncl?'checked':'')+' style="display:none"> 税別</label>'
+          +'</div>'
+          +'<div style="display:flex;gap:4px">'
+            +'<label style="font-size:11px;padding:3px 8px;border-radius:4px;cursor:pointer;border:1px solid var(--border);background:'+(transIncl?'var(--green)':'var(--bg3)')+';color:'+(transIncl?'#fff':'var(--text2)')+'" onclick="setPlatformTrans(\''+pl.id+'\',true)">'
+              +'<input type="radio" name="pltrans_'+pl.id+'" value="1" '+(transIncl?'checked':'')+' style="display:none"> 交通費込</label>'
+            +'<label style="font-size:11px;padding:3px 8px;border-radius:4px;cursor:pointer;border:1px solid var(--border);background:'+(!transIncl?'var(--green)':'var(--bg3)')+';color:'+(!transIncl?'#fff':'var(--text2)')+'" onclick="setPlatformTrans(\''+pl.id+'\',false)">'
+              +'<input type="radio" name="pltrans_'+pl.id+'" value="0" '+(!transIncl?'checked':'')+' style="display:none"> 交通費別</label>'
+          +'</div>'
+        +'</div>'
+      +'</div>'
+    +'</div>';
+  }).join('');
+}
+
+function onPlatformCheck(pid){
+  var chk=document.getElementById('plchk_'+pid);
+  var detail=document.getElementById('pldetail_'+pid);
+  var lbl=chk?chk.nextElementSibling:null;
+  if(detail)detail.style.display=chk&&chk.checked?'block':'none';
+  if(lbl)lbl.style.fontWeight=chk&&chk.checked?'500':'400';
+}
+
+function setPlatformTax(pid,val){
+  renderPlatformDetails(getPlatformData());
+  var chk=document.getElementById('plchk_'+pid);
+  if(chk&&!chk.checked){chk.checked=true;onPlatformCheck(pid);}
+  /* 再描画後に値を反映 */
+  var d=getPlatformData();
+  if(!d[pid])d[pid]={};
+  d[pid].enabled=true;d[pid].taxIncl=val;
+  renderPlatformDetails(d);
+}
+
+function setPlatformTrans(pid,val){
+  var d=getPlatformData();
+  if(!d[pid])d[pid]={};
+  d[pid].enabled=true;d[pid].transIncl=val;
+  renderPlatformDetails(d);
+}
+
+function getPlatformData(){
+  var result={};
+  INF_PLATFORM_LIST.forEach(function(pl){
+    var chk=document.getElementById('plchk_'+pl.id);
+    if(!chk)return;
+    var enabled=chk.checked;
+    var feeEl=document.getElementById('plfee_'+pl.id);
+    var taxEl=document.querySelector('input[name="pltax_'+pl.id+'"]:checked');
+    var transEl=document.querySelector('input[name="pltrans_'+pl.id+'"]:checked');
+    result[pl.id]={
+      enabled:enabled,
+      fee:feeEl?Number(feeEl.value)||0:0,
+      taxIncl:taxEl?taxEl.value==='1':false,
+      transIncl:transEl?transEl.value==='1':false
+    };
+  });
+  return result;
+}
+
 var editingInfId=null;
 
 function openInfluencerModal(id){
@@ -2562,8 +2667,10 @@ function openInfluencerModal(id){
       else if(inf.fee){document.getElementById('iFeeLow').value=inf.fee;}
       document.getElementById('iFeeHigh').value=inf.feeHigh||'';
       document.getElementById('iContractSent').checked=!!inf.contractSent;
+      renderPlatformDetails(inf.platformDetails||{});
     }else{
       document.getElementById('iContractSent').checked=false;
+      renderPlatformDetails({});
     }
   }
   openModal('infModal');
@@ -2591,7 +2698,8 @@ function saveInfluencer(){
     agency:document.getElementById('iAgency').value,
     rating:document.getElementById('iRating').value,
     memo:document.getElementById('iMemo').value,
-    contractSent:document.getElementById('iContractSent').checked
+    contractSent:document.getElementById('iContractSent').checked,
+    platformDetails:getPlatformData()
   };
   if(isEdit){
     var idx=DB.influencers.findIndex(function(x){return x.id===id;});
@@ -2855,6 +2963,24 @@ function openInfluencerDetail(id){
       )
     )
     +'<div class="form-actions" style="border-top:1px solid var(--border);margin-top:16px;padding-top:14px">'
+      +(function(){
+        var pd=inf.platformDetails||{};
+        var enabled=INF_PLATFORM_LIST.filter(function(pl){return pd[pl.id]&&pd[pl.id].enabled;});
+        if(!enabled.length)return'';
+        return'<div style="margin-bottom:14px">'
+          +'<div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:8px">📱 対応媒体・費用</div>'
+          +'<div style="display:flex;flex-wrap:wrap;gap:6px">'
+          +enabled.map(function(pl){
+            var d=pd[pl.id];
+            var feeStr=d.fee?'¥'+Number(d.fee).toLocaleString()+(d.taxIncl?' 税込':' 税別'):'料金未設定';
+            var transStr=d.transIncl?'交通費込':'交通費別';
+            return'<div style="padding:6px 10px;background:var(--accent-bg);border:1px solid var(--accent-border);border-radius:var(--r);font-size:11px">'
+              +'<div style="font-weight:500;color:var(--accent)">'+pl.label+'</div>'
+              +'<div style="color:var(--text2);margin-top:2px">'+feeStr+' ・ '+transStr+'</div>'
+            +'</div>';
+          }).join('')
+          +'</div></div>';
+      })()
       +'<button class="btn-ghost-danger" onclick="deleteInfluencer(\''+id+'\')">削除</button>'
       +'<button class="btn" onclick="closeModal(\'infDetailModal\')">閉じる</button>'
       +'<button class="btn" onclick="closeModal(\'infDetailModal\');openCastingModal({infId:\''+id+'\'})">キャスティング登録</button>'
