@@ -1117,7 +1117,22 @@ tr:hover td{background:#fafaf8}
   <div class="modal-header"><span class="modal-title" id="castModalTitle">キャスティング記録</span><button class="modal-close" onclick="closeModal('castModal')">✕</button></div>
   <div class="modal-body">
     <div class="fr"><div class="field"><label>店舗 *</label><select id="cStore"><option value="">選択...</option></select></div><div class="field"><label>インフルエンサー *</label><select id="cInf"><option value="">選択...</option></select></div></div>
-    <div class="fr"><div class="field"><label>媒体</label><select id="cPlatform"><option>Instagram</option><option>TikTok</option><option>YouTube</option><option>X</option></select></div><div class="field"><label>PR 費用（円）</label><input id="cFee" type="number" placeholder="50000"></div></div>
+    <div class="fr">
+      <div class="field">
+        <label>媒体</label>
+        <select id="cPlatform" onchange="onCastPlatformChange()">
+          <option value="">選択...</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>PR 費用（円）</label>
+        <div style="display:flex;gap:6px;align-items:center">
+          <input id="cFee" type="number" placeholder="50000" style="flex:1">
+          <span id="cFeeTaxLabel" style="font-size:11px;color:var(--text3);white-space:nowrap"></span>
+        </div>
+        <div id="cFeeTransLabel" style="font-size:11px;color:var(--text3);margin-top:3px"></div>
+      </div>
+    </div>
     <!-- スケジュール3ステップ -->
     <div style="padding:12px;background:var(--bg3);border-radius:var(--r);margin-bottom:12px">
       <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:10px">📅 スケジュール <span style="font-weight:300;color:var(--text3)">（全て任意）</span></div>
@@ -2996,7 +3011,7 @@ function openCastingModal(opts){
   ['cFee','cReach','cResult','cVisitDate','cDraftDate','cDate'].forEach(function(fid){
     var el=document.getElementById(fid);if(el)el.value='';
   });
-  document.getElementById('cPlatform').value='Instagram';
+  /* 媒体選択は updateCastPlatformSelect() で初期化するためここでは不要 */
   var titleEl=document.getElementById('castModalTitle');
   if(titleEl)titleEl.textContent='キャスティング記録';
   if(opts){
@@ -3008,7 +3023,20 @@ function openCastingModal(opts){
         if(titleEl)titleEl.textContent='キャスティングを編集';
         var set=function(fid,v){var el=document.getElementById(fid);if(el&&v)el.value=v;};
         set('cStore',ec.storeId);set('cInf',ec.infId);
-        set('cPlatform',ec.platform);set('cFee',ec.fee);
+        set('cFee',ec.fee);
+        /* 媒体は INF選択後に更新してから復元 */
+        setTimeout(function(){
+          updateCastPlatformSelect();
+          var ps=document.getElementById('cPlatform');
+          if(ps&&ec.platform){
+            /* IDで一致 or ラベルで一致 */
+            var matchOpt=Array.from(ps.options).find(function(o){
+              var pl=INF_PLATFORM_LIST.find(function(p){return p.id===o.value;});
+              return o.value===ec.platform||(pl&&pl.label===ec.platform);
+            });
+            if(matchOpt)ps.value=matchOpt.value;
+          }
+        },50);
         set('cReach',ec.reach);set('cResult',ec.result);
         set('cVisitDate',ec.visitDate);set('cDraftDate',ec.draftDate);set('cDate',ec.date);
       }
@@ -3041,8 +3069,61 @@ function openCastingModal(opts){
       setDp('cDateWrap','cDate',ec2.date);
     }
   }
+  /* INF選択時に媒体を更新 */
+  var cInfEl=document.getElementById('cInf');
+  if(cInfEl)cInfEl.onchange=function(){updateCastPlatformSelect();};
+  updateCastPlatformSelect();
   openModal('castModal');
 }
+
+function updateCastPlatformSelect(){
+  var infSel=document.getElementById('cInf');
+  var platSel=document.getElementById('cPlatform');
+  if(!infSel||!platSel)return;
+  var infId=infSel.value;
+  var inf=DB.influencers.find(function(x){return x.id===infId;});
+  var pd=inf&&inf.platformDetails?inf.platformDetails:{};
+  var enabled=INF_PLATFORM_LIST.filter(function(pl){return pd[pl.id]&&pd[pl.id].enabled;});
+  /* 媒体リストを構築 */
+  var opts='<option value="">選択...</option>';
+  if(enabled.length){
+    opts+=enabled.map(function(pl){
+      var d=pd[pl.id];
+      var feeStr=d.fee?'（¥'+Number(d.fee).toLocaleString()+'）':'';
+      return'<option value="'+pl.id+'">'+pl.label+feeStr+'</option>';
+    }).join('');
+  }else{
+    /* INFに媒体未設定の場合は汎用リスト */
+    ['Instagram フィード','Instagram リール','Instagram ストーリーズ','TikTok','Lemon8','Googleマップ クチコミ','食べログ','YouTube Shorts'].forEach(function(l){
+      opts+='<option value="'+l+'">'+l+'</option>';
+    });
+  }
+  platSel.innerHTML=opts;
+  document.getElementById('cFee').value='';
+  document.getElementById('cFeeTaxLabel').textContent='';
+  document.getElementById('cFeeTransLabel').textContent='';
+}
+
+function onCastPlatformChange(){
+  var infSel=document.getElementById('cInf');
+  var platSel=document.getElementById('cPlatform');
+  if(!infSel||!platSel)return;
+  var infId=infSel.value;
+  var platId=platSel.value;
+  var inf=DB.influencers.find(function(x){return x.id===infId;});
+  var pd=inf&&inf.platformDetails?inf.platformDetails:{};
+  var d=pd[platId];
+  if(d&&d.fee){
+    document.getElementById('cFee').value=d.fee;
+    document.getElementById('cFeeTaxLabel').textContent=d.taxIncl?'税込':'税別';
+    document.getElementById('cFeeTransLabel').textContent=d.transIncl?'✓ 交通費込み':'交通費別途';
+  }else{
+    document.getElementById('cFee').value='';
+    document.getElementById('cFeeTaxLabel').textContent='';
+    document.getElementById('cFeeTransLabel').textContent='';
+  }
+}
+
 function saveCasting(){
   var sid=document.getElementById('cStore').value;
   var iid=document.getElementById('cInf').value;
@@ -3051,7 +3132,10 @@ function saveCasting(){
   var isEdit=!!editingCastId;
   var visitDate=document.getElementById('cVisitDate').value;
   var draftDate=document.getElementById('cDraftDate').value;
-  var platform=document.getElementById('cPlatform').value;
+  var platSel=document.getElementById('cPlatform');
+  var platId=platSel?platSel.value:'';
+  var platObj=INF_PLATFORM_LIST.find(function(p){return p.id===platId;});
+  var platform=platObj?platObj.label:platId; /* ラベルで保存、汎用の場合はそのまま */
   var fee=document.getElementById('cFee').value;
   /* 編集時は既存IDを使う、新規時のみuid()生成 */
   var castId=isEdit?editingCastId:uid();
