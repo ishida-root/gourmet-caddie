@@ -16,7 +16,7 @@
 :root{
   --bg:#fafaf8;--bg2:#ffffff;--bg3:#f4f3ef;--bg4:#eeede8;
   --border:#e8e7e2;--border2:#d4d3ce;
-  --text:#1a1916;--text2:#3f3e39;--text3:#7a7971;
+  --text:#111009;--text2:#252320;--text3:#56554e;
   --accent:#2563eb;--accent-bg:#eff4ff;--accent-border:#bfcfff;
   --green:#16a34a;--green-bg:#f0fdf4;--green-border:#bbf7d0;
   --amber:#d97706;--amber-bg:#fffbeb;--amber-border:#fde68a;
@@ -27,7 +27,7 @@
 body.dark{
   --bg:#0f0f11;--bg2:#18181b;--bg3:#222226;--bg4:#2c2c31;
   --border:rgba(255,255,255,0.07);--border2:rgba(255,255,255,0.12);
-  --text:#f0f0ee;--text2:#b8b8b3;--text3:#6e6e68;
+  --text:#f5f5f3;--text2:#d0d0ca;--text3:#8c8c86;
   --accent:#3b82f6;--accent-bg:rgba(59,130,246,0.12);--accent-border:rgba(59,130,246,0.3);
   --green:#22c55e;--green-bg:rgba(34,197,94,0.1);--green-border:rgba(34,197,94,0.25);
   --amber:#f59e0b;--amber-bg:rgba(245,158,11,0.1);--amber-border:rgba(245,158,11,0.25);
@@ -40,23 +40,23 @@ body.dark .modal{background:var(--bg2);}
 body.dark .modal-header{background:var(--bg2);}
 body.dark th{background:var(--bg3);}
 body.dark tr:hover td{background:rgba(255,255,255,0.03);}
-.theme-toggle{background:var(--bg3);border:1px solid var(--border2);border-radius:20px;padding:4px 10px;font-size:12px;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:5px;transition:all .15s;}
+.theme-toggle{background:var(--bg3);border:1px solid var(--border2);border-radius:20px;padding:4px 10px;font-size:13px;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:5px;transition:all .15s;}
 .theme-toggle:hover{background:var(--bg4);color:var(--text);}
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:14px;line-height:1.6}
+body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;font-size:15px;line-height:1.6}
 ::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
-input,select,textarea,button{font-family:'Noto Sans JP',sans-serif;font-size:14px}
+input,select,textarea,button{font-family:'Noto Sans JP',sans-serif;font-size:15px}
 input,select,textarea{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);color:var(--text);padding:8px 11px;width:100%;outline:none;transition:border-color .15s,box-shadow .15s}
 input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.08)}
 select option{background:#fff}
 textarea{resize:vertical;min-height:64px}
 button{cursor:pointer;border:none;border-radius:var(--r);transition:all .15s;font-weight:400}
-.btn{padding:7px 14px;background:var(--bg2);color:var(--text);border:1px solid var(--border2);font-size:13px}
+.btn{padding:7px 14px;background:var(--bg2);color:var(--text);border:1px solid var(--border2);font-size:14px}
 .btn:hover{background:var(--bg3);border-color:var(--border2)}
 .btn-primary{background:var(--accent);color:#fff;border:none;font-weight:500}
 .btn-primary:hover{background:#1d4ed8}
-.btn-sm{padding:4px 10px;font-size:11px}
-.btn-ghost-danger{background:transparent;color:var(--red);border:1px solid var(--red-border);font-size:11px;padding:4px 8px}
+.btn-sm{padding:4px 10px;font-size:12px}
+.btn-ghost-danger{background:transparent;color:var(--red);border:1px solid var(--red-border);font-size:12px;padding:4px 8px}
 .btn-ghost-danger:hover{background:var(--red-bg)}
 
 .app{display:flex;height:100vh;overflow:hidden}
@@ -66,29 +66,29 @@ button{cursor:pointer;border:none;border-radius:var(--r);transition:all .15s;fon
 .logo{padding:18px 18px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px}
 .logo-icon{width:28px;height:28px;background:var(--accent);border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .logo-icon svg{width:14px;height:14px;fill:#fff}
-.logo-text{font-size:14px;font-weight:500;letter-spacing:-.3px}
-.logo-sub{font-size:9px;color:var(--text3);font-family:'Noto Sans JP',sans-serif;letter-spacing:.5px}
+.logo-text{font-size:15px;font-weight:500;letter-spacing:-.3px}
+.logo-sub{font-size:10px;color:var(--text3);font-family:'Noto Sans JP',sans-serif;letter-spacing:.5px}
 .nav{flex:1;overflow-y:auto;padding:6px 8px}
-.nav-section{font-size:9px;font-family:'Noto Sans JP',sans-serif;letter-spacing:1.5px;color:var(--text3);padding:14px 8px 4px;text-transform:uppercase}
-.nav-item{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:var(--r);cursor:pointer;color:var(--text2);font-size:13px;transition:all .1s;margin-bottom:1px;user-select:none}
+.nav-section{font-size:10px;font-family:'Noto Sans JP',sans-serif;letter-spacing:1.5px;color:var(--text3);padding:14px 8px 4px;text-transform:uppercase}
+.nav-item{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:var(--r);cursor:pointer;color:var(--text2);font-size:14px;transition:all .1s;margin-bottom:1px;user-select:none}
 .nav-item:hover{background:var(--bg3);color:var(--text)}
 .nav-item.active{background:var(--accent-bg);color:var(--accent);font-weight:500}
 .nav-icon{width:16px;height:16px;flex-shrink:0;opacity:.7}
 .nav-item.active .nav-icon{opacity:1}
-.nav-badge{margin-left:auto;font-size:10px;font-weight:500;padding:1px 6px;border-radius:20px;font-family:'Noto Sans JP',sans-serif;background:var(--bg3);color:var(--text2)}
+.nav-badge{margin-left:auto;font-size:11px;font-weight:500;padding:1px 6px;border-radius:20px;font-family:'Noto Sans JP',sans-serif;background:var(--bg3);color:var(--text2)}
 .nav-item.active .nav-badge{background:var(--accent-border);color:var(--accent)}
 .nav-badge-red{background:var(--red-bg);color:var(--red)}
 .sidebar-footer{padding:12px;border-top:1px solid var(--border);display:grid;grid-template-columns:1fr 1fr;gap:6px}
 .sf-card{background:var(--bg3);border-radius:var(--r);padding:8px 10px}
 .sf-val{font-size:17px;font-weight:500;font-family:'Noto Sans JP',sans-serif;color:var(--text)}
-.sf-label{font-size:10px;color:var(--text3);margin-top:1px}
+.sf-label{font-size:11px;color:var(--text3);margin-top:1px}
 
 /* MAIN */
 .main{flex:1;overflow:hidden;display:flex;flex-direction:column;min-width:0}
 .topbar{height:52px;border-bottom:1px solid var(--border);display:flex;align-items:center;padding:0 20px;gap:10px;flex-shrink:0;background:var(--bg2)}
-.page-title{font-size:14px;font-weight:500;flex:1}
+.page-title{font-size:15px;font-weight:500;flex:1}
 .search-wrap{position:relative}
-.search-input{width:220px;padding-left:28px;background:var(--bg3);border-color:transparent;font-size:12px}
+.search-input{width:220px;padding-left:28px;background:var(--bg3);border-color:transparent;font-size:13px}
 .search-input:focus{background:var(--bg2);border-color:var(--accent)}
 .search-icon{position:absolute;left:9px;top:50%;transform:translateY(-50%);pointer-events:none;width:13px;height:13px;color:var(--text3)}
 .content{flex:1;overflow-y:auto;padding:20px}
@@ -99,7 +99,7 @@ button{cursor:pointer;border:none;border-radius:var(--r);transition:all .15s;fon
 .card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:18px;margin-bottom:14px}
 .card-sm{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px}
 .card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
-.card-title{font-size:13px;font-weight:500;color:var(--text2);letter-spacing:.2px}
+.card-title{font-size:14px;font-weight:500;color:var(--text2);letter-spacing:.2px}
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
 .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
@@ -107,20 +107,20 @@ button{cursor:pointer;border:none;border-radius:var(--r);transition:all .15s;fon
 .fr3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-bottom:10px}
 .fr1{margin-bottom:10px}
 .field{display:flex;flex-direction:column;gap:4px}
-.field label{font-size:12px;color:var(--text2);font-weight:400}
+.field label{font-size:13px;color:var(--text2);font-weight:400}
 .form-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
 
 /* STATS */
 .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
 .stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:16px 18px}
 .stat-val{font-size:26px;font-weight:300;font-family:'Noto Sans JP',sans-serif;color:var(--text)}
-.stat-label{font-size:12px;color:var(--text2);margin-top:3px}
+.stat-label{font-size:13px;color:var(--text2);margin-top:3px}
 .stat-card.blue{background:var(--accent-bg);border-color:var(--accent-border)}
 .stat-card.blue .stat-val{color:var(--accent)}
 .stat-card.blue .stat-label{color:var(--accent);opacity:.7}
 
 /* BADGES */
-.badge{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:20px;font-size:12px;font-weight:400}
+.badge{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:20px;font-size:13px;font-weight:400}
 .b-green{background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)}
 .b-amber{background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border)}
 .b-gray{background:var(--bg3);color:var(--text3);border:1px solid var(--border)}
@@ -132,25 +132,25 @@ button{cursor:pointer;border:none;border-radius:var(--r);transition:all .15s;fon
 /* TABLE */
 .table-wrap{overflow-x:auto}
 table{width:100%;border-collapse:collapse}
-th{font-size:12px;color:var(--text2);font-weight:500;text-align:left;padding:7px 12px;border-bottom:1px solid var(--border);letter-spacing:.2px;white-space:nowrap;background:var(--bg3)}
-td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle;color:var(--text);font-size:13px}
+th{font-size:13px;color:var(--text2);font-weight:500;text-align:left;padding:7px 12px;border-bottom:1px solid var(--border);letter-spacing:.2px;white-space:nowrap;background:var(--bg3)}
+td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle;color:var(--text);font-size:14px}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:#fafaf8}
-.td-mono{font-family:'Noto Sans JP',sans-serif;font-size:11px}
+.td-mono{font-family:'Noto Sans JP',sans-serif;font-size:12px}
 
 /* MODAL */
 .modal-overlay{display:none;position:fixed;inset:0;background:rgba(26,25,22,.35);z-index:100;align-items:center;justify-content:center;backdrop-filter:blur(2px)}
 .modal-overlay.open{display:flex}
 .modal{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);width:640px;max-width:95vw;max-height:88vh;overflow-y:auto;box-shadow:0 8px 32px rgba(0,0,0,.1)}
 .modal-header{padding:18px 22px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:var(--bg2);z-index:1}
-.modal-title{font-size:14px;font-weight:500}
-.modal-close{background:var(--bg3);color:var(--text2);padding:4px 9px;font-size:14px;border-radius:6px;border:1px solid var(--border)}
+.modal-title{font-size:15px;font-weight:500}
+.modal-close{background:var(--bg3);color:var(--text2);padding:4px 9px;font-size:15px;border-radius:6px;border:1px solid var(--border)}
 .modal-close:hover{background:var(--bg4)}
 .modal-body{padding:18px 22px 22px}
 
 /* TABS */
 .tabs-line{display:flex;border-bottom:1px solid var(--border);margin-bottom:16px}
-.tab-btn{padding:7px 14px;font-size:13px;color:var(--text2);background:none;border-bottom:2px solid transparent;margin-bottom:-1px;border-radius:0;font-weight:400}
+.tab-btn{padding:7px 14px;font-size:14px;color:var(--text2);background:none;border-bottom:2px solid transparent;margin-bottom:-1px;border-radius:0;font-weight:400}
 .tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:500}
 .tab-btn:hover{color:var(--text2)}
 .tab-pane{display:none}.tab-pane.active{display:block}
@@ -159,8 +159,8 @@ tr:hover td{background:#fafaf8}
 .tl-item{display:flex;gap:12px;padding-bottom:12px;position:relative}
 .tl-item:not(:last-child)::before{content:'';position:absolute;left:9px;top:20px;bottom:0;width:1px;background:var(--border)}
 .tl-dot{width:18px;height:18px;border-radius:50%;flex-shrink:0;border:1.5px solid var(--border);margin-top:2px;display:flex;align-items:center;justify-content:center}
-.tl-date{font-size:10px;color:var(--text3);font-family:'Noto Sans JP',sans-serif}
-.tl-title{font-size:12px;color:var(--text);margin-top:1px}
+.tl-date{font-size:11px;color:var(--text3);font-family:'Noto Sans JP',sans-serif}
+.tl-title{font-size:13px;color:var(--text);margin-top:1px}
 
 /* CHECKLIST */
 .checklist{display:flex;flex-direction:column;gap:5px}
@@ -168,11 +168,11 @@ tr:hover td{background:#fafaf8}
 .check-item:hover{border-color:var(--border)}
 .check-item.done{background:var(--green-bg);border-color:var(--green-border)}
 .check-item.done .check-label{color:var(--text3);text-decoration:line-through}
-.check-box{width:15px;height:15px;border-radius:4px;border:1.5px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:9px;transition:all .1s}
+.check-box{width:15px;height:15px;border-radius:4px;border:1.5px solid var(--border2);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;transition:all .1s}
 .check-item.done .check-box{background:var(--green);border-color:var(--green);color:#fff}
 
 /* ALERTS */
-.alert-item{display:flex;gap:8px;align-items:flex-start;padding:9px 12px;border-radius:var(--r);font-size:12px;margin-bottom:6px;border:1px solid}
+.alert-item{display:flex;gap:8px;align-items:flex-start;padding:9px 12px;border-radius:var(--r);font-size:13px;margin-bottom:6px;border:1px solid}
 .alert-danger{background:var(--red-bg);border-color:var(--red-border);color:var(--red)}
 .alert-warn{background:var(--amber-bg);border-color:var(--amber-border);color:var(--amber)}
 .alert-ok{background:var(--green-bg);border-color:var(--green-border);color:var(--green)}
@@ -181,20 +181,20 @@ tr:hover td{background:#fafaf8}
 /* CALENDAR */
 .cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
-.cal-head{font-size:10px;color:var(--text3);text-align:center;padding:5px 2px;font-family:'Noto Sans JP',sans-serif}
+.cal-head{font-size:11px;color:var(--text3);text-align:center;padding:5px 2px;font-family:'Noto Sans JP',sans-serif}
 .cal-cell{min-height:64px;background:var(--bg3);border-radius:5px;padding:4px;border:1px solid transparent}
 .cal-cell.today{border-color:var(--accent);background:var(--accent-bg)}
 .cal-cell.empty{background:transparent;border-color:transparent}
-.cal-num{color:var(--text3);font-size:10px;font-family:'Noto Sans JP',sans-serif;margin-bottom:2px}
+.cal-num{color:var(--text3);font-size:11px;font-family:'Noto Sans JP',sans-serif;margin-bottom:2px}
 .cal-cell.today .cal-num{color:var(--accent);font-weight:500}
-.cal-chip{border-radius:3px;padding:1px 4px;font-size:10px;margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cal-chip{border-radius:3px;padding:1px 4px;font-size:11px;margin-bottom:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 /* PROGRESS */
 .pbar-wrap{background:var(--bg4);border-radius:2px;height:4px}
 .pbar{height:4px;border-radius:2px;transition:width .3s}
 
-.empty-state{text-align:center;padding:32px;color:var(--text3);font-size:12px}
-.sched-type-btn{padding:5px 12px;font-size:12px;border-radius:20px;border:1px solid var(--border);background:var(--bg2);color:var(--text2);cursor:pointer;transition:all .1s}
+.empty-state{text-align:center;padding:32px;color:var(--text3);font-size:13px}
+.sched-type-btn{padding:5px 12px;font-size:13px;border-radius:20px;border:1px solid var(--border);background:var(--bg2);color:var(--text2);cursor:pointer;transition:all .1s}
 .sched-type-btn:hover{background:var(--bg3)}
 .sched-type-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
 
@@ -207,8 +207,8 @@ tr:hover td{background:#fafaf8}
 
 @media(max-width:768px){
   /* ベースフォントをモバイル最適サイズに */
-  body{font-size:13px}
-  input,select,textarea,button{font-size:13px}
+  body{font-size:14px}
+  input,select,textarea,button{font-size:14px}
 
   /* ハンバーガーボタン表示 */
   .hamburger{display:flex}
@@ -230,11 +230,11 @@ tr:hover td{background:#fafaf8}
 
   /* トップバー：コンパクトに */
   .topbar{padding:0 10px;gap:6px;height:46px}
-  .page-title{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100px}
+  .page-title{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100px}
   .search-wrap{flex:1;min-width:0}
-  .search-input{width:100%;font-size:12px}
-  #addBtn{padding:5px 10px;font-size:12px;white-space:nowrap}
-  .theme-toggle{padding:4px 7px;font-size:11px}
+  .search-input{width:100%;font-size:13px}
+  #addBtn{padding:5px 10px;font-size:13px;white-space:nowrap}
+  .theme-toggle{padding:4px 7px;font-size:12px}
   #syncStatus{display:none}
 
   /* コンテンツパディング縮小 */
@@ -244,25 +244,25 @@ tr:hover td{background:#fafaf8}
   .stats-row{grid-template-columns:1fr 1fr;gap:8px}
   .stat-card{padding:10px 12px}
   .stat-val{font-size:20px}
-  .stat-label{font-size:11px}
+  .stat-label{font-size:12px}
 
   /* その他グリッドを1カラムに */
   .grid2,.grid3,.grid4,.fr,.fr3{grid-template-columns:1fr}
 
   /* カード */
   .card{padding:12px;margin-bottom:10px}
-  .card-title{font-size:12px}
+  .card-title{font-size:13px}
 
   /* テーブル */
-  td{font-size:12px;padding:8px 10px}
-  th{font-size:11px;padding:6px 10px}
+  td{font-size:13px;padding:8px 10px}
+  th{font-size:12px;padding:6px 10px}
 
   /* バッジ */
-  .badge{font-size:11px}
+  .badge{font-size:12px}
 
   /* ボタン */
-  .btn{font-size:12px;padding:6px 12px}
-  .btn-sm{font-size:11px;padding:3px 8px}
+  .btn{font-size:13px;padding:6px 12px}
+  .btn-sm{font-size:12px;padding:3px 8px}
 
   /* モーダルをフルスクリーンに近く */
   .modal{width:100%!important;max-width:100vw;max-height:95vh;border-radius:var(--rl) var(--rl) 0 0}
@@ -275,27 +275,27 @@ tr:hover td{background:#fafaf8}
 
   /* カレンダーセルを小さく */
   .cal-cell{min-height:44px}
-  .cal-chip{font-size:9px;padding:1px 3px}
+  .cal-chip{font-size:10px;padding:1px 3px}
 
   /* タブのフォントサイズ */
-  .tab-btn{padding:6px 10px;font-size:12px}
+  .tab-btn{padding:6px 10px;font-size:13px}
 
   /* フォームフィールド */
-  .field label{font-size:11px}
+  .field label{font-size:12px}
 
   /* ナビ */
-  .nav-item{font-size:12px}
-  .nav-section{font-size:9px}
+  .nav-item{font-size:13px}
+  .nav-section{font-size:10px}
 
   /* ログイン画面 */
   #loginScreen > div{width:calc(100vw - 32px);padding:24px 18px}
 
   /* 種別フィルターボタン */
-  .sched-type-btn{font-size:11px;padding:4px 10px}
+  .sched-type-btn{font-size:12px;padding:4px 10px}
 
   /* ダッシュボードの数値 */
   .sf-val{font-size:15px}
-  .sf-label{font-size:10px}
+  .sf-label{font-size:11px}
 }
 </style>
 </head>
@@ -308,7 +308,7 @@ tr:hover td{background:#fafaf8}
       <img src="gourmet_caddie_logo.png" style="width:36px;height:36px;object-fit:contain;border-radius:8px" onerror="this.style.display='none'">
       <div>
         <div style="font-size:16px;font-weight:500">グルメキャディ</div>
-        <div style="font-size:11px;color:var(--text3)">Gourmet Caddie</div>
+        <div style="font-size:12px;color:var(--text3)">Gourmet Caddie</div>
       </div>
     </div>
     <div class="field" style="margin-bottom:12px">
@@ -320,7 +320,7 @@ tr:hover td{background:#fafaf8}
       <input id="loginPassword" type="password" placeholder="パスワード" onkeydown="if(event.key==='Enter')doLogin()">
     </div>
     <button class="btn btn-primary" style="width:100%;padding:10px" onclick="doLogin()">ログイン</button>
-    <div id="loginError" style="font-size:12px;color:var(--red);margin-top:10px;text-align:center"></div>
+    <div id="loginError" style="font-size:13px;color:var(--red);margin-top:10px;text-align:center"></div>
   </div>
 </div>
 
@@ -338,10 +338,10 @@ tr:hover td{background:#fafaf8}
   </div>
   <div style="padding:8px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px">
     <div style="flex:1;min-width:0">
-      <div style="font-size:11px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="currentUserName"></div>
-      <span class="badge b-green" id="currentUserRole" style="font-size:9px;margin-top:2px"></span>
+      <div style="font-size:12px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" id="currentUserName"></div>
+      <span class="badge b-green" id="currentUserRole" style="font-size:10px;margin-top:2px"></span>
     </div>
-    <button onclick="doLogout()" style="font-size:10px;padding:3px 8px;border:1px solid var(--border);border-radius:4px;background:var(--bg3);color:var(--text2);cursor:pointer;white-space:nowrap">ログアウト</button>
+    <button onclick="doLogout()" style="font-size:11px;padding:3px 8px;border:1px solid var(--border);border-radius:4px;background:var(--bg3);color:var(--text2);cursor:pointer;white-space:nowrap">ログアウト</button>
   </div>
   <nav class="nav">
     <div class="nav-section">Overview</div>
@@ -423,7 +423,7 @@ tr:hover td{background:#fafaf8}
     </div>
     <button class="btn btn-primary" id="addBtn" onclick="topAddBtn()">＋ 新規追加</button>
     <button class="theme-toggle" id="themeBtn" onclick="toggleTheme()">☀ ライト</button>
-    <span id="syncStatus" style="font-size:11px;font-family:'Noto Sans JP',sans-serif;color:var(--text3);padding:2px 8px"></span>
+    <span id="syncStatus" style="font-size:12px;font-family:'Noto Sans JP',sans-serif;color:var(--text3);padding:2px 8px"></span>
   </div>
 
   <div class="content">
@@ -450,10 +450,10 @@ tr:hover td{background:#fafaf8}
       <div class="grid2">
         <div class="card">
           <div class="card-header"><span class="card-title">新規契約店舗を入力</span></div>
-          <div style="font-size:12px;color:var(--text3);margin-bottom:14px;padding:8px 12px;background:var(--bg3);border-radius:var(--r)">営業担当が入力する簡易フォームです。入力後はSNS局・楽々販売へのタスク送信が行われます。楽々販売への登録は自身でお願いします。</div>
+          <div style="font-size:13px;color:var(--text3);margin-bottom:14px;padding:8px 12px;background:var(--bg3);border-radius:var(--r)">営業担当が入力する簡易フォームです。入力後はSNS局・楽々販売へのタスク送信が行われます。楽々販売への登録は自身でお願いします。</div>
 
           <!-- ▼ 基本情報 -->
-          <div style="font-size:11px;font-weight:500;color:var(--accent);padding:4px 0 7px;border-bottom:1px solid var(--border);margin-bottom:12px">基本情報</div>
+          <div style="font-size:12px;font-weight:500;color:var(--accent);padding:4px 0 7px;border-bottom:1px solid var(--border);margin-bottom:12px">基本情報</div>
           <div class="fr">
             <div class="field"><label>得意先ID</label><input id="sl-client-id" type="text" placeholder="例: 12345"></div>
             <div class="field"><label>契約区分 *</label><select id="sl-contract-type"><option value="">選択...</option><option>新規</option><option>既存新規</option><option>プランアップ</option><option>プランダウン</option><option>運営者変更</option><option>運営者変更イレギュラー</option><option>キャンペーン</option><option>特別</option><option>アップセル</option><option>店舗入替え</option></select></div>
@@ -463,34 +463,34 @@ tr:hover td{background:#fafaf8}
             <div class="field"><label>業種</label><input id="sl-genre" type="text" list="genreList" placeholder="例: 焼肉"></div>
           </div>
           <div class="fr1 field"><label>法人名（個人事業主名）*</label><div style="display:flex;gap:5px"><select id="sl-corp-select" onchange="onSlCorpSelect()" style="flex:1"><option value="">新規法人 / 個人</option></select><button type="button" class="btn btn-sm" onclick="openCorpModal()" style="white-space:nowrap;flex-shrink:0">＋ 新規</button></div><input id="sl-corp" type="text" placeholder="法人名を入力（新規の場合）" style="margin-top:5px"></div>
-          <div class="fr1 field"><label>郵便番号 *</label><div style="display:flex;gap:6px"><input id="sl-zip" type="text" placeholder="例: 150-0043" maxlength="8" style="max-width:160px" oninput="autoFillAddress(this.value,'sl-pref','sl-area')"><span style="font-size:12px;color:var(--text3);align-self:center" id="sl-zip-status"></span></div></div>
+          <div class="fr1 field"><label>郵便番号 *</label><div style="display:flex;gap:6px"><input id="sl-zip" type="text" placeholder="例: 150-0043" maxlength="8" style="max-width:160px" oninput="autoFillAddress(this.value,'sl-pref','sl-area')"><span style="font-size:13px;color:var(--text3);align-self:center" id="sl-zip-status"></span></div></div>
           <div class="fr"><div class="field"><label>都道府県</label><input id="sl-pref" type="text" placeholder="東京都"></div><div class="field"><label>本社登記住所（市区町村・番地）*</label><input id="sl-area" type="text" placeholder="渋谷区道玄坂1-1-1"></div></div>
           <div class="fr"><div class="field"><label>代表電話番号 *</label><input id="sl-corp-tel" type="tel" placeholder="03-XXXX-XXXX"></div><div class="field"><label>FAX番号</label><input id="sl-fax" type="tel" placeholder="03-XXXX-XXXX"></div></div>
           <div class="fr"><div class="field"><label>契約プラン</label><select id="sl-plan"><option value="">選択...</option></select></div><div class="field"><label>契約期間</label><select id="sl-term"><option value="3">3ヶ月</option><option value="6">6ヶ月</option><option value="12">12ヶ月</option></select></div></div>
 
           <!-- ▼ 申込担当者 -->
-          <div style="font-size:11px;font-weight:500;color:var(--accent);padding:4px 0 7px;border-bottom:1px solid var(--border);margin:16px 0 12px">申込担当者</div>
+          <div style="font-size:12px;font-weight:500;color:var(--accent);padding:4px 0 7px;border-bottom:1px solid var(--border);margin:16px 0 12px">申込担当者</div>
           <div class="fr"><div class="field"><label>申込担当者氏名 *</label><input id="sl-contact" type="text" placeholder="田中 太郎"></div><div class="field"><label>申込担当者フリガナ *</label><input id="sl-contact-kana" type="text" placeholder="タナカ タロウ"></div></div>
           <div class="fr"><div class="field"><label>役職</label><input id="sl-role" type="text" placeholder="店長"></div><div class="field"></div></div>
           <div class="fr"><div class="field"><label>申込担当者電話番号 *</label><input id="sl-tel" type="tel" placeholder="090-XXXX-XXXX"></div><div class="field"><label>契約書送付先メールアドレス *</label><input id="sl-email" type="email" placeholder="tanaka@example.com"></div></div>
 
           <!-- ▼ 請求先情報 -->
-          <div style="font-size:11px;font-weight:500;color:var(--accent);padding:4px 0 7px;border-bottom:1px solid var(--border);margin:16px 0 8px">■ 請求先情報</div>
+          <div style="font-size:12px;font-weight:500;color:var(--accent);padding:4px 0 7px;border-bottom:1px solid var(--border);margin:16px 0 8px">■ 請求先情報</div>
 
           <div class="fr"><div class="field"><label>請求先ID</label><input id="sl-bill-id" type="text" placeholder="例: 67890"></div><div class="field"></div></div>
           <div class="fr1 field"><label>法人名（請求先）*</label><input id="sl-bill-corp" type="text" placeholder="株式会社○○"></div>
           <div class="fr"><div class="field"><label>代表電話番号（請求先）*</label><input id="sl-bill-tel" type="tel" placeholder="03-XXXX-XXXX"></div><div class="field"><label>FAX番号（請求先）</label><input id="sl-bill-fax" type="tel" placeholder="03-XXXX-XXXX"></div></div>
-          <div class="fr1 field"><label>郵便番号（請求先）*</label><div style="display:flex;gap:6px"><input id="sl-bill-zip" type="text" placeholder="例: 150-0043" maxlength="8" style="max-width:160px" oninput="autoFillAddress(this.value,'sl-bill-pref','sl-bill-area')"><span style="font-size:12px;color:var(--text3);align-self:center" id="sl-bill-zip-status"></span></div></div>
+          <div class="fr1 field"><label>郵便番号（請求先）*</label><div style="display:flex;gap:6px"><input id="sl-bill-zip" type="text" placeholder="例: 150-0043" maxlength="8" style="max-width:160px" oninput="autoFillAddress(this.value,'sl-bill-pref','sl-bill-area')"><span style="font-size:13px;color:var(--text3);align-self:center" id="sl-bill-zip-status"></span></div></div>
           <div class="fr"><div class="field"><label>都道府県（請求先）</label><input id="sl-bill-pref" type="text" placeholder="東京都"></div><div class="field"><label>住所（市区町村・番地）（請求先）*</label><input id="sl-bill-area" type="text" placeholder="渋谷区道玄坂1-1-1"></div></div>
           <div class="fr"><div class="field"><label>担当者名（請求先）*</label><input id="sl-bill-contact" type="text" placeholder="鈴木 花子"></div><div class="field"><label>担当者電話番号（請求先）*</label><input id="sl-bill-contact-tel" type="tel" placeholder="090-XXXX-XXXX"></div></div>
           <div class="fr1 field"><label>メールアドレス（請求先）*</label><input id="sl-bill-email" type="email" placeholder="suzuki@example.com"></div>
-          <div style="font-size:11px;color:var(--text3);margin-bottom:8px">※請求先がメーカーの場合は「請求書」で設定ください</div>
+          <div style="font-size:12px;color:var(--text3);margin-bottom:8px">※請求先がメーカーの場合は「請求書」で設定ください</div>
           <div class="fr"><div class="field"><label>帳票送付方法 *</label><select id="sl-bill-method"><option value="">選択...</option><option>FAX</option><option>メール</option><option>郵送</option><option>請求書</option><option>EDI</option></select></div><div class="field"><label>支払方法 *</label><select id="sl-bill-payment"><option value="">選択...</option><option>銀行振込</option><option>口座振替</option><option>クレジットカード</option><option>請求書払い</option></select></div></div>
 
           <!-- ▼ その他 -->
           <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:16px">
             <div class="fr1 field"><label>備考・メモ</label><textarea id="sl-memo" placeholder="特記事項、経緯など..." style="min-height:52px"></textarea></div>
-            <div class="fr1 field"><label>要望 <span style="font-size:10px;color:var(--text3);font-weight:400">店舗からの要望・特記事項</span></label><textarea id="sl-request" placeholder="例: 夜の雰囲気重視、料理写真は明るく、など..." style="min-height:52px"></textarea></div>
+            <div class="fr1 field"><label>要望 <span style="font-size:11px;color:var(--text3);font-weight:400">店舗からの要望・特記事項</span></label><textarea id="sl-request" placeholder="例: 夜の雰囲気重視、料理写真は明るく、など..." style="min-height:52px"></textarea></div>
             <div class="fr1 field"><label>作成者 *</label><div style="display:flex;gap:8px"><select id="sl-sales" style="flex:1"><option value="">選択...</option></select><button type="button" class="btn btn-sm" onclick="openSalesPersonModal()" style="white-space:nowrap;flex-shrink:0">＋ 管理</button></div></div>
           </div>
           <div style="display:flex;justify-content:flex-end;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
@@ -504,7 +504,7 @@ tr:hover td{background:#fafaf8}
     <div class="page" id="page-stores">
       <div class="card">
         <div class="card-header"><span class="card-title">全店舗</span>
-          <select id="filterStatus" onchange="renderStoreTable()" style="width:110px;font-size:11px;padding:4px 8px">
+          <select id="filterStatus" onchange="renderStoreTable()" style="width:110px;font-size:12px;padding:4px 8px">
             <option value="">全ステータス</option><option value="active">稼働中</option><option value="pending">準備中</option><option value="ended">終了</option>
           </select>
         </div>
@@ -518,10 +518,10 @@ tr:hover td{background:#fafaf8}
         <div class="card-header">
           <span class="card-title">投稿スケジュール</span>
           <div style="display:flex;gap:6px;align-items:center">
-            <button id="schedPastBtn" onclick="toggleSchedPast()" style="padding:4px 10px;font-size:11px;border-radius:20px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer">過去を表示</button>
+            <button id="schedPastBtn" onclick="toggleSchedPast()" style="padding:4px 10px;font-size:12px;border-radius:20px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer">過去を表示</button>
             <div style="display:flex;border:1px solid var(--border);border-radius:var(--r);overflow:hidden">
-              <button id="viewTabList" onclick="setSchedView('list')" style="padding:4px 12px;font-size:11px;background:var(--accent);color:#fff;border:none;cursor:pointer">リスト</button>
-              <button id="viewTabCal" onclick="setSchedView('cal')" style="padding:4px 12px;font-size:11px;background:var(--bg3);color:var(--text2);border:none;cursor:pointer">カレンダー</button>
+              <button id="viewTabList" onclick="setSchedView('list')" style="padding:4px 12px;font-size:12px;background:var(--accent);color:#fff;border:none;cursor:pointer">リスト</button>
+              <button id="viewTabCal" onclick="setSchedView('cal')" style="padding:4px 12px;font-size:12px;background:var(--bg3);color:var(--text2);border:none;cursor:pointer">カレンダー</button>
             </div>
             <button class="btn btn-primary btn-sm" onclick="openPostModal()">＋ 追加</button>
           </div>
@@ -546,7 +546,7 @@ tr:hover td{background:#fafaf8}
         <div id="schedCalView" style="display:none">
           <div class="cal-nav" style="margin-bottom:10px">
             <button class="btn btn-sm" onclick="calMove(-1)">← 前月</button>
-            <span id="calTitle" style="font-size:13px;font-weight:500"></span>
+            <span id="calTitle" style="font-size:14px;font-weight:500"></span>
             <button class="btn btn-sm" onclick="calMove(1)">次月 →</button>
           </div>
           <div class="cal-grid" id="calHeads"></div>
@@ -561,7 +561,7 @@ tr:hover td{background:#fafaf8}
       <div class="card" style="margin-bottom:12px">
         <div class="card-header">
           <span class="card-title">📅 今週の投稿予定</span>
-          <span id="chk-week-count" style="font-size:11px;color:var(--text3)"></span>
+          <span id="chk-week-count" style="font-size:12px;color:var(--text3)"></span>
         </div>
         <div id="chk-week"></div>
       </div>
@@ -569,7 +569,7 @@ tr:hover td{background:#fafaf8}
       <div class="card" style="margin-bottom:12px">
         <div class="card-header">
           <span class="card-title">📆 今月の投稿予定</span>
-          <span id="chk-month-count" style="font-size:11px;color:var(--text3)"></span>
+          <span id="chk-month-count" style="font-size:12px;color:var(--text3)"></span>
         </div>
         <div id="chk-month"></div>
       </div>
@@ -577,7 +577,7 @@ tr:hover td{background:#fafaf8}
       <div class="card" style="margin-bottom:12px">
         <div class="card-header">
           <span class="card-title">🎬 クリエイティブ未設定の投稿（動画・画像・リール）</span>
-          <span id="chk-creative-count" style="font-size:11px;color:var(--text3)"></span>
+          <span id="chk-creative-count" style="font-size:12px;color:var(--text3)"></span>
         </div>
         <div id="chk-creative"></div>
       </div>
@@ -585,7 +585,7 @@ tr:hover td{background:#fafaf8}
       <div class="card" style="margin-bottom:12px">
         <div class="card-header">
           <span class="card-title">⚙ 初期設定が未完了の店舗</span>
-          <span id="chk-setup-count" style="font-size:11px;color:var(--text3)"></span>
+          <span id="chk-setup-count" style="font-size:12px;color:var(--text3)"></span>
         </div>
         <div id="chk-setup"></div>
       </div>
@@ -593,7 +593,7 @@ tr:hover td{background:#fafaf8}
       <div class="card">
         <div class="card-header">
           <span class="card-title">👤 インフルエンサー進捗チェック</span>
-          <span id="chk-inf-count" style="font-size:11px;color:var(--text3)"></span>
+          <span id="chk-inf-count" style="font-size:12px;color:var(--text3)"></span>
         </div>
         <div id="chk-inf"></div>
       </div>
@@ -678,14 +678,14 @@ tr:hover td{background:#fafaf8}
         <div class="card-header">
           <span class="card-title">請求書管理</span>
           <div style="display:flex;gap:6px;align-items:center">
-            <select id="accFilterStatus" onchange="renderAccounting()" style="font-size:12px;padding:4px 8px;width:auto">
+            <select id="accFilterStatus" onchange="renderAccounting()" style="font-size:13px;padding:4px 8px;width:auto">
               <option value="">すべて</option>
               <option value="pending">📄 未受領</option>
               <option value="sns_received">✅ SNS受領済み</option>
               <option value="accounting_submitted">📊 経理申請済み</option>
               <option value="done">🎉 経理処理済み</option>
             </select>
-            <select id="accFilterMonth" onchange="renderAccounting()" style="font-size:12px;padding:4px 8px;width:auto">
+            <select id="accFilterMonth" onchange="renderAccounting()" style="font-size:13px;padding:4px 8px;width:auto">
               <option value="">全期間</option>
             </select>
             <button class="btn btn-primary btn-sm" onclick="openInvoiceModal()">＋ 請求書追加</button>
@@ -712,28 +712,28 @@ tr:hover td{background:#fafaf8}
       <div class="grid2">
         <div class="card">
           <div class="card-header"><span class="card-title">Chatwork 連携設定</span></div>
-          <div style="font-size:12px;color:var(--text3);margin-bottom:14px;padding:8px 12px;background:var(--bg3);border-radius:var(--r)">
+          <div style="font-size:13px;color:var(--text3);margin-bottom:14px;padding:8px 12px;background:var(--bg3);border-radius:var(--r)">
             APIトークンはGitHub Secretsで管理されています。ルームIDのみ設定してください。<br>
             ルームID：ChatworkのルームURL末尾の数字（例: chatwork.com/#!rid<strong>123456789</strong>）
           </div>
           <input type="hidden" id="cwGhPat">
           <div style="border-top:1px solid var(--border);padding-top:14px;margin-bottom:14px">
-            <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px">📢 SNS局 — メッセージ送信</div>
+            <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:8px">📢 SNS局 — メッセージ送信</div>
             <div class="fr1 field"><label>ルームID</label><input id="cwSnsRoomId" type="text" placeholder="例: 123456789"></div>
           </div>
           <div style="border-top:1px solid var(--border);padding-top:14px;margin-bottom:14px">
-            <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px">📋 CS — タスク作成（楽々販売登録依頼）</div>
+            <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:8px">📋 CS — タスク作成（楽々販売登録依頼）</div>
             <div class="fr1 field"><label>ルームID</label><input id="cwCsRoomId" type="text" placeholder="例: 987654321"></div>
           </div>
           <div style="display:flex;gap:8px;justify-content:flex-end">
             <button class="btn" onclick="testChatwork()">テスト送信</button>
             <button class="btn btn-primary" onclick="saveChatworkSettings()">保存</button>
           </div>
-          <div id="cwStatus" style="font-size:12px;margin-top:10px"></div>
+          <div id="cwStatus" style="font-size:13px;margin-top:10px"></div>
         </div>
         <div class="card" id="ghPatCard">
-          <div class="card-header"><span class="card-title">🔐 GitHub PAT設定 <span style="font-size:10px;color:var(--text3);font-weight:400">管理者のみ</span></span></div>
-          <div style="font-size:12px;color:var(--text3);margin-bottom:12px">一度設定するとこのブラウザで保持されます。Chatwork通知の送信に使用します。</div>
+          <div class="card-header"><span class="card-title">🔐 GitHub PAT設定 <span style="font-size:11px;color:var(--text3);font-weight:400">管理者のみ</span></span></div>
+          <div style="font-size:13px;color:var(--text3);margin-bottom:12px">一度設定するとこのブラウザで保持されます。Chatwork通知の送信に使用します。</div>
           <div class="fr1 field" style="margin-bottom:10px">
             <label>GitHub Personal Access Token</label>
             <input id="ghPatInput" type="password" placeholder="ghp_XXXXXXXXXXXX">
@@ -741,31 +741,31 @@ tr:hover td{background:#fafaf8}
           <div style="display:flex;gap:8px;justify-content:flex-end">
             <button class="btn btn-primary" onclick="saveGhPat()">保存</button>
           </div>
-          <div id="ghPatStatus" style="font-size:12px;margin-top:8px"></div>
+          <div id="ghPatStatus" style="font-size:13px;margin-top:8px"></div>
         </div>
         <div class="card">
           <div class="card-header"><span class="card-title">👥 ユーザー管理</span></div>
-          <div style="font-size:12px;color:var(--text2);margin-bottom:14px">メンバーのアカウントを発行します。登録後にパスワード設定メールが届きます。</div>
+          <div style="font-size:13px;color:var(--text2);margin-bottom:14px">メンバーのアカウントを発行します。登録後にパスワード設定メールが届きます。</div>
           <div class="fr">
             <div class="field"><label>メールアドレス</label><input id="inviteEmail" type="email" placeholder="member@example.com"></div>
             <div class="field"><label>ロール</label><select id="inviteRole"><option value="sales">営業</option><option value="admin">管理者</option></select></div>
           </div>
           <div class="fr1 field" style="margin-top:6px">
-            <label>初期パスワード <span style="font-size:10px;color:var(--text3)">6文字以上・本人に伝えてください</span></label>
+            <label>初期パスワード <span style="font-size:11px;color:var(--text3)">6文字以上・本人に伝えてください</span></label>
             <input id="invitePassword" type="text" placeholder="例: Gc2024root">
           </div>
           <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:4px">
             <button class="btn btn-primary" onclick="inviteUser()">ユーザーを作成</button>
           </div>
-          <div id="inviteStatus" style="font-size:12px;margin-top:10px"></div>
+          <div id="inviteStatus" style="font-size:13px;margin-top:10px"></div>
           <div style="border-top:1px solid var(--border);margin-top:14px;padding-top:14px">
-            <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px">登録済みユーザー</div>
-            <div id="userList"><div style="font-size:12px;color:var(--text3)">読み込み中...</div></div>
+            <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:8px">登録済みユーザー</div>
+            <div id="userList"><div style="font-size:13px;color:var(--text3)">読み込み中...</div></div>
           </div>
         </div>
         <div class="card">
           <div class="card-header"><span class="card-title">👥 社員マスタ</span></div>
-          <div style="font-size:12px;color:var(--text2);margin-bottom:12px">営業・SNS・事務・社長などの役割を管理します。</div>
+          <div style="font-size:13px;color:var(--text2);margin-bottom:12px">営業・SNS・事務・社長などの役割を管理します。</div>
           <button class="btn btn-primary" onclick="openSalesPersonModal()">社員マスタを開く</button>
         </div>
         <div class="card">
@@ -779,12 +779,12 @@ tr:hover td{background:#fafaf8}
             <input id="newPasswordConfirm" type="password" placeholder="もう一度入力">
           </div>
           <button class="btn btn-primary" onclick="changePassword()">パスワードを変更</button>
-          <div id="pwChangeStatus" style="font-size:12px;margin-top:10px"></div>
+          <div id="pwChangeStatus" style="font-size:13px;margin-top:10px"></div>
         </div>
         <div class="card">
           <div class="card-header"><span class="card-title">通知プレビュー</span></div>
-          <div style="font-size:12px;color:var(--text2);margin-bottom:10px">営業入力時に送信されるメッセージ</div>
-          <div style="background:var(--bg3);border-radius:var(--r);padding:12px;font-size:12px;line-height:1.8;color:var(--text);white-space:pre-wrap" id="cwPreview"></div>
+          <div style="font-size:13px;color:var(--text2);margin-bottom:10px">営業入力時に送信されるメッセージ</div>
+          <div style="background:var(--bg3);border-radius:var(--r);padding:12px;font-size:13px;line-height:1.8;color:var(--text);white-space:pre-wrap" id="cwPreview"></div>
         </div>
       </div>
     </div>
@@ -836,19 +836,19 @@ tr:hover td{background:#fafaf8}
       <button class="tab-btn" onclick="switchStoreTab(5)">📷 撮影予定</button>
     </div>
     <div class="tab-pane active" id="stab0">
-      <div class="fr"><div class="field"><label>店舗名 *</label><input id="sName" type="text" placeholder="例: 炭火焼 竹山 渋谷店"></div><div class="field"><label>業種 <button type="button" onclick="openGenreModal()" style="font-size:10px;padding:2px 7px;margin-left:6px;background:var(--bg3);border:1px solid var(--border2);border-radius:4px;cursor:pointer;color:var(--text2)">＋ 編集</button></label><input id="sGenre" type="text" list="genreList" placeholder="例: 焼肉"><datalist id="genreList"></datalist></div></div>
-      <div class="fr1 field"><label>法人 <span style="font-size:10px;color:var(--text3);font-weight:400">選択すると連絡先が自動入力されます</span></label><div style="display:flex;gap:6px"><select id="sCorpId" onchange="onCorpSelect()" style="flex:1"><option value="">選択しない（個人・未設定）</option></select><button type="button" class="btn btn-sm" onclick="openCorpModal()" style="white-space:nowrap;flex-shrink:0">＋ 新規法人</button></div></div>
-      <div class="fr1 field"><label>郵便番号 <span style="color:var(--text3);font-weight:400"></span></label><div style="display:flex;gap:6px"><input id="sZip" type="text" placeholder="例: 150-0043" maxlength="8" style="max-width:160px" oninput="autoFillAddress(this.value,'sPref','sArea')"><span style="font-size:12px;color:var(--text3);align-self:center" id="sZip-status"></span></div></div>
+      <div class="fr"><div class="field"><label>店舗名 *</label><input id="sName" type="text" placeholder="例: 炭火焼 竹山 渋谷店"></div><div class="field"><label>業種 <button type="button" onclick="openGenreModal()" style="font-size:11px;padding:2px 7px;margin-left:6px;background:var(--bg3);border:1px solid var(--border2);border-radius:4px;cursor:pointer;color:var(--text2)">＋ 編集</button></label><input id="sGenre" type="text" list="genreList" placeholder="例: 焼肉"><datalist id="genreList"></datalist></div></div>
+      <div class="fr1 field"><label>法人 <span style="font-size:11px;color:var(--text3);font-weight:400">選択すると連絡先が自動入力されます</span></label><div style="display:flex;gap:6px"><select id="sCorpId" onchange="onCorpSelect()" style="flex:1"><option value="">選択しない（個人・未設定）</option></select><button type="button" class="btn btn-sm" onclick="openCorpModal()" style="white-space:nowrap;flex-shrink:0">＋ 新規法人</button></div></div>
+      <div class="fr1 field"><label>郵便番号 <span style="color:var(--text3);font-weight:400"></span></label><div style="display:flex;gap:6px"><input id="sZip" type="text" placeholder="例: 150-0043" maxlength="8" style="max-width:160px" oninput="autoFillAddress(this.value,'sPref','sArea')"><span style="font-size:13px;color:var(--text3);align-self:center" id="sZip-status"></span></div></div>
       <div class="fr"><div class="field"><label>都道府県</label><input id="sPref" type="text" placeholder="東京都"></div><div class="field"><label>市区町村・番地</label><input id="sArea" type="text" placeholder="渋谷区道玄坂..."></div></div>
       <!-- 営業時間・定休日 統合UI -->
       <div style="margin-bottom:12px;border:1px solid var(--border);border-radius:var(--r);overflow:hidden">
         <!-- 共通時間行 -->
         <div style="padding:10px 12px;background:var(--bg3);display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-          <span style="font-size:11px;font-weight:500;color:var(--text2);min-width:60px">共通時間</span>
+          <span style="font-size:12px;font-weight:500;color:var(--text2);min-width:60px">共通時間</span>
           <div id="sHoursFromWrap" style="display:inline-flex"></div><input type="hidden" id="sHoursFrom">
-          <span style="font-size:12px;color:var(--text3)">〜</span>
+          <span style="font-size:13px;color:var(--text3)">〜</span>
           <div id="sHoursToWrap" style="display:inline-flex"></div><input type="hidden" id="sHoursTo">
-          <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;margin-left:auto">
+          <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;margin-left:auto">
             <input type="checkbox" id="sPerDay" onchange="togglePerDay()" style="width:auto;margin:0">
             曜日ごとに設定
           </label>
@@ -858,10 +858,10 @@ tr:hover td{background:#fafaf8}
           <table style="width:100%;border-collapse:collapse">
             <thead>
               <tr style="background:var(--bg3)">
-                <th style="font-size:10px;color:var(--text3);font-weight:400;padding:5px 10px;text-align:left;border-bottom:1px solid var(--border);width:60px">定休日</th>
-                <th style="font-size:10px;color:var(--text3);font-weight:400;padding:5px 8px;text-align:left;border-bottom:1px solid var(--border);width:40px">曜日</th>
-                <th style="font-size:10px;color:var(--text3);font-weight:400;padding:5px 8px;text-align:left;border-bottom:1px solid var(--border)">開始時間 <span style="color:var(--text3);font-weight:300">（空欄=共通）</span></th>
-                <th style="font-size:10px;color:var(--text3);font-weight:400;padding:5px 8px;text-align:left;border-bottom:1px solid var(--border)">終了時間</th>
+                <th style="font-size:11px;color:var(--text3);font-weight:400;padding:5px 10px;text-align:left;border-bottom:1px solid var(--border);width:60px">定休日</th>
+                <th style="font-size:11px;color:var(--text3);font-weight:400;padding:5px 8px;text-align:left;border-bottom:1px solid var(--border);width:40px">曜日</th>
+                <th style="font-size:11px;color:var(--text3);font-weight:400;padding:5px 8px;text-align:left;border-bottom:1px solid var(--border)">開始時間 <span style="color:var(--text3);font-weight:300">（空欄=共通）</span></th>
+                <th style="font-size:11px;color:var(--text3);font-weight:400;padding:5px 8px;text-align:left;border-bottom:1px solid var(--border)">終了時間</th>
               </tr>
             </thead>
             <tbody id="perDayBody"></tbody>
@@ -883,24 +883,24 @@ tr:hover td{background:#fafaf8}
     </div>
     <div class="tab-pane" id="stab2">
       <div class="fr"><div class="field"><label>契約開始日</label><div style="display:flex;gap:4px;align-items:center" id="sContractStartWrap"></div><input type="hidden" id="sContractStart"></div><div class="field"><label>契約期間</label><select id="sContractTerm"><option value="3">3ヶ月</option><option value="6">6ヶ月</option><option value="12">12ヶ月</option></select></div></div>
-      <div class="fr1 field"><label>契約プラン</label><select id="sPlanId"><option value="">プランを選択（任意）</option></select><div style="font-size:11px;color:var(--text3);margin-top:4px" id="sPlanPreview"></div></div>
+      <div class="fr1 field"><label>契約プラン</label><select id="sPlanId"><option value="">プランを選択（任意）</option></select><div style="font-size:12px;color:var(--text3);margin-top:4px" id="sPlanPreview"></div></div>
       <div class="fr"><div class="field"><label>月額費用（円）<span style="color:var(--text3);font-weight:400"> ※プラン選択で自動入力</span></label><input id="sMonthlyFee" type="number" placeholder="150000"></div><div class="field"><label>ステータス</label><select id="sStatus"><option value="pending">準備中</option><option value="active">稼働中</option><option value="ended">終了</option></select></div></div>
       <div style="border-top:1px solid var(--border);padding-top:14px;margin:4px 0">
-        <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:10px">店舗担当者</div>
+        <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:10px">店舗担当者</div>
         <div class="fr"><div class="field"><label>担当者名</label><input id="sContactName" type="text" placeholder="田中 太郎"></div><div class="field"><label>役職</label><input id="sContactRole" type="text" placeholder="店長"></div></div>
         <div class="fr"><div class="field"><label>電話番号</label><input id="sContactTel" type="tel" placeholder="090-XXXX-XXXX"></div><div class="field"><label>メール</label><input id="sContactEmail" type="email" placeholder="tanaka@example.com"></div></div>
         <div class="fr1 field"><label>LINE ID / その他連絡先</label><input id="sContactLine" type="text" placeholder="LINE ID など"></div>
       </div>
       <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px">
-        <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:10px">弊社情報</div>
+        <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:10px">弊社情報</div>
         <div class="fr">
           <div class="field">
             <label>営業担当者</label>
             <div style="display:flex;gap:6px;align-items:center">
               <select id="sOurManager" style="flex:1"><option value="">選択...</option></select>
-              <span id="sOurManagerRetired" style="display:none;font-size:11px;color:var(--text3);padding:4px 8px;background:var(--bg4);border-radius:var(--r)">担当なし</span>
+              <span id="sOurManagerRetired" style="display:none;font-size:12px;color:var(--text3);padding:4px 8px;background:var(--bg4);border-radius:var(--r)">担当なし</span>
             </div>
-            <div id="sManagerHistory" style="font-size:10px;color:var(--text3);margin-top:4px"></div>
+            <div id="sManagerHistory" style="font-size:11px;color:var(--text3);margin-top:4px"></div>
           </div>
           <div class="field"><label>成果振り返り頻度</label><select id="sReviewCycle"><option value="monthly">毎月</option><option value="bimonthly">2ヶ月ごと</option><option value="quarterly">四半期</option></select></div>
         </div>
@@ -925,9 +925,9 @@ tr:hover td{background:#fafaf8}
     </div>
     <!-- Tab 4: ヒアリングシート -->
     <div class="tab-pane" id="stab4">
-      <div style="font-size:12px;color:var(--text3);margin-bottom:12px;padding:8px 10px;background:var(--bg3);border-radius:var(--r)">基本情報（店舗名・担当者・SNSアカウント）は「基本情報」「SNS/HP」「契約・担当」タブから参照してください。</div>
+      <div style="font-size:13px;color:var(--text3);margin-bottom:12px;padding:8px 10px;background:var(--bg3);border-radius:var(--r)">基本情報（店舗名・担当者・SNSアカウント）は「基本情報」「SNS/HP」「契約・担当」タブから参照してください。</div>
 
-      <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:10px">運用目的</div>
+      <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:10px">運用目的</div>
       <div class="fr1 field"><label>現状の課題</label><textarea id="hIssue" placeholder="" style="min-height:44px"></textarea></div>
       <div class="fr"><div class="field"><label>集客したい層</label><input id="hTargetWant" type="text"></div><div class="field"><label>現在来ている層</label><input id="hTargetNow" type="text"></div></div>
       <div class="fr1 field"><label>どのようなタイミングでの利用を増やしたいか</label><input id="hTiming" type="text"></div>
@@ -941,16 +941,16 @@ tr:hover td{background:#fafaf8}
       <div class="fr1 field"><label>NG表現・避けたい雰囲気</label><textarea id="hNg" style="min-height:44px"></textarea></div>
       <div class="fr1 field"><label>過去広告などやっていれば結果</label><textarea id="hPastAd" style="min-height:44px"></textarea></div>
 
-      <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:10px;padding-top:10px;border-top:1px solid var(--border)">アカウント管理</div>
+      <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:10px;padding-top:10px;border-top:1px solid var(--border)">アカウント管理</div>
       <div class="fr"><div class="field"><label>現在の管理者</label><input id="hAccMgr" type="text"></div><div class="field"><label>ログイン情報共有可否</label><select id="hLoginShare"><option value="">—</option><option>可</option><option>否</option></select></div></div>
       <div class="fr"><div class="field"><label>Facebookページがあるか</label><select id="hFbPage"><option value="">—</option><option>有</option><option>無</option></select></div><div class="field"><label>社内投稿対応可否</label><select id="hInPost"><option value="">—</option><option>可</option><option>否</option></select></div></div>
       <div class="fr1 field"><label>コメント・DM対応担当</label><input id="hDmMgr" type="text"></div>
 
-      <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:10px;padding-top:10px;border-top:1px solid var(--border)">投稿運用</div>
+      <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:10px;padding-top:10px;border-top:1px solid var(--border)">投稿運用</div>
       <div class="fr1 field"><label>投稿したい内容</label><textarea id="hPostContent" style="min-height:44px"></textarea></div>
       <div class="fr"><div class="field"><label>投稿確認フロー</label><input id="hPostFlow" type="text"></div><div class="field"><label>投稿承認日数</label><input id="hApprovalDays" type="text" placeholder="例: 2営業日"></div></div>
 
-      <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:10px;padding-top:10px;border-top:1px solid var(--border)">素材について</div>
+      <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:10px;padding-top:10px;border-top:1px solid var(--border)">素材について</div>
       <div class="grid3" style="margin-bottom:10px">
         <div class="field"><label>写真素材</label><select id="hPhotoAsset"><option value="">—</option><option>有</option><option>無</option></select></div>
         <div class="field"><label>動画素材</label><select id="hVideoAsset"><option value="">—</option><option>有</option><option>無</option></select></div>
@@ -960,17 +960,17 @@ tr:hover td{background:#fafaf8}
       </div>
       <div class="fr1 field"><label>投稿文トンマナ希望</label><textarea id="hTonmana" style="min-height:44px"></textarea></div>
 
-      <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:10px;padding-top:10px;border-top:1px solid var(--border)">広告配信</div>
+      <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:10px;padding-top:10px;border-top:1px solid var(--border)">広告配信</div>
       <div class="fr"><div class="field"><label>Instagram広告実施</label><select id="hAdIg"><option value="">—</option><option>有</option><option>無</option></select></div><div class="field"><label>広告開始希望日</label><input id="hAdStart" type="date"></div></div>
       <div class="fr"><div class="field"><label>月額広告予算（円）</label><input id="hAdBudget" type="number" placeholder="50000"></div><div class="field"><label>LP・誘導先URL</label><input id="hLpUrl" type="url"></div></div>
 
-      <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:10px;padding-top:10px;border-top:1px solid var(--border)">インフルエンサー施策</div>
+      <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:10px;padding-top:10px;border-top:1px solid var(--border)">インフルエンサー施策</div>
       <div class="fr"><div class="field"><label>実施希望時期（開始）</label><input id="hInfStart" type="date"></div><div class="field"><label>実施希望時期（終了）</label><input id="hInfEnd" type="date"></div></div>
       <div class="fr"><div class="field"><label>想定人数</label><input id="hInfCount" type="text" placeholder="例: 3〜5名"></div><div class="field"><label>希望ジャンル</label><input id="hInfGenre" type="text"></div></div>
       <div class="fr"><div class="field"><label>希望フォロワー帯</label><input id="hInfFollowers" type="text" placeholder="例: 1万〜5万"></div><div class="field"><label>投稿必須内容</label><input id="hInfMust" type="text"></div></div>
       <div class="fr1 field"><label>ハッシュタグ指定</label><input id="hHashtag" type="text"></div>
 
-      <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:10px;padding-top:10px;border-top:1px solid var(--border)">スケジュール</div>
+      <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:10px;padding-top:10px;border-top:1px solid var(--border)">スケジュール</div>
       <div class="fr"><div class="field"><label>運用開始希望日</label><input id="hOpStart" type="date"></div><div class="field"><label>撮影希望日</label><input id="hShootDate" type="date"></div></div>
       <div class="fr"><div class="field"><label>投稿開始希望日</label><input id="hPostStart" type="date"></div><div class="field"><label>広告開始希望日</label><input id="hAdStart2" type="date"></div></div>
       <div class="fr1 field"><label>インフルエンサー投稿日希望</label><input id="hInfPostDate" type="date"></div>
@@ -978,7 +978,7 @@ tr:hover td{background:#fafaf8}
     </div>
     <div class="tab-pane" id="stab5">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-        <span style="font-size:12px;color:var(--text3)">この店舗の撮影予定を管理します</span>
+        <span style="font-size:13px;color:var(--text3)">この店舗の撮影予定を管理します</span>
         <button class="btn btn-sm btn-primary" onclick="openShootingModal()">＋ 撮影予定を追加</button>
       </div>
       <div id="shootingList" style="display:flex;flex-direction:column;gap:6px"></div>
@@ -998,12 +998,12 @@ tr:hover td{background:#fafaf8}
     <div class="fr1 field" style="margin-bottom:12px">
       <label>種別 *</label>
       <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px" id="pTypeGroup">
-        <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:5px 10px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg3)"><input type="radio" name="pTypeRadio" value="video" onchange="onPostTypeChange()" style="width:auto;margin:0" checked> ▶ 動画</label>
-        <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:5px 10px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg3)"><input type="radio" name="pTypeRadio" value="image" onchange="onPostTypeChange()" style="width:auto;margin:0"> ◼ 画像</label>
-        <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:5px 10px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg3)"><input type="radio" name="pTypeRadio" value="reel" onchange="onPostTypeChange()" style="width:auto;margin:0"> ◈ リール</label>
-        <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:5px 10px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg3)"><input type="radio" name="pTypeRadio" value="story" onchange="onPostTypeChange()" style="width:auto;margin:0"> ◷ ストーリー</label>
-        <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:5px 10px;border-radius:var(--r);border:1px solid var(--amber-border);background:var(--amber-bg);color:var(--amber)"><input type="radio" name="pTypeRadio" value="inf_visit" onchange="onPostTypeChange()" style="width:auto;margin:0"> 🏃 来店予定</label>
-        <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:5px 10px;border-radius:var(--r);border:1px solid var(--purple-border);background:var(--purple-bg);color:var(--purple)"><input type="radio" name="pTypeRadio" value="inf_post" onchange="onPostTypeChange()" style="width:auto;margin:0"> ✦ INF投稿予定</label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;padding:5px 10px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg3)"><input type="radio" name="pTypeRadio" value="video" onchange="onPostTypeChange()" style="width:auto;margin:0" checked> ▶ 動画</label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;padding:5px 10px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg3)"><input type="radio" name="pTypeRadio" value="image" onchange="onPostTypeChange()" style="width:auto;margin:0"> ◼ 画像</label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;padding:5px 10px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg3)"><input type="radio" name="pTypeRadio" value="reel" onchange="onPostTypeChange()" style="width:auto;margin:0"> ◈ リール</label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;padding:5px 10px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg3)"><input type="radio" name="pTypeRadio" value="story" onchange="onPostTypeChange()" style="width:auto;margin:0"> ◷ ストーリー</label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;padding:5px 10px;border-radius:var(--r);border:1px solid var(--amber-border);background:var(--amber-bg);color:var(--amber)"><input type="radio" name="pTypeRadio" value="inf_visit" onchange="onPostTypeChange()" style="width:auto;margin:0"> 🏃 来店予定</label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;padding:5px 10px;border-radius:var(--r);border:1px solid var(--purple-border);background:var(--purple-bg);color:var(--purple)"><input type="radio" name="pTypeRadio" value="inf_post" onchange="onPostTypeChange()" style="width:auto;margin:0"> ✦ INF投稿予定</label>
       </div>
     </div>
     <input id="pType" type="hidden" value="video">
@@ -1045,13 +1045,13 @@ tr:hover td{background:#fafaf8}
   <div class="modal-body">
     <div class="fr"><div class="field"><label>名前 *</label><input id="iName" type="text" placeholder="田中 みな"></div><div class="field"><label>ハンドル</label><input id="iHandle" type="text" placeholder="@tanakami_food"></div></div>
     <div class="fr"><div class="field"><label>主な媒体</label><select id="iPlatform"><option>Instagram</option><option>TikTok</option><option>YouTube</option><option>X</option><option>その他</option></select></div><div class="field"><label>フォロワー数</label><input id="iFollowers" type="number" placeholder="50000"></div></div>
-    <div class="fr1 field"><label>アカウント URL <span style="font-size:10px;color:var(--text3);font-weight:400">（名前クリックで開くリンク）</span></label><input id="iUrl" type="url" placeholder="https://www.instagram.com/tanakami_food"></div>
+    <div class="fr1 field"><label>アカウント URL <span style="font-size:11px;color:var(--text3);font-weight:400">（名前クリックで開くリンク）</span></label><input id="iUrl" type="url" placeholder="https://www.instagram.com/tanakami_food"></div>
     <div class="fr"><div class="field"><label>ジャンル</label><input id="iGenre" type="text" placeholder="グルメ・飲食"></div><div class="field"><label>連絡先</label><input id="iContact" type="text" placeholder="mail@example.com / LINE ID"></div></div>
     <div style="margin-bottom:10px">
-      <label style="font-size:11px;color:var(--text2);display:block;margin-bottom:6px">PR 費用（円） <span style="font-size:10px;color:var(--text3);font-weight:400">幅がある場合は下限・上限両方入力</span></label>
+      <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:6px">PR 費用（円） <span style="font-size:11px;color:var(--text3);font-weight:400">幅がある場合は下限・上限両方入力</span></label>
       <div style="display:flex;align-items:center;gap:8px">
         <input id="iFeeLow" type="number" placeholder="30,000（下限）" style="flex:1">
-        <span style="font-size:12px;color:var(--text3);white-space:nowrap">〜</span>
+        <span style="font-size:13px;color:var(--text3);white-space:nowrap">〜</span>
         <input id="iFeeHigh" type="number" placeholder="80,000（幅なしは空欄）" style="flex:1.5">
       </div>
     </div>
@@ -1060,7 +1060,7 @@ tr:hover td{background:#fafaf8}
 
     <!-- 対応媒体・費用設定 -->
     <div style="margin-bottom:12px">
-      <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:8px">対応媒体・費用設定</div>
+      <div style="font-size:13px;font-weight:500;color:var(--text2);margin-bottom:8px">対応媒体・費用設定</div>
       <div id="iPlatformDetails" style="border:1px solid var(--border);border-radius:var(--r);overflow:hidden"></div>
     </div>
 
@@ -1082,8 +1082,8 @@ tr:hover td{background:#fafaf8}
   <div class="modal-body">
     <!-- キャスティングから呼ばれた時にキャスティング情報を表示 -->
     <div id="invCastingCtxBox" style="display:none;margin-bottom:12px;padding:10px 14px;background:var(--accent-bg);border:1px solid var(--accent-border);border-radius:var(--r)">
-      <div style="font-size:10px;color:var(--text3);margin-bottom:4px;letter-spacing:.5px">📋 キャスティング</div>
-      <div id="invCastingCtxLabel" style="font-size:13px;font-weight:500;color:var(--text)"></div>
+      <div style="font-size:11px;color:var(--text3);margin-bottom:4px;letter-spacing:.5px">📋 キャスティング</div>
+      <div id="invCastingCtxLabel" style="font-size:14px;font-weight:500;color:var(--text)"></div>
     </div>
     <div id="invInfStoreRow" class="fr">
       <div class="field"><label>インフルエンサー *</label><select id="invInfId"><option value="">選択...</option></select></div>
@@ -1105,14 +1105,14 @@ tr:hover td{background:#fafaf8}
       </div>
     </div>
     <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:10px">
-      <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:10px">費用内訳（円）</div>
+      <div style="font-size:13px;font-weight:500;color:var(--text2);margin-bottom:10px">費用内訳（円）</div>
       <div class="fr3">
         <div class="field"><label>PR費</label><input type="number" id="invPrFee" placeholder="0" oninput="calcInvTotal()"></div>
         <div class="field"><label>交通費</label><input type="number" id="invTransport" placeholder="0" oninput="calcInvTotal()"></div>
         <div class="field"><label>飲食代</label><input type="number" id="invFood" placeholder="0" oninput="calcInvTotal()"></div>
       </div>
       <div style="display:flex;justify-content:flex-end;align-items:center;gap:8px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">
-        <span style="font-size:12px;color:var(--text2)">合計</span>
+        <span style="font-size:13px;color:var(--text2)">合計</span>
         <span id="invTotal" style="font-size:18px;font-weight:500;font-family:'Noto Sans JP',sans-serif;color:var(--text)">¥0</span>
       </div>
     </div>
@@ -1157,29 +1157,29 @@ tr:hover td{background:#fafaf8}
         <label>PR 費用（円）</label>
         <div style="display:flex;gap:6px;align-items:center">
           <input id="cFee" type="number" placeholder="50000" style="flex:1">
-          <span id="cFeeTaxLabel" style="font-size:11px;color:var(--text3);white-space:nowrap"></span>
+          <span id="cFeeTaxLabel" style="font-size:12px;color:var(--text3);white-space:nowrap"></span>
         </div>
-        <div id="cFeeTransLabel" style="font-size:11px;color:var(--text3);margin-top:3px"></div>
+        <div id="cFeeTransLabel" style="font-size:12px;color:var(--text3);margin-top:3px"></div>
       </div>
     </div>
     <!-- スケジュール3ステップ -->
     <div style="padding:12px;background:var(--bg3);border-radius:var(--r);margin-bottom:12px">
-      <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:10px">📅 スケジュール <span style="font-weight:300;color:var(--text3)">（全て任意）</span></div>
+      <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:10px">📅 スケジュール <span style="font-weight:300;color:var(--text3)">（全て任意）</span></div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px">
         <div class="field">
-          <label style="font-size:11px">🏃 来店予定日</label>
+          <label style="font-size:12px">🏃 来店予定日</label>
           <div id="cVisitDateWrap" style="display:flex;gap:3px"></div>
           <input type="hidden" id="cVisitDate">
           <div id="cVisitTimeWrap" style="margin-top:4px;display:flex;align-items:center;gap:2px"></div>
           <input type="hidden" id="cVisitTime" value="12:00">
         </div>
         <div class="field">
-          <label style="font-size:11px">📝 初稿確認日</label>
+          <label style="font-size:12px">📝 初稿確認日</label>
           <div id="cDraftDateWrap" style="display:flex;gap:3px"></div>
           <input type="hidden" id="cDraftDate">
         </div>
         <div class="field">
-          <label style="font-size:11px">✦ 投稿予定日</label>
+          <label style="font-size:12px">✦ 投稿予定日</label>
           <div id="cDateWrap" style="display:flex;gap:3px"></div>
           <input type="hidden" id="cDate">
         </div>
@@ -1189,7 +1189,7 @@ tr:hover td{background:#fafaf8}
     <div class="fr1 field"><label>成果メモ</label><textarea id="cResult" placeholder="反応・コメント・効果など..."></textarea></div>
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;padding:10px 12px;background:var(--bg3);border-radius:var(--r)">
       <input type="checkbox" id="cContractSent" style="width:16px;height:16px;cursor:pointer;accent-color:var(--green)">
-      <span style="font-size:13px">📄 契約書送付済み</span>
+      <span style="font-size:14px">📄 契約書送付済み</span>
     </div>
     <div class="form-actions"><button class="btn" onclick="closeModal('castModal')">キャンセル</button><button class="btn btn-primary" onclick="saveCasting()">保存</button></div>
   </div>
@@ -1256,7 +1256,7 @@ function renderGenreTags(){
   var el=document.getElementById('genreTagList');
   if(!el)return;
   el.innerHTML=GENRES.map(function(g,i){
-    return'<span style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;font-size:12px">'+esc(g)+'<button onclick="deleteGenre('+i+')" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:13px;padding:0;line-height:1" title="削除">×</button></span>';
+    return'<span style="display:inline-flex;align-items:center;gap:5px;padding:4px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:20px;font-size:13px">'+esc(g)+'<button onclick="deleteGenre('+i+')" style="background:none;border:none;cursor:pointer;color:var(--text3);font-size:14px;padding:0;line-height:1" title="削除">×</button></span>';
   }).join('');
 }
 function addGenre(){
@@ -1464,21 +1464,21 @@ function renderStaffList(){
   var re=document.getElementById('spRetiredList');
   ae.innerHTML=active.length?active.map(function(p){
     return'<div style="display:flex;align-items:center;gap:6px;padding:7px 10px;background:var(--bg3);border-radius:var(--r);margin-bottom:5px">'
-      +'<span style="flex:1;font-size:13px">'+esc(p.name)+'</span>'
-      +'<span class="badge '+(ROLE_BADGE[p.role]||'b-gray')+'" style="font-size:10px">'+(ROLE_LABELS[p.role]||'—')+'</span>'
-      +'<button class="btn btn-sm" onclick="openStaffEditModal(\''+p.id+'\')" style="font-size:11px">編集</button>'
-      +'<button class="btn btn-sm" onclick="retireSalesPerson(\''+p.id+'\')" style="font-size:11px;color:var(--text3)">退職</button>'
+      +'<span style="flex:1;font-size:14px">'+esc(p.name)+'</span>'
+      +'<span class="badge '+(ROLE_BADGE[p.role]||'b-gray')+'" style="font-size:11px">'+(ROLE_LABELS[p.role]||'—')+'</span>'
+      +'<button class="btn btn-sm" onclick="openStaffEditModal(\''+p.id+'\')" style="font-size:12px">編集</button>'
+      +'<button class="btn btn-sm" onclick="retireSalesPerson(\''+p.id+'\')" style="font-size:12px;color:var(--text3)">退職</button>'
       +'</div>';
-  }).join(''):'<div style="font-size:12px;color:var(--text3)">在籍中のメンバーなし</div>';
+  }).join(''):'<div style="font-size:13px;color:var(--text3)">在籍中のメンバーなし</div>';
   re.innerHTML=retired.length?retired.map(function(p){
     var sc=DB.stores.filter(function(s){return s.ourManager===p.name;}).length;
     return'<div style="display:flex;align-items:center;gap:6px;padding:7px 10px;background:var(--bg3);border-radius:var(--r);margin-bottom:5px;opacity:0.6">'
-      +'<span style="flex:1;font-size:13px">'+esc(p.name)+'<span style="font-size:10px;color:var(--text3);margin-left:6px">'+(ROLE_LABELS[p.role]||'')+(sc?' 担当'+sc+'店':'')+'</span></span>'
-      +'<button class="btn btn-sm" onclick="reinstateSalesPerson(\''+p.id+'\')" style="font-size:11px">復帰</button>'
-      +'<input type="text" placeholder="後任者名" id="successor_'+p.id+'" style="width:100px;font-size:11px;padding:4px 6px">'
-      +'<button class="btn btn-sm btn-primary" onclick="assignSuccessor(\''+p.id+'\')" style="font-size:11px">後任</button>'
+      +'<span style="flex:1;font-size:14px">'+esc(p.name)+'<span style="font-size:11px;color:var(--text3);margin-left:6px">'+(ROLE_LABELS[p.role]||'')+(sc?' 担当'+sc+'店':'')+'</span></span>'
+      +'<button class="btn btn-sm" onclick="reinstateSalesPerson(\''+p.id+'\')" style="font-size:12px">復帰</button>'
+      +'<input type="text" placeholder="後任者名" id="successor_'+p.id+'" style="width:100px;font-size:12px;padding:4px 6px">'
+      +'<button class="btn btn-sm btn-primary" onclick="assignSuccessor(\''+p.id+'\')" style="font-size:12px">後任</button>'
       +'</div>';
-  }).join(''):'<div style="font-size:12px;color:var(--text3)">退職済みなし</div>';
+  }).join(''):'<div style="font-size:13px;color:var(--text3)">退職済みなし</div>';
 }
 
 /* ============================================================
@@ -1547,7 +1547,7 @@ function renderInterviewerChecks(currentVal){
   el.innerHTML=getActiveStaff().map(function(p){
     var chk=selected.indexOf(p.name)>=0;
     var roleColor=ROLE_BADGE[p.role]||'b-gray';
-    return'<label style="display:flex;align-items:center;gap:3px;font-size:11px;cursor:pointer;padding:2px 7px;border-radius:20px;'
+    return'<label style="display:flex;align-items:center;gap:3px;font-size:12px;cursor:pointer;padding:2px 7px;border-radius:20px;'
       +(chk?'background:var(--accent);color:#fff;border:1px solid var(--accent)':'background:var(--bg2);color:var(--text2);border:1px solid var(--border)')
       +'">'
       +'<input type="checkbox" value="'+esc(p.name)+'"'+(chk?' checked':'')+' onchange="refreshInterviewerStyle(this)" style="display:none"> '
@@ -1813,7 +1813,7 @@ async function loadUserList(){
   var el=document.getElementById('userList');
   if(!el)return;
   /* anon keyでは全ユーザー一覧は取れないため、案内テキストを表示 */
-  el.innerHTML='<div style="font-size:12px;color:var(--text3)">ユーザー一覧はSupabaseダッシュボード → Authentication → Users で確認できます。<br><a href="https://supabase.com/dashboard/project/vwtcshwzetxnaedjhoej/auth/users" target="_blank" style="color:var(--accent)">Supabaseを開く ↗</a></div>';
+  el.innerHTML='<div style="font-size:13px;color:var(--text3)">ユーザー一覧はSupabaseダッシュボード → Authentication → Users で確認できます。<br><a href="https://supabase.com/dashboard/project/vwtcshwzetxnaedjhoej/auth/users" target="_blank" style="color:var(--accent)">Supabaseを開く ↗</a></div>';
 }
 
 async function checkSession(){
@@ -1889,7 +1889,7 @@ function setSyncStatus(state,msg){
   if(!el)return;
   var styles={ok:'color:var(--green)',saving:'color:var(--amber)',error:'color:var(--red)'};
   var icons={ok:'✓',saving:'↑',error:'✗'};
-  el.style.cssText='font-size:11px;font-family:"Noto Sans JP",sans-serif;padding:2px 8px;border-radius:4px;transition:all .3s;'+styles[state];
+  el.style.cssText='font-size:12px;font-family:"Noto Sans JP",sans-serif;padding:2px 8px;border-radius:4px;transition:all .3s;'+styles[state];
   el.textContent=(icons[state]||'')+(msg?' '+msg:'');
 }
 
@@ -2088,17 +2088,17 @@ function renderPerDayTable(savedDays){
       +'<td style="padding:6px 10px;text-align:center">'
         +'<input type="checkbox" id="pdc-'+key+'" '+(closed?'checked':'')+' onchange="onDayClosedChange(\''+key+'\')" style="width:auto;margin:0">'
       +'</td>'
-      +'<td style="padding:6px 8px;font-size:12px;font-weight:500;color:'+(closed?'var(--red)':'var(--text)')+'">'+DAY_LABELS[key]+'</td>'
+      +'<td style="padding:6px 8px;font-size:13px;font-weight:500;color:'+(closed?'var(--red)':'var(--text)')+'">'+DAY_LABELS[key]+'</td>'
       +'<td style="padding:4px 8px">'
         +(closed
-          ?'<span style="font-size:11px;color:var(--red)">定休日</span>'
+          ?'<span style="font-size:12px;color:var(--red)">定休日</span>'
           :makeTimeInput('pdfrom-'+key,d.from||'','updateHoursData()','pdFromList')
         )
       +'</td>'
       +'<td style="padding:4px 8px">'
         +(closed
           ?''
-          :'<span style="font-size:11px;color:var(--text3);margin-right:4px">〜</span>'
+          :'<span style="font-size:12px;color:var(--text3);margin-right:4px">〜</span>'
            +makeTimeInput('pdto-'+key,d.to||'','updateHoursData()','pdToList')
         )
       +'</td>'
@@ -2577,7 +2577,7 @@ function inlineDateEdit(e,id){
   if(!p)return;
   /* datetime-local の値形式に変換 */
   var cur=p.date?p.date.slice(0,16):'';
-  td.innerHTML='<input type="datetime-local" value="'+esc(cur)+'" style="font-size:11px;padding:2px 4px;width:160px;border:1px solid var(--accent);border-radius:4px;background:var(--bg2);color:var(--text)" id="inlineDtInput_'+id+'">';
+  td.innerHTML='<input type="datetime-local" value="'+esc(cur)+'" style="font-size:12px;padding:2px 4px;width:160px;border:1px solid var(--accent);border-radius:4px;background:var(--bg2);color:var(--text)" id="inlineDtInput_'+id+'">';
   var inp=td.querySelector('input');
   if(inp){
     inp.focus();
@@ -2623,25 +2623,25 @@ function renderPlatformDetails(saved){
     return'<div style="'+rowBg+';border-bottom:1px solid var(--border);padding:8px 12px" id="plrow_'+pl.id+'">'
       +'<div style="display:flex;align-items:center;gap:10px">'
         +'<input type="checkbox" id="plchk_'+pl.id+'" '+(checked?'checked':'')+' onchange="onPlatformCheck(\''+pl.id+'\')" style="width:15px;height:15px;cursor:pointer;accent-color:var(--accent);flex-shrink:0">'
-        +'<label for="plchk_'+pl.id+'" style="font-size:13px;font-weight:'+(checked?'500':'400')+';cursor:pointer;flex:1">'+pl.label+'</label>'
+        +'<label for="plchk_'+pl.id+'" style="font-size:14px;font-weight:'+(checked?'500':'400')+';cursor:pointer;flex:1">'+pl.label+'</label>'
       +'</div>'
       +'<div id="pldetail_'+pl.id+'" style="display:'+(checked?'block':'none')+';margin-top:8px;padding-left:25px">'
         +'<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">'
           +'<div style="display:flex;align-items:center;gap:6px">'
-            +'<span style="font-size:12px;color:var(--text2)">PR費用</span>'
-            +'<input type="number" id="plfee_'+pl.id+'" value="'+fee+'" placeholder="例: 50000" style="width:110px;font-size:12px;padding:4px 8px">'
-            +'<span style="font-size:12px;color:var(--text3)">円</span>'
+            +'<span style="font-size:13px;color:var(--text2)">PR費用</span>'
+            +'<input type="number" id="plfee_'+pl.id+'" value="'+fee+'" placeholder="例: 50000" style="width:110px;font-size:13px;padding:4px 8px">'
+            +'<span style="font-size:13px;color:var(--text3)">円</span>'
           +'</div>'
           +'<div style="display:flex;gap:4px">'
-            +'<label style="font-size:11px;padding:3px 8px;border-radius:4px;cursor:pointer;border:1px solid var(--border);background:'+(taxIncl?'var(--accent)':'var(--bg3)')+';color:'+(taxIncl?'#fff':'var(--text2)')+'" onclick="setPlatformTax(\''+pl.id+'\',true)">'
+            +'<label style="font-size:12px;padding:3px 8px;border-radius:4px;cursor:pointer;border:1px solid var(--border);background:'+(taxIncl?'var(--accent)':'var(--bg3)')+';color:'+(taxIncl?'#fff':'var(--text2)')+'" onclick="setPlatformTax(\''+pl.id+'\',true)">'
               +'<input type="radio" name="pltax_'+pl.id+'" value="1" '+(taxIncl?'checked':'')+' style="display:none"> 税込</label>'
-            +'<label style="font-size:11px;padding:3px 8px;border-radius:4px;cursor:pointer;border:1px solid var(--border);background:'+(!taxIncl?'var(--accent)':'var(--bg3)')+';color:'+(!taxIncl?'#fff':'var(--text2)')+'" onclick="setPlatformTax(\''+pl.id+'\',false)">'
+            +'<label style="font-size:12px;padding:3px 8px;border-radius:4px;cursor:pointer;border:1px solid var(--border);background:'+(!taxIncl?'var(--accent)':'var(--bg3)')+';color:'+(!taxIncl?'#fff':'var(--text2)')+'" onclick="setPlatformTax(\''+pl.id+'\',false)">'
               +'<input type="radio" name="pltax_'+pl.id+'" value="0" '+(!taxIncl?'checked':'')+' style="display:none"> 税別</label>'
           +'</div>'
           +'<div style="display:flex;gap:4px">'
-            +'<label style="font-size:11px;padding:3px 8px;border-radius:4px;cursor:pointer;border:1px solid var(--border);background:'+(transIncl?'var(--green)':'var(--bg3)')+';color:'+(transIncl?'#fff':'var(--text2)')+'" onclick="setPlatformTrans(\''+pl.id+'\',true)">'
+            +'<label style="font-size:12px;padding:3px 8px;border-radius:4px;cursor:pointer;border:1px solid var(--border);background:'+(transIncl?'var(--green)':'var(--bg3)')+';color:'+(transIncl?'#fff':'var(--text2)')+'" onclick="setPlatformTrans(\''+pl.id+'\',true)">'
               +'<input type="radio" name="pltrans_'+pl.id+'" value="1" '+(transIncl?'checked':'')+' style="display:none"> 交通費込</label>'
-            +'<label style="font-size:11px;padding:3px 8px;border-radius:4px;cursor:pointer;border:1px solid var(--border);background:'+(!transIncl?'var(--green)':'var(--bg3)')+';color:'+(!transIncl?'#fff':'var(--text2)')+'" onclick="setPlatformTrans(\''+pl.id+'\',false)">'
+            +'<label style="font-size:12px;padding:3px 8px;border-radius:4px;cursor:pointer;border:1px solid var(--border);background:'+(!transIncl?'var(--green)':'var(--bg3)')+';color:'+(!transIncl?'#fff':'var(--text2)')+'" onclick="setPlatformTrans(\''+pl.id+'\',false)">'
               +'<input type="radio" name="pltrans_'+pl.id+'" value="0" '+(!transIncl?'checked':'')+' style="display:none"> 交通費別</label>'
           +'</div>'
         +'</div>'
@@ -2785,14 +2785,14 @@ function renderInvFlow(inv){
     +INV_FLOW.map(function(step,i){
       var done=i<=curIdx;
       var isNext=i===curIdx+1;
-      var style='font-size:11px;padding:3px 7px;border-radius:5px;border:1px solid;white-space:nowrap;'
+      var style='font-size:12px;padding:3px 7px;border-radius:5px;border:1px solid;white-space:nowrap;'
         +'background:'+(done?step.bg:'var(--bg3)')
         +';color:'+(done?step.color:'var(--text3)')
         +';border-color:'+(done?step.border:'var(--border)')
         +(isNext?';cursor:pointer;opacity:0.7':'');
       var click=isNext?'onclick="advanceInvFlow(\''+inv.id+'\',\''+step.key+'\')"':'';
       return'<span style="'+style+'" '+click+' title="'+(isNext?'クリックで次へ':'')+'">'+step.icon+' '+step.label+'</span>'
-        +(i<INV_FLOW.length-1?'<span style="color:var(--text3);font-size:10px">›</span>':'');
+        +(i<INV_FLOW.length-1?'<span style="color:var(--text3);font-size:11px">›</span>':'');
     }).join('')
   +'</div>';
 }
@@ -2802,7 +2802,7 @@ function renderTodoList(){
   if(!el)return;
   var today=new Date(); today.setHours(0,0,0,0);
   var items=[];
-  var bs='font-size:12px;padding:4px 10px;border-radius:6px;cursor:pointer;border:1px solid;white-space:nowrap;flex-shrink:0;';
+  var bs='font-size:13px;padding:4px 10px;border-radius:6px;cursor:pointer;border:1px solid;white-space:nowrap;flex-shrink:0;';
 
   /* ① 楽々販売未登録の店舗 */
   DB.stores.filter(function(s){return s.status==='active'&&!s.rakurakuRegistered;}).forEach(function(s){
@@ -2875,8 +2875,8 @@ function renderTodoList(){
     var urgentBg=item.priority===0?'background:var(--red-bg);border-left:3px solid var(--red)':item.priority===1?'background:var(--amber-bg);border-left:3px solid var(--amber)':'border-left:3px solid var(--border)';
     return'<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);'+urgentBg+'">'
       +'<div style="flex:1;min-width:0">'
-        +'<div style="font-size:13px;font-weight:500;color:var(--text)">'+item.main+'</div>'
-        +'<div style="font-size:12px;color:'+item.subColor+';margin-top:2px">'+item.sub+'</div>'
+        +'<div style="font-size:14px;font-weight:500;color:var(--text)">'+item.main+'</div>'
+        +'<div style="font-size:13px;color:'+item.subColor+';margin-top:2px">'+item.sub+'</div>'
       +'</div>'
       +'<div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end">'+item.btns+'</div>'
     +'</div>';
@@ -2941,7 +2941,7 @@ function ratingStars(r){
   var n=parseInt(r);
   var stars='★'.repeat(n)+'☆'.repeat(5-n);
   var colors={5:'var(--green)',4:'var(--green)',3:'var(--amber)',2:'var(--amber)',1:'var(--red)'};
-  return '<span style="color:'+colors[n]+';font-size:12px">'+stars+'</span>';
+  return '<span style="color:'+colors[n]+';font-size:13px">'+stars+'</span>';
 }
 
 function openInfluencerDetail(id){
@@ -2967,7 +2967,7 @@ function openInfluencerDetail(id){
             ?'<a href="'+esc(accountUrl)+'" target="_blank" rel="noopener" style="font-size:16px;font-weight:500;color:var(--accent);text-decoration:none">'+esc(inf.name)+'&nbsp;↗</a>'
             :'<span style="font-size:16px;font-weight:500">'+esc(inf.name)+'</span>'
           )
-          +(inf.handle?'<span style="font-size:12px;color:'+(platColor[inf.platform]||'var(--text3)')+'">'+esc(inf.handle)+'</span>':'')
+          +(inf.handle?'<span style="font-size:13px;color:'+(platColor[inf.platform]||'var(--text3)')+'">'+esc(inf.handle)+'</span>':'')
           +ratingStars(inf.rating)
         +'</div>'
         +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">'
@@ -2979,19 +2979,19 @@ function openInfluencerDetail(id){
     +'</div>'
     /* 数値サマリー */
     +'<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px">'
-      +'<div class="card-sm" style="text-align:center"><div style="font-size:18px;font-weight:500;font-family:"Noto Sans JP",sans-serif;color:var(--text)">'+(inf.followers?Number(inf.followers).toLocaleString():'—')+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">フォロワー</div></div>'
-      +'<div class="card-sm" style="text-align:center"><div style="font-size:14px;font-weight:500;font-family:"Noto Sans JP",sans-serif;color:var(--accent)">'+fmtFeeRange(inf)+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">PR 費用</div></div>'
-      +'<div class="card-sm" style="text-align:center"><div style="font-size:18px;font-weight:500;font-family:"Noto Sans JP",sans-serif;color:var(--green)">'+castings.length+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">起用回数</div></div>'
+      +'<div class="card-sm" style="text-align:center"><div style="font-size:18px;font-weight:500;font-family:"Noto Sans JP",sans-serif;color:var(--text)">'+(inf.followers?Number(inf.followers).toLocaleString():'—')+'</div><div style="font-size:11px;color:var(--text3);margin-top:2px">フォロワー</div></div>'
+      +'<div class="card-sm" style="text-align:center"><div style="font-size:15px;font-weight:500;font-family:"Noto Sans JP",sans-serif;color:var(--accent)">'+fmtFeeRange(inf)+'</div><div style="font-size:11px;color:var(--text3);margin-top:2px">PR 費用</div></div>'
+      +'<div class="card-sm" style="text-align:center"><div style="font-size:18px;font-weight:500;font-family:"Noto Sans JP",sans-serif;color:var(--green)">'+castings.length+'</div><div style="font-size:11px;color:var(--text3);margin-top:2px">起用回数</div></div>'
     +'</div>'
     /* 連絡先 */
-    +(inf.contact?'<div style="margin-bottom:12px;padding:10px 12px;background:var(--bg3);border-radius:var(--r);font-size:12px"><span style="color:var(--text3)">連絡先：</span><span style="color:var(--accent)">'+esc(inf.contact)+'</span></div>':'')
+    +(inf.contact?'<div style="margin-bottom:12px;padding:10px 12px;background:var(--bg3);border-radius:var(--r);font-size:13px"><span style="color:var(--text3)">連絡先：</span><span style="color:var(--accent)">'+esc(inf.contact)+'</span></div>':'')
     /* メモ */
-    +(inf.memo?'<div style="margin-bottom:16px;padding:10px 12px;background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:var(--r);font-size:12px;color:var(--text);line-height:1.7;white-space:pre-wrap">'+esc(inf.memo)+'</div>':'')
+    +(inf.memo?'<div style="margin-bottom:16px;padding:10px 12px;background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:var(--r);font-size:13px;color:var(--text);line-height:1.7;white-space:pre-wrap">'+esc(inf.memo)+'</div>':'')
     /* キャスティング履歴 */
-    +'<div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px">キャスティング履歴</div>'
+    +'<div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:8px">キャスティング履歴</div>'
     +(castings.length===0
       ?'<div class="empty-state" style="padding:16px">まだ起用履歴がありません</div>'
-      :('<div style="margin-bottom:12px;font-size:12px;color:var(--text3)">累計費用 <strong style="color:var(--text)">'+totalFee.toLocaleString()+'円</strong> ／ 累計リーチ <strong style="color:var(--text)">'+totalReach.toLocaleString()+'</strong></div>'
+      :('<div style="margin-bottom:12px;font-size:13px;color:var(--text3)">累計費用 <strong style="color:var(--text)">'+totalFee.toLocaleString()+'円</strong> ／ 累計リーチ <strong style="color:var(--text)">'+totalReach.toLocaleString()+'</strong></div>'
         +'<div class="table-wrap"><table><thead><tr><th>店舗</th><th>投稿日</th><th>媒体</th><th>費用</th><th>リーチ</th><th>成果メモ</th></tr></thead><tbody>'
         +castings.map(function(c){
           return '<tr><td>'+esc(storeName(c.storeId))+'</td><td class="td-mono">'+fmtD(c.date)+'</td><td>'+esc(c.platform||'')+'</td><td class="td-mono">'+fmtMoney(c.fee)+'</td><td class="td-mono">'+(c.reach?Number(c.reach).toLocaleString():'—')+'</td><td style="color:var(--text3);max-width:160px">'+esc((c.result||'').slice(0,60))+'</td></tr>';
@@ -3005,13 +3005,13 @@ function openInfluencerDetail(id){
         var enabled=INF_PLATFORM_LIST.filter(function(pl){return pd[pl.id]&&pd[pl.id].enabled;});
         if(!enabled.length)return'';
         return'<div style="margin-bottom:14px">'
-          +'<div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:8px">📱 対応媒体・費用</div>'
+          +'<div style="font-size:13px;font-weight:500;color:var(--text2);margin-bottom:8px">📱 対応媒体・費用</div>'
           +'<div style="display:flex;flex-wrap:wrap;gap:6px">'
           +enabled.map(function(pl){
             var d=pd[pl.id];
             var feeStr=d.fee?'¥'+Number(d.fee).toLocaleString()+(d.taxIncl?' 税込':' 税別'):'料金未設定';
             var transStr=d.transIncl?'交通費込':'交通費別';
-            return'<div style="padding:6px 10px;background:var(--accent-bg);border:1px solid var(--accent-border);border-radius:var(--r);font-size:11px">'
+            return'<div style="padding:6px 10px;background:var(--accent-bg);border:1px solid var(--accent-border);border-radius:var(--r);font-size:12px">'
               +'<div style="font-weight:500;color:var(--accent)">'+pl.label+'</div>'
               +'<div style="color:var(--text2);margin-top:2px">'+feeStr+' ・ '+transStr+'</div>'
             +'</div>';
@@ -3345,16 +3345,16 @@ function renderShootingList(){
   var list=DB.posts.filter(function(p){return p.type==='shooting'&&p.storeId===sid;})
     .sort(function(a,b){return new Date(b.date)-new Date(a.date);});
   if(!list.length){
-    el.innerHTML='<div style="font-size:12px;color:var(--text3);padding:8px">撮影予定はありません</div>';
+    el.innerHTML='<div style="font-size:13px;color:var(--text3);padding:8px">撮影予定はありません</div>';
     return;
   }
   el.innerHTML=list.map(function(p){
     var cr=DB.creators.find(function(x){return x.id===p.creatorId;});
     var crName=cr?cr.crName:'—';
     return'<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg3);border-radius:var(--r);border:1px solid var(--border)">'
-      +'<span style="font-size:13px;font-weight:500;color:var(--accent)">📷 '+fmtD((p.date||'').split('T')[0])+'</span>'
-      +'<span style="font-size:12px;color:var(--purple);flex:1">'+esc(crName)+'</span>'
-      +(p.note?'<span style="font-size:11px;color:var(--text3)">'+esc(p.note)+'</span>':'')
+      +'<span style="font-size:14px;font-weight:500;color:var(--accent)">📷 '+fmtD((p.date||'').split('T')[0])+'</span>'
+      +'<span style="font-size:13px;color:var(--purple);flex:1">'+esc(crName)+'</span>'
+      +(p.note?'<span style="font-size:12px;color:var(--text3)">'+esc(p.note)+'</span>':'')
       +'<button class="btn btn-sm" style="margin-right:4px" onclick="openShootingModal(\''+p.id+'\')" >編集</button>'
       +'<button class="btn-ghost-danger" onclick="deleteShooting(\''+p.id+'\')" >削除</button>'
       +'</div>';
@@ -3483,13 +3483,13 @@ function renderSalesNotifs(){
     return'<div style="padding:10px 12px;margin-bottom:6px;border-radius:var(--r);background:'+(n.read?'var(--bg3)':'var(--accent-bg)')+';border:1px solid '+(n.read?'var(--border)':'var(--accent-border)')+';">'
       +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">'
       +(n.read?'':'<span style="width:6px;height:6px;border-radius:50%;background:var(--accent);flex-shrink:0;display:inline-block"></span>')
-      +'<span style="font-size:13px;font-weight:500;flex:1">'+esc(n.storeName)+'</span>'
-      +'<span style="font-size:10px;color:var(--text3)">'+timeStr+'</span>'
+      +'<span style="font-size:14px;font-weight:500;flex:1">'+esc(n.storeName)+'</span>'
+      +'<span style="font-size:11px;color:var(--text3)">'+timeStr+'</span>'
       +'</div>'
-      +'<div style="font-size:11px;color:var(--text2);margin-bottom:8px">'
+      +'<div style="font-size:12px;color:var(--text2);margin-bottom:8px">'
       +'プラン: <strong>'+esc(n.plan)+'</strong>　営業担当: <strong>'+esc(n.salesBy)+'</strong>'
       +'</div>'
-      +'<button class="btn btn-sm" onclick="openStoreFromNotif(\''+n.storeId+'\')" style="font-size:11px">店舗詳細を見る →</button>'
+      +'<button class="btn btn-sm" onclick="openStoreFromNotif(\''+n.storeId+'\')" style="font-size:12px">店舗詳細を見る →</button>'
       +'</div>';
   }).join('');
 }
@@ -3716,9 +3716,9 @@ function renderDashboard(){
     /* プラン別テーブル */
     var planPlans=DB.plans.filter(function(p){return Number(p.price)>0;});
     var planTable=planPlans.length
-      ?'<div style="font-size:11px;font-weight:500;color:var(--text2);margin:12px 0 6px">📋 プラン別 必要件数</div>'
+      ?'<div style="font-size:12px;font-weight:500;color:var(--text2);margin:12px 0 6px">📋 プラン別 必要件数</div>'
         +'<div style="border:1px solid var(--border);border-radius:var(--r);overflow:hidden">'
-        +'<table style="width:100%;border-collapse:collapse;font-size:12px">'
+        +'<table style="width:100%;border-collapse:collapse;font-size:13px">'
         +'<thead><tr style="background:var(--bg3)">'
           +'<th style="padding:7px 10px;text-align:left;font-weight:500;color:var(--text2)">プラン</th>'
           +'<th style="padding:7px 10px;text-align:right;font-weight:400;color:var(--text2)">月額</th>'
@@ -3733,7 +3733,7 @@ function renderDashboard(){
           var bg=i%2===1?'background:var(--bg3)':'';
           return'<tr style="'+bg+'">'
             +'<td style="padding:8px 10px"><span style="font-weight:500">'+esc(p.name)+'</span>'
-              +'<span style="font-size:11px;color:var(--text3);margin-left:6px">現在'+cur+'件</span></td>'
+              +'<span style="font-size:12px;color:var(--text3);margin-left:6px">現在'+cur+'件</span></td>'
             +'<td style="padding:8px 10px;text-align:right;color:var(--text2)">'+fmtMoney(monthly)+'</td>'
             +'<td style="padding:8px 10px;text-align:right">'
               +(needed<=0?'<span style="color:var(--green);font-weight:500">✓ 達成</span>'
@@ -3746,24 +3746,24 @@ function renderDashboard(){
           +'</tr>';
         }).join('')
         +'</tbody></table></div>'
-      :'<div style="font-size:12px;color:var(--text3)">プランを登録すると表示されます</div>';
+      :'<div style="font-size:13px;color:var(--text3)">プランを登録すると表示されます</div>';
 
     goalEl.innerHTML=
       '<div style="margin-bottom:12px">'
         +'<div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:6px">'
           +'<div>'
-            +'<div style="font-size:11px;color:var(--text3);margin-bottom:2px">'+thisYear+'年 売上見込み</div>'
+            +'<div style="font-size:12px;color:var(--text3);margin-bottom:2px">'+thisYear+'年 売上見込み</div>'
             +'<div style="font-size:26px;font-weight:500;color:'+barCol+'">'+fmtMoney(proj)+'</div>'
           +'</div>'
           +'<div style="text-align:right">'
-            +'<div style="font-size:11px;color:var(--text3)">目標</div>'
+            +'<div style="font-size:12px;color:var(--text3)">目標</div>'
             +'<div style="font-size:15px;font-weight:500">'+fmtMoney(GOAL)+'</div>'
           +'</div>'
         +'</div>'
         +'<div style="background:var(--bg4);border-radius:4px;height:8px;margin-bottom:6px">'
           +'<div style="height:8px;border-radius:4px;background:'+barCol+';width:'+pct+'%;transition:width .3s"></div>'
         +'</div>'
-        +'<div style="display:flex;justify-content:space-between;font-size:12px">'
+        +'<div style="display:flex;justify-content:space-between;font-size:13px">'
           +'<span style="color:'+barCol+';font-weight:500">達成率 '+pct+'%</span>'
           +(rem>0?'<span style="color:var(--text2)">残り <b>'+fmtMoney(rem)+'</b></span>'
             :'<span style="color:var(--green);font-weight:500">🎉 目標達成！</span>')
@@ -3786,8 +3786,8 @@ function renderDashboard(){
           var total=(inv.prFee||0)+(inv.transport||0)+(inv.food||0);
           return'<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--amber-bg)">'
             +'<div style="flex:1;min-width:0">'
-              +'<div style="font-size:13px;font-weight:500">'+esc(infObj.name||'—')+'</div>'
-              +'<div style="font-size:11px;color:var(--text2);margin-top:2px">'
+              +'<div style="font-size:14px;font-weight:500">'+esc(infObj.name||'—')+'</div>'
+              +'<div style="font-size:12px;color:var(--text2);margin-top:2px">'
                 +esc(storeObj.name||'—')
                 +(inv.receivedDate?' | 受領日：'+inv.receivedDate:'')
                 +' | 合計：¥'+total.toLocaleString()
@@ -3811,15 +3811,15 @@ function renderDashboard(){
     var pct=Math.round(done/total*100);
     return'<div style="padding:10px 0;border-bottom:1px solid var(--border)">'
       +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">'
-        +'<span style="font-size:12px;font-weight:500;cursor:pointer;color:var(--accent)" onclick="navigate(\'stores\');setTimeout(function(){showDetail(\''+s.id+'\');},100)">'+esc(s.name)+'</span>'
+        +'<span style="font-size:13px;font-weight:500;cursor:pointer;color:var(--accent)" onclick="navigate(\'stores\');setTimeout(function(){showDetail(\''+s.id+'\');},100)">'+esc(s.name)+'</span>'
         +'<div class="pbar-wrap" style="flex:1"><div class="pbar" style="width:'+pct+'%;background:'+(pct===100?'var(--green)':pct>=60?'var(--accent)':'var(--amber)')+'"></div></div>'
-        +'<span style="font-size:11px;color:var(--text3)">'+done+'/'+total+'</span>'
-        +'<button class="btn btn-sm" style="font-size:10px;padding:2px 7px" onclick="openStoreModal(\''+s.id+'\')" >設定</button>'
+        +'<span style="font-size:12px;color:var(--text3)">'+done+'/'+total+'</span>'
+        +'<button class="btn btn-sm" style="font-size:11px;padding:2px 7px" onclick="openStoreModal(\''+s.id+'\')" >設定</button>'
       +'</div>'
       +'<div style="display:flex;gap:3px;flex-wrap:wrap">'
         +SETUP_LABELS.map(function(label,i){
           var isDone=checks[i];
-          return'<span style="font-size:9px;padding:1px 5px;border-radius:10px;white-space:nowrap;background:'+(isDone?'var(--green-bg)':'var(--bg3)')+';color:'+(isDone?'var(--green)':'var(--text3)')+';border:1px solid '+(isDone?'var(--green-border)':'var(--border)')+';">'+(isDone?'✓ ':'')+esc(label)+'</span>';
+          return'<span style="font-size:10px;padding:1px 5px;border-radius:10px;white-space:nowrap;background:'+(isDone?'var(--green-bg)':'var(--bg3)')+';color:'+(isDone?'var(--green)':'var(--text3)')+';border:1px solid '+(isDone?'var(--green-border)':'var(--border)')+';">'+(isDone?'✓ ':'')+esc(label)+'</span>';
         }).join('')
       +'</div>'
     +'</div>';
@@ -3836,25 +3836,25 @@ function renderStoreTable(){
   tb.innerHTML=list.map(function(s){
     var pct=setupPct(s);
     var sns='';
-    if(s.ig)sns+='<span style="font-size:10px;color:#e1306c;margin-right:3px;font-weight:500">IG</span>';
-    if(s.fb)sns+='<span style="font-size:10px;color:#1877f2;margin-right:3px;font-weight:500">FB</span>';
-    if(s.tw)sns+='<span style="font-size:10px;color:#000;margin-right:3px;font-weight:500">X</span>';
-    if(s.tt)sns+='<span style="font-size:10px;color:#010101;margin-right:3px;font-weight:500">TT</span>';
+    if(s.ig)sns+='<span style="font-size:11px;color:#e1306c;margin-right:3px;font-weight:500">IG</span>';
+    if(s.fb)sns+='<span style="font-size:11px;color:#1877f2;margin-right:3px;font-weight:500">FB</span>';
+    if(s.tw)sns+='<span style="font-size:11px;color:#000;margin-right:3px;font-weight:500">X</span>';
+    if(s.tt)sns+='<span style="font-size:11px;color:#010101;margin-right:3px;font-weight:500">TT</span>';
     var plan=s.planId?DB.plans.find(function(x){return x.id===s.planId;}):null;
-    var planCell=plan?'<div style="font-size:12px;font-weight:400">'+esc(plan.name)+'</div><div style="font-size:11px;color:var(--text3)">'+fmtMoney(plan.price)+'</div>':'<span style="color:var(--text3)">—</span>';
+    var planCell=plan?'<div style="font-size:13px;font-weight:400">'+esc(plan.name)+'</div><div style="font-size:12px;color:var(--text3)">'+fmtMoney(plan.price)+'</div>':'<span style="color:var(--text3)">—</span>';
     var mgr=s.ourManager||'';
     var mgrRetired=mgr&&isRetiredStaff(mgr);
     var mgrCell=mgr
       ?(mgrRetired
-        ?'<span style="color:var(--text3);font-size:11px">担当なし</span><button class="btn btn-sm" onclick="event.stopPropagation();assignManagerFromRetired(\''+s.id+'\');" style="font-size:10px;margin-left:4px;padding:2px 6px">追加</button>'
-        :'<span style="font-size:12px">'+esc(mgr)+'</span>'
+        ?'<span style="color:var(--text3);font-size:12px">担当なし</span><button class="btn btn-sm" onclick="event.stopPropagation();assignManagerFromRetired(\''+s.id+'\');" style="font-size:11px;margin-left:4px;padding:2px 6px">追加</button>'
+        :'<span style="font-size:13px">'+esc(mgr)+'</span>'
       )
-      :'<span style="color:var(--text3);font-size:11px">—</span>';
+      :'<span style="color:var(--text3);font-size:12px">—</span>';
     return'<tr>'
-      +'<td><div style="display:flex;align-items:center;gap:7px"><div style="width:6px;height:6px;border-radius:50%;background:'+s.color+';flex-shrink:0"></div><span style="cursor:pointer;color:var(--accent);font-weight:400" onclick="showDetail(\''+s.id+'\')">'+esc(s.name)+'</span></div><div style="font-size:10px;color:var(--text3);margin-top:1px">'+esc(s.pref||'')+' '+esc((s.area||'').slice(0,16))+'</div></td>'
+      +'<td><div style="display:flex;align-items:center;gap:7px"><div style="width:6px;height:6px;border-radius:50%;background:'+s.color+';flex-shrink:0"></div><span style="cursor:pointer;color:var(--accent);font-weight:400" onclick="showDetail(\''+s.id+'\')">'+esc(s.name)+'</span></div><div style="font-size:11px;color:var(--text3);margin-top:1px">'+esc(s.pref||'')+' '+esc((s.area||'').slice(0,16))+'</div></td>'
       +'<td>'+esc(s.genre||'—')+'</td>'
       +'<td>'+planCell+'</td>'
-      +'<td class="td-mono">'+(s.contractStart||'—')+'<div style="font-size:10px;color:var(--text3)">'+(s.contractTerm?s.contractTerm+'ヶ月':'')+'</div></td>'
+      +'<td class="td-mono">'+(s.contractStart||'—')+'<div style="font-size:11px;color:var(--text3)">'+(s.contractTerm?s.contractTerm+'ヶ月':'')+'</div></td>'
       +(function(){
           var end=contractEndDate(s);
           if(!end)return'<td style="color:var(--text3)">—</td>';
@@ -3864,12 +3864,12 @@ function renderStoreTable(){
           if(daysLeft<0)return'<td><span class="badge b-gray">終了済み</span></td>';
           if(daysLeft<=30)return'<td><span class="badge b-red">⚠ '+mm+'（残'+daysLeft+'日）</span></td>';
           if(daysLeft<=60)return'<td><span class="badge b-amber">'+mm+'（残'+daysLeft+'日）</span></td>';
-          return'<td><span style="font-size:12px">'+mm+'</span><div style="font-size:10px;color:var(--text3)">残'+daysLeft+'日</div></td>';
+          return'<td><span style="font-size:13px">'+mm+'</span><div style="font-size:11px;color:var(--text3)">残'+daysLeft+'日</div></td>';
         })()
       +'<td>'+esc(s.contactName||'—')+'</td>'
       +'<td>'+mgrCell+'</td>'
       +'<td>'+sns+'</td>'
-      +'<td><div style="display:flex;align-items:center;gap:6px"><div class="pbar-wrap" style="width:52px"><div class="pbar" style="background:'+(pct===100?'var(--green)':'var(--accent)')+';width:'+pct+'%"></div></div><span style="font-size:10px;color:var(--text3)">'+pct+'%</span></div></td>'
+      +'<td><div style="display:flex;align-items:center;gap:6px"><div class="pbar-wrap" style="width:52px"><div class="pbar" style="background:'+(pct===100?'var(--green)':'var(--accent)')+';width:'+pct+'%"></div></div><span style="font-size:11px;color:var(--text3)">'+pct+'%</span></div></td>'
       +'<td>'+statusBadge(s.status)+'</td>'
       +'<td style="white-space:nowrap"><button class="btn btn-sm" onclick="openStoreModal(\''+s.id+'\')" style="margin-right:4px">編集</button><button class="btn-ghost-danger" onclick="deleteStore(\''+s.id+'\')">削除</button></td>'
       +'</tr>';
@@ -3899,7 +3899,7 @@ function showDetail(id){
   function row(label,val,link){
     if(!val&&val!==0)return'';
     var valHtml=link?'<a href="'+esc(val)+'" target="_blank" style="color:var(--accent)">'+esc(val)+'</a>':esc(String(val));
-    return'<div style="display:flex;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);font-size:12px">'
+    return'<div style="display:flex;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);font-size:13px">'
       +'<span style="color:var(--text3);min-width:90px;flex-shrink:0">'+label+'</span>'
       +'<span style="flex:1;word-break:break-all">'+valHtml+'</span></div>';
   }
@@ -3909,18 +3909,18 @@ function showDetail(id){
 
     /* 楽々販売バー */
     '<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;padding:8px 12px;background:var(--bg3);border-radius:var(--r)">'
-      +'<span style="font-size:12px;color:var(--text2)">楽々販売：</span>'+rakurakuBadge+rakurakuBtn
+      +'<span style="font-size:13px;color:var(--text2)">楽々販売：</span>'+rakurakuBadge+rakurakuBtn
     +'</div>'
 
     /* KPIカード */
     +'<div class="grid3" style="margin-bottom:16px">'
-      +'<div class="card-sm"><div style="font-size:10px;color:var(--text3);margin-bottom:4px">ステータス</div>'+statusBadge(s.status)+'</div>'
-      +'<div class="card-sm"><div style="font-size:10px;color:var(--text3);margin-bottom:4px">プラン</div><div style="font-size:12px;font-weight:500">'+(plan?esc(plan.name):'—')+'</div></div>'
-      +'<div class="card-sm"><div style="font-size:10px;color:var(--text3);margin-bottom:4px">月額</div><div style="font-size:13px;font-weight:500;color:var(--accent)">'+fmtMoney(s.monthlyFee)+'</div></div>'
+      +'<div class="card-sm"><div style="font-size:11px;color:var(--text3);margin-bottom:4px">ステータス</div>'+statusBadge(s.status)+'</div>'
+      +'<div class="card-sm"><div style="font-size:11px;color:var(--text3);margin-bottom:4px">プラン</div><div style="font-size:13px;font-weight:500">'+(plan?esc(plan.name):'—')+'</div></div>'
+      +'<div class="card-sm"><div style="font-size:11px;color:var(--text3);margin-bottom:4px">月額</div><div style="font-size:14px;font-weight:500;color:var(--accent)">'+fmtMoney(s.monthlyFee)+'</div></div>'
     +'</div>'
 
     /* 店舗基本情報 */
-    +'<div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px">店舗情報</div>'
+    +'<div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:8px">店舗情報</div>'
     +'<div style="margin-bottom:14px">'
       +row('業種',s.genre)
       +row('エリア',(s.pref||'')+(s.area?' '+s.area:''))
@@ -3929,11 +3929,11 @@ function showDetail(id){
       +row('席数',s.seats?s.seats+'席':null)
       +row('食べログ',s.tabelog,true)
       +row('公式HP',s.hp,true)
-      +(s.memo?'<div style="font-size:12px;padding:5px 0;border-bottom:1px solid var(--border);display:flex;gap:8px"><span style="color:var(--text3);min-width:90px;flex-shrink:0">備考</span><span style="flex:1;white-space:pre-wrap">'+esc(s.memo)+'</span></div>':'')
+      +(s.memo?'<div style="font-size:13px;padding:5px 0;border-bottom:1px solid var(--border);display:flex;gap:8px"><span style="color:var(--text3);min-width:90px;flex-shrink:0">備考</span><span style="flex:1;white-space:pre-wrap">'+esc(s.memo)+'</span></div>':'')
     +'</div>'
 
     /* 法人・連絡先 */
-    +(corp||s.contactName?'<div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px">連絡先</div><div style="margin-bottom:14px">'
+    +(corp||s.contactName?'<div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:8px">連絡先</div><div style="margin-bottom:14px">'
       +(corp?row('法人',corp.name):'')
       +row('担当者',(s.contactName||'')+(s.contactRole?' ('+s.contactRole+')':''))
       +row('電話',s.contactTel)
@@ -3942,7 +3942,7 @@ function showDetail(id){
     +'</div>':'')
 
     /* 弊社情報 */
-    +'<div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px">弊社情報</div>'
+    +'<div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:8px">弊社情報</div>'
     +'<div style="margin-bottom:14px">'
       +row('営業担当',s.ourManager||s.salesBy)
       +row('クリエイター',(function(){var cr=DB.creators.find(function(x){return x.id===s.creator;});return cr?cr.crName:(s.creator||'—');})())
@@ -3954,7 +3954,7 @@ function showDetail(id){
 
     /* SNS */
     +(s.ig||s.fb||s.tw||s.tt||s.yt
-      ?'<div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px">SNS</div><div style="margin-bottom:14px">'
+      ?'<div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:8px">SNS</div><div style="margin-bottom:14px">'
         +row('Instagram',s.ig)
         +row('Facebook',s.fb)
         +row('X',s.tw)
@@ -3965,53 +3965,53 @@ function showDetail(id){
       :'')
 
     /* 要望 */
-    +(s.request?'<div style="margin-bottom:14px;padding:10px 12px;background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:var(--r);font-size:12px;white-space:pre-wrap">'+esc(s.request)+'</div>':'')
+    +(s.request?'<div style="margin-bottom:14px;padding:10px 12px;background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:var(--r);font-size:13px;white-space:pre-wrap">'+esc(s.request)+'</div>':'')
 
     /* 初期設定進捗 */
     +'<div style="margin-bottom:14px">'
       +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'
-        +'<span style="font-size:11px;font-weight:500;color:var(--text2)">初期設定</span>'
+        +'<span style="font-size:12px;font-weight:500;color:var(--text2)">初期設定</span>'
         +'<div class="pbar-wrap" style="flex:1"><div class="pbar" style="background:'+(pct===100?'var(--green)':'var(--accent)')+';width:'+pct+'%"></div></div>'
-        +'<span style="font-size:11px;color:var(--text3)">'+pct+'%</span>'
+        +'<span style="font-size:12px;color:var(--text3)">'+pct+'%</span>'
       +'</div>'
       +'<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px">'
         +SETUP_LABELS.map(function(label,i){
           var done=s.setupChecks&&s.setupChecks[i];
           return'<div style="display:flex;align-items:center;gap:4px;padding:4px 6px;border-radius:var(--r);background:'+(done?'var(--green-bg)':'var(--bg3)')+';border:1px solid '+(done?'var(--green-border)':'var(--border)')+'">'
-            +'<span style="font-size:10px;color:'+(done?'var(--green)':'var(--text3)')+'">'+(done?'✓':'○')+'</span>'
-            +'<span style="font-size:10px;color:'+(done?'var(--text)':'var(--text3)')+'">'+esc(label)+'</span>'
+            +'<span style="font-size:11px;color:'+(done?'var(--green)':'var(--text3)')+'">'+(done?'✓':'○')+'</span>'
+            +'<span style="font-size:11px;color:'+(done?'var(--text)':'var(--text3)')+'">'+esc(label)+'</span>'
           +'</div>';
         }).join('')
       +'</div>'
     +'</div>'
 
     /* 投稿履歴 */
-    +'<div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px">投稿履歴 ('+myPosts.length+'件)</div>'
+    +'<div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:8px">投稿履歴 ('+myPosts.length+'件)</div>'
     +(myPosts.length
       ?'<div style="max-height:140px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--r);margin-bottom:14px">'
         +myPosts.map(function(p,i){
           var isInf=p.type==='inf_visit'||p.type==='inf_post';
           return'<div style="display:flex;gap:10px;padding:7px 12px;border-bottom:'+(i<myPosts.length-1?'1px solid var(--border)':'none')+'">'
             +'<span class="td-mono" style="color:var(--text3);white-space:nowrap">'+fmtDT(p.date)+'</span>'
-            +'<span style="font-size:12px;flex:1">'+(isInf?'🏃 '+esc(infName(p.infId)):esc((p.caption||'').slice(0,40)))+'</span>'
+            +'<span style="font-size:13px;flex:1">'+(isInf?'🏃 '+esc(infName(p.infId)):esc((p.caption||'').slice(0,40)))+'</span>'
             +postStatusBadge(p.status)
           +'</div>';
         }).join('')
       +'</div>'
-      :'<div style="font-size:12px;color:var(--text3);margin-bottom:14px">投稿なし</div>'
+      :'<div style="font-size:13px;color:var(--text3);margin-bottom:14px">投稿なし</div>'
     )
 
     /* キャスティング */
-    +'<div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px">キャスティング ('+myCast.length+'件)</div>'
+    +'<div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:8px">キャスティング ('+myCast.length+'件)</div>'
     +(myCast.length
       ?'<div style="border:1px solid var(--border);border-radius:var(--r)">'+myCast.map(function(c,i){
-          return'<div style="font-size:12px;padding:7px 12px;border-bottom:'+(i<myCast.length-1?'1px solid var(--border)':'none')+';display:flex;gap:10px">'
+          return'<div style="font-size:13px;padding:7px 12px;border-bottom:'+(i<myCast.length-1?'1px solid var(--border)':'none')+';display:flex;gap:10px">'
             +'<span class="td-mono" style="color:var(--text3)">'+fmtD(c.date)+'</span>'
             +'<span>'+esc(infName(c.infId))+'</span>'
             +'<span style="margin-left:auto;color:var(--text3)">'+fmtMoney(c.fee)+'</span>'
           +'</div>';
         }).join('')+'</div>'
-      :'<div style="font-size:12px;color:var(--text3)">なし</div>'
+      :'<div style="font-size:13px;color:var(--text3)">なし</div>'
     )
 
     /* 編集ボタン */
@@ -4036,7 +4036,7 @@ function markRakurakuDone(id){
 
 function renderSchedFilter(){
   document.getElementById('schedFilter').innerHTML=DB.stores.map(function(s){
-    return'<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;border:1px solid var(--border);font-size:11px;cursor:pointer;color:var(--text2);background:var(--bg2);transition:all .1s" data-sid="'+s.id+'" onclick="toggleSchedFilter(this)"><span style="width:6px;height:6px;border-radius:50%;background:'+s.color+';display:inline-block"></span>'+esc(s.name)+'</span>';
+    return'<span style="display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;border:1px solid var(--border);font-size:12px;cursor:pointer;color:var(--text2);background:var(--bg2);transition:all .1s" data-sid="'+s.id+'" onclick="toggleSchedFilter(this)"><span style="width:6px;height:6px;border-radius:50%;background:'+s.color+';display:inline-block"></span>'+esc(s.name)+'</span>';
   }).join('');
 }
 function toggleSchedFilter(el){
@@ -4133,7 +4133,7 @@ function renderSchedule(){
       +'<td><div style="display:flex;align-items:center;gap:5px"><span style="width:5px;height:5px;border-radius:50%;background:'+storeColor(p.storeId)+';display:inline-block;flex-shrink:0"></span>'+esc(storeName(p.storeId))+'</div></td>'
       +'<td class="td-mono" style="white-space:nowrap;cursor:pointer" title="クリックで日時変更" onclick="inlineDateEdit(event,\''+p.id+'\')">'+fmtDT(p.date)+'</td>'
       +'<td>'+infCell+'</td>'
-      +'<td>'+(p.ad==='yes'?'<span class="badge b-blue" style="font-size:11px">📢 広告配信あり</span>':'<span style="color:var(--text3);font-size:12px">—</span>')+'</td>'
+      +'<td>'+(p.ad==='yes'?'<span class="badge b-blue" style="font-size:12px">📢 広告配信あり</span>':'<span style="color:var(--text3);font-size:13px">—</span>')+'</td>'
       +'<td>'+postStatusBadge(p.status)+'</td>'
       +'<td style="white-space:nowrap">'
         +'<button class="btn btn-sm" style="margin-right:4px" onclick="openPostModal(\''+p.id+'\')">編集</button>'
@@ -4204,7 +4204,7 @@ function renderCalendar(){
         +'style="background:'+chipBg+';color:'+chipCol+';cursor:grab;user-select:none;font-weight:500" '
         +'title="ドラッグで日程移動・クリックで編集">'+label+'</div>';
     }).join('');
-    var more=dayItems.length>4?'<div style="font-size:9px;color:var(--text3)">+'+(dayItems.length-4)+'</div>':'';
+    var more=dayItems.length>4?'<div style="font-size:10px;color:var(--text3)">+'+(dayItems.length-4)+'</div>':'';
     cells+='<div class="cal-cell'+(isToday?' today':'')+'" '
       +'data-day="'+dd+'" '
       +'ondragover="calCellDragOver(event)" '
@@ -4309,7 +4309,7 @@ function renderCheckPage(){
     var typeLabel=TYPE_LABEL[p.type]||p.type;
     var infLabel=isInf&&p.infId?(' / '+esc(infName(p.infId))):'';
     var cap=(!isInf&&p.caption)?esc(p.caption.slice(0,40))+(p.caption.length>40?'…':''):'';
-    return'<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--border);font-size:12px">'
+    return'<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--border);font-size:13px">'
       +'<span style="width:5px;height:5px;border-radius:50%;background:'+storeColor(p.storeId)+';display:inline-block;flex-shrink:0"></span>'
       +'<span class="td-mono" style="color:var(--text3);white-space:nowrap;width:110px">'+fmtDT(p.date)+'</span>'
       +'<span style="font-weight:500;min-width:80px">'+esc(storeName(p.storeId))+'</span>'
@@ -4327,7 +4327,7 @@ function renderCheckPage(){
     if(!el)return;
     if(cnt)cnt.textContent=items.length+'件';
     if(!items.length){
-      el.innerHTML='<div style="padding:12px 14px;font-size:12px;color:var(--text3)">'+emptyMsg+'</div>';
+      el.innerHTML='<div style="padding:12px 14px;font-size:13px;color:var(--text3)">'+emptyMsg+'</div>';
     }else{
       el.innerHTML='<div style="border-radius:0 0 var(--r) var(--r);overflow:hidden">'+items.map(postRow).join('')+'</div>';
     }
@@ -4346,15 +4346,15 @@ function renderCheckPage(){
   if(weekCntEl)weekCntEl.textContent=weekAll.length+'件（完了'+weekDone.length+'件）';
   if(weekEl){
     if(!weekAll.length){
-      weekEl.innerHTML='<div style="padding:12px 14px;font-size:12px;color:var(--text3)">今週の投稿予定はありません</div>';
+      weekEl.innerHTML='<div style="padding:12px 14px;font-size:13px;color:var(--text3)">今週の投稿予定はありません</div>';
     }else{
       var weekActiveHtml=weekActive.length
         ?weekActive.map(postRow).join('')
-        :'<div style="padding:12px 14px;font-size:12px;color:var(--text3)">未完了の投稿はありません ✓</div>';
+        :'<div style="padding:12px 14px;font-size:13px;color:var(--text3)">未完了の投稿はありません ✓</div>';
       var weekDoneHtml=weekDone.length
         ?'<div id="chk-week-done-wrap" style="display:none">'
           +weekDone.map(function(p){
-            return'<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--border);font-size:12px;opacity:0.45;background:var(--bg3)">'
+            return'<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--border);font-size:13px;opacity:0.45;background:var(--bg3)">'
               +'<span style="width:5px;height:5px;border-radius:50%;background:'+storeColor(p.storeId)+';display:inline-block;flex-shrink:0"></span>'
               +'<span class="td-mono" style="color:var(--text3);white-space:nowrap;width:110px;text-decoration:line-through">'+fmtDT(p.date)+'</span>'
               +'<span style="font-weight:500;min-width:80px;text-decoration:line-through">'+esc(storeName(p.storeId))+'</span>'
@@ -4365,7 +4365,7 @@ function renderCheckPage(){
           }).join('')
         +'</div>'
         +'<div style="padding:8px 14px;text-align:center;border-top:1px solid var(--border)">'
-          +'<button onclick="toggleWeekDone()" id="chk-week-done-btn" style="font-size:11px;color:var(--text3);background:none;border:none;cursor:pointer">▼ 完了済みを表示（'+weekDone.length+'件）</button>'
+          +'<button onclick="toggleWeekDone()" id="chk-week-done-btn" style="font-size:12px;color:var(--text3);background:none;border:none;cursor:pointer">▼ 完了済みを表示（'+weekDone.length+'件）</button>'
         +'</div>'
         :''
       weekEl.innerHTML='<div style="border-radius:0 0 var(--r) var(--r);overflow:hidden">'+weekActiveHtml+weekDoneHtml+'</div>';
@@ -4383,15 +4383,15 @@ function renderCheckPage(){
   if(monthCntEl)monthCntEl.textContent=monthAll.length+'件（完了'+monthDone.length+'件）';
   if(monthEl){
     if(!monthAll.length){
-      monthEl.innerHTML='<div style="padding:12px 14px;font-size:12px;color:var(--text3)">今月の投稿予定はありません</div>';
+      monthEl.innerHTML='<div style="padding:12px 14px;font-size:13px;color:var(--text3)">今月の投稿予定はありません</div>';
     }else{
       var activeHtml=monthActive.length
         ?monthActive.map(postRow).join('')
-        :'<div style="padding:12px 14px;font-size:12px;color:var(--text3)">未完了の投稿はありません ✓</div>';
+        :'<div style="padding:12px 14px;font-size:13px;color:var(--text3)">未完了の投稿はありません ✓</div>';
       var doneHtml=monthDone.length
         ?'<div id="chk-month-done-wrap" style="display:none">'
           +monthDone.map(function(p){
-            return'<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--border);font-size:12px;opacity:0.45;background:var(--bg3)">'
+            return'<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--border);font-size:13px;opacity:0.45;background:var(--bg3)">'
               +'<span style="width:5px;height:5px;border-radius:50%;background:'+storeColor(p.storeId)+';display:inline-block;flex-shrink:0"></span>'
               +'<span class="td-mono" style="color:var(--text3);white-space:nowrap;width:110px;text-decoration:line-through">'+fmtDT(p.date)+'</span>'
               +'<span style="font-weight:500;min-width:80px;text-decoration:line-through">'+esc(storeName(p.storeId))+'</span>'
@@ -4402,7 +4402,7 @@ function renderCheckPage(){
           }).join('')
         +'</div>'
         +'<div style="padding:8px 14px;text-align:center;border-top:1px solid var(--border)">'
-          +'<button onclick="toggleMonthDone()" id="chk-month-done-btn" style="font-size:11px;color:var(--text3);background:none;border:none;cursor:pointer">▼ 完了済みを表示（'+monthDone.length+'件）</button>'
+          +'<button onclick="toggleMonthDone()" id="chk-month-done-btn" style="font-size:12px;color:var(--text3);background:none;border:none;cursor:pointer">▼ 完了済みを表示（'+monthDone.length+'件）</button>'
         +'</div>'
         :''
       monthEl.innerHTML='<div style="border-radius:0 0 var(--r) var(--r);overflow:hidden">'+activeHtml+doneHtml+'</div>';
@@ -4425,7 +4425,7 @@ function renderCheckPage(){
   if(setupCntEl)setupCntEl.textContent=incomplete.length+'店舗';
   if(setupEl){
     if(!incomplete.length){
-      setupEl.innerHTML='<div style="padding:12px 14px;font-size:12px;color:var(--text3)">全店舗の初期設定が完了しています ✓</div>';
+      setupEl.innerHTML='<div style="padding:12px 14px;font-size:13px;color:var(--text3)">全店舗の初期設定が完了しています ✓</div>';
     }else{
       setupEl.innerHTML='<div style="border-radius:0 0 var(--r) var(--r);overflow:hidden">'
         +incomplete.map(function(s){
@@ -4435,13 +4435,13 @@ function renderCheckPage(){
           return'<div style="padding:10px 14px;border-bottom:1px solid var(--border)">'
             +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">'
               +'<span style="width:5px;height:5px;border-radius:50%;background:'+storeColor(s.id)+';display:inline-block"></span>'
-              +'<span style="font-size:12px;font-weight:500;cursor:pointer;color:var(--accent)" onclick="navigate(\'stores\');setTimeout(function(){showDetail(\''+s.id+'\');},100)">'+esc(s.name)+'</span>'
+              +'<span style="font-size:13px;font-weight:500;cursor:pointer;color:var(--accent)" onclick="navigate(\'stores\');setTimeout(function(){showDetail(\''+s.id+'\');},100)">'+esc(s.name)+'</span>'
               +'<div class="pbar-wrap" style="width:80px"><div class="pbar" style="width:'+pct+'%;background:'+(pct>=80?'var(--green)':pct>=50?'var(--amber)':'var(--red)')+'"></div></div>'
-              +'<span style="font-size:11px;color:var(--text3)">'+pct+'%</span>'
+              +'<span style="font-size:12px;color:var(--text3)">'+pct+'%</span>'
               +'<button class="btn btn-sm" onclick="openStoreModal(\''+s.id+'\')">設定</button>'
             +'</div>'
             +(missing.length?'<div style="display:flex;gap:4px;flex-wrap:wrap">'
-              +missing.map(function(l){return'<span style="font-size:10px;padding:2px 7px;border-radius:10px;background:var(--red-bg);color:var(--red)">'+esc(l)+'</span>';}).join('')
+              +missing.map(function(l){return'<span style="font-size:11px;padding:2px 7px;border-radius:10px;background:var(--red-bg);color:var(--red)">'+esc(l)+'</span>';}).join('')
             +'</div>':'')
           +'</div>';
         }).join('')
@@ -4463,8 +4463,8 @@ function renderCheckPage(){
     return'<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);background:'+bg+';border-left:3px solid '+col+'">'
       +'<span style="font-size:16px;flex-shrink:0">'+icon+'</span>'
       +'<div style="flex:1;min-width:0">'
-        +'<div style="font-size:12px;font-weight:500;color:'+col+'">'+title+'</div>'
-        +'<div style="font-size:11px;color:var(--text2);margin-top:1px">'+detail+'</div>'
+        +'<div style="font-size:13px;font-weight:500;color:'+col+'">'+title+'</div>'
+        +'<div style="font-size:12px;color:var(--text2);margin-top:1px">'+detail+'</div>'
       +'</div>'
       +(actionHtml||'')
     +'</div>';
@@ -4530,7 +4530,7 @@ function renderCheckPage(){
   if(infEl){
     infEl.innerHTML=rows.length
       ?'<div style="border-radius:0 0 var(--r) var(--r);overflow:hidden">'+rows.join('')+'</div>'
-      :'<div style="padding:12px 14px;font-size:12px;color:var(--text3)">✓ インフルエンサー関連の要対応項目はありません</div>';
+      :'<div style="padding:12px 14px;font-size:13px;color:var(--text3)">✓ インフルエンサー関連の要対応項目はありません</div>';
   }
 }
 
@@ -4728,8 +4728,8 @@ function renderInfluencers(){
     var accountUrl=i.url||(i.handle?(platUrl[i.platform]||'')+(i.handle.replace('@','')):'');
     var handleHtml=i.handle
       ?(accountUrl
-        ?'<a href="'+esc(accountUrl)+'" target="_blank" rel="noopener" style="font-size:10px;color:'+(platColor[i.platform]||'var(--accent)')+';text-decoration:none">'+esc(i.handle)+'&nbsp;↗</a>'
-        :'<span style="font-size:10px;color:'+(platColor[i.platform]||'var(--text3)')+'">'+esc(i.handle)+'</span>'
+        ?'<a href="'+esc(accountUrl)+'" target="_blank" rel="noopener" style="font-size:11px;color:'+(platColor[i.platform]||'var(--accent)')+';text-decoration:none">'+esc(i.handle)+'&nbsp;↗</a>'
+        :'<span style="font-size:11px;color:'+(platColor[i.platform]||'var(--text3)')+'">'+esc(i.handle)+'</span>'
       ):'';
     return'<tr style="cursor:pointer" onclick="openInfluencerDetail(\''+i.id+'\')">'
       +'<td><div style="font-weight:500;color:var(--accent)">'+esc(i.name)+'</div>'+handleHtml+'</td>'
@@ -4758,7 +4758,7 @@ function renderCasting(){
     var inv=(DB.invoices||[]).find(function(x){return x.castingId===c.id;});
     var invCell;
     if(inv){
-      invCell='<span style="font-size:11px;padding:2px 7px;border-radius:4px;background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-border)">'+(INV_STATUS_LABEL[inv.status]||inv.status)+'</span>'
+      invCell='<span style="font-size:12px;padding:2px 7px;border-radius:4px;background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-border)">'+(INV_STATUS_LABEL[inv.status]||inv.status)+'</span>'
         +' <button class="btn btn-sm" onclick="openInvoiceModal(\''+inv.id+'\')">編集</button>';
     }else{
       invCell='<button class="btn btn-sm" onclick="openInvoiceFromCasting(\''+c.id+'\')">＋ 請求書</button>';
@@ -4774,7 +4774,7 @@ function renderCasting(){
       +'<td class="td-mono">'+(c.reach?Number(c.reach).toLocaleString():'—')+'</td>'
       +'<td style="color:var(--text3);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc((c.result||'').slice(0,30))+'</td>'
       +'<td onclick="event.stopPropagation()">'
-        +'<button onclick="toggleCastContractSent(\''+c.id+'\')" style="font-size:11px;padding:3px 8px;border-radius:5px;cursor:pointer;border:1px solid;white-space:nowrap;background:'+(c.contractSent?'var(--green-bg)':'var(--bg3)')+';color:'+(c.contractSent?'var(--green)':'var(--text3)')+';border-color:'+(c.contractSent?'var(--green-border)':'var(--border)')+';">'
+        +'<button onclick="toggleCastContractSent(\''+c.id+'\')" style="font-size:12px;padding:3px 8px;border-radius:5px;cursor:pointer;border:1px solid;white-space:nowrap;background:'+(c.contractSent?'var(--green-bg)':'var(--bg3)')+';color:'+(c.contractSent?'var(--green)':'var(--text3)')+';border-color:'+(c.contractSent?'var(--green-border)':'var(--border)')+';">'
           +(c.contractSent?'✓ 送付済み':'未送付')
         +'</button>'
       +'</td>'
@@ -4888,7 +4888,7 @@ function renderPlans(){
   var tb=document.getElementById('planTableBody');
   if(!tb)return;
   if(!DB.plans.length){
-    tb.innerHTML='<tr><td colspan="7" class="empty-state">プランがありません<br><span style="font-size:11px;color:var(--text3)">パター・ウェッジ・アイアン・ドライバーの順に登録してください</span></td></tr>';
+    tb.innerHTML='<tr><td colspan="7" class="empty-state">プランがありません<br><span style="font-size:12px;color:var(--text3)">パター・ウェッジ・アイアン・ドライバーの順に登録してください</span></td></tr>';
     return;
   }
   var sorted=DB.plans.slice().sort(function(a,b){
@@ -4901,10 +4901,10 @@ function renderPlans(){
       :fmtMoney(p.price);
     return'<tr>'
       +'<td><span class="badge '+(PLAN_BADGE[p.name]||'b-gray')+'">'+esc(p.name)+'</span></td>'
-      +'<td class="td-mono" style="font-size:13px;font-weight:500;color:var(--text)">'+priceStr+'</td>'
+      +'<td class="td-mono" style="font-size:14px;font-weight:500;color:var(--text)">'+priceStr+'</td>'
       +'<td class="td-mono">'+fmtMoney(p.setup)+'</td>'
       +'<td style="text-align:center">'+(p.openPrice?'<span class="badge b-amber">応相談</span>':'—')+'</td>'
-      +'<td style="text-align:center"><span style="font-size:13px;font-weight:500;color:var(--accent)">'+count+'</span></td>'
+      +'<td style="text-align:center"><span style="font-size:14px;font-weight:500;color:var(--accent)">'+count+'</span></td>'
       +'<td style="color:var(--text3);max-width:160px">'+esc((p.desc||'').slice(0,50))+'</td>'
       +'<td><button class="btn-ghost-danger" onclick="deletePlan(\''+p.id+'\')">削除</button></td>'
       +'</tr>';
@@ -4943,9 +4943,9 @@ function renderRevSummary(){
     var p=DB.plans.find(function(x){return x.id===pid;});
     var label=p?p.name:'プランなし';
     var d=byPlan[pid];
-    return'<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border)"><div><div style="font-size:12px;font-weight:400">'+esc(label)+'</div><div style="font-size:11px;color:var(--text3)">'+d.count+'店舗</div></div><div style="text-align:right"><div style="font-size:13px;font-weight:500;font-family:"Noto Sans JP",sans-serif">'+fmtMoney(d.revenue)+'</div><div style="font-size:10px;color:var(--text3)">/月</div></div></div>';
+    return'<div style="display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border)"><div><div style="font-size:13px;font-weight:400">'+esc(label)+'</div><div style="font-size:12px;color:var(--text3)">'+d.count+'店舗</div></div><div style="text-align:right"><div style="font-size:14px;font-weight:500;font-family:"Noto Sans JP",sans-serif">'+fmtMoney(d.revenue)+'</div><div style="font-size:11px;color:var(--text3)">/月</div></div></div>';
   }).join('');
-  el.innerHTML='<div style="padding-bottom:10px;margin-bottom:10px;border-bottom:2px solid var(--border)"><div style="font-size:11px;color:var(--text3);margin-bottom:2px">稼働中 月次合計</div><div style="font-size:24px;font-weight:500;font-family:"Noto Sans JP",sans-serif;color:var(--accent)">'+fmtMoney(totalMonthly)+'</div><div style="font-size:11px;color:var(--text3)">'+active.length+'店舗</div></div>'+rows+(rows?'':'<div class="empty-state" style="padding:16px">稼働中の店舗がありません</div>');
+  el.innerHTML='<div style="padding-bottom:10px;margin-bottom:10px;border-bottom:2px solid var(--border)"><div style="font-size:12px;color:var(--text3);margin-bottom:2px">稼働中 月次合計</div><div style="font-size:24px;font-weight:500;font-family:"Noto Sans JP",sans-serif;color:var(--accent)">'+fmtMoney(totalMonthly)+'</div><div style="font-size:12px;color:var(--text3)">'+active.length+'店舗</div></div>'+rows+(rows?'':'<div class="empty-state" style="padding:16px">稼働中の店舗がありません</div>');
 }
 
 /* ============================================================
@@ -5160,7 +5160,7 @@ function makeTimePicker(wrapperId, hiddenId){
   row.style.cssText='display:flex;align-items:center;gap:3px';
   var sep=document.createElement('span');
   sep.textContent=':';
-  sep.style.cssText='font-size:13px;font-weight:500;color:var(--text2)';
+  sep.style.cssText='font-size:14px;font-weight:500;color:var(--text2)';
   row.appendChild(hEl);row.appendChild(sep);row.appendChild(mEl);
   wrap.appendChild(row);
   syncHid();
@@ -5205,9 +5205,9 @@ function makeDatePicker(wrapperId,hiddenId,opts){
 
     /* --- 表示ラベル（クリックでカレンダー開閉） --- */
     var label=document.createElement('div');
-    label.style.cssText='display:inline-flex;align-items:center;gap:6px;cursor:pointer;padding:4px 10px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg2);font-size:12px;min-width:110px;user-select:none';
+    label.style.cssText='display:inline-flex;align-items:center;gap:6px;cursor:pointer;padding:4px 10px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg2);font-size:13px;min-width:110px;user-select:none';
     label.innerHTML=(state.d?state.y+'/'+(state.m<10?'0':'')+state.m+'/'+(state.d<10?'0':'')+state.d:'<span style="color:var(--text3)">日付を選択</span>')
-      +'<span style="margin-left:auto;color:var(--text3);font-size:10px">▼</span>';
+      +'<span style="margin-left:auto;color:var(--text3);font-size:11px">▼</span>';
 
     /* --- ポップアップ --- */
     var popup=document.createElement('div');
@@ -5231,7 +5231,7 @@ function makeDatePicker(wrapperId,hiddenId,opts){
       nav.style.cssText='display:flex;align-items:center;gap:4px;margin-bottom:8px';
 
       var ySel=document.createElement('select');
-      ySel.style.cssText='font-size:12px;padding:2px 4px;border:1px solid var(--border);border-radius:4px;background:var(--bg2);color:var(--text);flex:1';
+      ySel.style.cssText='font-size:13px;padding:2px 4px;border:1px solid var(--border);border-radius:4px;background:var(--bg2);color:var(--text);flex:1';
       for(var y=yearTo;y>=yearFrom;y--){
         ySel.innerHTML+='<option value="'+y+'"'+(y===state.y?' selected':'')+'>'+y+'年</option>';
       }
@@ -5239,11 +5239,11 @@ function makeDatePicker(wrapperId,hiddenId,opts){
 
       var prevBtn=document.createElement('button');
       prevBtn.textContent='‹';
-      prevBtn.style.cssText='width:24px;height:24px;border:1px solid var(--border);border-radius:4px;background:var(--bg3);cursor:pointer;font-size:14px;color:var(--text2)';
+      prevBtn.style.cssText='width:24px;height:24px;border:1px solid var(--border);border-radius:4px;background:var(--bg3);cursor:pointer;font-size:15px;color:var(--text2)';
       prevBtn.onclick=function(e){e.stopPropagation();state.m--;if(state.m<1){state.m=12;state.y--;}renderGrid();};
 
       var mLabel=document.createElement('span');
-      mLabel.style.cssText='font-size:12px;font-weight:500;min-width:30px;text-align:center';
+      mLabel.style.cssText='font-size:13px;font-weight:500;min-width:30px;text-align:center';
       mLabel.textContent=state.m+'月';
 
       var nextBtn=document.createElement('button');
@@ -5254,7 +5254,7 @@ function makeDatePicker(wrapperId,hiddenId,opts){
       var clearBtn=document.createElement('button');
       clearBtn.textContent='✕';
       clearBtn.title='クリア';
-      clearBtn.style.cssText='width:24px;height:24px;border:1px solid var(--border);border-radius:4px;background:var(--bg3);cursor:pointer;font-size:11px;color:var(--text3)';
+      clearBtn.style.cssText='width:24px;height:24px;border:1px solid var(--border);border-radius:4px;background:var(--bg3);cursor:pointer;font-size:12px;color:var(--text3)';
       clearBtn.onclick=function(e){e.stopPropagation();state.d=0;syncHidden();render();popup.style.display='none';isOpen=false;};
 
       nav.appendChild(ySel);nav.appendChild(prevBtn);nav.appendChild(mLabel);nav.appendChild(nextBtn);nav.appendChild(clearBtn);
@@ -5267,7 +5267,7 @@ function makeDatePicker(wrapperId,hiddenId,opts){
       dayNames.forEach(function(d,i){
         var cell=document.createElement('div');
         cell.textContent=d;
-        cell.style.cssText='text-align:center;font-size:10px;color:'+(i===0?'var(--red)':i===6?'var(--accent)':'var(--text3)')+';padding:2px 0';
+        cell.style.cssText='text-align:center;font-size:11px;color:'+(i===0?'var(--red)':i===6?'var(--accent)':'var(--text3)')+';padding:2px 0';
         grid.appendChild(cell);
       });
 
@@ -5283,7 +5283,7 @@ function makeDatePicker(wrapperId,hiddenId,opts){
           cell.textContent=day;
           var isSelected=state.d===day;
           var isToday=today.getFullYear()===state.y&&today.getMonth()+1===state.m&&today.getDate()===day;
-          cell.style.cssText='text-align:center;font-size:12px;padding:4px 2px;border-radius:4px;cursor:pointer;'
+          cell.style.cssText='text-align:center;font-size:13px;padding:4px 2px;border-radius:4px;cursor:pointer;'
             +(isSelected?'background:var(--accent);color:#fff;font-weight:500;'
               :isToday?'background:var(--accent-bg);color:var(--accent);font-weight:500;'
               :'color:var(--text);');
@@ -5465,8 +5465,8 @@ function openCreatorDetail(id){
 
   var skillRows=Object.keys(CREATOR_SKILL_LABELS).map(function(fid){
     return'<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--border)">'
-      +'<span style="font-size:12px;color:var(--text2)">'+CREATOR_SKILL_LABELS[fid]+'</span>'
-      +(cr[fid]!==undefined&&cr[fid]!==''?skillBadge(fid,cr[fid]):'<span style="font-size:11px;color:var(--text3)">—</span>')
+      +'<span style="font-size:13px;color:var(--text2)">'+CREATOR_SKILL_LABELS[fid]+'</span>'
+      +(cr[fid]!==undefined&&cr[fid]!==''?skillBadge(fid,cr[fid]):'<span style="font-size:12px;color:var(--text3)">—</span>')
     +'</div>';
   }).join('');
 
@@ -5486,48 +5486,48 @@ function openCreatorDetail(id){
           +(cr.crSpecialty?'<span class="badge b-blue">'+esc(cr.crSpecialty)+'</span>':'')
           +(cr.crPromanage?'<span class="badge '+proManageColors[cr.crPromanage]+'">プロマネ提出: '+proManageLabels[cr.crPromanage]+'</span>':'')
         +'</div>'
-        +(cr.crArea?'<div style="font-size:12px;color:var(--text2);margin-top:6px">📍 '+esc(cr.crArea)+'</div>':'')
+        +(cr.crArea?'<div style="font-size:13px;color:var(--text2);margin-top:6px">📍 '+esc(cr.crArea)+'</div>':'')
       +'</div>'
     +'</div>'
 
     +'<div class="grid2" style="margin-bottom:16px">'
       +'<div>'
-        +'<div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px">連絡先</div>'
-        +(cr.crTel?'<div style="font-size:12px;margin-bottom:4px">📱 '+esc(cr.crTel)+'</div>':'')
-        +(cr.crEmail?'<div style="font-size:12px;margin-bottom:4px">✉ '+esc(cr.crEmail)+'</div>':'')
-        +(cr.crContact?'<div style="font-size:12px;margin-bottom:4px;color:var(--text2)">'+esc(cr.crContact)+'</div>':'')
-        +(cr.crReachTime?'<div style="font-size:11px;color:var(--text3)">連絡時間: '+esc(cr.crReachTime)+'</div>':'')
+        +'<div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:8px">連絡先</div>'
+        +(cr.crTel?'<div style="font-size:13px;margin-bottom:4px">📱 '+esc(cr.crTel)+'</div>':'')
+        +(cr.crEmail?'<div style="font-size:13px;margin-bottom:4px">✉ '+esc(cr.crEmail)+'</div>':'')
+        +(cr.crContact?'<div style="font-size:13px;margin-bottom:4px;color:var(--text2)">'+esc(cr.crContact)+'</div>':'')
+        +(cr.crReachTime?'<div style="font-size:12px;color:var(--text3)">連絡時間: '+esc(cr.crReachTime)+'</div>':'')
       +'</div>'
       +'<div>'
-        +'<div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px">面談</div>'
-        +(cr.crInterviewDate?'<div style="font-size:12px;margin-bottom:4px">日付: '+fmtD(cr.crInterviewDate)+'</div>':'')
-        +(cr.crInterviewer?'<div style="font-size:12px;margin-bottom:4px">👥 '+esc(cr.crInterviewer.split(',').join(' / '))+'</div>':'')
-        +(cr.crPortfolio?'<div style="font-size:12px"><a href="'+esc(cr.crPortfolio)+'" target="_blank" style="color:var(--accent)">ポートフォリオ ↗</a></div>':'')
+        +'<div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:8px">面談</div>'
+        +(cr.crInterviewDate?'<div style="font-size:13px;margin-bottom:4px">日付: '+fmtD(cr.crInterviewDate)+'</div>':'')
+        +(cr.crInterviewer?'<div style="font-size:13px;margin-bottom:4px">👥 '+esc(cr.crInterviewer.split(',').join(' / '))+'</div>':'')
+        +(cr.crPortfolio?'<div style="font-size:13px"><a href="'+esc(cr.crPortfolio)+'" target="_blank" style="color:var(--accent)">ポートフォリオ ↗</a></div>':'')
       +'</div>'
     +'</div>'
 
     +'<div class="grid2" style="margin-bottom:16px">'
       +'<div>'
-        +'<div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:6px">スキル</div>'
+        +'<div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:6px">スキル</div>'
         +skillRows
       +'</div>'
       +'<div>'
-        +(cr.crEquipment?'<div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:6px">機材</div><div style="font-size:12px;white-space:pre-wrap;color:var(--text2)">'+esc(cr.crEquipment)+'</div>':'')
-        +(cr.crSoftware?'<div style="font-size:11px;font-weight:500;color:var(--text2);margin:8px 0 4px">ソフト</div><div style="font-size:12px;color:var(--text2)">'+esc(cr.crSoftware)+'</div>':'')
-        +(cr.crSns?'<div style="font-size:11px;font-weight:500;color:var(--text2);margin:8px 0 4px">SNS</div><div style="font-size:12px;white-space:pre-wrap;color:var(--accent)">'+esc(cr.crSns)+'</div>':'')
+        +(cr.crEquipment?'<div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:6px">機材</div><div style="font-size:13px;white-space:pre-wrap;color:var(--text2)">'+esc(cr.crEquipment)+'</div>':'')
+        +(cr.crSoftware?'<div style="font-size:12px;font-weight:500;color:var(--text2);margin:8px 0 4px">ソフト</div><div style="font-size:13px;color:var(--text2)">'+esc(cr.crSoftware)+'</div>':'')
+        +(cr.crSns?'<div style="font-size:12px;font-weight:500;color:var(--text2);margin:8px 0 4px">SNS</div><div style="font-size:13px;white-space:pre-wrap;color:var(--accent)">'+esc(cr.crSns)+'</div>':'')
       +'</div>'
     +'</div>'
 
     +(cr.crCondition||cr.crDelivery||cr.crOrderPoint
       ?'<div class="card-sm" style="margin-bottom:12px">'
-        +(cr.crOrderPoint?'<div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:4px">発注ポイント</div><div style="font-size:12px;white-space:pre-wrap;margin-bottom:8px">'+esc(cr.crOrderPoint)+'</div>':'')
-        +(cr.crCondition?'<div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:4px">条件</div><div style="font-size:12px;white-space:pre-wrap;margin-bottom:8px">'+esc(cr.crCondition)+'</div>':'')
-        +(cr.crDelivery?'<div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:4px">納品スケジュール</div><div style="font-size:12px">'+esc(cr.crDelivery)+'</div>':'')
+        +(cr.crOrderPoint?'<div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:4px">発注ポイント</div><div style="font-size:13px;white-space:pre-wrap;margin-bottom:8px">'+esc(cr.crOrderPoint)+'</div>':'')
+        +(cr.crCondition?'<div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:4px">条件</div><div style="font-size:13px;white-space:pre-wrap;margin-bottom:8px">'+esc(cr.crCondition)+'</div>':'')
+        +(cr.crDelivery?'<div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:4px">納品スケジュール</div><div style="font-size:13px">'+esc(cr.crDelivery)+'</div>':'')
       +'</div>'
       :'')
 
     +(cr.crImpression
-      ?'<div style="padding:10px 12px;background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:var(--r);font-size:12px;white-space:pre-wrap;line-height:1.7;margin-bottom:12px">'+esc(cr.crImpression)+'</div>'
+      ?'<div style="padding:10px 12px;background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:var(--r);font-size:13px;white-space:pre-wrap;line-height:1.7;margin-bottom:12px">'+esc(cr.crImpression)+'</div>'
       :'')
 
 
@@ -5537,13 +5537,13 @@ function openCreatorDetail(id){
         .sort(function(a,b){return new Date(b.date)-new Date(a.date);});
       if(!shoots.length)return'';
       return'<div style="border-top:1px solid var(--border);margin-top:12px;padding-top:12px">'
-        +'<div style="font-size:11px;font-weight:600;color:var(--text2);margin-bottom:8px">📷 撮影履歴</div>'
+        +'<div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:8px">📷 撮影履歴</div>'
         +shoots.map(function(p){
           var sName=storeName(p.storeId);
           return'<div style="display:flex;align-items:center;gap:8px;padding:6px 8px;background:var(--bg3);border-radius:var(--r);margin-bottom:4px">'
-            +'<span style="font-size:12px;font-weight:500;color:var(--accent)">'+fmtD((p.date||'').split('T')[0])+'</span>'
-            +'<span style="font-size:12px;color:var(--text2);flex:1">'+esc(sName)+'</span>'
-            +(p.note?'<span style="font-size:11px;color:var(--text3)">'+esc(p.note)+'</span>':'')
+            +'<span style="font-size:13px;font-weight:500;color:var(--accent)">'+fmtD((p.date||'').split('T')[0])+'</span>'
+            +'<span style="font-size:13px;color:var(--text2);flex:1">'+esc(sName)+'</span>'
+            +(p.note?'<span style="font-size:12px;color:var(--text3)">'+esc(p.note)+'</span>':'')
             +'</div>';
         }).join('')
         +'</div>';
@@ -5571,13 +5571,13 @@ function renderCreators(){
     var proColors={yes:'b-green',no:'b-red',pending:'b-amber'};
     var proLabels={yes:'可',no:'不可',pending:'要相談'};
     return'<tr style="cursor:pointer" onclick="openCreatorDetail(\''+cr.id+'\')">'
-      +'<td><div style="font-weight:500;color:var(--accent)">'+esc(cr.crName)+'</div>'+(age?'<div style="font-size:10px;color:var(--text3)">'+age+'歳</div>':'')+'</td>'
+      +'<td><div style="font-weight:500;color:var(--accent)">'+esc(cr.crName)+'</div>'+(age?'<div style="font-size:11px;color:var(--text3)">'+age+'歳</div>':'')+'</td>'
       +'<td>'+(cr.crGender?'<span class="badge b-gray">'+esc(cr.crGender)+'</span>':'—')+'</td>'
-      +'<td style="font-size:12px;color:var(--text2)">'+esc(cr.crArea||'—')+'</td>'
+      +'<td style="font-size:13px;color:var(--text2)">'+esc(cr.crArea||'—')+'</td>'
       +'<td>'+topSkills.map(function(s){return'<span class="badge b-blue" style="margin-right:2px">'+esc(s)+'</span>';}).join('')+'</td>'
-      +'<td style="font-size:12px">'+(cr.crInterviewDate?fmtD(cr.crInterviewDate):'—')+'</td>'
+      +'<td style="font-size:13px">'+(cr.crInterviewDate?fmtD(cr.crInterviewDate):'—')+'</td>'
       +'<td>'+(cr.crPromanage?'<span class="badge '+proColors[cr.crPromanage]+'">'+proLabels[cr.crPromanage]+'</span>':'—')+'</td>'
-      +'<td style="font-size:11px;color:var(--text2);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(cr.crTel||cr.crEmail||'—')+'</td>'
+      +'<td style="font-size:12px;color:var(--text2);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(cr.crTel||cr.crEmail||'—')+'</td>'
       +'<td onclick="event.stopPropagation()" style="white-space:nowrap"><button class="btn btn-sm" style="margin-right:4px" onclick="openCreatorModal(\''+cr.id+'\')">編集</button><button class="btn-ghost-danger" onclick="deleteCreator(\''+cr.id+'\')">削除</button></td>'
       +'</tr>';
   }).join('');
@@ -5688,24 +5688,24 @@ function openCorpDetail(id){
   document.getElementById('corpDetailTitle').textContent=corp.name;
   document.getElementById('corpDetailBody').innerHTML=
     '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px">'
-      +'<div class="card-sm" style="text-align:center"><div style="font-size:22px;font-weight:500;font-family:"Noto Sans JP",sans-serif">'+stores.length+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">契約店舗数</div></div>'
-      +'<div class="card-sm" style="text-align:center"><div style="font-size:22px;font-weight:500;font-family:"Noto Sans JP",sans-serif;color:var(--green)">'+active.length+'</div><div style="font-size:10px;color:var(--text3);margin-top:2px">稼働中</div></div>'
-      +'<div class="card-sm" style="text-align:center"><div style="font-size:14px;font-weight:500;font-family:"Noto Sans JP",sans-serif;color:var(--accent)">'+totalRev.toLocaleString()+'円</div><div style="font-size:10px;color:var(--text3);margin-top:2px">月次売上</div></div>'
+      +'<div class="card-sm" style="text-align:center"><div style="font-size:22px;font-weight:500;font-family:"Noto Sans JP",sans-serif">'+stores.length+'</div><div style="font-size:11px;color:var(--text3);margin-top:2px">契約店舗数</div></div>'
+      +'<div class="card-sm" style="text-align:center"><div style="font-size:22px;font-weight:500;font-family:"Noto Sans JP",sans-serif;color:var(--green)">'+active.length+'</div><div style="font-size:11px;color:var(--text3);margin-top:2px">稼働中</div></div>'
+      +'<div class="card-sm" style="text-align:center"><div style="font-size:15px;font-weight:500;font-family:"Noto Sans JP",sans-serif;color:var(--accent)">'+totalRev.toLocaleString()+'円</div><div style="font-size:11px;color:var(--text3);margin-top:2px">月次売上</div></div>'
     +'</div>'
     +'<div class="grid2" style="margin-bottom:16px">'
       +'<div>'
-        +(corp.rep?'<div style="font-size:12px;margin-bottom:4px">👤 '+esc(corp.rep)+'</div>':'')
-        +(corp.tel?'<div style="font-size:12px;margin-bottom:4px">📱 '+esc(corp.tel)+'</div>':'')
-        +(corp.email?'<div style="font-size:12px;margin-bottom:4px">✉ '+esc(corp.email)+'</div>':'')
+        +(corp.rep?'<div style="font-size:13px;margin-bottom:4px">👤 '+esc(corp.rep)+'</div>':'')
+        +(corp.tel?'<div style="font-size:13px;margin-bottom:4px">📱 '+esc(corp.tel)+'</div>':'')
+        +(corp.email?'<div style="font-size:13px;margin-bottom:4px">✉ '+esc(corp.email)+'</div>':'')
       +'</div>'
       +'<div>'
-        +(corp.address?'<div style="font-size:12px;margin-bottom:4px">📍 '+esc(corp.address)+'</div>':'')
-        +(corp.genre?'<div style="font-size:12px;margin-bottom:4px">業種: '+esc(corp.genre)+'</div>':'')
-        +(corp.contractType?'<div style="font-size:12px">契約: '+esc(corp.contractType)+'</div>':'')
+        +(corp.address?'<div style="font-size:13px;margin-bottom:4px">📍 '+esc(corp.address)+'</div>':'')
+        +(corp.genre?'<div style="font-size:13px;margin-bottom:4px">業種: '+esc(corp.genre)+'</div>':'')
+        +(corp.contractType?'<div style="font-size:13px">契約: '+esc(corp.contractType)+'</div>':'')
       +'</div>'
     +'</div>'
-    +(corp.memo?'<div style="padding:10px 12px;background:var(--bg3);border-radius:var(--r);font-size:12px;margin-bottom:16px;white-space:pre-wrap">'+esc(corp.memo)+'</div>':'')
-    +'<div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px">傘下店舗</div>'
+    +(corp.memo?'<div style="padding:10px 12px;background:var(--bg3);border-radius:var(--r);font-size:13px;margin-bottom:16px;white-space:pre-wrap">'+esc(corp.memo)+'</div>':'')
+    +'<div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:8px">傘下店舗</div>'
     +(stores.length===0
       ?'<div class="empty-state" style="padding:12px">傘下店舗なし</div>'
       :'<div class="table-wrap"><table><thead><tr><th>店舗名</th><th>ステータス</th><th>プラン</th><th>月額</th><th>営業担当</th></tr></thead><tbody>'
@@ -5713,19 +5713,19 @@ function openCorpDetail(id){
           var plan=s.planId?DB.plans.find(function(x){return x.id===s.planId;}):null;
           return'<tr><td><span style="cursor:pointer;color:var(--accent)" onclick="closeModal(\'corpDetailModal\');setTimeout(function(){showDetail(\''+s.id+'\');},100)">'+esc(s.name)+'</span></td>'
             +'<td>'+statusBadge(s.status)+'</td>'
-            +'<td style="font-size:12px">'+(plan?esc(plan.name):'—')+'</td>'
+            +'<td style="font-size:13px">'+(plan?esc(plan.name):'—')+'</td>'
             +'<td class="td-mono">'+fmtMoney(s.monthlyFee)+'</td>'
-            +'<td style="font-size:12px">'+esc(s.ourManager||'—')+'</td>'
+            +'<td style="font-size:13px">'+esc(s.ourManager||'—')+'</td>'
             +'</tr>';
         }).join('')
         +'</tbody></table></div>'
     )
     +'<div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">'
-      +'<div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px">一括設定</div>'
+      +'<div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:8px">一括設定</div>'
       +'<div style="display:flex;gap:8px;flex-wrap:wrap">'
-        +'<select id="bulkPlanSel" style="font-size:12px;padding:4px 8px"><option value="">プランを選択...</option>'+DB.plans.map(function(p){return'<option value="'+p.id+'">'+esc(p.name)+'</option>';}).join('')+'</select>'
+        +'<select id="bulkPlanSel" style="font-size:13px;padding:4px 8px"><option value="">プランを選択...</option>'+DB.plans.map(function(p){return'<option value="'+p.id+'">'+esc(p.name)+'</option>';}).join('')+'</select>'
         +'<button class="btn btn-sm" onclick="bulkApplyPlan(\''+id+'\')">全店舗に適用</button>'
-        +'<select id="bulkMgrSel" style="font-size:12px;padding:4px 8px"><option value="">担当者を選択...</option>'+getActiveStaff('sales').map(function(p){return'<option value="'+esc(p.name)+'">'+esc(p.name)+'</option>';}).join('')+'</select>'
+        +'<select id="bulkMgrSel" style="font-size:13px;padding:4px 8px"><option value="">担当者を選択...</option>'+getActiveStaff('sales').map(function(p){return'<option value="'+esc(p.name)+'">'+esc(p.name)+'</option>';}).join('')+'</select>'
         +'<button class="btn btn-sm" onclick="bulkApplyManager(\''+id+'\')">全店舗に適用</button>'
       +'</div>'
     +'</div>'
@@ -5782,9 +5782,9 @@ function renderCorps(){
     var active=stores.filter(function(s){return s.status==='active';});
     var totalRev=active.reduce(function(sum,s){return sum+(Number(s.monthlyFee)||0);},0);
     return'<tr style="cursor:pointer" onclick="openCorpDetail(\''+corp.id+'\')">'
-      +'<td><div style="font-weight:500;color:var(--accent)">'+esc(corp.name)+'</div>'+(corp.genre?'<div style="font-size:10px;color:var(--text3)">'+esc(corp.genre)+'</div>':'')+'</td>'
-      +'<td style="font-size:12px">'+esc(corp.rep||'—')+'</td>'
-      +'<td style="font-size:12px;color:var(--text2)">'+esc(corp.tel||corp.email||'—')+'</td>'
+      +'<td><div style="font-weight:500;color:var(--accent)">'+esc(corp.name)+'</div>'+(corp.genre?'<div style="font-size:11px;color:var(--text3)">'+esc(corp.genre)+'</div>':'')+'</td>'
+      +'<td style="font-size:13px">'+esc(corp.rep||'—')+'</td>'
+      +'<td style="font-size:13px;color:var(--text2)">'+esc(corp.tel||corp.email||'—')+'</td>'
       +'<td style="text-align:center;font-weight:500">'+stores.length+'</td>'
       +'<td style="text-align:center"><span style="color:var(--green);font-weight:500">'+active.length+'</span></td>'
       +'<td class="td-mono">'+fmtMoney(totalRev)+'</td>'
@@ -5866,7 +5866,7 @@ checkSession();
       </select>
     </div>
     <div style="display:flex;justify-content:space-between;align-items:center;padding-top:14px;border-top:1px solid var(--border)">
-      <button class="btn-ghost-danger" style="font-size:12px;padding:6px 10px" onclick="deleteSalesPerson(document.getElementById('seId').value)">削除</button>
+      <button class="btn-ghost-danger" style="font-size:13px;padding:6px 10px" onclick="deleteSalesPerson(document.getElementById('seId').value)">削除</button>
       <div style="display:flex;gap:8px">
         <button class="btn" onclick="closeModal('staffEditModal')">キャンセル</button>
         <button class="btn btn-primary" onclick="saveStaffEdit()">保存</button>
@@ -5917,7 +5917,7 @@ checkSession();
   <div class="modal-body">
     <div style="display:flex;gap:6px;margin-bottom:14px">
       <input id="spNameInput" type="text" placeholder="氏名を入力" style="flex:1" onkeydown="if(event.key==='Enter')addSalesPerson()">
-      <select id="spRoleSelect" style="width:80px;font-size:12px">
+      <select id="spRoleSelect" style="width:80px;font-size:13px">
         <option value="sales">営業</option>
         <option value="sns">SNS</option>
         <option value="office">事務</option>
@@ -5925,9 +5925,9 @@ checkSession();
       </select>
       <button class="btn btn-primary" style="white-space:nowrap;flex-shrink:0" onclick="addSalesPerson()">追加</button>
     </div>
-    <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px">在籍中</div>
+    <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:8px">在籍中</div>
     <div id="spActiveList" style="margin-bottom:14px"></div>
-    <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:8px">退職済み（履歴）</div>
+    <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:8px">退職済み（履歴）</div>
     <div id="spRetiredList"></div>
     <div class="form-actions"><button class="btn btn-primary" onclick="closeModal('salesPersonModal');updateSalesPersonSelects()">完了</button></div>
   </div>
@@ -5959,10 +5959,10 @@ checkSession();
       <div class="fr1 field"><label>住所</label><input id="crAddress" type="text" placeholder="東京都渋谷区..."></div>
       <div class="fr"><div class="field"><label>訪問可能エリア</label><input id="crArea" type="text" placeholder="東京・神奈川・埼玉"></div><div class="field"><label>連絡つきやすい時間</label><input id="crReachTime" type="text" placeholder="平日 10:00〜18:00"></div></div>
       <div class="fr"><div class="field"><label>携帯番号</label><input id="crTel" type="tel" placeholder="090-XXXX-XXXX"></div><div class="field"><label>メールアドレス</label><input id="crEmail" type="email" placeholder="creator@example.com"></div></div>
-      <div class="fr1 field"><label>その他連絡先 <span style="font-size:10px;color:var(--text3)">LINE / ChatWork / Slack など</span></label><input id="crContact" type="text" placeholder="LINE: creator_line"></div>
+      <div class="fr1 field"><label>その他連絡先 <span style="font-size:11px;color:var(--text3)">LINE / ChatWork / Slack など</span></label><input id="crContact" type="text" placeholder="LINE: creator_line"></div>
       <div class="fr1 field"><label>面接日</label><div style="display:flex;gap:4px;align-items:center" id="crInterviewDateWrap"></div><input type="hidden" id="crInterviewDate"></div>
       <div class="field" style="margin-bottom:10px">
-        <label>面談担当者 <span style="font-size:10px;color:var(--text3);font-weight:400">複数選択可</span></label>
+        <label>面談担当者 <span style="font-size:11px;color:var(--text3);font-weight:400">複数選択可</span></label>
         <div id="crInterviewerChecks" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r)"></div>
         <input type="hidden" id="crInterviewer">
       </div>
@@ -5970,7 +5970,7 @@ checkSession();
 
     <!-- Tab 1: スキル・機材 -->
     <div class="tab-pane" id="ctab1">
-      <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:10px">スキル評価</div>
+      <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:10px">スキル評価</div>
       <div class="grid2" style="margin-bottom:14px">
         <div class="field"><label>企画</label><select id="crSkillPlan"><option value="">—</option><option value="3">◎ 得意</option><option value="2">○ できる</option><option value="1">△ 要サポート</option><option value="0">✗ 不可</option></select></div>
         <div class="field"><label>撮影</label><select id="crSkillShoot"><option value="">—</option><option value="3">◎ 得意</option><option value="2">○ できる</option><option value="1">△ 要サポート</option><option value="0">✗ 不可</option></select></div>
@@ -5981,21 +5981,21 @@ checkSession();
         <div class="field"><label>フィード作成</label><select id="crSkillStill"><option value="">—</option><option value="3">可</option><option value="0">不可</option></select></div>
         <div class="field"><label>コミュニケーション</label><select id="crSkillComm"><option value="">—</option><option value="3">◎ 得意</option><option value="2">○ できる</option><option value="1">△ 要サポート</option><option value="0">✗ 不可</option></select></div>
       </div>
-      <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:10px">機材・ソフト</div>
+      <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:10px">機材・ソフト</div>
       <div class="fr1 field"><label>機材周り</label><textarea id="crEquipment" placeholder="カメラ: Sony α7IV&#10;レンズ: 24-70mm F2.8&#10;照明: ..." style="min-height:60px"></textarea></div>
       <div class="fr1 field"><label>使用ソフト</label><input id="crSoftware" type="text" placeholder="Premiere Pro / DaVinci Resolve / Lightroom など"></div>
     </div>
 
     <!-- Tab 2: SNS・実績 -->
     <div class="tab-pane" id="ctab2">
-      <div class="fr1 field"><label>SNSアカウント <span style="font-size:10px;color:var(--text3)">複数あれば改行で</span></label><textarea id="crSns" placeholder="Instagram: @creator_ig&#10;YouTube: https://...&#10;TikTok: @creator_tt" style="min-height:72px"></textarea></div>
+      <div class="fr1 field"><label>SNSアカウント <span style="font-size:11px;color:var(--text3)">複数あれば改行で</span></label><textarea id="crSns" placeholder="Instagram: @creator_ig&#10;YouTube: https://...&#10;TikTok: @creator_tt" style="min-height:72px"></textarea></div>
       <div class="fr1 field"><label>ポートフォリオ URL</label><input id="crPortfolio" type="url" placeholder="https://portfolio.example.com"></div>
       <div class="fr1 field" style="margin-top:4px">
         <label>プロマネ提出</label>
         <div style="display:flex;gap:8px;margin-top:4px">
-          <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:5px 10px;border-radius:var(--r);background:var(--bg3);border:1px solid var(--border)"><input type="radio" name="crPromanage" id="crPromanageYes" value="yes" style="width:auto;margin:0"> 可</label>
-          <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:5px 10px;border-radius:var(--r);background:var(--bg3);border:1px solid var(--border)"><input type="radio" name="crPromanage" id="crPromanageNo" value="no" style="width:auto;margin:0"> 不可</label>
-          <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;padding:5px 10px;border-radius:var(--r);background:var(--bg3);border:1px solid var(--border)"><input type="radio" name="crPromanage" id="crPromanagePending" value="pending" style="width:auto;margin:0"> 要相談</label>
+          <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;padding:5px 10px;border-radius:var(--r);background:var(--bg3);border:1px solid var(--border)"><input type="radio" name="crPromanage" id="crPromanageYes" value="yes" style="width:auto;margin:0"> 可</label>
+          <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;padding:5px 10px;border-radius:var(--r);background:var(--bg3);border:1px solid var(--border)"><input type="radio" name="crPromanage" id="crPromanageNo" value="no" style="width:auto;margin:0"> 不可</label>
+          <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;padding:5px 10px;border-radius:var(--r);background:var(--bg3);border:1px solid var(--border)"><input type="radio" name="crPromanage" id="crPromanagePending" value="pending" style="width:auto;margin:0"> 要相談</label>
         </div>
       </div>
       <div class="fr1 field" style="margin-top:10px"><label>写真 / プロフィール画像 URL</label><input id="crPhoto" type="url" placeholder="https://...（ドライブリンクなど）"></div>
@@ -6005,7 +6005,7 @@ checkSession();
     <!-- Tab 3: 条件・所感 -->
     <div class="tab-pane" id="ctab3">
       <div style="margin-bottom:14px;padding:12px;background:var(--bg3);border-radius:var(--r)">
-        <div style="font-size:11px;font-weight:500;color:var(--text2);margin-bottom:10px">📋 依頼状況</div>
+        <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:10px">📋 依頼状況</div>
         <div class="fr">
           <div class="field">
             <label>ステータス</label>
