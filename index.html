@@ -1024,6 +1024,7 @@ tr:hover td{background:#fafaf8}
 </div><div class="field"><label>ステータス</label><select id="pStatus"><option value="draft">下書き</option><option value="scheduled">予約済み</option><option value="done">完了</option></select></div></div>
     <!-- 通常投稿のみ -->
     <div id="pPostFields">
+      <div class="fr1 field"><label>クリエイター（任意）</label><select id="pCreatorId"><option value="">（なし）</option></select></div>
       <div class="fr1 field"><label>キャプション</label><textarea id="pCaption" placeholder="投稿のキャプション..."></textarea></div>
       <div class="fr"><div class="field"><label>クリエイティブファイル名</label><input id="pCreative" type="text" placeholder="例: 渋谷店_v2.mp4"></div><div class="field"><label>広告配信</label><select id="pAd"><option value="yes">あり</option><option value="no">なし</option></select></div></div>
       <div class="fr"><div class="field"><label>広告予算（円 / 日）</label><input id="pBudget" type="number" placeholder="3000"></div><div class="field"></div></div>
@@ -2414,6 +2415,16 @@ var editingPostId=null;
 function openPostModal(id){
   editingPostId=id||null;
   updatePostStoreSelect();
+  /* クリエイターselectを構築 */
+  var crSel=document.getElementById('pCreatorId');
+  if(crSel){
+    crSel.innerHTML='<option value="">（なし）</option>';
+    (DB.creators||[]).slice().sort(function(a,b){return(a.crName||'').localeCompare(b.crName||'');}).forEach(function(cr){
+      var opt=document.createElement('option');opt.value=cr.id;
+      opt.textContent=cr.crName+(cr.crRealName?' ('+cr.crRealName+')':'');
+      crSel.appendChild(opt);
+    });
+  }
   var infSel=document.getElementById('pInfId');
   if(infSel){
     infSel.innerHTML='<option value="">選択...</option>'+DB.influencers.map(function(i){return'<option value="'+i.id+'">'+esc(i.name)+(i.handle?' '+esc(i.handle):'')+'</option>';}).join('');
@@ -2457,6 +2468,7 @@ function openPostModal(id){
       }else{
         set('pCaption',p.caption);set('pCreative',p.creative);
         set('pAd',p.ad);set('pBudget',p.budget);
+        var crSelEl=document.getElementById('pCreatorId');if(crSelEl)crSelEl.value=p.creatorId||'';
       }
       var titleEl=document.getElementById('postModalTitle');
       if(titleEl)titleEl.textContent='スケジュールを編集';
@@ -2465,7 +2477,7 @@ function openPostModal(id){
     /* 新規：リセット */
     var first=document.querySelector('input[name="pTypeRadio"][value="video"]');
     if(first){first.checked=true;document.getElementById('pType').value='video';}
-    ['pCaption','pCreative','pBudget','pNote','pInfFee'].forEach(function(fid){var el=document.getElementById(fid);if(el)el.value='';});
+    ['pCaption','pCreative','pBudget','pNote','pInfFee','pCreatorId'].forEach(function(fid){var el=document.getElementById(fid);if(el)el.value='';});
     onPostTypeChange();
     initPostDatePicker('');
   }
@@ -2559,6 +2571,7 @@ function savePost(){
     p.creative=document.getElementById('pCreative').value;
     p.ad=document.getElementById('pAd').value;
     p.budget=document.getElementById('pBudget').value;
+    var _crSel=document.getElementById('pCreatorId');p.creatorId=_crSel?_crSel.value:'';
   }
   if(isEdit){
     var idx=DB.posts.findIndex(function(x){return x.id===id;});
@@ -4114,7 +4127,7 @@ function renderSchedule(){
   if(schedTypeFilter==='influencer'){
     list=list.filter(function(p){return p.type==='inf_visit'||p.type==='inf_post'||p.type==='inf_draft';});
   }else if(schedTypeFilter==='creator'){
-    list=list.filter(function(p){return p.type==='shooting';});
+    list=list.filter(function(p){return p.type==='shooting'||(p.creatorId&&(p.type==='video'||p.type==='image'||p.type==='reel'||p.type==='story'));});
   }else if(schedTypeFilter==='normal'){
     list=list.filter(function(p){return p.type==='video'||p.type==='image'||p.type==='reel'||p.type==='story';});
   }
@@ -4127,9 +4140,15 @@ function renderSchedule(){
   if(!list.length){tb.innerHTML='<tr><td colspan="7" class="empty-state">スケジュールがありません</td></tr>';return;}
   tb.innerHTML=list.map(function(p){
     var isInf=p.type==='inf_visit'||p.type==='inf_post'||p.type==='inf_draft';
-    var infCell=isInf&&p.infId
-      ?'<span style="color:var(--purple)">'+esc(infName(p.infId).split(' ')[0])+'</span>'
-      :'<span style="color:var(--text3)">—</span>';
+    var infCell;
+    if(isInf&&p.infId){
+      infCell='<span style="color:var(--purple)">'+esc(infName(p.infId).split(' ')[0])+'</span>';
+    }else if(p.creatorId&&(p.type==='video'||p.type==='image'||p.type==='reel'||p.type==='story')){
+      var _crInf=DB.creators?DB.creators.find(function(x){return x.id===p.creatorId;}):null;
+      infCell='<span style="color:#db2777">📷 '+esc((_crInf&&_crInf.crName)||'クリエイター')+'</span>';
+    }else{
+      infCell='<span style="color:var(--text3)">—</span>';
+    }
     var captCell=isInf
       ?(p.type==='inf_visit'?'<span style="color:var(--amber)">来店</span>':p.type==='inf_draft'?'<span style="color:var(--green)">初稿確認</span>':'<span style="color:var(--purple)">投稿予定</span>')
       :(p.caption?esc((p.caption||'').slice(0,40))+((p.caption||'').length>40?'…':''):'—');
