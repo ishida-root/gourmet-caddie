@@ -4111,6 +4111,7 @@ function setSchedTypeFilter(el,type){
   document.querySelectorAll('.sched-type-btn').forEach(function(b){b.classList.remove('active');});
   el.classList.add('active');
   renderSchedule();
+  renderCalendar();
 }
 
 function renderSchedule(){
@@ -4194,8 +4195,11 @@ function renderCalendar(){
     var isToday=dd===NOW.getDate()&&calMonth===NOW.getMonth()&&calYear===NOW.getFullYear();
     var dayItems=DB.posts.filter(function(p){
       var dt=new Date(p.date);
-      return dt.getDate()===dd&&dt.getMonth()===calMonth&&dt.getFullYear()===calYear
-        &&!calActiveStores[p.storeId];
+      if(!(dt.getDate()===dd&&dt.getMonth()===calMonth&&dt.getFullYear()===calYear&&!calActiveStores[p.storeId]))return false;
+      if(schedTypeFilter==='influencer')return p.type==='inf_visit'||p.type==='inf_post'||p.type==='inf_draft';
+      if(schedTypeFilter==='creator')return p.type==='shooting'||(p.creatorId&&(p.type==='video'||p.type==='image'||p.type==='reel'||p.type==='story'));
+      if(schedTypeFilter==='normal')return p.type==='video'||p.type==='image'||p.type==='reel'||p.type==='story';
+      return true;
     });
     /* 種別ごとに色分け（固定カラー） */
     /* INF系=紫、クリエイター=ピンク、通常=青 */
