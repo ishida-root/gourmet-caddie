@@ -4211,6 +4211,10 @@ function renderCalendar(){
     };
     var chips=dayItems.slice(0,4).map(function(p){
       var cc=CAL_COLOR[p.type]||{bg:'#f3f4f6',col:'#374151'};
+      /* クリエイター動画はピンク（撮影と同色） */
+      if(p.creatorId&&(p.type==='video'||p.type==='image'||p.type==='reel'||p.type==='story')){
+        cc={bg:'#fce7f3',col:'#9d174d'};
+      }
       /* ラベル生成 */
       var shortName='';
       var typeTag='';
@@ -4223,7 +4227,8 @@ function renderCalendar(){
         var label='📷 '+esc(storeName(p.storeId).slice(0,6));
       }else{
         var icon2=TYPE_ICON[p.type]||'';
-        var label=icon2+' '+esc(storeName(p.storeId).slice(0,6));
+        var _crCal=p.creatorId&&DB.creators?DB.creators.find(function(x){return x.id===p.creatorId;}):null;
+        var label=_crCal?(icon2+' '+esc(_crCal.crName.slice(0,6))):(icon2+' '+esc(storeName(p.storeId).slice(0,6)));
       }
       /* 遅延チェック */
       var isDone2=p.status==='done'||p.status==='visited'||p.status==='approved';
