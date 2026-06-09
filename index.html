@@ -574,7 +574,7 @@ tr:hover td{background:#fafaf8}
     <div class="page" id="page-influencers">
       <div class="card">
         <div class="card-header"><span class="card-title">インフルエンサー管理</span><button class="btn btn-primary btn-sm" onclick="openInfluencerModal()">＋ 追加</button></div>
-        <div class="table-wrap"><table><thead><tr><th>名前 / ハンドル</th><th>媒体</th><th>フォロワー</th><th>PR単価</th><th>ジャンル</th><th>連絡先</th><th>契約書</th><th>直近起用</th><th></th></tr></thead><tbody id="infBody"></tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>名前 / ハンドル</th><th>媒体</th><th>フォロワー</th><th>PR単価</th><th>ジャンル</th><th>連絡先</th><th>直近起用</th><th></th></tr></thead><tbody id="infBody"></tbody></table></div>
       </div>
     </div>
 
@@ -782,7 +782,7 @@ tr:hover td{background:#fafaf8}
     <div class="page" id="page-casting">
       <div class="card">
         <div class="card-header"><span class="card-title">キャスティング履歴</span><button class="btn btn-primary btn-sm" onclick="openCastingModal()">＋ 記録追加</button></div>
-        <div class="table-wrap"><table><thead><tr><th>店舗</th><th>インフルエンサー</th><th>来店日</th><th>初稿確認日</th><th>投稿日</th><th>媒体</th><th>PR費用</th><th>リーチ</th><th>成果メモ</th><th></th></tr></thead><tbody id="castBody"></tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>店舗</th><th>インフルエンサー</th><th>来店日</th><th>初稿確認日</th><th>投稿日</th><th>媒体</th><th>PR費用</th><th>リーチ</th><th>成果メモ</th><th>契約書</th><th>請求書</th><th></th></tr></thead><tbody id="castBody"></tbody></table></div>
       </div>
     </div>
 
@@ -1035,12 +1035,6 @@ tr:hover td{background:#fafaf8}
       <div id="iPlatformDetails" style="border:1px solid var(--border);border-radius:var(--r);overflow:hidden"></div>
     </div>
 
-    <div style="margin-bottom:10px;padding:10px 12px;background:var(--bg3);border-radius:var(--r);border:1px solid var(--border)">
-      <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:13px">
-        <input type="checkbox" id="iContractSent" style="width:16px;height:16px;cursor:pointer;accent-color:var(--green)">
-        <span>📄 契約書送付済み</span>
-      </label>
-    </div>
     <div class="form-actions">
       <button class="btn" onclick="closeModal('infModal')">キャンセル</button>
       <button class="btn btn-primary" onclick="saveInfluencer()">保存</button>
@@ -1057,7 +1051,12 @@ tr:hover td{background:#fafaf8}
     <button class="modal-close" onclick="closeModal('invoiceModal')">✕</button>
   </div>
   <div class="modal-body">
-    <div class="fr">
+    <!-- キャスティングから呼ばれた時にキャスティング情報を表示 -->
+    <div id="invCastingCtxBox" style="display:none;margin-bottom:12px;padding:10px 14px;background:var(--accent-bg);border:1px solid var(--accent-border);border-radius:var(--r)">
+      <div style="font-size:10px;color:var(--text3);margin-bottom:4px;letter-spacing:.5px">📋 キャスティング</div>
+      <div id="invCastingCtxLabel" style="font-size:13px;font-weight:500;color:var(--text)"></div>
+    </div>
+    <div id="invInfStoreRow" class="fr">
       <div class="field"><label>インフルエンサー *</label><select id="invInfId"><option value="">選択...</option></select></div>
       <div class="field"><label>店舗</label><select id="invStoreId"><option value="">選択...</option></select></div>
     </div>
@@ -1089,6 +1088,7 @@ tr:hover td{background:#fafaf8}
       </div>
     </div>
     <div class="fr1 field"><label>備考</label><input type="text" id="invNote" placeholder="メモ・伝票番号など"></div>
+    <input type="hidden" id="invCastingId">
     <div class="form-actions">
       <button class="btn" onclick="closeModal('invoiceModal')">キャンセル</button>
       <button class="btn btn-primary" onclick="saveInvoice()">保存</button>
@@ -1158,6 +1158,10 @@ tr:hover td{background:#fafaf8}
     </div>
     <div class="fr"><div class="field"><label>リーチ数</label><input id="cReach" type="number" placeholder="30000"></div><div class="field"></div></div>
     <div class="fr1 field"><label>成果メモ</label><textarea id="cResult" placeholder="反応・コメント・効果など..."></textarea></div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;padding:10px 12px;background:var(--bg3);border-radius:var(--r)">
+      <input type="checkbox" id="cContractSent" style="width:16px;height:16px;cursor:pointer;accent-color:var(--green)">
+      <span style="font-size:13px">📄 契約書送付済み</span>
+    </div>
     <div class="form-actions"><button class="btn" onclick="closeModal('castModal')">キャンセル</button><button class="btn btn-primary" onclick="saveCasting()">保存</button></div>
   </div>
 </div>
@@ -2681,10 +2685,8 @@ function openInfluencerModal(id){
       if(inf.feeLow!==undefined){document.getElementById('iFeeLow').value=inf.feeLow||'';}
       else if(inf.fee){document.getElementById('iFeeLow').value=inf.fee;}
       document.getElementById('iFeeHigh').value=inf.feeHigh||'';
-      document.getElementById('iContractSent').checked=!!inf.contractSent;
       renderPlatformDetails(inf.platformDetails||{});
     }else{
-      document.getElementById('iContractSent').checked=false;
       renderPlatformDetails({});
     }
   }
@@ -2713,7 +2715,6 @@ function saveInfluencer(){
     agency:document.getElementById('iAgency').value,
     rating:document.getElementById('iRating').value,
     memo:document.getElementById('iMemo').value,
-    contractSent:document.getElementById('iContractSent').checked,
     platformDetails:getPlatformData()
   };
   if(isEdit){
@@ -2890,14 +2891,6 @@ function advanceInvFlow(invId,newStatus){
   renderAccounting();
 }
 
-function toggleContractSent(infId){
-  var inf=DB.influencers.find(function(x){return x.id===infId;});
-  if(!inf)return;
-  inf.contractSent=!inf.contractSent;
-  saveItem('influencers',inf);
-  renderInfluencers();
-}
-
 function deleteInfluencer(id){
   if(!confirm('このインフルエンサーを削除しますか？'))return;
   DB.influencers=DB.influencers.filter(function(i){return i.id!==id;});
@@ -3011,6 +3004,7 @@ function openCastingModal(opts){
   ['cFee','cReach','cResult','cVisitDate','cDraftDate','cDate'].forEach(function(fid){
     var el=document.getElementById(fid);if(el)el.value='';
   });
+  var ccb=document.getElementById('cContractSent');if(ccb)ccb.checked=false;
   /* 媒体選択は updateCastPlatformSelect() で初期化するためここでは不要 */
   var titleEl=document.getElementById('castModalTitle');
   if(titleEl)titleEl.textContent='キャスティング記録';
@@ -3039,6 +3033,7 @@ function openCastingModal(opts){
         },50);
         set('cReach',ec.reach);set('cResult',ec.result);
         set('cVisitDate',ec.visitDate);set('cDraftDate',ec.draftDate);set('cDate',ec.date);
+        var ccbEdit=document.getElementById('cContractSent');if(ccbEdit)ccbEdit.checked=!!ec.contractSent;
       }
     }
     /* プリセット */
@@ -3150,7 +3145,8 @@ function saveCasting(){
     visitDate:visitDate,draftDate:draftDate,
     platform:platform,fee:fee,
     reach:document.getElementById('cReach').value,
-    result:document.getElementById('cResult').value
+    result:document.getElementById('cResult').value,
+    contractSent:!!(document.getElementById('cContractSent')&&document.getElementById('cContractSent').checked)
   };
   /* 常に既存posts（同castingId）をSupabase＆メモリから先に削除してから再生成 */
   if(oldCastId){
@@ -3195,6 +3191,20 @@ function saveCasting(){
   newPosts.forEach(function(p){saveItem('posts',p);});
   refreshAll();
 }
+function toggleCastContractSent(id){
+  var c=DB.castings.find(function(x){return x.id===id;});
+  if(!c)return;
+  c.contractSent=!c.contractSent;
+  saveItem('castings',c);
+  renderCasting();
+}
+
+function openInvoiceFromCasting(castingId){
+  var c=DB.castings.find(function(x){return x.id===castingId;});
+  if(!c)return;
+  openInvoiceModal(null,{castingId:castingId,infId:c.infId,storeId:c.storeId});
+}
+
 function deleteCasting(id){
   /* 紐づくpostsもSupabase＆メモリから削除 */
   var toDelete=DB.posts.filter(function(p){return p.castingId===id;});
@@ -4394,17 +4404,15 @@ function renderCheckPage(){
 
   var rows=[];
 
-  /* ① 契約書未送付（castingが登録されているのに contractSent=false のINF） */
-  var castingInfIds=[...new Set(DB.castings.map(function(c){return c.infId;}).filter(Boolean))];
-  castingInfIds.forEach(function(infId){
-    var inf=DB.influencers.find(function(x){return x.id===infId;});
-    if(inf&&!inf.contractSent){
-      rows.push(infAlertRow('red','📄',
-        '契約書が未送付：'+esc(inf.name),
-        '対応するキャスティングが登録されていますが、契約書の送付が完了していません。',
-        '<button class="btn btn-sm" onclick="navigate(\'influencers\')" style="white-space:nowrap;flex-shrink:0">INF管理へ</button>'
-      ));
-    }
+  /* ① 契約書未送付（castingが登録されているのに contractSent=false の案件） */
+  DB.castings.filter(function(c){return !c.contractSent;}).forEach(function(c){
+    var inf=DB.influencers.find(function(x){return x.id===c.infId;});
+    if(!inf)return;
+    rows.push(infAlertRow('red','📄',
+      '契約書が未送付：'+esc(inf.name)+' × '+esc(storeName(c.storeId)),
+      'キャスティングが登録されていますが、契約書の送付が完了していません。',
+      '<button class="btn btn-sm" onclick="navigate(\'casting\')" style="white-space:nowrap;flex-shrink:0">キャスティング履歴へ</button>'
+    ));
   });
 
   /* ② 予約が取れていない来店予定（unbooked） */
@@ -4463,7 +4471,7 @@ function renderCheckPage(){
    ============================================================ */
 var editingInvoiceId=null;
 
-function openInvoiceModal(id){
+function openInvoiceModal(id,opts){
   editingInvoiceId=id||null;
   var titleEl=document.getElementById('invoiceModalTitle');
   if(titleEl)titleEl.textContent=id?'請求書を編集':'請求書を追加';
@@ -4477,6 +4485,7 @@ function openInvoiceModal(id){
   document.getElementById('invReceivedDate').value='';
   document.getElementById('invStatus').value='pending';
   document.getElementById('invTotal').textContent='¥0';
+  document.getElementById('invCastingId').value='';
   if(id){
     var inv=DB.invoices.find(function(x){return x.id===id;});
     if(inv){
@@ -4488,8 +4497,41 @@ function openInvoiceModal(id){
       document.getElementById('invTransport').value=inv.transport||'';
       document.getElementById('invFood').value=inv.food||'';
       document.getElementById('invNote').value=inv.note||'';
+      document.getElementById('invCastingId').value=inv.castingId||'';
       calcInvTotal();
     }
+  }
+  /* キャスティングからの呼び出し時にプリフィル */
+  if(opts){
+    if(opts.infId)infSel.value=opts.infId;
+    if(opts.storeId)storeSel.value=opts.storeId;
+    if(opts.castingId)document.getElementById('invCastingId').value=opts.castingId;
+    /* PR費用をキャスティングの fee から自動入力 */
+    if(opts.castingId){
+      var casting=DB.castings.find(function(x){return x.id===opts.castingId;});
+      if(casting&&casting.fee&&!id){
+        document.getElementById('invPrFee').value=casting.fee;
+        calcInvTotal();
+      }
+    }
+  }
+  /* キャスティングリンク判定: リンクあり→コンテキスト表示＋セレクト非表示 */
+  var castingId=document.getElementById('invCastingId').value;
+  var ctxBox=document.getElementById('invCastingCtxBox');
+  var infStoreRow=document.getElementById('invInfStoreRow');
+  if(castingId){
+    var lc=DB.castings.find(function(x){return x.id===castingId;});
+    if(lc){
+      var ctxLabel=document.getElementById('invCastingCtxLabel');
+      if(ctxLabel)ctxLabel.textContent=storeName(lc.storeId)+' × '+infName(lc.infId);
+      /* PR費用セット（新規のときのみ） */
+      if(!id&&lc.fee){document.getElementById('invPrFee').value=lc.fee;calcInvTotal();}
+    }
+    if(ctxBox)ctxBox.style.display='';
+    if(infStoreRow)infStoreRow.style.display='none';
+  }else{
+    if(ctxBox)ctxBox.style.display='none';
+    if(infStoreRow)infStoreRow.style.display='';
   }
   openModal('invoiceModal');
 }
@@ -4502,14 +4544,22 @@ function calcInvTotal(){
 }
 
 function saveInvoice(){
+  var castingId=document.getElementById('invCastingId').value||null;
   var infId=document.getElementById('invInfId').value;
+  /* キャスティングリンク時: castingのinfId/storeIdを補完 */
+  var storeId=document.getElementById('invStoreId').value;
+  if(castingId){
+    var lc=DB.castings.find(function(x){return x.id===castingId;});
+    if(lc){if(!infId)infId=lc.infId;if(!storeId)storeId=lc.storeId;}
+  }
   if(!infId){alert('インフルエンサーを選択してください');return;}
   var isEdit=!!editingInvoiceId;
   var id=isEdit?editingInvoiceId:uid();
   var inv={
     id:id,
     infId:infId,
-    storeId:document.getElementById('invStoreId').value,
+    storeId:storeId,
+    castingId:castingId,
     receivedDate:document.getElementById('invReceivedDate').value,
     status:document.getElementById('invStatus').value,
     prFee:Number(document.getElementById('invPrFee').value)||0,
@@ -4528,6 +4578,7 @@ function saveInvoice(){
   saveItem('invoices',inv);
   refreshAll();
   renderAccounting();
+  if(currentPage==='casting')renderCasting();
 }
 
 function deleteInvoice(id){
@@ -4536,6 +4587,7 @@ function deleteInvoice(id){
   deleteItem('invoices',id);
   refreshAll();
   renderAccounting();
+  if(currentPage==='casting')renderCasting();
 }
 
 function renderAccounting(){
@@ -4600,7 +4652,7 @@ function renderInfluencers(){
   var search=(document.getElementById('globalSearch').value||'').toLowerCase();
   var list=DB.influencers.filter(function(i){return!search||(i.name||'').toLowerCase().includes(search)||(i.handle||'').toLowerCase().includes(search)||(i.genre||'').toLowerCase().includes(search);});
   var tb=document.getElementById('infBody');
-  if(!list.length){tb.innerHTML='<tr><td colspan="9" class="empty-state">インフルエンサーが登録されていません</td></tr>';return;}
+  if(!list.length){tb.innerHTML='<tr><td colspan="8" class="empty-state">インフルエンサーが登録されていません</td></tr>';return;}
   var platColor={Instagram:'#e1306c',TikTok:'#010101',YouTube:'#ff0000',X:'#1da1f2'};
   var platUrl={Instagram:'https://www.instagram.com/',TikTok:'https://www.tiktok.com/@',YouTube:'',X:'https://x.com/'};
   tb.innerHTML=list.map(function(i){
@@ -4618,11 +4670,6 @@ function renderInfluencers(){
       +'<td class="td-mono" style="white-space:nowrap">'+fmtFeeRange(i)+'</td>'
       +'<td>'+esc(i.genre||'—')+'</td>'
       +'<td style="color:var(--text2);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(i.contact||'—')+'</td>'
-      +'<td onclick="event.stopPropagation()">'
-        +'<button onclick="toggleContractSent(\''+i.id+'\')" style="font-size:11px;padding:3px 8px;border-radius:5px;cursor:pointer;border:1px solid;background:'+(i.contractSent?'var(--green-bg)':'var(--bg3)')+';color:'+(i.contractSent?'var(--green)':'var(--text3)')+';border-color:'+(i.contractSent?'var(--green-border)':'var(--border)')+';">'
-          +(i.contractSent?'✓ 送付済み':'未送付')
-        +'</button>'
-      +'</td>'
       +'<td style="color:var(--text3)">'+(last?fmtD(last.date):'—')+'</td>'
       +'<td onclick="event.stopPropagation()"><button class="btn btn-sm" onclick="openInfluencerModal(\''+i.id+'\')">編集</button></td>'
       +'</tr>';
@@ -4637,8 +4684,17 @@ function renderCasting(){
       ||infName(c.infId).toLowerCase().includes(search);
   });
   var tb=document.getElementById('castBody');
-  if(!list.length){tb.innerHTML='<tr><td colspan="10" class="empty-state">キャスティング履歴がありません</td></tr>';return;}
+  if(!list.length){tb.innerHTML='<tr><td colspan="12" class="empty-state">キャスティング履歴がありません</td></tr>';return;}
+  var INV_STATUS_LABEL={pending:'📄 未受領',sns_received:'✅ 受領済み',accounting_submitted:'📊 経理申請済み',done:'🎉 処理済み'};
   tb.innerHTML=list.map(function(c){
+    var inv=(DB.invoices||[]).find(function(x){return x.castingId===c.id;});
+    var invCell;
+    if(inv){
+      invCell='<span style="font-size:11px;padding:2px 7px;border-radius:4px;background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-border)">'+(INV_STATUS_LABEL[inv.status]||inv.status)+'</span>'
+        +' <button class="btn btn-sm" onclick="openInvoiceModal(\''+inv.id+'\')">編集</button>';
+    }else{
+      invCell='<button class="btn btn-sm" onclick="openInvoiceFromCasting(\''+c.id+'\')">＋ 請求書</button>';
+    }
     return'<tr>'
       +'<td>'+esc(storeName(c.storeId))+'</td>'
       +'<td style="color:var(--purple);font-weight:500">'+esc(infName(c.infId))+'</td>'
@@ -4648,7 +4704,13 @@ function renderCasting(){
       +'<td>'+esc(c.platform||'')+'</td>'
       +'<td class="td-mono">'+fmtMoney(c.fee)+'</td>'
       +'<td class="td-mono">'+(c.reach?Number(c.reach).toLocaleString():'—')+'</td>'
-      +'<td style="color:var(--text3);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc((c.result||'').slice(0,40))+'</td>'
+      +'<td style="color:var(--text3);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc((c.result||'').slice(0,30))+'</td>'
+      +'<td onclick="event.stopPropagation()">'
+        +'<button onclick="toggleCastContractSent(\''+c.id+'\')" style="font-size:11px;padding:3px 8px;border-radius:5px;cursor:pointer;border:1px solid;white-space:nowrap;background:'+(c.contractSent?'var(--green-bg)':'var(--bg3)')+';color:'+(c.contractSent?'var(--green)':'var(--text3)')+';border-color:'+(c.contractSent?'var(--green-border)':'var(--border)')+';">'
+          +(c.contractSent?'✓ 送付済み':'未送付')
+        +'</button>'
+      +'</td>'
+      +'<td onclick="event.stopPropagation()" style="white-space:nowrap">'+invCell+'</td>'
       +'<td onclick="event.stopPropagation()" style="white-space:nowrap"><button class="btn btn-sm" style="margin-right:4px" onclick="openCastingModal({editId:\''+c.id+'\'})">編集</button><button class="btn-ghost-danger" onclick="deleteCasting(\''+c.id+'\')">削除</button></td>'
     +'</tr>';
   }).join('');
