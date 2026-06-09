@@ -1146,13 +1146,12 @@ tr:hover td{background:#fafaf8}
   <div class="modal-header"><span class="modal-title" id="castModalTitle">キャスティング記録</span><button class="modal-close" onclick="closeModal('castModal')">✕</button></div>
   <div class="modal-body">
     <div class="fr"><div class="field"><label>店舗 *</label><select id="cStore"><option value="">選択...</option></select></div><div class="field"><label>インフルエンサー *</label><select id="cInf"><option value="">選択...</option></select></div></div>
+    <!-- 媒体（複数選択チェックボックス） -->
+    <div style="margin-bottom:10px">
+      <label style="font-size:13px;color:var(--text2);display:block;margin-bottom:6px">媒体 <span style="font-size:12px;color:var(--text3);font-weight:400">（複数選択可）</span></label>
+      <div id="cPlatformBoxes" style="display:flex;flex-wrap:wrap;gap:5px;padding:8px;background:var(--bg3);border-radius:var(--r);min-height:38px;border:1px solid var(--border)"></div>
+    </div>
     <div class="fr">
-      <div class="field">
-        <label>媒体</label>
-        <select id="cPlatform" onchange="onCastPlatformChange()">
-          <option value="">選択...</option>
-        </select>
-      </div>
       <div class="field">
         <label>PR 費用（円）</label>
         <div style="display:flex;gap:6px;align-items:center">
@@ -1161,6 +1160,7 @@ tr:hover td{background:#fafaf8}
         </div>
         <div id="cFeeTransLabel" style="font-size:12px;color:var(--text3);margin-top:3px"></div>
       </div>
+      <div class="field"></div>
     </div>
     <!-- スケジュール3ステップ -->
     <div style="padding:12px;background:var(--bg3);border-radius:var(--r);margin-bottom:12px">
@@ -2994,7 +2994,9 @@ function openInfluencerDetail(id){
       :('<div style="margin-bottom:12px;font-size:13px;color:var(--text3)">累計費用 <strong style="color:var(--text)">'+totalFee.toLocaleString()+'円</strong> ／ 累計リーチ <strong style="color:var(--text)">'+totalReach.toLocaleString()+'</strong></div>'
         +'<div class="table-wrap"><table><thead><tr><th>店舗</th><th>投稿日</th><th>媒体</th><th>費用</th><th>リーチ</th><th>成果メモ</th></tr></thead><tbody>'
         +castings.map(function(c){
-          return '<tr><td>'+esc(storeName(c.storeId))+'</td><td class="td-mono">'+fmtD(c.date)+'</td><td>'+esc(c.platform||'')+'</td><td class="td-mono">'+fmtMoney(c.fee)+'</td><td class="td-mono">'+(c.reach?Number(c.reach).toLocaleString():'—')+'</td><td style="color:var(--text3);max-width:160px">'+esc((c.result||'').slice(0,60))+'</td></tr>';
+          var pp=c.platforms&&c.platforms.length?c.platforms:(c.platform?[c.platform]:[]);
+          var platCell=pp.length?pp.map(function(p){return'<span style="font-size:11px;padding:1px 5px;background:var(--accent-bg);color:var(--accent);border-radius:3px;margin:1px;display:inline-block">'+esc(p)+'</span>';}).join(''):'—';
+          return '<tr><td>'+esc(storeName(c.storeId))+'</td><td class="td-mono">'+fmtD(c.date)+'</td><td>'+platCell+'</td><td class="td-mono">'+fmtMoney(c.fee)+'</td><td class="td-mono">'+(c.reach?Number(c.reach).toLocaleString():'—')+'</td><td style="color:var(--text3);max-width:160px">'+esc((c.result||'').slice(0,60))+'</td></tr>';
         }).join('')
         +'</tbody></table></div>'
       )
@@ -3049,16 +3051,17 @@ function openCastingModal(opts){
         set('cFee',ec.fee);
         /* 媒体は INF選択後に更新してから復元 */
         setTimeout(function(){
-          updateCastPlatformSelect();
-          var ps=document.getElementById('cPlatform');
-          if(ps&&ec.platform){
-            /* IDで一致 or ラベルで一致 */
-            var matchOpt=Array.from(ps.options).find(function(o){
-              var pl=INF_PLATFORM_LIST.find(function(p){return p.id===o.value;});
-              return o.value===ec.platform||(pl&&pl.label===ec.platform);
-            });
-            if(matchOpt)ps.value=matchOpt.value;
-          }
+          updateCastPlatformBoxes();
+          /* 保存済み platforms（配列）またはlegacy platform（文字列）を復元 */
+          var savedPlats=ec.platforms&&ec.platforms.length?ec.platforms:(ec.platform?[ec.platform]:[]);
+          document.querySelectorAll('.cast-plat-chk').forEach(function(cb){
+            var pl=INF_PLATFORM_LIST.find(function(p){return p.id===cb.value;});
+            var label=pl?pl.label:cb.value;
+            if(savedPlats.indexOf(label)>=0||savedPlats.indexOf(cb.value)>=0){
+              cb.checked=true;
+            }
+          });
+          onCastPlatformChange();
         },50);
         set('cReach',ec.reach);set('cResult',ec.result);
         set('cVisitDate',ec.visitDate);set('cDraftDate',ec.draftDate);set('cDate',ec.date);
@@ -3095,56 +3098,63 @@ function openCastingModal(opts){
   }
   /* INF選択時に媒体を更新 */
   var cInfEl=document.getElementById('cInf');
-  if(cInfEl)cInfEl.onchange=function(){updateCastPlatformSelect();};
-  updateCastPlatformSelect();
+  if(cInfEl)cInfEl.onchange=function(){updateCastPlatformBoxes();};
+  updateCastPlatformBoxes();
   openModal('castModal');
 }
 
-function updateCastPlatformSelect(){
-  var infSel=document.getElementById('cInf');
-  var platSel=document.getElementById('cPlatform');
-  if(!infSel||!platSel)return;
-  var infId=infSel.value;
+function updateCastPlatformBoxes(){
+  var infId=(document.getElementById('cInf')||{}).value||'';
   var inf=DB.influencers.find(function(x){return x.id===infId;});
   var pd=inf&&inf.platformDetails?inf.platformDetails:{};
   var enabled=INF_PLATFORM_LIST.filter(function(pl){return pd[pl.id]&&pd[pl.id].enabled;});
-  /* 媒体リストを構築 */
-  var opts='<option value="">選択...</option>';
-  if(enabled.length){
-    opts+=enabled.map(function(pl){
-      var d=pd[pl.id];
-      var feeStr=d.fee?'（¥'+Number(d.fee).toLocaleString()+'）':'';
-      return'<option value="'+pl.id+'">'+pl.label+feeStr+'</option>';
-    }).join('');
-  }else{
-    /* INFに媒体未設定の場合は汎用リスト */
-    ['Instagram フィード','Instagram リール','Instagram ストーリーズ','TikTok','Lemon8','Googleマップ クチコミ','食べログ','YouTube Shorts'].forEach(function(l){
-      opts+='<option value="'+l+'">'+l+'</option>';
-    });
-  }
-  platSel.innerHTML=opts;
+  var showList=enabled.length?enabled:INF_PLATFORM_LIST;
+  var box=document.getElementById('cPlatformBoxes');
+  if(!box)return;
+  box.innerHTML=showList.map(function(pl){
+    var d=pd[pl.id];
+    var feeStr=d&&d.fee?' <span style="font-size:12px;color:var(--accent)">¥'+Number(d.fee).toLocaleString()+'</span>':'';
+    return'<label style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:20px;cursor:pointer;font-size:13px;white-space:nowrap;transition:background .1s,border-color .1s">'
+      +'<input type="checkbox" value="'+pl.id+'" class="cast-plat-chk" onchange="onCastPlatformChange()" style="width:13px;height:13px;accent-color:var(--accent)">'
+      +esc(pl.label)+feeStr
+      +'</label>';
+  }).join('');
   document.getElementById('cFee').value='';
   document.getElementById('cFeeTaxLabel').textContent='';
   document.getElementById('cFeeTransLabel').textContent='';
 }
+/* 後方互換: 旧コードからの呼び出しがあればBoxesにリダイレクト */
+function updateCastPlatformSelect(){updateCastPlatformBoxes();}
 
 function onCastPlatformChange(){
-  var infSel=document.getElementById('cInf');
-  var platSel=document.getElementById('cPlatform');
-  if(!infSel||!platSel)return;
-  var infId=infSel.value;
-  var platId=platSel.value;
+  var infId=(document.getElementById('cInf')||{}).value||'';
   var inf=DB.influencers.find(function(x){return x.id===infId;});
   var pd=inf&&inf.platformDetails?inf.platformDetails:{};
-  var d=pd[platId];
-  if(d&&d.fee){
-    document.getElementById('cFee').value=d.fee;
-    document.getElementById('cFeeTaxLabel').textContent=d.taxIncl?'税込':'税別';
-    document.getElementById('cFeeTransLabel').textContent=d.transIncl?'✓ 交通費込み':'交通費別途';
-  }else{
+  /* チェック済みラベルのビジュアル更新 */
+  document.querySelectorAll('.cast-plat-chk').forEach(function(cb){
+    var lbl=cb.closest('label');
+    if(!lbl)return;
+    lbl.style.background=cb.checked?'var(--accent-bg)':'var(--bg2)';
+    lbl.style.borderColor=cb.checked?'var(--accent)':'var(--border)';
+    lbl.style.fontWeight=cb.checked?'500':'400';
+  });
+  /* 費用自動計算（INF媒体設定がある場合） */
+  var checked=Array.from(document.querySelectorAll('.cast-plat-chk:checked'));
+  if(!checked.length){
     document.getElementById('cFee').value='';
     document.getElementById('cFeeTaxLabel').textContent='';
     document.getElementById('cFeeTransLabel').textContent='';
+    return;
+  }
+  var totalFee=0;var taxSet={};var transSet={};
+  checked.forEach(function(cb){
+    var d=pd[cb.value];
+    if(d&&d.fee){totalFee+=Number(d.fee);taxSet[d.taxIncl?'税込':'税別']=1;transSet[d.transIncl?'交通費込':'交通費別途']=1;}
+  });
+  if(totalFee>0){
+    document.getElementById('cFee').value=totalFee;
+    document.getElementById('cFeeTaxLabel').textContent=Object.keys(taxSet).join('・');
+    document.getElementById('cFeeTransLabel').textContent=Object.keys(transSet).join('・');
   }
 }
 
@@ -3156,10 +3166,13 @@ function saveCasting(){
   var isEdit=!!editingCastId;
   var visitDate=document.getElementById('cVisitDate').value;
   var draftDate=document.getElementById('cDraftDate').value;
-  var platSel=document.getElementById('cPlatform');
-  var platId=platSel?platSel.value:'';
-  var platObj=INF_PLATFORM_LIST.find(function(p){return p.id===platId;});
-  var platform=platObj?platObj.label:platId; /* ラベルで保存、汎用の場合はそのまま */
+  /* 複数選択された媒体を収集 */
+  var platChks=Array.from(document.querySelectorAll('.cast-plat-chk:checked'));
+  var platforms=platChks.map(function(cb){
+    var pl=INF_PLATFORM_LIST.find(function(p){return p.id===cb.value;});
+    return pl?pl.label:cb.value;
+  });
+  var platform=platforms[0]||''; /* 後方互換: 最初の媒体を単一フィールドにも保存 */
   var fee=document.getElementById('cFee').value;
   /* 編集時は既存IDを使う、新規時のみuid()生成 */
   var castId=isEdit?editingCastId:uid();
@@ -3172,7 +3185,7 @@ function saveCasting(){
   var c={
     id:castId,storeId:sid,infId:iid,date:dt,
     visitDate:visitDate,draftDate:draftDate,
-    platform:platform,fee:fee,
+    platform:platform,platforms:platforms,fee:fee,
     reach:document.getElementById('cReach').value,
     result:document.getElementById('cResult').value,
     contractSent:!!(document.getElementById('cContractSent')&&document.getElementById('cContractSent').checked)
@@ -4769,7 +4782,7 @@ function renderCasting(){
       +'<td class="td-mono" style="color:var(--amber)">'+(c.visitDate?fmtD(c.visitDate):'—')+'</td>'
       +'<td class="td-mono" style="color:var(--green)">'+(c.draftDate?fmtD(c.draftDate):'—')+'</td>'
       +'<td class="td-mono">'+fmtD(c.date)+'</td>'
-      +'<td>'+esc(c.platform||'')+'</td>'
+      +'<td>'+(function(){var pp=c.platforms&&c.platforms.length?c.platforms:(c.platform?[c.platform]:[]);return pp.length?pp.map(function(p){return'<span style="display:inline-block;font-size:11px;padding:1px 6px;background:var(--accent-bg);color:var(--accent);border-radius:3px;margin:1px;white-space:nowrap">'+esc(p)+'</span>';}).join(''):'—';})()+'</td>'
       +'<td class="td-mono">'+fmtMoney(c.fee)+'</td>'
       +'<td class="td-mono">'+(c.reach?Number(c.reach).toLocaleString():'—')+'</td>'
       +'<td style="color:var(--text3);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc((c.result||'').slice(0,30))+'</td>'
