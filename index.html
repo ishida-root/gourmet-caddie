@@ -834,6 +834,7 @@ tr:hover td{background:#fafaf8}
       <button class="tab-btn" onclick="switchStoreTab(3)">初期設定</button>
       <button class="tab-btn" onclick="switchStoreTab(4)">ヒアリング</button>
       <button class="tab-btn" onclick="switchStoreTab(5)">📷 撮影予定</button>
+      <button class="tab-btn" onclick="switchStoreTab(6)">📋 案件進捗</button>
     </div>
     <div class="tab-pane active" id="stab0">
       <div class="fr"><div class="field"><label>店舗名 *</label><input id="sName" type="text" placeholder="例: 炭火焼 竹山 渋谷店"></div><div class="field"><label>業種 <button type="button" onclick="openGenreModal()" style="font-size:11px;padding:2px 7px;margin-left:6px;background:var(--bg3);border:1px solid var(--border2);border-radius:4px;cursor:pointer;color:var(--text2)">＋ 編集</button></label><input id="sGenre" type="text" list="genreList" placeholder="例: 焼肉"><datalist id="genreList"></datalist></div></div>
@@ -982,6 +983,10 @@ tr:hover td{background:#fafaf8}
         <button class="btn btn-sm btn-primary" onclick="openShootingModal()">＋ 撮影予定を追加</button>
       </div>
       <div id="shootingList" style="display:flex;flex-direction:column;gap:6px"></div>
+    </div>
+
+    <div class="tab-pane" id="stab6">
+      <div id="progressSteps"></div>
     </div>
 
     <div class="form-actions"><button class="btn" onclick="closeModal('storeModal')">キャンセル</button><button class="btn btn-primary" onclick="saveStore()">保存</button></div>
@@ -2031,10 +2036,69 @@ function topAddBtn(){
 
 function switchStoreTab(idx){
   document.querySelectorAll('#storeTabBtns .tab-btn').forEach(function(b,i){b.classList.toggle('active',i===idx);});
-  [0,1,2,3,4,5].forEach(function(i){var el=document.getElementById('stab'+i);if(el)el.classList.toggle('active',i===idx);});
+  [0,1,2,3,4,5,6].forEach(function(i){var el=document.getElementById('stab'+i);if(el)el.classList.toggle('active',i===idx);});
   if(idx===5)renderShootingList();
+  if(idx===6)renderProgressTab();
 }
 function toggleCheck(el){el.classList.toggle('done');el.querySelector('.check-box').textContent=el.classList.contains('done')?'✓':'';}
+
+var PROGRESS_STEPS=[
+  {key:'hearing',    label:'ヒアリング',        hasNa:false},
+  {key:'creator',    label:'クリエイター確定',   hasNa:false},
+  {key:'plan',       label:'企画提出',           hasNa:false},
+  {key:'kickoff',    label:'キックオフMTG',      hasNa:true},
+  {key:'storyboard', label:'絵コンテ提出',       hasNa:false}
+];
+
+function renderProgressTab(){
+  var el=document.getElementById('progressSteps');
+  if(!el)return;
+  var s=DB.stores.find(function(x){return x.id===editingStoreId;});
+  if(!s){el.innerHTML='<div style="color:var(--text3);font-size:13px;padding:12px">店舗を選択してください</div>';return;}
+  var prog=s.progress||{};
+  var bs='font-size:13px;padding:5px 12px;border-radius:6px;cursor:pointer;border:1px solid;white-space:nowrap;';
+  el.innerHTML='<div style="padding-bottom:8px">'
+    +PROGRESS_STEPS.map(function(step,i){
+      var p=prog[step.key]||{status:'pending',date:''};
+      var isDone=p.status==='done';
+      var isNa=p.status==='na';
+      var circleStyle=isDone
+        ?'background:var(--green);border-color:var(--green);color:#fff'
+        :isNa
+        ?'background:var(--bg3);border-color:var(--border);color:var(--text3)'
+        :'background:var(--bg3);border-color:var(--border);color:var(--text3)';
+      var labelColor=isDone?'var(--green)':isNa?'var(--text3)':'var(--text)';
+      var suffix=isDone?' <span style="color:var(--green);font-size:12px">✓ 完了</span>':isNa?' <span style="color:var(--text3);font-size:12px">不要</span>':'';
+      var dateHtml=p.date?'<span style="font-size:12px;color:var(--text3);margin-left:8px">'+esc(p.date)+'</span>':'';
+      var btns='';
+      if(!isDone&&!isNa){
+        btns='<button style="'+bs+'background:var(--accent);color:#fff;border-color:var(--accent)" onclick="saveStepProgress(\''+step.key+'\',\'done\',document.getElementById(\'pg_'+step.key+'\').value)">完了</button>';
+        if(step.hasNa)btns+=' <button style="'+bs+'background:var(--bg3);color:var(--text2);border-color:var(--border)" onclick="saveStepProgress(\''+step.key+'\',\'na\',\'\')">不要</button>';
+      }else{
+        btns='<button style="'+bs+'background:var(--bg3);color:var(--text3);border-color:var(--border)" onclick="saveStepProgress(\''+step.key+'\',\'pending\',\'\')">取り消す</button>';
+      }
+      return '<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)">'
+        +'<div style="width:30px;height:30px;border-radius:50%;border:2px solid;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;'+circleStyle+'">'+(isDone?'✓':isNa?'—':String(i+1))+'</div>'
+        +'<div style="flex:1;min-width:0">'
+          +'<div style="font-size:14px;font-weight:600;color:'+labelColor+'">'+step.label+suffix+dateHtml+'</div>'
+        +'</div>'
+        +'<input type="date" id="pg_'+step.key+'" value="'+(p.date||'')+'" style="font-size:13px;padding:4px 6px;border:1px solid var(--border);border-radius:6px;background:var(--bg2);color:var(--text);width:140px;flex-shrink:0">'
+        +'<div style="display:flex;gap:6px;flex-shrink:0">'+btns+'</div>'
+      +'</div>';
+    }).join('')
+  +'</div>';
+}
+
+function saveStepProgress(stepKey,status,date){
+  var s=DB.stores.find(function(x){return x.id===editingStoreId;});
+  if(!s)return;
+  if(!s.progress)s.progress={};
+  s.progress[stepKey]={status:status,date:date||''};
+  saveItem('stores',s);
+  renderProgressTab();
+  renderTodoList();
+}
+
 
 /* ============================================================
    営業時間・定休日 統合管理
@@ -2363,7 +2427,8 @@ function saveStore(){
     rakurakuRegistered:existing?existing.rakurakuRegistered:false,
     hearing:{hIssue:(function(){var e=document.getElementById('hIssue');return e?e.value:'';})(),hTargetWant:(function(){var e=document.getElementById('hTargetWant');return e?e.value:'';})(),hTargetNow:(function(){var e=document.getElementById('hTargetNow');return e?e.value:'';})(),hTiming:(function(){var e=document.getElementById('hTiming');return e?e.value:'';})(),hIdealCustomer:(function(){var e=document.getElementById('hIdealCustomer');return e?e.value:'';})(),hStrength:(function(){var e=document.getElementById('hStrength');return e?e.value:'';})(),hArea:(function(){var e=document.getElementById('hArea');return e?e.value:'';})(),hIgPurpose:(function(){var e=document.getElementById('hIgPurpose');return e?e.value:'';})(),hMenu:(function(){var e=document.getElementById('hMenu');return e?e.value:'';})(),hKpi:(function(){var e=document.getElementById('hKpi');return e?e.value:'';})(),hTargetAge:(function(){var e=document.getElementById('hTargetAge');return e?e.value:'';})(),hTargetGender:(function(){var e=document.getElementById('hTargetGender');return e?e.value:'';})(),hTargetRegion:(function(){var e=document.getElementById('hTargetRegion');return e?e.value:'';})(),hTargetInterest:(function(){var e=document.getElementById('hTargetInterest');return e?e.value:'';})(),hRefAccount:(function(){var e=document.getElementById('hRefAccount');return e?e.value:'';})(),hNg:(function(){var e=document.getElementById('hNg');return e?e.value:'';})(),hPastAd:(function(){var e=document.getElementById('hPastAd');return e?e.value:'';})(),hAccMgr:(function(){var e=document.getElementById('hAccMgr');return e?e.value:'';})(),hLoginShare:(function(){var e=document.getElementById('hLoginShare');return e?e.value:'';})(),hFbPage:(function(){var e=document.getElementById('hFbPage');return e?e.value:'';})(),hInPost:(function(){var e=document.getElementById('hInPost');return e?e.value:'';})(),hDmMgr:(function(){var e=document.getElementById('hDmMgr');return e?e.value:'';})(),hPostContent:(function(){var e=document.getElementById('hPostContent');return e?e.value:'';})(),hPostFlow:(function(){var e=document.getElementById('hPostFlow');return e?e.value:'';})(),hApprovalDays:(function(){var e=document.getElementById('hApprovalDays');return e?e.value:'';})(),hPhotoAsset:(function(){var e=document.getElementById('hPhotoAsset');return e?e.value:'';})(),hVideoAsset:(function(){var e=document.getElementById('hVideoAsset');return e?e.value:'';})(),hNewShoot:(function(){var e=document.getElementById('hNewShoot');return e?e.value:'';})(),hLogo:(function(){var e=document.getElementById('hLogo');return e?e.value:'';})(),hPastAsset:(function(){var e=document.getElementById('hPastAsset');return e?e.value:'';})(),hTonmana:(function(){var e=document.getElementById('hTonmana');return e?e.value:'';})(),hAdIg:(function(){var e=document.getElementById('hAdIg');return e?e.value:'';})(),hAdStart:(function(){var e=document.getElementById('hAdStart');return e?e.value:'';})(),hAdBudget:(function(){var e=document.getElementById('hAdBudget');return e?e.value:'';})(),hLpUrl:(function(){var e=document.getElementById('hLpUrl');return e?e.value:'';})(),hInfStart:(function(){var e=document.getElementById('hInfStart');return e?e.value:'';})(),hInfEnd:(function(){var e=document.getElementById('hInfEnd');return e?e.value:'';})(),hInfCount:(function(){var e=document.getElementById('hInfCount');return e?e.value:'';})(),hInfGenre:(function(){var e=document.getElementById('hInfGenre');return e?e.value:'';})(),hInfFollowers:(function(){var e=document.getElementById('hInfFollowers');return e?e.value:'';})(),hInfMust:(function(){var e=document.getElementById('hInfMust');return e?e.value:'';})(),hHashtag:(function(){var e=document.getElementById('hHashtag');return e?e.value:'';})(),hOpStart:(function(){var e=document.getElementById('hOpStart');return e?e.value:'';})(),hShootDate:(function(){var e=document.getElementById('hShootDate');return e?e.value:'';})(),hPostStart:(function(){var e=document.getElementById('hPostStart');return e?e.value:'';})(),hAdStart2:(function(){var e=document.getElementById('hAdStart2');return e?e.value:'';})(),hInfPostDate:(function(){var e=document.getElementById('hInfPostDate');return e?e.value:'';})(),hOther:(function(){var e=document.getElementById('hOther');return e?e.value:'';})()},
     managerLog:managerLog,
-    prevManagers:existing?existing.prevManagers||[]:[]
+    prevManagers:existing?existing.prevManagers||[]:[],
+    progress:existing?existing.progress||{}:{}
   };
   if(isEdit){
     var idx=DB.stores.findIndex(function(x){return x.id===id;});
@@ -2817,7 +2882,26 @@ function renderTodoList(){
   var items=[];
   var bs='font-size:13px;padding:4px 10px;border-radius:6px;cursor:pointer;border:1px solid;white-space:nowrap;flex-shrink:0;';
 
-  /* ① 楽々販売未登録の店舗 */
+  /* ① 案件進捗：未着手ステップ */
+  DB.stores.filter(function(s){return s.status==='active';}).forEach(function(s){
+    var prog=s.progress||{};
+    var btn='<button style="'+bs+'background:var(--bg3);color:var(--text2);border-color:var(--border)" onclick="openStoreFromNotif(\''+s.id+'\',6)">進捗を確認</button>';
+    /* クリエイター未確定 */
+    if((prog.creator||{status:'pending'}).status==='pending'){
+      items.push({priority:2,date:today,main:esc(s.name),sub:'クリエイター未確定',subColor:'var(--amber)',btns:btn});
+    }
+    /* 企画未提出（クリエイター確定済みの場合のみ） */
+    if((prog.creator||{}).status==='done'&&(prog.plan||{status:'pending'}).status==='pending'){
+      items.push({priority:2,date:today,main:esc(s.name),sub:'企画 未提出',subColor:'var(--amber)',btns:btn});
+    }
+    /* 絵コンテ未提出（キックオフ完了 or 不要 かつ企画提出済みの場合のみ） */
+    var koStatus=(prog.kickoff||{}).status;
+    if((prog.plan||{}).status==='done'&&(koStatus==='done'||koStatus==='na')&&(prog.storyboard||{status:'pending'}).status==='pending'){
+      items.push({priority:2,date:today,main:esc(s.name),sub:'絵コンテ未提出',subColor:'var(--amber)',btns:btn});
+    }
+  });
+
+  /* ② 楽々販売未登録の店舗 */
   DB.stores.filter(function(s){return s.status==='active'&&!s.rakurakuRegistered;}).forEach(function(s){
     items.push({
       priority:1,date:today,
@@ -3519,7 +3603,7 @@ function renderSalesNotifs(){
       +'</div>';
   }).join('');
 }
-function openStoreFromNotif(storeId){
+function openStoreFromNotif(storeId,tabIdx){
   if(!DB.salesNotifs)DB.salesNotifs=[];
   DB.salesNotifs.forEach(function(n){
     if(n.storeId===storeId&&!n.read){n.read=true;saveItem('salesnotifs',n);}
@@ -3528,7 +3612,7 @@ function openStoreFromNotif(storeId){
   renderSalesNotifs();
   renderDashboard();
   navigate('stores');
-  setTimeout(function(){showDetail(storeId);},100);
+  setTimeout(function(){showDetail(storeId);if(tabIdx!=null)setTimeout(function(){switchStoreTab(tabIdx);},50);},100);
 }
 function clearSalesNotifs(){
   if(!DB.salesNotifs)DB.salesNotifs=[];
