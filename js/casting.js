@@ -203,29 +203,38 @@ function renderTodoList(){
   if(!el)return;
   var today=new Date(); today.setHours(0,0,0,0);
   var items=[];
-  var bs='font-size:13px;padding:4px 10px;border-radius:6px;cursor:pointer;border:1px solid;white-space:nowrap;flex-shrink:0;';
+  /* ボタンスタイル */
+  var bsBase='font-size:13px;padding:5px 12px;border-radius:6px;cursor:pointer;border:1px solid;white-space:nowrap;flex-shrink:0;font-weight:500;';
+  var bsAction=bsBase+'background:var(--accent);color:#fff;border-color:var(--accent);'; /* 青：完了アクション */
+  var bsNav=bsBase+'background:var(--bg3);color:var(--text2);border-color:var(--border);'; /* グレー：画面遷移 */
+  var bsAmber=bsBase+'background:var(--amber-bg);color:var(--amber);border-color:var(--amber-border);';
+  var bsRed=bsBase+'background:var(--red-bg);color:var(--red);border-color:var(--red-border);';
+
+  /* アクションバッジ生成ヘルパー */
+  function actionBadge(text,color){
+    var bg=color==='red'?'var(--red-bg)':color==='amber'?'var(--amber-bg)':'var(--accent-bg)';
+    var fg=color==='red'?'var(--red)':color==='amber'?'var(--amber)':'var(--accent)';
+    var bd=color==='red'?'var(--red-border)':color==='amber'?'var(--amber-border)':'var(--accent-border)';
+    return'<span style="font-size:11px;font-weight:600;padding:1px 6px;border-radius:4px;border:1px solid '+bd+';background:'+bg+';color:'+fg+';margin-right:5px;vertical-align:middle">'+text+'</span>';
+  }
 
   /* ① 案件進捗：未着手ステップ */
   DB.stores.filter(function(s){return s.status==='active';}).forEach(function(s){
     var prog=s.progress||{};
-    var btn='<button style="'+bs+'background:var(--bg3);color:var(--text2);border-color:var(--border)" onclick="openStoreFromNotif(\''+s.id+'\',6)">進捗を確認</button>';
-    /* クリエイター未確定 */
+    var btn='<button style="'+bsNav+'" onclick="openStoreFromNotif(\''+s.id+'\',6)">進捗を開く →</button>';
     if((prog.creator||{status:'pending'}).status==='pending'){
-      items.push({priority:2,date:today,main:esc(s.name),sub:'クリエイター未確定',subColor:'var(--amber)',btns:btn});
+      items.push({priority:2,date:today,main:esc(s.name),sub:actionBadge('要対応','amber')+'クリエイター未確定',btns:btn});
     }
-    /* 企画未提出（クリエイター確定済みの場合のみ） */
     if((prog.creator||{}).status==='done'&&(prog.plan||{status:'pending'}).status==='pending'){
-      items.push({priority:2,date:today,main:esc(s.name),sub:'企画 未提出',subColor:'var(--amber)',btns:btn});
+      items.push({priority:2,date:today,main:esc(s.name),sub:actionBadge('要提出','amber')+'企画書 未提出',btns:btn});
     }
-    /* キックオフ：営業同席希望あり＆未実施（企画提出済みの場合のみ） */
     var ko=prog.kickoff||{status:'pending'};
     if((prog.plan||{}).status==='done'&&ko.status==='pending'&&ko.salesJoin){
-      items.push({priority:1,date:today,main:esc(s.name),sub:'🤝 キックオフ 営業同席希望あり（未実施）',subColor:'var(--accent)',btns:btn});
+      items.push({priority:1,date:today,main:esc(s.name),sub:actionBadge('要対応','red')+'キックオフ 営業同席希望あり（未実施）',btns:btn});
     }
-    /* 絵コンテ未提出（キックオフ完了 or 不要 かつ企画提出済みの場合のみ） */
     var koStatus=ko.status;
     if((prog.plan||{}).status==='done'&&(koStatus==='done'||koStatus==='na')&&(prog.storyboard||{status:'pending'}).status==='pending'){
-      items.push({priority:2,date:today,main:esc(s.name),sub:'絵コンテ未提出',subColor:'var(--amber)',btns:btn});
+      items.push({priority:2,date:today,main:esc(s.name),sub:actionBadge('要提出','amber')+'絵コンテ 未提出',btns:btn});
     }
   });
 
@@ -234,14 +243,13 @@ function renderTodoList(){
     items.push({
       priority:1,date:today,
       main:esc(s.name),
-      sub:'楽々販売 未登録',
-      subColor:'var(--red)',
-      btns:'<button style="'+bs+'background:var(--green-bg);color:var(--green);border-color:var(--green-border)" onclick="markRakurakuDone(\''+s.id+'\')">登録完了</button>'
-           +'<button style="'+bs+'background:var(--bg3);color:var(--text2);border-color:var(--border);margin-left:4px" onclick="openStoreFromNotif(\''+s.id+'\')">詳細</button>'
+      sub:actionBadge('要登録','red')+'楽々販売 未登録',
+      btns:'<button style="'+bsAction+'" onclick="markRakurakuDone(\''+s.id+'\')">✓ 登録済みにする</button>'
+           +'<button style="'+bsNav+'margin-left:4px" onclick="openStoreFromNotif(\''+s.id+'\')">詳細</button>'
     });
   });
 
-  /* ② 投稿スケジュール関連 */
+  /* ③ 投稿スケジュール関連 */
   DB.posts.filter(function(p){
     return p.status!=='done'&&p.status!=='visited'&&p.status!=='cancelled'&&p.status!=='approved';
   }).sort(function(a,b){return new Date(a.date)-new Date(b.date);}).forEach(function(p){
@@ -256,36 +264,41 @@ function renderTodoList(){
 
     if(p.type==='inf_visit'){
       var mainName=inf?esc(inf.name.split(/[\s　]/)[0]):'インフルエンサー';
-      var sub=dateStr+' 来店（'+esc(storeName(p.storeId))+'）';
       if(p.status==='unbooked'){
-        sub+=' ⚠ 予約未';
-        btnHtml='<button style="'+bs+'background:var(--accent-bg);color:var(--accent);border-color:var(--accent-border)" onclick="updatePostStatus(\''+p.id+'\',\'booked\')">予約完了</button>';
+        var sub=actionBadge('要予約','red')+dateStr+' 来店（'+esc(storeName(p.storeId))+'）';
+        btnHtml='<button style="'+bsAction+'" onclick="updatePostStatus(\''+p.id+'\',\'booked\')">✓ 予約済みにする</button>';
+        items.push({priority:priority,date:dt,main:mainName,sub:sub,btns:btnHtml});
       }else{
-        btnHtml='<button style="'+bs+'background:var(--green-bg);color:var(--green);border-color:var(--green-border)" onclick="updatePostStatus(\''+p.id+'\',\'visited\')">来店完了</button>'
-               +'<button style="'+bs+'background:var(--amber-bg);color:var(--amber);border-color:var(--amber-border);margin-left:4px" onclick="reschedulePost(\''+p.id+'\')">リスケ</button>'
-               +'<button style="'+bs+'background:var(--red-bg);color:var(--red);border-color:var(--red-border);margin-left:4px" onclick="updatePostStatus(\''+p.id+'\',\'cancelled\')">キャンセル</button>';
+        var sub=actionBadge('来店予定','blue')+dateStr+' 来店（'+esc(storeName(p.storeId))+'）';
+        btnHtml='<button style="'+bsAction+'" onclick="updatePostStatus(\''+p.id+'\',\'visited\')">✓ 来店済みにする</button>'
+               +'<button style="'+bsAmber+'margin-left:4px" onclick="reschedulePost(\''+p.id+'\')">リスケ</button>'
+               +'<button style="'+bsRed+'margin-left:4px" onclick="updatePostStatus(\''+p.id+'\',\'cancelled\')">キャンセル</button>';
+        items.push({priority:priority,date:dt,main:mainName,sub:sub,btns:btnHtml});
       }
-      items.push({priority:priority,date:dt,main:mainName,sub:sub,subColor:isOverdue?'var(--red)':'var(--amber)',btns:btnHtml});
 
     }else if(p.type==='inf_draft'){
       var mainName=inf?esc(inf.name.split(/[\s　]/)[0]):'インフルエンサー';
-      btnHtml='<button style="'+bs+'background:var(--green-bg);color:var(--green);border-color:var(--green-border)" onclick="updatePostStatus(\''+p.id+'\',\'approved\')">確認完了</button>';
-      items.push({priority:priority,date:dt,main:mainName,sub:dateStr+' 初稿確認（'+esc(storeName(p.storeId))+'）',subColor:'var(--text2)',btns:btnHtml});
+      var sub=actionBadge('要確認','blue')+dateStr+' 初稿確認（'+esc(storeName(p.storeId))+'）';
+      btnHtml='<button style="'+bsAction+'" onclick="updatePostStatus(\''+p.id+'\',\'approved\')">✓ 確認済みにする</button>';
+      items.push({priority:priority,date:dt,main:mainName,sub:sub,btns:btnHtml});
 
     }else if(p.type==='inf_post'){
       var mainName=inf?esc(inf.name.split(/[\s　]/)[0]):'インフルエンサー';
-      btnHtml='<button style="'+bs+'background:var(--green-bg);color:var(--green);border-color:var(--green-border)" onclick="updatePostStatus(\''+p.id+'\',\'done\')">投稿完了</button>';
-      items.push({priority:priority,date:dt,main:mainName,sub:dateStr+' 投稿（'+esc(storeName(p.storeId))+'）',subColor:isOverdue?'var(--red)':'var(--text2)',btns:btnHtml});
+      var sub=actionBadge(isOverdue?'投稿期限超過':'要投稿',isOverdue?'red':'blue')+dateStr+' 投稿（'+esc(storeName(p.storeId))+'）';
+      btnHtml='<button style="'+bsAction+'" onclick="updatePostStatus(\''+p.id+'\',\'done\')">✓ 投稿済みにする</button>';
+      items.push({priority:priority,date:dt,main:mainName,sub:sub,btns:btnHtml});
 
     }else if(p.type==='shooting'){
       var crName=cr?esc(cr.crName):'クリエイター';
-      btnHtml='<button style="'+bs+'background:var(--green-bg);color:var(--green);border-color:var(--green-border)" onclick="updatePostStatus(\''+p.id+'\',\'done\')">撮影完了</button>';
-      items.push({priority:priority,date:dt,main:esc(storeName(p.storeId)),sub:dateStr+' 撮影（'+crName+'）',subColor:isOverdue?'var(--red)':'var(--text2)',btns:btnHtml});
+      var sub=actionBadge(isOverdue?'撮影期限超過':'撮影予定',isOverdue?'red':'blue')+dateStr+' 撮影（'+crName+'）';
+      btnHtml='<button style="'+bsAction+'" onclick="updatePostStatus(\''+p.id+'\',\'done\')">✓ 撮影済みにする</button>';
+      items.push({priority:priority,date:dt,main:esc(storeName(p.storeId)),sub:sub,btns:btnHtml});
 
     }else if(p.type==='video'||p.type==='image'||p.type==='reel'||p.type==='story'){
-      btnHtml='<button style="'+bs+'background:var(--green-bg);color:var(--green);border-color:var(--green-border)" onclick="updatePostStatus(\''+p.id+'\',\'done\')">投稿完了</button>';
       var typeL=TYPE_LABEL[p.type]||p.type;
-      items.push({priority:priority,date:dt,main:esc(storeName(p.storeId)),sub:dateStr+' '+typeL,subColor:isOverdue?'var(--red)':'var(--text2)',btns:btnHtml});
+      var sub=actionBadge(isOverdue?'投稿期限超過':'要投稿',isOverdue?'red':'blue')+dateStr+' '+typeL;
+      btnHtml='<button style="'+bsAction+'" onclick="updatePostStatus(\''+p.id+'\',\'done\')">✓ 投稿済みにする</button>';
+      items.push({priority:priority,date:dt,main:esc(storeName(p.storeId)),sub:sub,btns:btnHtml});
     }
   });
 
@@ -297,11 +310,12 @@ function renderTodoList(){
     return;
   }
   el.innerHTML=items.map(function(item){
-    var urgentBg=item.priority===0?'background:var(--red-bg);border-left:3px solid var(--red)':item.priority===1?'background:var(--amber-bg);border-left:3px solid var(--amber)':'border-left:3px solid var(--border)';
-    return'<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);'+urgentBg+'">'
+    var barColor=item.priority===0?'var(--red)':item.priority===1?'var(--amber)':'var(--border2)';
+    var rowBg=item.priority===0?'background:var(--red-bg);':item.priority===1?'background:var(--amber-bg);':'';
+    return'<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);border-left:3px solid '+barColor+';'+rowBg+'">'
       +'<div style="flex:1;min-width:0">'
         +'<div style="font-size:14px;font-weight:500;color:var(--text)">'+item.main+'</div>'
-        +'<div style="font-size:13px;color:'+item.subColor+';margin-top:2px">'+item.sub+'</div>'
+        +'<div style="font-size:12px;color:var(--text3);margin-top:3px">'+item.sub+'</div>'
       +'</div>'
       +'<div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end">'+item.btns+'</div>'
     +'</div>';
