@@ -4084,6 +4084,7 @@ function renderStoreTable(){
           var today2=new Date();today2.setHours(0,0,0,0);
           var daysLeft=Math.ceil((end-today2)/86400000);
           var mm=(end.getMonth()+1)+'/'+end.getDate();
+          if(s.status==='ended')return'<td><span style="font-size:13px;color:var(--text3)">'+mm+'</span></td>';
           if(daysLeft<0)return'<td><span class="badge b-gray">終了済み</span></td>';
           if(daysLeft<=30)return'<td><span class="badge b-red">⚠ '+mm+'（残'+daysLeft+'日）</span></td>';
           if(daysLeft<=60)return'<td><span class="badge b-amber">'+mm+'（残'+daysLeft+'日）</span></td>';
