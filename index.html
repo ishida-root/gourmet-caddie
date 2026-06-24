@@ -683,11 +683,17 @@
       <div class="fr"><div class="field"><label>Instagram広告実施</label><select id="hAdIg"><option value="">—</option><option>有</option><option>無</option></select></div><div class="field"><label>広告開始希望日</label><input id="hAdStart" type="date"></div></div>
       <div class="fr"><div class="field"><label>月額広告予算（円）</label><input id="hAdBudget" type="number" placeholder="50000"></div><div class="field"><label>LP・誘導先URL</label><input id="hLpUrl" type="url"></div></div>
 
-      <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:10px;padding-top:10px;border-top:1px solid var(--border)">インフルエンサー施策</div>
-      <div class="fr"><div class="field"><label>実施希望時期（開始）</label><input id="hInfStart" type="date"></div><div class="field"><label>実施希望時期（終了）</label><input id="hInfEnd" type="date"></div></div>
-      <div class="fr"><div class="field"><label>想定人数</label><input id="hInfCount" type="text" placeholder="例: 3〜5名"></div><div class="field"><label>希望ジャンル</label><input id="hInfGenre" type="text"></div></div>
-      <div class="fr"><div class="field"><label>希望フォロワー帯</label><input id="hInfFollowers" type="text" placeholder="例: 1万〜5万"></div><div class="field"><label>投稿必須内容</label><input id="hInfMust" type="text"></div></div>
-      <div class="fr1 field"><label>ハッシュタグ指定</label><input id="hHashtag" type="text"></div>
+      <details id="hInfDetails" style="margin-bottom:10px;padding-top:10px;border-top:1px solid var(--border)">
+        <summary style="font-size:12px;font-weight:500;color:var(--text2);cursor:pointer;display:flex;align-items:center;gap:6px;user-select:none;margin-bottom:10px">
+          <span class="tri" style="display:inline-block;transition:transform .15s;font-size:10px;color:var(--text3)">▶</span>
+          インフルエンサー施策
+          <span style="font-size:11px;color:var(--text3);font-weight:400">（実施する場合のみ）</span>
+        </summary>
+        <div class="fr"><div class="field"><label>実施希望時期（開始）</label><input id="hInfStart" type="date"></div><div class="field"><label>実施希望時期（終了）</label><input id="hInfEnd" type="date"></div></div>
+        <div class="fr"><div class="field"><label>想定人数</label><input id="hInfCount" type="text" placeholder="例: 3〜5名"></div><div class="field"><label>希望ジャンル</label><input id="hInfGenre" type="text"></div></div>
+        <div class="fr"><div class="field"><label>希望フォロワー帯</label><input id="hInfFollowers" type="text" placeholder="例: 1万〜5万"></div><div class="field"><label>投稿必須内容</label><input id="hInfMust" type="text"></div></div>
+        <div class="fr1 field"><label>ハッシュタグ指定</label><input id="hHashtag" type="text"></div>
+      </details>
 
       <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:10px;padding-top:10px;border-top:1px solid var(--border)">スケジュール</div>
       <div class="fr"><div class="field"><label>運用開始希望日</label><input id="hOpStart" type="date"></div><div class="field"><label>撮影希望日</label><input id="hShootDate" type="date"></div></div>

@@ -336,6 +336,14 @@ function openStoreModal(id){
       onStoreStatusChange();
     }
   }
+  /* インフルエンサー施策セクション：入力済みなら開く、空なら折りたたむ */
+  var hInfDet=document.getElementById('hInfDetails');
+  if(hInfDet){
+    var hasInf=['hInfStart','hInfEnd','hInfCount','hInfGenre','hInfFollowers','hInfMust','hHashtag'].some(function(fid){
+      var el=document.getElementById(fid);return el&&el.value;
+    });
+    hInfDet.open=hasInf;
+  }
   switchStoreTab(0);
   /* 契約開始日ピッカー初期化 */
   makeDatePicker('sContractStartWrap','sContractStart',{yearFrom:2020,yearTo:new Date().getFullYear()+3,yearLabel:'年'});
