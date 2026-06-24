@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>グルメキャディ</title>
 <link rel="icon" type="image/png" href="gourmet_caddie_logo.png">
@@ -433,6 +434,7 @@ tr:hover td{background:#fafaf8}
       <div class="stats-row">
         <div class="stat-card blue"><div class="stat-val" id="ds-total">0</div><div class="stat-label">契約店舗数</div></div>
         <div class="stat-card"><div class="stat-val" id="ds-active">0</div><div class="stat-label">稼働中</div></div>
+        <div class="stat-card" style="cursor:pointer" onclick="navigate('stores');setTimeout(function(){document.getElementById('filterStatus').value='negotiating';renderStoreTable();},100)"><div class="stat-val" id="ds-negotiating" style="color:var(--accent)">0</div><div class="stat-label">商談中</div></div>
         <div class="stat-card"><div class="stat-val" id="ds-posts">0</div><div class="stat-label">今月の投稿予定</div></div>
         <div class="stat-card"><div class="stat-val" id="ds-inf">0</div><div class="stat-label">インフルエンサー</div></div>
       </div>
@@ -505,10 +507,11 @@ tr:hover td{background:#fafaf8}
       <div class="card">
         <div class="card-header"><span class="card-title">全店舗</span>
           <select id="filterStatus" onchange="renderStoreTable()" style="width:110px;font-size:12px;padding:4px 8px">
-            <option value="">全ステータス</option><option value="active">稼働中</option><option value="pending">準備中</option><option value="ended">終了</option>
+            <option value="">全ステータス</option><option value="negotiating">商談中</option><option value="active">稼働中</option><option value="pending">準備中</option><option value="ended">終了</option>
           </select>
         </div>
-        <div class="table-wrap"><table><thead><tr><th>店舗名</th><th>業種</th><th>契約プラン</th><th>契約期間</th><th>更新日</th><th>店舗担当</th><th>弊社担当</th><th>SNS</th><th>初期設定</th><th>ステータス</th><th></th></tr></thead><tbody id="storeTableBody"></tbody></table></div>
+        <div id="negotiatingBox" style="display:none;margin-bottom:16px;padding:12px 14px;background:var(--accent-bg);border:1px solid var(--accent-border);border-radius:var(--r)"></div>
+        <div class="table-wrap"><table><thead><tr><th>店舗名</th><th>業種</th><th>契約プラン</th><th>契約期間</th><th>更新日</th><th>店舗担当</th><th>弊社担当</th><th>SNS</th><th>INF</th><th>今月請求</th><th>今月振返</th><th>初期設定</th><th>ステータス</th><th></th></tr></thead><tbody id="storeTableBody"></tbody></table></div>
       </div>
     </div>
 
@@ -885,7 +888,8 @@ tr:hover td{background:#fafaf8}
     <div class="tab-pane" id="stab2">
       <div class="fr"><div class="field"><label>契約開始日</label><div style="display:flex;gap:4px;align-items:center" id="sContractStartWrap"></div><input type="hidden" id="sContractStart"></div><div class="field"><label>契約期間</label><select id="sContractTerm"><option value="3">3ヶ月</option><option value="6">6ヶ月</option><option value="12">12ヶ月</option></select></div></div>
       <div class="fr1 field"><label>契約プラン</label><select id="sPlanId"><option value="">プランを選択（任意）</option></select><div style="font-size:12px;color:var(--text3);margin-top:4px" id="sPlanPreview"></div></div>
-      <div class="fr"><div class="field"><label>月額費用（円）<span style="color:var(--text3);font-weight:400"> ※プラン選択で自動入力</span></label><input id="sMonthlyFee" type="number" placeholder="150000"></div><div class="field"><label>ステータス</label><select id="sStatus"><option value="pending">準備中</option><option value="active">稼働中</option><option value="ended">終了</option></select></div></div>
+      <div class="fr"><div class="field"><label>月額費用（円）<span style="color:var(--text3);font-weight:400"> ※プラン選択で自動入力</span></label><input id="sMonthlyFee" type="number" placeholder="150000"></div><div class="field"><label>ステータス</label><select id="sStatus" onchange="onStoreStatusChange()"><option value="negotiating">商談中</option><option value="pending">準備中</option><option value="active">稼働中</option><option value="ended">終了</option></select></div></div>
+      <div id="sNegotiatingRow" style="display:none"><div class="fr"><div class="field"><label>次回アクション日</label><input id="sNextAction" type="date"></div><div class="fr1 field"><label>商談メモ</label><input id="sNegotiatingMemo" type="text" placeholder="例：来週再商談、見積送付済み"></div></div></div>
       <div style="border-top:1px solid var(--border);padding-top:14px;margin:4px 0">
         <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:10px">店舗担当者</div>
         <div class="fr"><div class="field"><label>担当者名</label><input id="sContactName" type="text" placeholder="田中 太郎"></div><div class="field"><label>役職</label><input id="sContactRole" type="text" placeholder="店長"></div></div>
@@ -1703,11 +1707,14 @@ function doLogout(){
   document.getElementById('loginError').textContent='';
 }
 
+var _refreshTimer=null;
 function showApp(){
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('mainApp').style.display='flex';
   applyRoleUI();
   loadDB().then(function(){renderDashboard();updateSidebarStats();updateCorpSelects();});
+  if(_refreshTimer)clearInterval(_refreshTimer);
+  _refreshTimer=setInterval(function(){refreshToken().catch(function(){});},30*60*1000);
 }
 
 function applyRoleUI(){
@@ -1867,8 +1874,33 @@ function apiHeaders(){
   return{'Content-Type':'application/json','apikey':SUPA_KEY,'Authorization':'Bearer '+token,'Prefer':'return=minimal'};
 }
 
+async function refreshToken(){
+  try{
+    var sess=JSON.parse(localStorage.getItem('gc_session')||'{}');
+    if(!sess.refresh_token)return false;
+    var res=await fetch(SUPA_URL+'/auth/v1/token?grant_type=refresh_token',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','apikey':SUPA_KEY},
+      body:JSON.stringify({refresh_token:sess.refresh_token})
+    });
+    if(res.ok){
+      var data=await res.json();
+      sess.access_token=data.access_token;
+      sess.refresh_token=data.refresh_token||sess.refresh_token;
+      localStorage.setItem('gc_session',JSON.stringify(sess));
+      return true;
+    }
+  }catch(e){}
+  return false;
+}
+
 async function apiFetch(table){
   var r=await fetch(apiUrl(table)+'?select=*&order=updated_at.asc',{headers:apiHeaders()});
+  if(r.status===401){
+    var ok=await refreshToken();
+    if(ok){r=await fetch(apiUrl(table)+'?select=*&order=updated_at.asc',{headers:apiHeaders()});}
+    else{doLogout();throw new Error('session expired');}
+  }
   if(!r.ok)throw new Error('fetch '+table+' failed: '+r.status);
   var rows=await r.json();
   if(!Array.isArray(rows))return[];
@@ -1876,6 +1908,11 @@ async function apiFetch(table){
 }
 async function apiUpsert(table,item){
   var r=await fetch(apiUrl(table),{method:'POST',headers:Object.assign({},apiHeaders(),{'Prefer':'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify({id:item.id,data:item})});
+  if(r.status===401){
+    var ok=await refreshToken();
+    if(ok){r=await fetch(apiUrl(table),{method:'POST',headers:Object.assign({},apiHeaders(),{'Prefer':'resolution=merge-duplicates,return=minimal'}),body:JSON.stringify({id:item.id,data:item})});}
+    else{doLogout();throw new Error('session expired');}
+  }
   if(!r.ok){
     var errText=await r.text().catch(function(){return r.status;});
     console.error('[apiUpsert] '+table+' '+r.status+':',errText);
@@ -1946,6 +1983,17 @@ async function saveItem(table,item){
     try{localStorage.setItem('adcore3',JSON.stringify(DB));}catch(e2){}
     setSyncStatus('error','保存失敗: '+e.message);
   }
+}
+
+function monthKey(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}
+function isMonthlyDone(s,key){return!!(s[key]&&s[key][monthKey()]);}
+function toggleMonthlyDone(storeId,key){
+  var s=DB.stores.find(function(x){return x.id===storeId;});
+  if(!s)return;
+  if(!s[key])s[key]={};
+  s[key][monthKey()]=!s[key][monthKey()];
+  saveItem('stores',s);
+  renderStoreList();
 }
 
 async function deleteItem(table,id){
@@ -2077,10 +2125,19 @@ function renderProgressTab(){
       }else{
         btns='<button style="'+bs+'background:var(--bg3);color:var(--text3);border-color:var(--border)" onclick="saveStepProgress(\''+step.key+'\',\'pending\',\'\')">取り消す</button>';
       }
+      var salesJoinHtml='';
+      if(step.key==='kickoff'){
+        var sj=p.salesJoin?true:false;
+        salesJoinHtml='<label style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:'+(sj?'var(--accent)':'var(--text3)')+';cursor:pointer;margin-top:4px">'
+          +'<input type="checkbox" '+(sj?'checked':'')+' onchange="toggleKickoffSalesJoin(this.checked)" style="cursor:pointer">'
+          +'🤝 営業同席希望'+(sj?'（あり）':'')
+        +'</label>';
+      }
       return '<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)">'
         +'<div style="width:30px;height:30px;border-radius:50%;border:2px solid;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;'+circleStyle+'">'+(isDone?'✓':isNa?'—':String(i+1))+'</div>'
         +'<div style="flex:1;min-width:0">'
           +'<div style="font-size:14px;font-weight:600;color:'+labelColor+'">'+step.label+suffix+dateHtml+'</div>'
+          +salesJoinHtml
         +'</div>'
         +'<input type="date" id="pg_'+step.key+'" value="'+(p.date||'')+'" style="font-size:13px;padding:4px 6px;border:1px solid var(--border);border-radius:6px;background:var(--bg2);color:var(--text);width:140px;flex-shrink:0">'
         +'<div style="display:flex;gap:6px;flex-shrink:0">'+btns+'</div>'
@@ -2093,7 +2150,19 @@ function saveStepProgress(stepKey,status,date){
   var s=DB.stores.find(function(x){return x.id===editingStoreId;});
   if(!s)return;
   if(!s.progress)s.progress={};
-  s.progress[stepKey]={status:status,date:date||''};
+  var prev=s.progress[stepKey]||{};
+  s.progress[stepKey]={status:status,date:date||'',salesJoin:prev.salesJoin||false};
+  saveItem('stores',s);
+  renderProgressTab();
+  renderTodoList();
+}
+function toggleKickoffSalesJoin(checked){
+  var s=DB.stores.find(function(x){return x.id===editingStoreId;});
+  if(!s)return;
+  if(!s.progress)s.progress={};
+  var prev=s.progress.kickoff||{status:'pending',date:''};
+  prev.salesJoin=checked;
+  s.progress.kickoff=prev;
   saveItem('stores',s);
   renderProgressTab();
   renderTodoList();
@@ -2300,7 +2369,7 @@ function formatHoursSummary(hoursVal){
 }
 
 function clearStoreForm(){
-  ['sName','sPref','sArea','sSeats','sTabelog','sHp','sMemo','sIg','sIgFollowers','sFb','sTw','sTt','sYt','sMetaId','sCreator','sContractStart','sMonthlyFee','sContactName','sContactRole','sContactTel','sContactEmail','sContactLine','sSetupMemo'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+  ['sName','sPref','sArea','sSeats','sTabelog','sHp','sMemo','sIg','sIgFollowers','sFb','sTw','sTt','sYt','sMetaId','sCreator','sContractStart','sMonthlyFee','sContactName','sContactRole','sContactTel','sContactEmail','sContactLine','sSetupMemo','sNextAction','sNegotiatingMemo'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('sGenre').value='';
   var scorp=document.getElementById('sCorpId');if(scorp)scorp.value='';
   document.getElementById('sHours').value='';
@@ -2354,6 +2423,9 @@ function openStoreModal(id){
       showPlanPreview();
       if(s.setupChecks){var items=document.querySelectorAll('#setupChecklist .check-item');s.setupChecks.forEach(function(v,i){if(items[i]&&v){items[i].classList.add('done');items[i].querySelector('.check-box').textContent='✓';}});}
       if(s.hearing){Object.keys(s.hearing).forEach(function(k){var el=document.getElementById(k);if(el)el.value=s.hearing[k]||'';});}
+      var naEl=document.getElementById('sNextAction');if(naEl)naEl.value=s.nextAction||'';
+      var nmEl=document.getElementById('sNegotiatingMemo');if(nmEl)nmEl.value=s.negotiatingMemo||'';
+      onStoreStatusChange();
     }
   }
   switchStoreTab(0);
@@ -2428,7 +2500,11 @@ function saveStore(){
     hearing:{hIssue:(function(){var e=document.getElementById('hIssue');return e?e.value:'';})(),hTargetWant:(function(){var e=document.getElementById('hTargetWant');return e?e.value:'';})(),hTargetNow:(function(){var e=document.getElementById('hTargetNow');return e?e.value:'';})(),hTiming:(function(){var e=document.getElementById('hTiming');return e?e.value:'';})(),hIdealCustomer:(function(){var e=document.getElementById('hIdealCustomer');return e?e.value:'';})(),hStrength:(function(){var e=document.getElementById('hStrength');return e?e.value:'';})(),hArea:(function(){var e=document.getElementById('hArea');return e?e.value:'';})(),hIgPurpose:(function(){var e=document.getElementById('hIgPurpose');return e?e.value:'';})(),hMenu:(function(){var e=document.getElementById('hMenu');return e?e.value:'';})(),hKpi:(function(){var e=document.getElementById('hKpi');return e?e.value:'';})(),hTargetAge:(function(){var e=document.getElementById('hTargetAge');return e?e.value:'';})(),hTargetGender:(function(){var e=document.getElementById('hTargetGender');return e?e.value:'';})(),hTargetRegion:(function(){var e=document.getElementById('hTargetRegion');return e?e.value:'';})(),hTargetInterest:(function(){var e=document.getElementById('hTargetInterest');return e?e.value:'';})(),hRefAccount:(function(){var e=document.getElementById('hRefAccount');return e?e.value:'';})(),hNg:(function(){var e=document.getElementById('hNg');return e?e.value:'';})(),hPastAd:(function(){var e=document.getElementById('hPastAd');return e?e.value:'';})(),hAccMgr:(function(){var e=document.getElementById('hAccMgr');return e?e.value:'';})(),hLoginShare:(function(){var e=document.getElementById('hLoginShare');return e?e.value:'';})(),hFbPage:(function(){var e=document.getElementById('hFbPage');return e?e.value:'';})(),hInPost:(function(){var e=document.getElementById('hInPost');return e?e.value:'';})(),hDmMgr:(function(){var e=document.getElementById('hDmMgr');return e?e.value:'';})(),hPostContent:(function(){var e=document.getElementById('hPostContent');return e?e.value:'';})(),hPostFlow:(function(){var e=document.getElementById('hPostFlow');return e?e.value:'';})(),hApprovalDays:(function(){var e=document.getElementById('hApprovalDays');return e?e.value:'';})(),hPhotoAsset:(function(){var e=document.getElementById('hPhotoAsset');return e?e.value:'';})(),hVideoAsset:(function(){var e=document.getElementById('hVideoAsset');return e?e.value:'';})(),hNewShoot:(function(){var e=document.getElementById('hNewShoot');return e?e.value:'';})(),hLogo:(function(){var e=document.getElementById('hLogo');return e?e.value:'';})(),hPastAsset:(function(){var e=document.getElementById('hPastAsset');return e?e.value:'';})(),hTonmana:(function(){var e=document.getElementById('hTonmana');return e?e.value:'';})(),hAdIg:(function(){var e=document.getElementById('hAdIg');return e?e.value:'';})(),hAdStart:(function(){var e=document.getElementById('hAdStart');return e?e.value:'';})(),hAdBudget:(function(){var e=document.getElementById('hAdBudget');return e?e.value:'';})(),hLpUrl:(function(){var e=document.getElementById('hLpUrl');return e?e.value:'';})(),hInfStart:(function(){var e=document.getElementById('hInfStart');return e?e.value:'';})(),hInfEnd:(function(){var e=document.getElementById('hInfEnd');return e?e.value:'';})(),hInfCount:(function(){var e=document.getElementById('hInfCount');return e?e.value:'';})(),hInfGenre:(function(){var e=document.getElementById('hInfGenre');return e?e.value:'';})(),hInfFollowers:(function(){var e=document.getElementById('hInfFollowers');return e?e.value:'';})(),hInfMust:(function(){var e=document.getElementById('hInfMust');return e?e.value:'';})(),hHashtag:(function(){var e=document.getElementById('hHashtag');return e?e.value:'';})(),hOpStart:(function(){var e=document.getElementById('hOpStart');return e?e.value:'';})(),hShootDate:(function(){var e=document.getElementById('hShootDate');return e?e.value:'';})(),hPostStart:(function(){var e=document.getElementById('hPostStart');return e?e.value:'';})(),hAdStart2:(function(){var e=document.getElementById('hAdStart2');return e?e.value:'';})(),hInfPostDate:(function(){var e=document.getElementById('hInfPostDate');return e?e.value:'';})(),hOther:(function(){var e=document.getElementById('hOther');return e?e.value:'';})()},
     managerLog:managerLog,
     prevManagers:existing?existing.prevManagers||[]:[],
-    progress:existing?existing.progress||{}:{}
+    progress:existing?existing.progress||{}:{},
+    nextAction:document.getElementById('sNextAction').value,
+    negotiatingMemo:document.getElementById('sNegotiatingMemo').value,
+    adBilling:existing?existing.adBilling||{}:{},
+    monthlyReview:existing?existing.monthlyReview||{}:{}
   };
   if(isEdit){
     var idx=DB.stores.findIndex(function(x){return x.id===id;});
@@ -2894,8 +2970,13 @@ function renderTodoList(){
     if((prog.creator||{}).status==='done'&&(prog.plan||{status:'pending'}).status==='pending'){
       items.push({priority:2,date:today,main:esc(s.name),sub:'企画 未提出',subColor:'var(--amber)',btns:btn});
     }
+    /* キックオフ：営業同席希望あり＆未実施（企画提出済みの場合のみ） */
+    var ko=prog.kickoff||{status:'pending'};
+    if((prog.plan||{}).status==='done'&&ko.status==='pending'&&ko.salesJoin){
+      items.push({priority:1,date:today,main:esc(s.name),sub:'🤝 キックオフ 営業同席希望あり（未実施）',subColor:'var(--accent)',btns:btn});
+    }
     /* 絵コンテ未提出（キックオフ完了 or 不要 かつ企画提出済みの場合のみ） */
-    var koStatus=(prog.kickoff||{}).status;
+    var koStatus=ko.status;
     if((prog.plan||{}).status==='done'&&(koStatus==='done'||koStatus==='na')&&(prog.storyboard||{status:'pending'}).status==='pending'){
       items.push({priority:2,date:today,main:esc(s.name),sub:'絵コンテ未提出',subColor:'var(--amber)',btns:btn});
     }
@@ -3746,7 +3827,8 @@ function updateCastSelects(){
 }
 function setupPct(s){if(!s.setupChecks||!s.setupChecks.length)return 0;return Math.round(s.setupChecks.filter(Boolean).length/SETUP_LABELS.length*100);}
 function contractEndDate(s){if(!s.contractStart||!s.contractTerm)return null;var d=new Date(s.contractStart);d.setMonth(d.getMonth()+parseInt(s.contractTerm));return d;}
-function statusBadge(v){var m={active:'<span class="badge b-green">稼働中</span>',pending:'<span class="badge b-amber">準備中</span>',ended:'<span class="badge b-gray">終了</span>'};return m[v]||'—';}
+function statusBadge(v){var m={negotiating:'<span class="badge b-blue">商談中</span>',active:'<span class="badge b-green">稼働中</span>',pending:'<span class="badge b-amber">準備中</span>',ended:'<span class="badge b-gray">終了</span>'};return m[v]||'—';}
+function onStoreStatusChange(){var v=document.getElementById('sStatus').value;var row=document.getElementById('sNegotiatingRow');if(row)row.style.display=v==='negotiating'?'':'none';}
 function postStatusBadge(v){var m={draft:'<span class="badge b-gray">下書き</span>',scheduled:'<span class="badge b-blue">予約済み</span>',done:'<span class="badge b-green">投稿済み</span>',unbooked:'<span class="badge b-gray">予約未</span>',booked:'<span class="badge b-amber">予約済み</span>',visited:'<span class="badge b-green">来店済み</span>',cancelled:'<span class="badge b-red">キャンセル</span>',pending_review:'<span class="badge b-amber">確認待ち</span>',approved:'<span class="badge b-green">承認済み</span>'};return m[v]||v;}
 
 function generateAlerts(){
@@ -3796,8 +3878,10 @@ function generateAlerts(){
 function renderDashboard(){
   var active=DB.stores.filter(function(s){return s.status==='active';});
   var thisMon=DB.posts.filter(function(p){var d=new Date(p.date);return d.getFullYear()===NOW.getFullYear()&&d.getMonth()===NOW.getMonth();});
-  document.getElementById('ds-total').textContent=DB.stores.length;
+  var negotiating=DB.stores.filter(function(s){return s.status==='negotiating';});
+  document.getElementById('ds-total').textContent=DB.stores.filter(function(s){return s.status!=='negotiating';}).length;
   document.getElementById('ds-active').textContent=active.length;
+  document.getElementById('ds-negotiating').textContent=negotiating.length;
   document.getElementById('ds-posts').textContent=thisMon.length;
   document.getElementById('ds-inf').textContent=DB.influencers.length;
   document.getElementById('ss-active').textContent=active.length;
@@ -3939,9 +4023,38 @@ function renderDashboard(){
 function renderStoreTable(){
   var filter=document.getElementById('filterStatus').value;
   var search=(document.getElementById('globalSearch').value||'').toLowerCase();
-  var list=DB.stores.filter(function(s){if(filter&&s.status!==filter)return false;if(search&&!(s.name||'').toLowerCase().includes(search)&&!(s.genre||'').toLowerCase().includes(search))return false;return true;});
+  /* 商談中セクション */
+  var negBox=document.getElementById('negotiatingBox');
+  var negList=DB.stores.filter(function(s){return s.status==='negotiating'&&(!search||(s.name||'').toLowerCase().includes(search));});
+  if(negBox){
+    if(negList.length&&(!filter||filter==='negotiating')){
+      var bs2='font-size:12px;padding:3px 9px;border-radius:6px;cursor:pointer;border:1px solid;white-space:nowrap;';
+      negBox.style.display='';
+      negBox.innerHTML='<div style="font-size:12px;font-weight:600;color:var(--accent);margin-bottom:8px;letter-spacing:.5px">💬 商談中 '+negList.length+'件</div>'
+        +negList.map(function(s){
+          var today=new Date();today.setHours(0,0,0,0);
+          var na=s.nextAction?new Date(s.nextAction):null;
+          var naStr=na?((na.getMonth()+1)+'/'+(na.getDate())):'';
+          var naColor=na&&na<today?'var(--red)':na&&(na-today)/86400000<=3?'var(--amber)':'var(--text3)';
+          return'<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--bg3);border-radius:var(--r);margin-bottom:6px;border:1px solid var(--border)">'
+            +'<div style="width:6px;height:6px;border-radius:50%;background:'+s.color+';flex-shrink:0"></div>'
+            +'<div style="flex:1;min-width:0">'
+              +'<span style="font-size:14px;font-weight:500;cursor:pointer;color:var(--accent)" onclick="openStoreModal(\''+s.id+'\')">'+esc(s.name)+'</span>'
+              +(s.negotiatingMemo?'<span style="font-size:12px;color:var(--text2);margin-left:8px">'+esc(s.negotiatingMemo)+'</span>':'')
+            +'</div>'
+            +(naStr?'<span style="font-size:12px;color:'+naColor+';white-space:nowrap">📅 '+naStr+'</span>':'')
+            +'<span style="font-size:12px;color:var(--text3)">'+esc(s.ourManager||'')+'</span>'
+            +'<button style="'+bs2+'background:var(--bg2);color:var(--text2);border-color:var(--border)" onclick="openStoreModal(\''+s.id+'\')">編集</button>'
+          +'</div>';
+        }).join('');
+    }else{
+      negBox.style.display='none';
+    }
+  }
+  var list=DB.stores.filter(function(s){if(s.status==='negotiating')return false;if(filter&&s.status!==filter)return false;if(search&&!(s.name||'').toLowerCase().includes(search)&&!(s.genre||'').toLowerCase().includes(search))return false;return true;});
   var tb=document.getElementById('storeTableBody');
-  if(!list.length){tb.innerHTML='<tr><td colspan="11" class="empty-state">店舗がありません</td></tr>';return;}
+  if(!list.length&&!negList.length){tb.innerHTML='<tr><td colspan="14" class="empty-state">店舗がありません</td></tr>';return;}
+  if(!list.length){tb.innerHTML='';return;}
   var metaLabels={none:'—',basic:'<span class="badge b-amber">基礎あり</span>',advanced:'<span class="badge b-green">豊富</span>'};
   tb.innerHTML=list.map(function(s){
     var pct=setupPct(s);
@@ -3979,6 +4092,9 @@ function renderStoreTable(){
       +'<td>'+esc(s.contactName||'—')+'</td>'
       +'<td>'+mgrCell+'</td>'
       +'<td>'+sns+'</td>'
+      +'<td>'+(DB.castings.some(function(c){return c.storeId===s.id;})?'<span class="badge b-purple" style="font-size:11px">👤 あり</span>':'<span style="color:var(--text3);font-size:12px">—</span>')+'</td>'
+      +(function(){var done=isMonthlyDone(s,'adBilling');return'<td><button class="btn btn-sm" style="font-size:11px;padding:2px 8px;'+(done?'background:var(--green-bg);color:var(--green);border-color:var(--green-border)':'background:var(--bg3);color:var(--text2)')+'" onclick="event.stopPropagation();toggleMonthlyDone(\''+s.id+'\',\'adBilling\')">'+(done?'✓ 済':'未')+'</button></td>';})()
+      +(function(){var done=isMonthlyDone(s,'monthlyReview');return'<td><button class="btn btn-sm" style="font-size:11px;padding:2px 8px;'+(done?'background:var(--green-bg);color:var(--green);border-color:var(--green-border)':'background:var(--bg3);color:var(--text2)')+'" onclick="event.stopPropagation();toggleMonthlyDone(\''+s.id+'\',\'monthlyReview\')">'+(done?'✓ 済':'未')+'</button></td>';})()
       +'<td><div style="display:flex;align-items:center;gap:6px"><div class="pbar-wrap" style="width:52px"><div class="pbar" style="background:'+(pct===100?'var(--green)':'var(--accent)')+';width:'+pct+'%"></div></div><span style="font-size:11px;color:var(--text3)">'+pct+'%</span></div></td>'
       +'<td>'+statusBadge(s.status)+'</td>'
       +'<td style="white-space:nowrap"><button class="btn btn-sm" onclick="openStoreModal(\''+s.id+'\')" style="margin-right:4px">編集</button><button class="btn-ghost-danger" onclick="deleteStore(\''+s.id+'\')">削除</button></td>'
@@ -4111,17 +4227,18 @@ function showDetail(id){
       :'<div style="font-size:13px;color:var(--text3);margin-bottom:14px">投稿なし</div>'
     )
 
-    /* キャスティング */
-    +'<div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:8px">キャスティング ('+myCast.length+'件)</div>'
+    /* キャスティング（インフルエンサー案件） */
     +(myCast.length
-      ?'<div style="border:1px solid var(--border);border-radius:var(--r)">'+myCast.map(function(c,i){
+      ?'<div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:8px">キャスティング ('+myCast.length+'件)</div>'
+        +'<div style="border:1px solid var(--border);border-radius:var(--r)">'+myCast.map(function(c,i){
           return'<div style="font-size:13px;padding:7px 12px;border-bottom:'+(i<myCast.length-1?'1px solid var(--border)':'none')+';display:flex;gap:10px">'
             +'<span class="td-mono" style="color:var(--text3)">'+fmtD(c.date)+'</span>'
             +'<span>'+esc(infName(c.infId))+'</span>'
             +'<span style="margin-left:auto;color:var(--text3)">'+fmtMoney(c.fee)+'</span>'
           +'</div>';
         }).join('')+'</div>'
-      :'<div style="font-size:13px;color:var(--text3)">なし</div>'
+      :'<details style="margin-bottom:4px"><summary style="font-size:12px;font-weight:500;color:var(--text3);cursor:pointer">▸ キャスティング（インフルエンサー案件なし）</summary>'
+        +'<div style="font-size:13px;color:var(--text3);padding:8px 0 0 12px">この店舗にはインフルエンサー案件がありません</div></details>'
     )
 
     /* 編集ボタン */
