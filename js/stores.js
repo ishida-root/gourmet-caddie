@@ -1,0 +1,703 @@
+﻿var PROGRESS_STEPS=[
+  {key:'hearing',    label:'ヒアリング',        hasNa:false},
+  {key:'creator',    label:'クリエイター確定',   hasNa:false},
+  {key:'plan',       label:'企画提出',           hasNa:false},
+  {key:'kickoff',    label:'キックオフMTG',      hasNa:true},
+  {key:'storyboard', label:'絵コンテ提出',       hasNa:false}
+];
+
+function renderProgressTab(){
+  var el=document.getElementById('progressSteps');
+  if(!el)return;
+  var s=DB.stores.find(function(x){return x.id===editingStoreId;});
+  if(!s){el.innerHTML='<div style="color:var(--text3);font-size:13px;padding:12px">店舗を選択してください</div>';return;}
+  var prog=s.progress||{};
+  var bs='font-size:13px;padding:5px 12px;border-radius:6px;cursor:pointer;border:1px solid;white-space:nowrap;';
+  el.innerHTML='<div style="padding-bottom:8px">'
+    +PROGRESS_STEPS.map(function(step,i){
+      var p=prog[step.key]||{status:'pending',date:''};
+      var isDone=p.status==='done';
+      var isNa=p.status==='na';
+      var circleStyle=isDone
+        ?'background:var(--green);border-color:var(--green);color:#fff'
+        :isNa
+        ?'background:var(--bg3);border-color:var(--border);color:var(--text3)'
+        :'background:var(--bg3);border-color:var(--border);color:var(--text3)';
+      var labelColor=isDone?'var(--green)':isNa?'var(--text3)':'var(--text)';
+      var suffix=isDone?' <span style="color:var(--green);font-size:12px">✓ 完了</span>':isNa?' <span style="color:var(--text3);font-size:12px">不要</span>':'';
+      var dateHtml=p.date?'<span style="font-size:12px;color:var(--text3);margin-left:8px">'+esc(p.date)+'</span>':'';
+      var btns='';
+      if(!isDone&&!isNa){
+        btns='<button style="'+bs+'background:var(--accent);color:#fff;border-color:var(--accent)" onclick="saveStepProgress(\''+step.key+'\',\'done\',document.getElementById(\'pg_'+step.key+'\').value)">完了</button>';
+        if(step.hasNa)btns+=' <button style="'+bs+'background:var(--bg3);color:var(--text2);border-color:var(--border)" onclick="saveStepProgress(\''+step.key+'\',\'na\',\'\')">不要</button>';
+      }else{
+        btns='<button style="'+bs+'background:var(--bg3);color:var(--text3);border-color:var(--border)" onclick="saveStepProgress(\''+step.key+'\',\'pending\',\'\')">取り消す</button>';
+      }
+      var salesJoinHtml='';
+      if(step.key==='kickoff'){
+        var sj=p.salesJoin?true:false;
+        salesJoinHtml='<label style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:'+(sj?'var(--accent)':'var(--text3)')+';cursor:pointer;margin-top:4px">'
+          +'<input type="checkbox" '+(sj?'checked':'')+' onchange="toggleKickoffSalesJoin(this.checked)" style="cursor:pointer">'
+          +'🤝 営業同席希望'+(sj?'（あり）':'')
+        +'</label>';
+      }
+      return '<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)">'
+        +'<div style="width:30px;height:30px;border-radius:50%;border:2px solid;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;'+circleStyle+'">'+(isDone?'✓':isNa?'—':String(i+1))+'</div>'
+        +'<div style="flex:1;min-width:0">'
+          +'<div style="font-size:14px;font-weight:600;color:'+labelColor+'">'+step.label+suffix+dateHtml+'</div>'
+          +salesJoinHtml
+        +'</div>'
+        +'<input type="date" id="pg_'+step.key+'" value="'+(p.date||'')+'" style="font-size:13px;padding:4px 6px;border:1px solid var(--border);border-radius:6px;background:var(--bg2);color:var(--text);width:140px;flex-shrink:0">'
+        +'<div style="display:flex;gap:6px;flex-shrink:0">'+btns+'</div>'
+      +'</div>';
+    }).join('')
+  +'</div>';
+}
+
+function saveStepProgress(stepKey,status,date){
+  var s=DB.stores.find(function(x){return x.id===editingStoreId;});
+  if(!s)return;
+  if(!s.progress)s.progress={};
+  var prev=s.progress[stepKey]||{};
+  s.progress[stepKey]={status:status,date:date||'',salesJoin:prev.salesJoin||false};
+  saveItem('stores',s);
+  renderProgressTab();
+  renderTodoList();
+}
+function toggleKickoffSalesJoin(checked){
+  var s=DB.stores.find(function(x){return x.id===editingStoreId;});
+  if(!s)return;
+  if(!s.progress)s.progress={};
+  var prev=s.progress.kickoff||{status:'pending',date:''};
+  prev.salesJoin=checked;
+  s.progress.kickoff=prev;
+  saveItem('stores',s);
+  renderProgressTab();
+  renderTodoList();
+}
+
+
+/* ============================================================
+   営業時間・定休日 統合管理
+   保存形式（sHours hidden field に JSON文字列）:
+   シンプル: "17:00–24:00"
+   曜日別:   {"common":"17:00–24:00","perDay":true,"days":{"mon":{"closed":true},"sun":{"from":"18:00","to":"23:00"},"hol":{"closed":true}}}
+   ============================================================ */
+var DAY_KEYS=['mon','tue','wed','thu','fri','sat','sun','hol'];
+var DAY_LABELS={'mon':'月','tue':'火','wed':'水','thu':'木','fri':'金','sat':'土','sun':'日','hol':'祝'};
+var HOURS_FROM_OPTS=['00:00','6:00','7:00','8:00','9:00','10:00','11:00','11:30','12:00','13:00','14:00','15:00','16:00','17:00','17:30','18:00','18:30','19:00','20:00'];
+var HOURS_TO_OPTS=['21:00','22:00','22:30','23:00','23:30','24:00','25:00','26:00','27:00','28:00','翌3:00','翌5:00'];
+var _pdListsRendered=false;
+
+function ensurePerDayDatalist(){
+  if(_pdListsRendered)return;
+  _pdListsRendered=true;
+  var frag=document.createDocumentFragment();
+  var dlf=document.createElement('datalist');dlf.id='pdFromList';
+  HOURS_FROM_OPTS.forEach(function(o){var opt=document.createElement('option');opt.value=o;dlf.appendChild(opt);});
+  var dlt=document.createElement('datalist');dlt.id='pdToList';
+  HOURS_TO_OPTS.forEach(function(o){var opt=document.createElement('option');opt.value=o;dlt.appendChild(opt);});
+  frag.appendChild(dlf);frag.appendChild(dlt);
+  document.body.appendChild(frag);
+}
+
+function makeTimeInput(id, val, onchangeFn, listId){
+  /* wrapperのdivとhidden inputを返す（DOMに追加後にmakeTimePicker24を呼ぶ） */
+  return '<div id="wrap-'+id+'" style="display:inline-flex"></div>'
+    +'<input type="hidden" id="'+id+'" value="'+esc(val||'')+'">';
+}
+/* makeTimeInput後にピッカー初期化するコール */
+function initMadeTimePickers(){
+  document.querySelectorAll('[id^="wrap-pdf"],[id^="wrap-pdto"]').forEach(function(wrap){
+    var hid=document.getElementById(wrap.id.replace("wrap-",""));
+    if(hid&&!wrap._pickerInit){
+      wrap._pickerInit=true;
+      makeTimePicker24(wrap.id, hid.id, function(){updateHoursData();});
+      var w=document.getElementById(wrap.id);
+      if(w&&w._setTime)w._setTime(hid.value||'');
+    }
+  });
+}
+
+function renderPerDayTable(savedDays){
+  var body=document.getElementById('perDayBody');
+  if(!body)return;
+  body.innerHTML=DAY_KEYS.map(function(key){
+    var d=savedDays&&savedDays[key]?savedDays[key]:{};
+    var closed=d.closed||false;
+    var rowStyle=closed?'background:var(--red-bg)':'';
+    return '<tr id="pdr-'+key+'" style="border-bottom:1px solid var(--border);'+rowStyle+'">'
+      +'<td style="padding:6px 10px;text-align:center">'
+        +'<input type="checkbox" id="pdc-'+key+'" '+(closed?'checked':'')+' onchange="onDayClosedChange(\''+key+'\')" style="width:auto;margin:0">'
+      +'</td>'
+      +'<td style="padding:6px 8px;font-size:13px;font-weight:500;color:'+(closed?'var(--red)':'var(--text)')+'">'+DAY_LABELS[key]+'</td>'
+      +'<td style="padding:4px 8px">'
+        +(closed
+          ?'<span style="font-size:12px;color:var(--red)">定休日</span>'
+          :makeTimeInput('pdfrom-'+key,d.from||'','updateHoursData()','pdFromList')
+        )
+      +'</td>'
+      +'<td style="padding:4px 8px">'
+        +(closed
+          ?''
+          :'<span style="font-size:12px;color:var(--text3);margin-right:4px">〜</span>'
+           +makeTimeInput('pdto-'+key,d.to||'','updateHoursData()','pdToList')
+        )
+      +'</td>'
+      +'</tr>';
+  }).join('');
+  /* ピッカー初期化（DOM追加後） */
+  setTimeout(initMadeTimePickers, 0);
+}
+
+function onDayClosedChange(key){
+  updateHoursData();
+  /* 行の背景・テキストを即時更新するために再描画 */
+  var days=getPerDayData();
+  renderPerDayTable(days);
+  /* チェック状態をDOMから再取得して再セット（再描画後にチェックが消えないよう） */
+  var el=document.getElementById('pdc-'+key);
+  if(el)el.checked=days[key]&&days[key].closed;
+}
+
+function getPerDayData(){
+  var days={};
+  DAY_KEYS.forEach(function(key){
+    var closedEl=document.getElementById('pdc-'+key);
+    if(!closedEl)return;
+    var closed=closedEl.checked;
+    if(closed){days[key]={closed:true};}
+    else{
+      var fromEl=document.getElementById('pdfrom-'+key);
+      var toEl=document.getElementById('pdto-'+key);
+      var from=fromEl?fromEl.value:'';
+      var to=toEl?toEl.value:'';
+      if(from||to)days[key]={from:from,to:to};
+    }
+  });
+  return days;
+}
+
+function togglePerDay(){
+  ensurePerDayDatalist();
+  var on=document.getElementById('sPerDay').checked;
+  document.getElementById('perDayTable').style.display=on?'':'none';
+  if(on){
+    var cur=parseHoursData(document.getElementById('sHours').value);
+    /* 共通時間を引き継いで各曜日の初期値にセット */
+    var commonFrom=document.getElementById('sHoursFrom').value;
+    var commonTo=document.getElementById('sHoursTo').value;
+    var existingDays=cur.days||{};
+    /* 既存daysデータがない曜日に共通時間をセット */
+    if(commonFrom||commonTo){
+      DAY_KEYS.forEach(function(key){
+        if(!existingDays[key]){
+          existingDays[key]={from:commonFrom,to:commonTo};
+        }
+      });
+    }
+    renderPerDayTable(existingDays);
+  }
+  updateHoursData();
+}
+
+function updateHoursData(){
+  var from=document.getElementById('sHoursFrom').value;
+  var to=document.getElementById('sHoursTo').value;
+  var perDay=document.getElementById('sPerDay').checked;
+  var hoursEl=document.getElementById('sHours');
+  var holidayEl=document.getElementById('sHoliday');
+  if(!perDay){
+    hoursEl.value=(from&&to)?from+'–'+to:(from||to||'');
+    holidayEl.value='';
+  }else{
+    var days=getPerDayData();
+    var obj={common:(from&&to)?from+'–'+to:'',perDay:true,days:days};
+    hoursEl.value=JSON.stringify(obj);
+    /* holiday フィールドを定休日曜日テキストで更新 */
+    var closedDays=DAY_KEYS.filter(function(k){return days[k]&&days[k].closed;})
+      .map(function(k){return DAY_LABELS[k]+'曜';});
+    if(closedDays.length){
+      holidayEl.value=closedDays.map(function(d){return d.replace('祝曜','祝日');}).join('・');
+    }else{
+      holidayEl.value='';
+    }
+  }
+}
+
+function parseHoursData(val){
+  if(!val)return{common:'',perDay:false,days:{}};
+  if(val.charAt(0)==='{'){
+    try{return JSON.parse(val);}catch(e){}
+  }
+  return{common:val,perDay:false,days:{}};
+}
+
+/* ---- clearStoreForm / openStoreModal 用の復元 ---- */
+function restoreHoursUI(hoursVal){
+  var data=parseHoursData(hoursVal);
+  var perDayEl=document.getElementById('sPerDay');
+  var tableEl=document.getElementById('perDayTable');
+  if(data.perDay){
+    perDayEl.checked=true;
+    tableEl.style.display='';
+    var parts=(data.common||'').split('–');
+    var _sfwrap=document.getElementById('sHoursFromWrap');
+    var _stwrap=document.getElementById('sHoursToWrap');
+    if(_sfwrap&&_sfwrap._setTime)_sfwrap._setTime(parts[0]||'');else{var _sf=document.getElementById('sHoursFrom');if(_sf)_sf.value=parts[0]||'';}
+    if(_stwrap&&_stwrap._setTime)_stwrap._setTime(parts[1]||'');else{var _st=document.getElementById('sHoursTo');if(_st)_st.value=parts[1]||'';}
+    renderPerDayTable(data.days||{});
+  }else{
+    perDayEl.checked=false;
+    tableEl.style.display='none';
+    var parts2=(data.common||'').split('–');
+    var _sfwrap2=document.getElementById('sHoursFromWrap');
+    var _stwrap2=document.getElementById('sHoursToWrap');
+    if(_sfwrap2&&_sfwrap2._setTime)_sfwrap2._setTime(parts2[0]||'');else{var _sf2=document.getElementById('sHoursFrom');if(_sf2)_sf2.value=parts2[0]||'';}
+    if(_stwrap2&&_stwrap2._setTime)_stwrap2._setTime(parts2[1]||'');else{var _st2=document.getElementById('sHoursTo');if(_st2)_st2.value=parts2[1]||'';}
+  }
+  document.getElementById('sHours').value=hoursVal||'';
+}
+
+/* ---- 人間が読める営業時間サマリー（表示用） ---- */
+function formatHoursSummary(hoursVal){
+  var data=parseHoursData(hoursVal);
+  if(!data.perDay)return data.common||'—';
+  var common=data.common||'';
+  var lines=[];
+  DAY_KEYS.forEach(function(key){
+    var d=data.days&&data.days[key];
+    if(!d)return;
+    var label=DAY_LABELS[key];
+    if(d.closed){lines.push(label+': 定休');}
+    else if(d.from||d.to){lines.push(label+': '+(d.from||'?')+'–'+(d.to||'?'));}
+  });
+  if(!lines.length)return common||'—';
+  return (common?common+'\n':'')+lines.join(' / ');
+}
+
+function clearStoreForm(){
+  ['sName','sPref','sArea','sSeats','sTabelog','sHp','sMemo','sIg','sIgFollowers','sFb','sTw','sTt','sYt','sMetaId','sCreator','sContractStart','sMonthlyFee','sContactName','sContactRole','sContactTel','sContactEmail','sContactLine','sSetupMemo','sNextAction','sNegotiatingMemo'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('sGenre').value='';
+  var scorp=document.getElementById('sCorpId');if(scorp)scorp.value='';
+  document.getElementById('sHours').value='';
+  document.getElementById('sHoliday').value='';
+  document.getElementById('sHoursFrom').value='';
+  document.getElementById('sHoursTo').value='';
+  document.getElementById('sPerDay').checked=false;
+  document.getElementById('perDayTable').style.display='none';
+  document.getElementById('sMetaExp').value='none';
+  document.getElementById('sContractTerm').value='3';
+  document.getElementById('sStatus').value='pending';
+  document.getElementById('sReviewCycle').value='monthly';
+  document.getElementById('sAdDelivery').value='yes';
+  document.getElementById('sVideos').value='2';
+  document.getElementById('sPlanId').value='';
+  document.getElementById('sPlanPreview').textContent='';
+  document.querySelectorAll('#setupChecklist .check-item').forEach(function(el){el.classList.remove('done');el.querySelector('.check-box').textContent='';});
+  ['hIssue','hTargetWant','hTargetNow','hTiming','hIdealCustomer','hStrength','hArea','hIgPurpose','hMenu','hKpi','hTargetAge','hTargetGender','hTargetRegion','hTargetInterest','hRefAccount','hNg','hPastAd','hAccMgr','hLoginShare','hFbPage','hInPost','hDmMgr','hPostContent','hPostFlow','hApprovalDays','hPhotoAsset','hVideoAsset','hNewShoot','hLogo','hPastAsset','hTonmana','hAdIg','hAdStart','hAdBudget','hLpUrl','hInfStart','hInfEnd','hInfCount','hInfGenre','hInfFollowers','hInfMust','hHashtag','hOpStart','hShootDate','hPostStart','hAdStart2','hInfPostDate','hOther'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';}); 
+}
+
+function openStoreModal(id){
+  editingStoreId=id||null;
+  clearStoreForm();
+  updateGenreDatalist();
+  updatePlanSelect();
+  updateSalesPersonSelects();
+  /* クリエイターselectを最新のDB.creatorsで更新 */
+  var crSel=document.getElementById('sCreator');
+  if(crSel){
+    crSel.innerHTML='<option value="">（未設定）</option>';
+    DB.creators.slice().sort(function(a,b){return(a.crName||'').localeCompare(b.crName||'');}).forEach(function(cr){
+      var opt=document.createElement('option');
+      opt.value=cr.id;
+      opt.textContent=cr.crName+(cr.crRealName?' ('+cr.crRealName+')':'');
+      crSel.appendChild(opt);
+    });
+  }
+  document.getElementById('storeModalTitle').textContent=id?'店舗を編集':'店舗を追加';
+  if(id){
+    var s=DB.stores.find(function(x){return x.id===id;});
+    if(s){
+      var map={sName:'name',sCorpId:'corpId',sGenre:'genre',sPref:'pref',sArea:'area',sZip:'zip',sSeats:'seats',sTabelog:'tabelog',sHp:'hp',sMemo:'memo',sIg:'ig',sIgFollowers:'igFollowers',sFb:'fb',sTw:'tw',sTt:'tt',sYt:'yt',sMetaId:'metaId',sMetaExp:'metaExp',sCreator:'creator',sContractStart:'contractStart',sContractTerm:'contractTerm',sMonthlyFee:'monthlyFee',sStatus:'status',sContactName:'contactName',sContactRole:'contactRole',sContactTel:'contactTel',sContactEmail:'contactEmail',sContactLine:'contactLine',sOurManager:'ourManager',sReviewCycle:'reviewCycle',sVideos:'videos',sAdDelivery:'adDelivery',sSetupMemo:'setupMemo',sPlanId:'planId'};
+      Object.keys(map).forEach(function(elId){var el=document.getElementById(elId);if(el&&s[map[elId]]!==undefined)el.value=s[map[elId]];});
+      if(document.getElementById('sOurManager')&&!document.getElementById('sOurManager').value&&s.salesBy){
+        document.getElementById('sOurManager').value=s.salesBy;
+      }
+      /* 退職済み担当者の表示 */
+      refreshManagerDisplay(s);
+      /* 営業時間・定休日を復元 */
+      restoreHoursUI(s.hours||'');
+      showPlanPreview();
+      if(s.setupChecks){var items=document.querySelectorAll('#setupChecklist .check-item');s.setupChecks.forEach(function(v,i){if(items[i]&&v){items[i].classList.add('done');items[i].querySelector('.check-box').textContent='✓';}});}
+      if(s.hearing){Object.keys(s.hearing).forEach(function(k){var el=document.getElementById(k);if(el)el.value=s.hearing[k]||'';});}
+      var naEl=document.getElementById('sNextAction');if(naEl)naEl.value=s.nextAction||'';
+      var nmEl=document.getElementById('sNegotiatingMemo');if(nmEl)nmEl.value=s.negotiatingMemo||'';
+      onStoreStatusChange();
+    }
+  }
+  switchStoreTab(0);
+  /* 契約開始日ピッカー初期化 */
+  makeDatePicker('sContractStartWrap','sContractStart',{yearFrom:2020,yearTo:new Date().getFullYear()+3,yearLabel:'年'});
+  makeTimePicker24('sHoursFromWrap','sHoursFrom',function(){updateHoursData();});
+  makeTimePicker24('sHoursToWrap','sHoursTo',function(){updateHoursData();});
+  if(id){
+    var _scs=DB.stores.find(function(x){return x.id===id;});
+    if(_scs){
+      var _scwrap=document.getElementById('sContractStartWrap');if(_scwrap&&_scwrap._setDate)_scwrap._setDate(_scs.contractStart||'');
+    }
+  }
+  openModal('storeModal');
+}
+
+function saveStore(){
+  var name=document.getElementById('sName').value.trim();
+  if(!name){alert('店舗名を入力してください');return;}
+  var isEdit=!!editingStoreId;
+  var id=isEdit?editingStoreId:uid();
+  var existing=isEdit?DB.stores.find(function(x){return x.id===id;}):null;
+  /* 担当者変更履歴を記録 */
+  var newManager=document.getElementById('sOurManager').value;
+  var managerLog=existing?existing.managerLog||[]:[];
+  if(isEdit&&existing&&existing.ourManager&&existing.ourManager!==newManager&&newManager){
+    managerLog.push({from:existing.ourManager,to:newManager,at:new Date().toISOString()});
+  }
+  var colorIdx=isEdit?(DB.stores.findIndex(function(x){return x.id===id;})):(DB.stores.length);
+  if(colorIdx<0)colorIdx=DB.stores.length;
+  var color=existing?existing.color:COLORS[colorIdx%COLORS.length];
+  var checks=Array.from(document.querySelectorAll('#setupChecklist .check-item')).map(function(el){return el.classList.contains('done');});
+  var s={
+    id:id,color:color,setupChecks:checks,
+    name:name,
+    corpId:document.getElementById('sCorpId')?document.getElementById('sCorpId').value:'',
+    genre:document.getElementById('sGenre').value,
+    zip:document.getElementById('sZip')?document.getElementById('sZip').value:'',
+    pref:document.getElementById('sPref').value,
+    area:document.getElementById('sArea').value,
+    hours:document.getElementById('sHours').value,
+    holiday:document.getElementById('sHoliday').value,
+    seats:document.getElementById('sSeats').value,
+    tabelog:document.getElementById('sTabelog').value,
+    hp:document.getElementById('sHp').value,
+    memo:document.getElementById('sMemo').value,
+    ig:document.getElementById('sIg').value,
+    igFollowers:document.getElementById('sIgFollowers').value,
+    fb:document.getElementById('sFb').value,
+    tw:document.getElementById('sTw').value,
+    tt:document.getElementById('sTt').value,
+    yt:document.getElementById('sYt').value,
+    metaId:document.getElementById('sMetaId').value,
+    metaExp:document.getElementById('sMetaExp').value,
+    creator:document.getElementById('sCreator').value,
+    contractStart:document.getElementById('sContractStart').value,
+    contractTerm:document.getElementById('sContractTerm').value,
+    monthlyFee:document.getElementById('sMonthlyFee').value,
+    status:document.getElementById('sStatus').value,
+    contactName:document.getElementById('sContactName').value,
+    contactRole:document.getElementById('sContactRole').value,
+    contactTel:document.getElementById('sContactTel').value,
+    contactEmail:document.getElementById('sContactEmail').value,
+    contactLine:document.getElementById('sContactLine').value,
+    ourManager:document.getElementById('sOurManager').value,
+    reviewCycle:document.getElementById('sReviewCycle').value,
+    videos:document.getElementById('sVideos').value,
+    adDelivery:document.getElementById('sAdDelivery').value,
+    setupMemo:document.getElementById('sSetupMemo').value,
+    planId:document.getElementById('sPlanId').value,
+    rakurakuRegistered:existing?existing.rakurakuRegistered:false,
+    hearing:{hIssue:(function(){var e=document.getElementById('hIssue');return e?e.value:'';})(),hTargetWant:(function(){var e=document.getElementById('hTargetWant');return e?e.value:'';})(),hTargetNow:(function(){var e=document.getElementById('hTargetNow');return e?e.value:'';})(),hTiming:(function(){var e=document.getElementById('hTiming');return e?e.value:'';})(),hIdealCustomer:(function(){var e=document.getElementById('hIdealCustomer');return e?e.value:'';})(),hStrength:(function(){var e=document.getElementById('hStrength');return e?e.value:'';})(),hArea:(function(){var e=document.getElementById('hArea');return e?e.value:'';})(),hIgPurpose:(function(){var e=document.getElementById('hIgPurpose');return e?e.value:'';})(),hMenu:(function(){var e=document.getElementById('hMenu');return e?e.value:'';})(),hKpi:(function(){var e=document.getElementById('hKpi');return e?e.value:'';})(),hTargetAge:(function(){var e=document.getElementById('hTargetAge');return e?e.value:'';})(),hTargetGender:(function(){var e=document.getElementById('hTargetGender');return e?e.value:'';})(),hTargetRegion:(function(){var e=document.getElementById('hTargetRegion');return e?e.value:'';})(),hTargetInterest:(function(){var e=document.getElementById('hTargetInterest');return e?e.value:'';})(),hRefAccount:(function(){var e=document.getElementById('hRefAccount');return e?e.value:'';})(),hNg:(function(){var e=document.getElementById('hNg');return e?e.value:'';})(),hPastAd:(function(){var e=document.getElementById('hPastAd');return e?e.value:'';})(),hAccMgr:(function(){var e=document.getElementById('hAccMgr');return e?e.value:'';})(),hLoginShare:(function(){var e=document.getElementById('hLoginShare');return e?e.value:'';})(),hFbPage:(function(){var e=document.getElementById('hFbPage');return e?e.value:'';})(),hInPost:(function(){var e=document.getElementById('hInPost');return e?e.value:'';})(),hDmMgr:(function(){var e=document.getElementById('hDmMgr');return e?e.value:'';})(),hPostContent:(function(){var e=document.getElementById('hPostContent');return e?e.value:'';})(),hPostFlow:(function(){var e=document.getElementById('hPostFlow');return e?e.value:'';})(),hApprovalDays:(function(){var e=document.getElementById('hApprovalDays');return e?e.value:'';})(),hPhotoAsset:(function(){var e=document.getElementById('hPhotoAsset');return e?e.value:'';})(),hVideoAsset:(function(){var e=document.getElementById('hVideoAsset');return e?e.value:'';})(),hNewShoot:(function(){var e=document.getElementById('hNewShoot');return e?e.value:'';})(),hLogo:(function(){var e=document.getElementById('hLogo');return e?e.value:'';})(),hPastAsset:(function(){var e=document.getElementById('hPastAsset');return e?e.value:'';})(),hTonmana:(function(){var e=document.getElementById('hTonmana');return e?e.value:'';})(),hAdIg:(function(){var e=document.getElementById('hAdIg');return e?e.value:'';})(),hAdStart:(function(){var e=document.getElementById('hAdStart');return e?e.value:'';})(),hAdBudget:(function(){var e=document.getElementById('hAdBudget');return e?e.value:'';})(),hLpUrl:(function(){var e=document.getElementById('hLpUrl');return e?e.value:'';})(),hInfStart:(function(){var e=document.getElementById('hInfStart');return e?e.value:'';})(),hInfEnd:(function(){var e=document.getElementById('hInfEnd');return e?e.value:'';})(),hInfCount:(function(){var e=document.getElementById('hInfCount');return e?e.value:'';})(),hInfGenre:(function(){var e=document.getElementById('hInfGenre');return e?e.value:'';})(),hInfFollowers:(function(){var e=document.getElementById('hInfFollowers');return e?e.value:'';})(),hInfMust:(function(){var e=document.getElementById('hInfMust');return e?e.value:'';})(),hHashtag:(function(){var e=document.getElementById('hHashtag');return e?e.value:'';})(),hOpStart:(function(){var e=document.getElementById('hOpStart');return e?e.value:'';})(),hShootDate:(function(){var e=document.getElementById('hShootDate');return e?e.value:'';})(),hPostStart:(function(){var e=document.getElementById('hPostStart');return e?e.value:'';})(),hAdStart2:(function(){var e=document.getElementById('hAdStart2');return e?e.value:'';})(),hInfPostDate:(function(){var e=document.getElementById('hInfPostDate');return e?e.value:'';})(),hOther:(function(){var e=document.getElementById('hOther');return e?e.value:'';})()},
+    managerLog:managerLog,
+    prevManagers:existing?existing.prevManagers||[]:[],
+    progress:existing?existing.progress||{}:{},
+    nextAction:document.getElementById('sNextAction').value,
+    negotiatingMemo:document.getElementById('sNegotiatingMemo').value,
+    adBilling:existing?existing.adBilling||{}:{},
+    monthlyReview:existing?existing.monthlyReview||{}:{}
+  };
+  if(isEdit){
+    var idx=DB.stores.findIndex(function(x){return x.id===id;});
+    if(idx>=0){DB.stores[idx]=s;}else{DB.stores.push(s);}
+  }else{
+    DB.stores.push(s);
+  }
+  closeModal('storeModal');
+  refreshAll();
+  saveItem('stores',s);
+  /* 新規登録時はChatwork通知 */
+  if(!isEdit){
+    var plan=DB.plans.find(function(p){return p.id===s.planId;});
+    var planName=plan?plan.name:'未設定';
+    notifyChatwork(
+      s.name,planName,s.ourManager||'',
+      s.contactName||'',s.contactTel||'',s.contactEmail||'',
+      s.corp||''
+    ).then(function(results){
+      if(results.length){
+        var allOk=results.every(function(r){return r.ok;});
+        if(allOk){
+          setSyncStatus('ok','✓ Chatwork通知送信完了');
+          setTimeout(function(){setSyncStatus('ok','同期済み');},3000);
+        }else{
+          setSyncStatus('error','Chatwork通知失敗');
+        }
+      }
+    });
+  }
+}
+function deleteStore(id){
+  if(!confirm('この店舗を削除しますか？\n関連する投稿・営業通知も全て削除されます。'))return;
+  /* 関連する営業通知も削除 */
+  var relatedNotifs=DB.salesNotifs?DB.salesNotifs.filter(function(n){return n.storeId===id;}):[];
+  relatedNotifs.forEach(function(n){deleteItem('salesnotifs',n.id);});
+  if(DB.salesNotifs)DB.salesNotifs=DB.salesNotifs.filter(function(n){return n.storeId!==id;});
+  /* 関連する投稿・キャスティングも削除 */
+  var relatedPosts=DB.posts.filter(function(p){return p.storeId===id;});
+  relatedPosts.forEach(function(p){deleteItem('posts',p.id);});
+  DB.posts=DB.posts.filter(function(p){return p.storeId!==id;});
+  /* 店舗本体を削除 */
+  DB.stores=DB.stores.filter(function(s){return s.id!==id;});
+  refreshAll();
+  deleteItem('stores',id);
+}
+function renderStoreTable(){
+  var filter=document.getElementById('filterStatus').value;
+  var search=(document.getElementById('globalSearch').value||'').toLowerCase();
+  /* 商談中セクション */
+  var negBox=document.getElementById('negotiatingBox');
+  var negList=DB.stores.filter(function(s){return s.status==='negotiating'&&(!search||(s.name||'').toLowerCase().includes(search));});
+  if(negBox){
+    if(negList.length&&(!filter||filter==='negotiating')){
+      var bs2='font-size:12px;padding:3px 9px;border-radius:6px;cursor:pointer;border:1px solid;white-space:nowrap;';
+      negBox.style.display='';
+      negBox.innerHTML='<div style="font-size:12px;font-weight:600;color:var(--accent);margin-bottom:8px;letter-spacing:.5px">💬 商談中 '+negList.length+'件</div>'
+        +negList.map(function(s){
+          var today=new Date();today.setHours(0,0,0,0);
+          var na=s.nextAction?new Date(s.nextAction):null;
+          var naStr=na?((na.getMonth()+1)+'/'+(na.getDate())):'';
+          var naColor=na&&na<today?'var(--red)':na&&(na-today)/86400000<=3?'var(--amber)':'var(--text3)';
+          return'<div style="display:flex;align-items:center;gap:10px;padding:8px 10px;background:var(--bg3);border-radius:var(--r);margin-bottom:6px;border:1px solid var(--border)">'
+            +'<div style="width:6px;height:6px;border-radius:50%;background:'+s.color+';flex-shrink:0"></div>'
+            +'<div style="flex:1;min-width:0">'
+              +'<span style="font-size:14px;font-weight:500;cursor:pointer;color:var(--accent)" onclick="openStoreModal(\''+s.id+'\')">'+esc(s.name)+'</span>'
+              +(s.negotiatingMemo?'<span style="font-size:12px;color:var(--text2);margin-left:8px">'+esc(s.negotiatingMemo)+'</span>':'')
+            +'</div>'
+            +(naStr?'<span style="font-size:12px;color:'+naColor+';white-space:nowrap">📅 '+naStr+'</span>':'')
+            +'<span style="font-size:12px;color:var(--text3)">'+esc(s.ourManager||'')+'</span>'
+            +'<button style="'+bs2+'background:var(--bg2);color:var(--text2);border-color:var(--border)" onclick="openStoreModal(\''+s.id+'\')">編集</button>'
+          +'</div>';
+        }).join('');
+    }else{
+      negBox.style.display='none';
+    }
+  }
+  var list=DB.stores.filter(function(s){if(s.status==='negotiating')return false;if(filter&&s.status!==filter)return false;if(search&&!(s.name||'').toLowerCase().includes(search)&&!(s.genre||'').toLowerCase().includes(search))return false;return true;});
+  var tb=document.getElementById('storeTableBody');
+  if(!list.length&&!negList.length){tb.innerHTML='<tr><td colspan="14" class="empty-state">店舗がありません</td></tr>';return;}
+  if(!list.length){tb.innerHTML='';return;}
+  var metaLabels={none:'—',basic:'<span class="badge b-amber">基礎あり</span>',advanced:'<span class="badge b-green">豊富</span>'};
+  tb.innerHTML=list.map(function(s){
+    var pct=setupPct(s);
+    var sns='';
+    if(s.ig)sns+='<span style="font-size:11px;color:#e1306c;margin-right:3px;font-weight:500">IG</span>';
+    if(s.fb)sns+='<span style="font-size:11px;color:#1877f2;margin-right:3px;font-weight:500">FB</span>';
+    if(s.tw)sns+='<span style="font-size:11px;color:#000;margin-right:3px;font-weight:500">X</span>';
+    if(s.tt)sns+='<span style="font-size:11px;color:#010101;margin-right:3px;font-weight:500">TT</span>';
+    var plan=s.planId?DB.plans.find(function(x){return x.id===s.planId;}):null;
+    var planCell=plan?'<div style="font-size:13px;font-weight:400">'+esc(plan.name)+'</div><div style="font-size:12px;color:var(--text3)">'+fmtMoney(plan.price)+'</div>':'<span style="color:var(--text3)">—</span>';
+    var mgr=s.ourManager||'';
+    var mgrRetired=mgr&&isRetiredStaff(mgr);
+    var mgrCell=mgr
+      ?(mgrRetired
+        ?'<span style="color:var(--text3);font-size:12px">担当なし</span><button class="btn btn-sm" onclick="event.stopPropagation();assignManagerFromRetired(\''+s.id+'\');" style="font-size:11px;margin-left:4px;padding:2px 6px">追加</button>'
+        :'<span style="font-size:13px">'+esc(mgr)+'</span>'
+      )
+      :'<span style="color:var(--text3);font-size:12px">—</span>';
+    return'<tr>'
+      +'<td><div style="display:flex;align-items:center;gap:7px"><div style="width:6px;height:6px;border-radius:50%;background:'+s.color+';flex-shrink:0"></div><span style="cursor:pointer;color:var(--accent);font-weight:400" onclick="showDetail(\''+s.id+'\')">'+esc(s.name)+'</span></div><div style="font-size:11px;color:var(--text3);margin-top:1px">'+esc(s.pref||'')+' '+esc((s.area||'').slice(0,16))+'</div></td>'
+      +'<td>'+esc(s.genre||'—')+'</td>'
+      +'<td>'+planCell+'</td>'
+      +'<td class="td-mono">'+(s.contractStart||'—')+'<div style="font-size:11px;color:var(--text3)">'+(s.contractTerm?s.contractTerm+'ヶ月':'')+'</div></td>'
+      +(function(){
+          var end=contractEndDate(s);
+          if(!end)return'<td style="color:var(--text3)">—</td>';
+          var today2=new Date();today2.setHours(0,0,0,0);
+          var daysLeft=Math.ceil((end-today2)/86400000);
+          var mm=(end.getMonth()+1)+'/'+end.getDate();
+          if(s.status==='ended')return'<td><span style="font-size:13px;color:var(--text3)">'+mm+'</span></td>';
+          if(daysLeft<0)return'<td><span class="badge b-gray">終了済み</span></td>';
+          if(daysLeft<=30)return'<td><span class="badge b-red">⚠ '+mm+'（残'+daysLeft+'日）</span></td>';
+          if(daysLeft<=60)return'<td><span class="badge b-amber">'+mm+'（残'+daysLeft+'日）</span></td>';
+          return'<td><span style="font-size:13px">'+mm+'</span><div style="font-size:11px;color:var(--text3)">残'+daysLeft+'日</div></td>';
+        })()
+      +'<td>'+esc(s.contactName||'—')+'</td>'
+      +'<td>'+mgrCell+'</td>'
+      +'<td>'+sns+'</td>'
+      +'<td>'+(DB.castings.some(function(c){return c.storeId===s.id;})?'<span class="badge b-purple" style="font-size:11px">👤 あり</span>':'<span style="color:var(--text3);font-size:12px">—</span>')+'</td>'
+      +(function(){var done=isMonthlyDone(s,'adBilling');return'<td><button class="btn btn-sm" style="font-size:11px;padding:2px 8px;'+(done?'background:var(--green-bg);color:var(--green);border-color:var(--green-border)':'background:var(--bg3);color:var(--text2)')+'" onclick="event.stopPropagation();toggleMonthlyDone(\''+s.id+'\',\'adBilling\')">'+(done?'✓ 済':'未')+'</button></td>';})()
+      +(function(){var done=isMonthlyDone(s,'monthlyReview');return'<td><button class="btn btn-sm" style="font-size:11px;padding:2px 8px;'+(done?'background:var(--green-bg);color:var(--green);border-color:var(--green-border)':'background:var(--bg3);color:var(--text2)')+'" onclick="event.stopPropagation();toggleMonthlyDone(\''+s.id+'\',\'monthlyReview\')">'+(done?'✓ 済':'未')+'</button></td>';})()
+      +'<td><div style="display:flex;align-items:center;gap:6px"><div class="pbar-wrap" style="width:52px"><div class="pbar" style="background:'+(pct===100?'var(--green)':'var(--accent)')+';width:'+pct+'%"></div></div><span style="font-size:11px;color:var(--text3)">'+pct+'%</span></div></td>'
+      +'<td>'+statusBadge(s.status)+'</td>'
+      +'<td style="white-space:nowrap"><button class="btn btn-sm" onclick="openStoreModal(\''+s.id+'\')" style="margin-right:4px">編集</button><button class="btn-ghost-danger" onclick="deleteStore(\''+s.id+'\')">削除</button></td>'
+      +'</tr>';
+  }).join('');
+}
+
+function showDetail(id){
+  var s=DB.stores.find(function(x){return x.id===id;});
+  if(!s)return;
+  var myPosts=DB.posts.filter(function(p){return p.storeId===id;}).sort(function(a,b){return new Date(a.date)-new Date(b.date);});
+  var myCast=DB.castings.filter(function(c){return c.storeId===id;});
+  var pct=setupPct(s);
+  var plan=DB.plans.find(function(p){return p.id===s.planId;});
+  var corp=DB.corporations&&s.corpId?DB.corporations.find(function(c){return c.id===s.corpId;}):null;
+
+  /* 営業時間の表示 */
+  var hoursDisplay=formatHoursSummary(s.hours||s.hours||'');
+  if(!hoursDisplay||hoursDisplay==='—')hoursDisplay=s.hours||'—';
+
+  /* 楽々販売 */
+  var rakurakuBadge=s.rakurakuRegistered
+    ?'<span class="badge b-green">✓ 楽々販売登録済み</span>'
+    :'<span class="badge b-red">未登録</span>';
+  var rakurakuBtn=s.rakurakuRegistered?''
+    :'<button class="btn btn-sm btn-primary" style="margin-left:8px" onclick="markRakurakuDone(\''+s.id+'\')">登録完了にする</button>';
+
+  function row(label,val,link){
+    if(!val&&val!==0)return'';
+    var valHtml=link?'<a href="'+esc(val)+'" target="_blank" style="color:var(--accent)">'+esc(val)+'</a>':esc(String(val));
+    return'<div style="display:flex;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);font-size:13px">'
+      +'<span style="color:var(--text3);min-width:90px;flex-shrink:0">'+label+'</span>'
+      +'<span style="flex:1;word-break:break-all">'+valHtml+'</span></div>';
+  }
+
+  document.getElementById('detailTitle').textContent=s.name;
+  document.getElementById('detailBody').innerHTML=
+
+    /* 楽々販売バー */
+    '<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;padding:8px 12px;background:var(--bg3);border-radius:var(--r)">'
+      +'<span style="font-size:13px;color:var(--text2)">楽々販売：</span>'+rakurakuBadge+rakurakuBtn
+    +'</div>'
+
+    /* KPIカード */
+    +'<div class="grid3" style="margin-bottom:16px">'
+      +'<div class="card-sm"><div style="font-size:11px;color:var(--text3);margin-bottom:4px">ステータス</div>'+statusBadge(s.status)+'</div>'
+      +'<div class="card-sm"><div style="font-size:11px;color:var(--text3);margin-bottom:4px">プラン</div><div style="font-size:13px;font-weight:500">'+(plan?esc(plan.name):'—')+'</div></div>'
+      +'<div class="card-sm"><div style="font-size:11px;color:var(--text3);margin-bottom:4px">月額</div><div style="font-size:14px;font-weight:500;color:var(--accent)">'+fmtMoney(s.monthlyFee)+'</div></div>'
+    +'</div>'
+
+    /* 店舗基本情報 */
+    +'<div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:8px">店舗情報</div>'
+    +'<div style="margin-bottom:14px">'
+      +row('業種',s.genre)
+      +row('エリア',(s.pref||'')+(s.area?' '+s.area:''))
+      +row('営業時間',hoursDisplay)
+      +row('定休日',s.holiday)
+      +row('席数',s.seats?s.seats+'席':null)
+      +row('食べログ',s.tabelog,true)
+      +row('公式HP',s.hp,true)
+      +(s.memo?'<div style="font-size:13px;padding:5px 0;border-bottom:1px solid var(--border);display:flex;gap:8px"><span style="color:var(--text3);min-width:90px;flex-shrink:0">備考</span><span style="flex:1;white-space:pre-wrap">'+esc(s.memo)+'</span></div>':'')
+    +'</div>'
+
+    /* 法人・連絡先 */
+    +(corp||s.contactName?'<div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:8px">連絡先</div><div style="margin-bottom:14px">'
+      +(corp?row('法人',corp.name):'')
+      +row('担当者',(s.contactName||'')+(s.contactRole?' ('+s.contactRole+')':''))
+      +row('電話',s.contactTel)
+      +row('メール',s.contactEmail)
+      +row('LINE',s.contactLine)
+    +'</div>':'')
+
+    /* 弊社情報 */
+    +'<div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:8px">弊社情報</div>'
+    +'<div style="margin-bottom:14px">'
+      +row('営業担当',s.ourManager||s.salesBy)
+      +row('クリエイター',(function(){var cr=DB.creators.find(function(x){return x.id===s.creator;});return cr?cr.crName:(s.creator||'—');})())
+      +row('契約開始',s.contractStart)
+      +row('契約期間',s.contractTerm?s.contractTerm+'ヶ月':null)
+      +row('Meta広告ID',s.metaId)
+      +row('Meta経験',s.metaExp==='none'?null:s.metaExp)
+    +'</div>'
+
+    /* SNS */
+    +(s.ig||s.fb||s.tw||s.tt||s.yt
+      ?'<div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:8px">SNS</div><div style="margin-bottom:14px">'
+        +row('Instagram',s.ig)
+        +row('Facebook',s.fb)
+        +row('X',s.tw)
+        +row('TikTok',s.tt)
+        +row('YouTube',s.yt)
+        +row('フォロワー',s.igFollowers?Number(s.igFollowers).toLocaleString()+'人':null)
+      +'</div>'
+      :'')
+
+    /* 要望 */
+    +(s.request?'<div style="margin-bottom:14px;padding:10px 12px;background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:var(--r);font-size:13px;white-space:pre-wrap">'+esc(s.request)+'</div>':'')
+
+    /* 初期設定進捗 */
+    +'<div style="margin-bottom:14px">'
+      +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'
+        +'<span style="font-size:12px;font-weight:500;color:var(--text2)">初期設定</span>'
+        +'<div class="pbar-wrap" style="flex:1"><div class="pbar" style="background:'+(pct===100?'var(--green)':'var(--accent)')+';width:'+pct+'%"></div></div>'
+        +'<span style="font-size:12px;color:var(--text3)">'+pct+'%</span>'
+      +'</div>'
+      +'<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px">'
+        +SETUP_LABELS.map(function(label,i){
+          var done=s.setupChecks&&s.setupChecks[i];
+          return'<div style="display:flex;align-items:center;gap:4px;padding:4px 6px;border-radius:var(--r);background:'+(done?'var(--green-bg)':'var(--bg3)')+';border:1px solid '+(done?'var(--green-border)':'var(--border)')+'">'
+            +'<span style="font-size:11px;color:'+(done?'var(--green)':'var(--text3)')+'">'+(done?'✓':'○')+'</span>'
+            +'<span style="font-size:11px;color:'+(done?'var(--text)':'var(--text3)')+'">'+esc(label)+'</span>'
+          +'</div>';
+        }).join('')
+      +'</div>'
+    +'</div>'
+
+    /* 投稿履歴 */
+    +'<div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:8px">投稿履歴 ('+myPosts.length+'件)</div>'
+    +(myPosts.length
+      ?'<div style="max-height:140px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--r);margin-bottom:14px">'
+        +myPosts.map(function(p,i){
+          var isInf=p.type==='inf_visit'||p.type==='inf_post';
+          return'<div style="display:flex;gap:10px;padding:7px 12px;border-bottom:'+(i<myPosts.length-1?'1px solid var(--border)':'none')+'">'
+            +'<span class="td-mono" style="color:var(--text3);white-space:nowrap">'+fmtDT(p.date)+'</span>'
+            +'<span style="font-size:13px;flex:1">'+(isInf?'🏃 '+esc(infName(p.infId)):esc((p.caption||'').slice(0,40)))+'</span>'
+            +postStatusBadge(p.status)
+          +'</div>';
+        }).join('')
+      +'</div>'
+      :'<div style="font-size:13px;color:var(--text3);margin-bottom:14px">投稿なし</div>'
+    )
+
+    /* キャスティング（インフルエンサー案件） */
+    +(myCast.length
+      ?'<div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:8px">キャスティング ('+myCast.length+'件)</div>'
+        +'<div style="border:1px solid var(--border);border-radius:var(--r)">'+myCast.map(function(c,i){
+          return'<div style="font-size:13px;padding:7px 12px;border-bottom:'+(i<myCast.length-1?'1px solid var(--border)':'none')+';display:flex;gap:10px">'
+            +'<span class="td-mono" style="color:var(--text3)">'+fmtD(c.date)+'</span>'
+            +'<span>'+esc(infName(c.infId))+'</span>'
+            +'<span style="margin-left:auto;color:var(--text3)">'+fmtMoney(c.fee)+'</span>'
+          +'</div>';
+        }).join('')+'</div>'
+      :'<details style="margin-bottom:4px"><summary style="font-size:12px;font-weight:500;color:var(--text3);cursor:pointer">▸ キャスティング（インフルエンサー案件なし）</summary>'
+        +'<div style="font-size:13px;color:var(--text3);padding:8px 0 0 12px">この店舗にはインフルエンサー案件がありません</div></details>'
+    )
+
+    /* 編集ボタン */
+    +'<div class="form-actions" style="border-top:1px solid var(--border);margin-top:16px;padding-top:14px">'
+      +'<button class="btn" onclick="closeModal(\'detailModal\')">閉じる</button>'
+      +'<button class="btn btn-primary" onclick="closeModal(\'detailModal\');openStoreModal(\''+s.id+'\')">編集</button>'
+    +'</div>';
+
+  openModal('detailModal');
+}
+
+function markRakurakuDone(id){
+  var s=DB.stores.find(function(x){return x.id===id;});
+  if(!s)return;
+  s.rakurakuRegistered=true;
+  s.rakurakuDoneAt=new Date().toISOString();
+  saveItem('stores',s);
+  refreshAll();
+  closeModal('detailModal');
+  setTimeout(function(){showDetail(id);},100);
+}
+
