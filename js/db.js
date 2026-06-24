@@ -274,6 +274,19 @@ function setSyncStatus(state,msg){
 /* ============================================================
    DB読み込み・保存（Supabase経由、ローカルはキャッシュとして残す）
    ============================================================ */
+/* 初期設定チェックリストの項目削減に伴う既存データ移行（冪等）
+   旧10項目[FB,Meta,広告,IG,SNS,楽々,クリエイター,ヒアリング,キックオフ,初回撮影]
+   → 新7項目[FB,Meta,広告,IG,SNS,楽々,初回撮影]（中間3項目は案件進捗タブへ移管） */
+function migrateSetupChecks(){
+  if(!DB.stores)return;
+  DB.stores.forEach(function(s){
+    if(s.setupChecks&&s.setupChecks.length===10){
+      var c=s.setupChecks;
+      s.setupChecks=[c[0],c[1],c[2],c[3],c[4],c[5],c[9]];
+    }
+  });
+}
+
 async function loadDB(){
   setSyncStatus('saving','読み込み中...');
   try{
@@ -284,6 +297,7 @@ async function loadDB(){
     });
     if(!DB.plans)DB.plans=[];
     if(!DB.salesNotifs)DB.salesNotifs=[];
+    migrateSetupChecks();
     try{localStorage.setItem('adcore3',JSON.stringify(DB));}catch(e){}
     setSyncStatus('ok','同期済み');
   }catch(e){
@@ -297,11 +311,13 @@ async function loadDB(){
       });
       if(!DB.plans)DB.plans=[];
       if(!DB.salesNotifs)DB.salesNotifs=[];
+      migrateSetupChecks();
       try{localStorage.setItem('adcore3',JSON.stringify(DB));}catch(e2){}
       setSyncStatus('ok','同期済み');
     }catch(e2){
       var cached=localStorage.getItem('adcore3');
       if(cached){try{var d=JSON.parse(cached);Object.assign(DB,d);if(!DB.plans)DB.plans=[];if(!DB.salesNotifs)DB.salesNotifs=[];}catch(e3){}}
+      migrateSetupChecks();
       setSyncStatus('error','オフライン（キャッシュ表示中）');
     }
   }
