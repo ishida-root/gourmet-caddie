@@ -20,6 +20,11 @@ function openPostModal(id){
     /* 編集：既存データをフォームに復元 */
     var p=DB.posts.find(function(x){return x.id===id;});
     if(p){
+      /* 案件種別（大分類）を種別から判定して先にセット */
+      var cat=(p.type==='inf_visit'||p.type==='inf_post')?'influencer':'creator';
+      var catRadio=document.querySelector('input[name="pCategoryRadio"][value="'+cat+'"]');
+      if(catRadio)catRadio.checked=true;
+      onPostCategoryChange();
       /* 種別ラジオ */
       var radio=document.querySelector('input[name="pTypeRadio"][value="'+p.type+'"]');
       if(radio){radio.checked=true;}else{
@@ -53,7 +58,7 @@ function openPostModal(id){
         }
         set('pInfFee',p.infFee);
       }else{
-        set('pCaption',p.caption);set('pCreative',p.creative);
+        set('pCreative',p.creative);
         set('pAd',p.ad);set('pBudget',p.budget);
         var crSelEl=document.getElementById('pCreatorId');if(crSelEl)crSelEl.value=p.creatorId||'';
       }
@@ -61,11 +66,13 @@ function openPostModal(id){
       if(titleEl)titleEl.textContent='スケジュールを編集';
     }
   }else{
-    /* 新規：リセット */
+    /* 新規：リセット（案件種別はクリエイターを既定に） */
+    var catRadio=document.querySelector('input[name="pCategoryRadio"][value="creator"]');
+    if(catRadio)catRadio.checked=true;
     var first=document.querySelector('input[name="pTypeRadio"][value="video"]');
     if(first){first.checked=true;document.getElementById('pType').value='video';}
-    ['pCaption','pCreative','pBudget','pNote','pInfFee','pCreatorId'].forEach(function(fid){var el=document.getElementById(fid);if(el)el.value='';});
-    onPostTypeChange();
+    ['pCreative','pBudget','pNote','pInfFee','pCreatorId'].forEach(function(fid){var el=document.getElementById(fid);if(el)el.value='';});
+    onPostCategoryChange();
     initPostDatePicker('');
   }
   openModal('postModal');
@@ -90,6 +97,32 @@ function initPostDatePicker(dateStr){
   /* ピッカー構築後に_setDateで確実に反映 */
   var dw2=document.getElementById('pDateWrap');if(dw2&&dw2._setDate)dw2._setDate(dateVal);
   var tw2=document.getElementById('pTimeWrap');if(tw2&&tw2._setTime)tw2._setTime(timeVal);
+}
+function onPostCategoryChange(){
+  var cat=document.querySelector('input[name="pCategoryRadio"]:checked');
+  var val=cat?cat.value:'creator';
+  var creatorGrp=document.getElementById('pTypeGroupCreator');
+  var infGrp=document.getElementById('pTypeGroupInf');
+  if(val==='influencer'){
+    if(creatorGrp)creatorGrp.style.display='none';
+    if(infGrp)infGrp.style.display='flex';
+    /* 選択中の種別がクリエイター系なら来店予定に切り替え */
+    var cur=document.querySelector('input[name="pTypeRadio"]:checked');
+    if(!cur||['video','image','reel','story'].indexOf(cur.value)>=0){
+      var r=document.querySelector('input[name="pTypeRadio"][value="inf_visit"]');
+      if(r)r.checked=true;
+    }
+  }else{
+    if(creatorGrp)creatorGrp.style.display='flex';
+    if(infGrp)infGrp.style.display='none';
+    /* 選択中の種別がインフルエンサー系なら動画に切り替え */
+    var cur=document.querySelector('input[name="pTypeRadio"]:checked');
+    if(!cur||['inf_visit','inf_post'].indexOf(cur.value)>=0){
+      var r=document.querySelector('input[name="pTypeRadio"][value="video"]');
+      if(r)r.checked=true;
+    }
+  }
+  onPostTypeChange();
 }
 function onPostTypeChange(){
   var sel=document.querySelector('input[name="pTypeRadio"]:checked');
@@ -154,7 +187,6 @@ function savePost(){
     p.infId=document.getElementById('pInfId').value;
     p.infFee=document.getElementById('pInfFee').value;
   }else{
-    p.caption=document.getElementById('pCaption').value;
     p.creative=document.getElementById('pCreative').value;
     p.ad=document.getElementById('pAd').value;
     p.budget=document.getElementById('pBudget').value;

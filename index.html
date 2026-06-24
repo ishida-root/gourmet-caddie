@@ -723,14 +723,24 @@
 <div class="modal" style="width:540px">
   <div class="modal-header"><span class="modal-title" id="postModalTitle">投稿を追加</span><button class="modal-close" onclick="closeModal('postModal')">✕</button></div>
   <div class="modal-body">
-    <!-- 種別（最初に選ばせてフォームを切り替え） -->
+    <!-- 案件種別（大分類）を最初に選択 -->
+    <div class="fr1 field" style="margin-bottom:12px">
+      <label>案件種別 *</label>
+      <div style="display:flex;gap:8px;margin-top:4px" id="pCategoryGroup">
+        <label style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;font-size:13px;cursor:pointer;padding:9px 10px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg3)"><input type="radio" name="pCategoryRadio" value="creator" onchange="onPostCategoryChange()" style="width:auto;margin:0" checked> 🎬 クリエイター案件</label>
+        <label style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;font-size:13px;cursor:pointer;padding:9px 10px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg3)"><input type="radio" name="pCategoryRadio" value="influencer" onchange="onPostCategoryChange()" style="width:auto;margin:0"> ✦ インフルエンサー案件</label>
+      </div>
+    </div>
+    <!-- 種別（案件種別に応じて切替） -->
     <div class="fr1 field" style="margin-bottom:12px">
       <label>種別 *</label>
-      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px" id="pTypeGroup">
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px" id="pTypeGroupCreator">
         <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;padding:5px 10px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg3)"><input type="radio" name="pTypeRadio" value="video" onchange="onPostTypeChange()" style="width:auto;margin:0" checked> ▶ 動画</label>
         <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;padding:5px 10px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg3)"><input type="radio" name="pTypeRadio" value="image" onchange="onPostTypeChange()" style="width:auto;margin:0"> ◼ 画像</label>
         <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;padding:5px 10px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg3)"><input type="radio" name="pTypeRadio" value="reel" onchange="onPostTypeChange()" style="width:auto;margin:0"> ◈ リール</label>
         <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;padding:5px 10px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg3)"><input type="radio" name="pTypeRadio" value="story" onchange="onPostTypeChange()" style="width:auto;margin:0"> ◷ ストーリー</label>
+      </div>
+      <div style="display:none;gap:6px;flex-wrap:wrap;margin-top:4px" id="pTypeGroupInf">
         <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;padding:5px 10px;border-radius:var(--r);border:1px solid var(--amber-border);background:var(--amber-bg);color:var(--amber)"><input type="radio" name="pTypeRadio" value="inf_visit" onchange="onPostTypeChange()" style="width:auto;margin:0"> 🏃 来店予定</label>
         <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;padding:5px 10px;border-radius:var(--r);border:1px solid var(--purple-border);background:var(--purple-bg);color:var(--purple)"><input type="radio" name="pTypeRadio" value="inf_post" onchange="onPostTypeChange()" style="width:auto;margin:0"> ✦ INF投稿予定</label>
       </div>
@@ -754,7 +764,6 @@
     <!-- 通常投稿のみ -->
     <div id="pPostFields">
       <div class="fr1 field"><label>クリエイター（任意）</label><select id="pCreatorId"><option value="">（なし）</option></select></div>
-      <div class="fr1 field"><label>キャプション</label><textarea id="pCaption" placeholder="投稿のキャプション..."></textarea></div>
       <div class="fr"><div class="field"><label>クリエイティブファイル名</label><input id="pCreative" type="text" placeholder="例: 渋谷店_v2.mp4"></div><div class="field"><label>広告配信</label><select id="pAd"><option value="yes">あり</option><option value="no">なし</option></select></div></div>
       <div class="fr"><div class="field"><label>広告予算（円 / 日）</label><input id="pBudget" type="number" placeholder="3000"></div><div class="field"></div></div>
     </div>
