@@ -212,9 +212,9 @@ function renderTodoList(){
 
   /* アクションバッジ生成ヘルパー */
   function actionBadge(text,color){
-    var bg=color==='red'?'var(--red-bg)':color==='amber'?'var(--amber-bg)':'var(--accent-bg)';
-    var fg=color==='red'?'var(--red)':color==='amber'?'var(--amber)':'var(--accent)';
-    var bd=color==='red'?'var(--red-border)':color==='amber'?'var(--amber-border)':'var(--accent-border)';
+    var bg=color==='red'?'var(--red-bg)':color==='amber'?'var(--amber-bg)':color==='purple'?'var(--purple-bg)':'var(--accent-bg)';
+    var fg=color==='red'?'var(--red)':color==='amber'?'var(--amber)':color==='purple'?'var(--purple)':'var(--accent)';
+    var bd=color==='red'?'var(--red-border)':color==='amber'?'var(--amber-border)':color==='purple'?'var(--purple-border)':'var(--accent-border)';
     return'<span style="font-size:11px;font-weight:600;padding:1px 6px;border-radius:4px;border:1px solid '+bd+';background:'+bg+';color:'+fg+';margin-right:5px;vertical-align:middle">'+text+'</span>';
   }
 
@@ -296,8 +296,20 @@ function renderTodoList(){
 
     }else if(p.type==='video'||p.type==='image'||p.type==='reel'||p.type==='story'){
       var typeL=TYPE_LABEL[p.type]||p.type;
-      var sub=actionBadge(isOverdue?'投稿期限超過':'要投稿',isOverdue?'red':'blue')+dateStr+' '+typeL;
-      btnHtml='<button style="'+bsAction+'" onclick="updatePostStatus(\''+p.id+'\',\'done\')">✓ 投稿済みにする</button>';
+      var st=p.status;
+      var bdgLabel,bdgColor,nextStatus,nextLabel;
+      if(st==='shoot_set'){
+        bdgLabel=isOverdue?'撮影日超過':'撮影予定';bdgColor=isOverdue?'red':'blue';nextStatus='editing';nextLabel='✓ 撮影完了 → 編集中へ';
+      }else if(st==='editing'){
+        bdgLabel='編集中';bdgColor='amber';nextStatus='delivered';nextLabel='✓ 納品済みにする';
+      }else if(st==='delivered'){
+        bdgLabel='納品済み・投稿待ち';bdgColor='purple';nextStatus='scheduled';nextLabel='✓ 投稿予約済みにする';
+      }else{
+        /* scheduled（投稿予約済み）／旧draft */
+        bdgLabel=isOverdue?'投稿期限超過':'要投稿';bdgColor=isOverdue?'red':'blue';nextStatus='done';nextLabel='✓ 投稿済みにする';
+      }
+      var sub=actionBadge(bdgLabel,bdgColor)+dateStr+' '+typeL;
+      btnHtml='<button style="'+bsAction+'" onclick="updatePostStatus(\''+p.id+'\',\''+nextStatus+'\')">'+nextLabel+'</button>';
       items.push({priority:priority,date:dt,main:esc(storeName(p.storeId)),sub:sub,btns:btnHtml});
     }
   });

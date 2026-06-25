@@ -154,10 +154,13 @@ function onPostTypeChange(){
       +'<option value="approved">承認済み</option>'
       +'<option value="cancelled">キャンセル</option>';
   }else{
+    /* クリエイター案件：制作〜投稿の一貫フロー */
     statusSel.innerHTML=
-      '<option value="draft">下書き</option>'
-      +'<option value="scheduled">予約済み</option>'
-      +'<option value="done">完了</option>';
+      '<option value="shoot_set">撮影日確定</option>'
+      +'<option value="editing">編集中</option>'
+      +'<option value="delivered">納品済み</option>'
+      +'<option value="scheduled">投稿予約済み</option>'
+      +'<option value="done">投稿済み</option>';
   }
   /* 可能なら以前の値を復元 */
   if(statusSel.querySelector('option[value="'+cur+'"]'))statusSel.value=cur;
