@@ -67,7 +67,8 @@ function submitSalesForm(){
     request:document.getElementById('sl-request').value,
     status:'pending',
     color:COLORS[DB.stores.length%COLORS.length],
-    setupChecks:[],
+    progress:{},
+    progressMode:'first',
     salesBy:sales,
     salesAt:new Date().toISOString()
   };
@@ -271,7 +272,6 @@ function updateCastSelects(){
   document.getElementById('cStore').innerHTML='<option value="">選択...</option>'+DB.stores.map(function(s){return'<option value="'+s.id+'">'+esc(s.name)+'</option>';}).join('');
   document.getElementById('cInf').innerHTML='<option value="">選択...</option>'+DB.influencers.map(function(i){return'<option value="'+i.id+'">'+esc(i.name)+' '+esc(i.handle||'')+'</option>';}).join('');
 }
-function setupPct(s){if(!s.setupChecks||!s.setupChecks.length)return 0;return Math.round(s.setupChecks.filter(Boolean).length/SETUP_LABELS.length*100);}
 function contractEndDate(s){if(!s.contractStart||!s.contractTerm)return null;var d=new Date(s.contractStart);d.setMonth(d.getMonth()+parseInt(s.contractTerm));return d;}
 function statusBadge(v){var m={negotiating:'<span class="badge b-blue">商談中</span>',active:'<span class="badge b-green">稼働中</span>',pending:'<span class="badge b-amber">準備中</span>',ended:'<span class="badge b-gray">終了</span>'};return m[v]||'—';}
 function onStoreStatusChange(){var v=document.getElementById('sStatus').value;var row=document.getElementById('sNegotiatingRow');if(row)row.style.display=v==='negotiating'?'':'none';}
@@ -441,25 +441,27 @@ function renderDashboard(){
     }
   }
 
-  var setupPending=DB.stores.filter(function(s){return s.status==='active'&&setupPct(s)<100;}).slice(0,6);
+  var setupPending=DB.stores.filter(function(s){return s.status==='active'&&progressPct(s)<100;}).slice(0,6);
   var se=document.getElementById('dash-setup');
-  if(!setupPending.length){se.innerHTML='<div class="empty-state" style="padding:16px">全店舗の初期設定完了 ✓</div>';return;}
+  if(!setupPending.length){se.innerHTML='<div class="empty-state" style="padding:16px">全店舗の案件進捗が完了 ✓</div>';return;}
   se.innerHTML=setupPending.map(function(s){
-    var checks=s.setupChecks||[];
-    var done=checks.filter(Boolean).length;
-    var total=SETUP_LABELS.length;
-    var pct=Math.round(done/total*100);
+    var steps=progressStepsFor(s);var prog=s.progress||{};
+    var pct=progressPct(s);
+    var done=Math.round(pct/100*steps.length);
+    var modeLabel=(s.progressMode==='repeat')?'2回目以降':'初回';
     return'<div style="padding:10px 0;border-bottom:1px solid var(--border)">'
       +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">'
         +'<span style="font-size:13px;font-weight:500;cursor:pointer;color:var(--accent)" onclick="navigate(\'stores\');setTimeout(function(){showDetail(\''+s.id+'\');},100)">'+esc(s.name)+'</span>'
+        +'<span class="badge b-gray" style="font-size:10px">'+modeLabel+'</span>'
         +'<div class="pbar-wrap" style="flex:1"><div class="pbar" style="width:'+pct+'%;background:'+(pct===100?'var(--green)':pct>=60?'var(--accent)':'var(--amber)')+'"></div></div>'
-        +'<span style="font-size:12px;color:var(--text3)">'+done+'/'+total+'</span>'
-        +'<button class="btn btn-sm" style="font-size:11px;padding:2px 7px" onclick="openStoreModal(\''+s.id+'\')" >設定</button>'
+        +'<span style="font-size:12px;color:var(--text3)">'+done+'/'+steps.length+'</span>'
+        +'<button class="btn btn-sm" style="font-size:11px;padding:2px 7px" onclick="openStoreModal(\''+s.id+'\')" >進捗</button>'
       +'</div>'
       +'<div style="display:flex;gap:3px;flex-wrap:wrap">'
-        +SETUP_LABELS.map(function(label,i){
-          var isDone=checks[i];
-          return'<span style="font-size:10px;padding:1px 5px;border-radius:10px;white-space:nowrap;background:'+(isDone?'var(--green-bg)':'var(--bg3)')+';color:'+(isDone?'var(--green)':'var(--text3)')+';border:1px solid '+(isDone?'var(--green-border)':'var(--border)')+';">'+(isDone?'✓ ':'')+esc(label)+'</span>';
+        +steps.map(function(step){
+          var p=prog[step.key]||{};
+          var isDone=step.accounts?isAccountsDone(p):(p.status==='done'||p.status==='na');
+          return'<span style="font-size:10px;padding:1px 5px;border-radius:10px;white-space:nowrap;background:'+(isDone?'var(--green-bg)':'var(--bg3)')+';color:'+(isDone?'var(--green)':'var(--text3)')+';border:1px solid '+(isDone?'var(--green-border)':'var(--border)')+';">'+(isDone?'✓ ':'')+esc(step.label)+'</span>';
         }).join('')
       +'</div>'
     +'</div>';

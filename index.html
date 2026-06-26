@@ -160,7 +160,7 @@
       </div>
       <div class="card"><div class="card-header"><span class="card-title">📬 営業からの通知</span><button class="btn btn-sm" onclick="clearSalesNotifs()">全て既読</button></div><div id="salesNotifList"></div></div>
       <div class="card"><div class="card-header"><span class="card-title">📊 経理処理待ち</span><button class="btn btn-sm" onclick="navigate('accounting')">経理管理へ</button></div><div id="dash-accounting"></div></div>
-      <div class="card"><div class="card-header"><span class="card-title">初期設定 進捗</span></div><div id="dash-setup"></div></div>
+      <div class="card"><div class="card-header"><span class="card-title">案件進捗</span></div><div id="dash-setup"></div></div>
     </div>
 
     <!-- SALES -->
@@ -227,7 +227,7 @@
           </select>
         </div>
         <div id="negotiatingBox" style="display:none;margin-bottom:16px;padding:12px 14px;background:var(--accent-bg);border:1px solid var(--accent-border);border-radius:var(--r)"></div>
-        <div class="table-wrap"><table><thead><tr><th>店舗名</th><th>業種</th><th>契約プラン</th><th>契約期間</th><th>更新日</th><th>店舗担当</th><th>弊社担当</th><th>SNS</th><th>INF</th><th>今月請求</th><th>今月振返</th><th>初期設定</th><th>ステータス</th><th></th></tr></thead><tbody id="storeTableBody"></tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>店舗名</th><th>業種</th><th>契約プラン</th><th>契約期間</th><th>更新日</th><th>店舗担当</th><th>弊社担当</th><th>SNS</th><th>INF</th><th>今月請求</th><th>今月振返</th><th>案件進捗</th><th>ステータス</th><th></th></tr></thead><tbody id="storeTableBody"></tbody></table></div>
       </div>
     </div>
 
@@ -300,10 +300,10 @@
         </div>
         <div id="chk-creative"></div>
       </div>
-      <!-- 初期設定未完了 -->
+      <!-- 案件進捗 未完了 -->
       <div class="card" style="margin-bottom:12px">
         <div class="card-header">
-          <span class="card-title">⚙ 初期設定が未完了の店舗</span>
+          <span class="card-title">⚙ 案件進捗が未完了の店舗</span>
           <span id="chk-setup-count" style="font-size:12px;color:var(--text3)"></span>
         </div>
         <div id="chk-setup"></div>
@@ -550,10 +550,9 @@
       <button class="tab-btn active" onclick="switchStoreTab(0)">基本情報</button>
       <button class="tab-btn" onclick="switchStoreTab(1)">SNS / HP</button>
       <button class="tab-btn" onclick="switchStoreTab(2)">契約・担当</button>
-      <button class="tab-btn" onclick="switchStoreTab(3)">初期設定</button>
-      <button class="tab-btn" onclick="switchStoreTab(4)">ヒアリング</button>
-      <button class="tab-btn" onclick="switchStoreTab(5)">📷 撮影予定</button>
-      <button class="tab-btn" onclick="switchStoreTab(6)">📋 案件進捗</button>
+      <button class="tab-btn" onclick="switchStoreTab(3)">ヒアリング</button>
+      <button class="tab-btn" onclick="switchStoreTab(4)">📷 撮影予定</button>
+      <button class="tab-btn" onclick="switchStoreTab(5)">📋 案件進捗</button>
     </div>
     <div class="tab-pane active" id="stab0">
       <div class="fr"><div class="field"><label>店舗名 *</label><input id="sName" type="text" placeholder="例: 炭火焼 竹山 渋谷店"></div><div class="field"><label>業種 <button type="button" onclick="openGenreModal()" style="font-size:11px;padding:2px 7px;margin-left:6px;background:var(--bg3);border:1px solid var(--border2);border-radius:4px;cursor:pointer;color:var(--text2)">＋ 編集</button></label><input id="sGenre" type="text" list="genreList" placeholder="例: 焼肉"><datalist id="genreList"></datalist></div></div>
@@ -626,24 +625,14 @@
           <div class="field"><label>成果振り返り頻度</label><select id="sReviewCycle"><option value="monthly">毎月</option><option value="bimonthly">2ヶ月ごと</option><option value="quarterly">四半期</option></select></div>
         </div>
       </div>
-    </div>
-    <div class="tab-pane" id="stab3">
-      <div class="fr"><div class="field"><label>月間動画本数</label><input id="sVideos" type="number" value="2"></div><div class="field"><label>広告配信</label><select id="sAdDelivery"><option value="yes">あり</option><option value="no">なし</option></select></div></div>
-      <div class="field" style="margin-bottom:8px"><label>初期設定チェックリスト</label></div>
-      <div class="checklist" id="setupChecklist">
-        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Facebookページ設定</span></div>
-        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Meta広告アカウント開設</span></div>
-        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">広告アカウント設定</span></div>
-        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">Instagramアカウント確認・権限取得</span></div>
-        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">SNSアカウント確認・権限付与</span></div>
-        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">楽々販売登録</span></div>
-        <div class="check-item" onclick="toggleCheck(this)"><div class="check-box"></div><span class="check-label">初回撮影日確定</span></div>
+      <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px">
+        <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:10px">制作・運用</div>
+        <div class="fr"><div class="field"><label>月間動画本数</label><input id="sVideos" type="number" value="2"></div><div class="field"><label>広告配信</label><select id="sAdDelivery"><option value="yes">あり</option><option value="no">なし</option></select></div></div>
+        <div class="fr1 field"><label>メモ</label><textarea id="sSetupMemo" placeholder="特記事項、注意点など..."></textarea></div>
       </div>
-      <div style="font-size:12px;color:var(--text3);margin-top:8px;padding:8px 10px;background:var(--bg3);border-radius:var(--r)">💡 ヒアリング・クリエイター確定・キックオフは「📋 案件進捗」タブで日付付きで管理します。</div>
-      <div class="fr1 field" style="margin-top:10px"><label>初期設定メモ</label><textarea id="sSetupMemo" placeholder="特記事項、注意点など..."></textarea></div>
     </div>
-    <!-- Tab 4: ヒアリングシート -->
-    <div class="tab-pane" id="stab4">
+    <!-- Tab 3: ヒアリングシート -->
+    <div class="tab-pane" id="stab3">
       <div style="font-size:13px;color:var(--text3);margin-bottom:12px;padding:8px 10px;background:var(--bg3);border-radius:var(--r)">基本情報（店舗名・担当者・SNSアカウント）は「基本情報」「SNS/HP」「契約・担当」タブから参照してください。</div>
 
       <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:10px">運用目的</div>
@@ -701,7 +690,7 @@
       <div class="fr1 field"><label>インフルエンサー投稿日希望</label><input id="hInfPostDate" type="date"></div>
       <div class="fr1 field"><label>その他要望</label><textarea id="hOther" style="min-height:52px"></textarea></div>
     </div>
-    <div class="tab-pane" id="stab5">
+    <div class="tab-pane" id="stab4">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
         <span style="font-size:13px;color:var(--text3)">この店舗の撮影予定を管理します</span>
         <button class="btn btn-sm btn-primary" onclick="openShootingModal()">＋ 撮影予定を追加</button>
@@ -709,7 +698,7 @@
       <div id="shootingList" style="display:flex;flex-direction:column;gap:6px"></div>
     </div>
 
-    <div class="tab-pane" id="stab6">
+    <div class="tab-pane" id="stab5">
       <div id="progressSteps"></div>
     </div>
 

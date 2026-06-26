@@ -11,9 +11,9 @@ function closeModal(id){document.getElementById(id).classList.remove('open');}
 function openModal(id){document.getElementById(id).classList.add('open');}
 function switchStoreTab(idx){
   document.querySelectorAll('#storeTabBtns .tab-btn').forEach(function(b,i){b.classList.toggle('active',i===idx);});
-  [0,1,2,3,4,5,6].forEach(function(i){var el=document.getElementById('stab'+i);if(el)el.classList.toggle('active',i===idx);});
-  if(idx===5)renderShootingList();
-  if(idx===6)renderProgressTab();
+  [0,1,2,3,4,5].forEach(function(i){var el=document.getElementById('stab'+i);if(el)el.classList.toggle('active',i===idx);});
+  if(idx===4)renderShootingList();
+  if(idx===5)renderProgressTab();
 }
 function toggleCheck(el){el.classList.toggle('done');el.querySelector('.check-box').textContent=el.classList.contains('done')?'✓':'';}
 function makeTimePicker24(wrapperId, hiddenId, onChange){

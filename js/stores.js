@@ -1,57 +1,121 @@
-﻿var PROGRESS_STEPS=[
-  {key:'hearing',    label:'ヒアリング',        hasNa:false},
-  {key:'creator',    label:'クリエイター確定',   hasNa:false},
-  {key:'plan',       label:'企画提出',           hasNa:false},
-  {key:'kickoff',    label:'キックオフMTG',      hasNa:true},
-  {key:'storyboard', label:'絵コンテ提出',       hasNa:false}
+﻿/* 案件進捗ステップ（初期設定を統合）
+   初回（立ち上げ）と2回目以降でフローを切替（s.progressMode） */
+var ACCOUNT_PLATFORMS=['Instagram','Facebook','TikTok'];
+var PROGRESS_STEPS_FIRST=[
+  {key:'hearing',  label:'ヒアリング',          hasNa:false},
+  {key:'creator',  label:'クリエイター',        hasNa:false},
+  {key:'kickoff',  label:'キックオフ',          hasNa:true},
+  {key:'shoot',    label:'撮影',                hasNa:false},
+  {key:'accounts', label:'アカウント作成・連携', hasNa:false, accounts:ACCOUNT_PLATFORMS},
+  {key:'post',     label:'投稿',                hasNa:false}
 ];
+var PROGRESS_STEPS_REPEAT=[
+  {key:'plan',  label:'企画提出', hasNa:false},
+  {key:'shoot', label:'撮影',     hasNa:false},
+  {key:'post',  label:'投稿',     hasNa:false}
+];
+function progressStepsFor(s){return(s&&s.progressMode==='repeat')?PROGRESS_STEPS_REPEAT:PROGRESS_STEPS_FIRST;}
+function isAccountsDone(p){p=p||{};var ac=p.accountChecks||{};return ACCOUNT_PLATFORMS.every(function(n){return ac[n];});}
+function progressPct(s){
+  var steps=progressStepsFor(s);var prog=s.progress||{};var done=0;
+  steps.forEach(function(st){
+    var p=prog[st.key]||{};
+    if(st.accounts){if(isAccountsDone(p))done++;}
+    else if(p.status==='done'||p.status==='na')done++;
+  });
+  return steps.length?Math.round(done/steps.length*100):0;
+}
 
 function renderProgressTab(){
   var el=document.getElementById('progressSteps');
   if(!el)return;
   var s=DB.stores.find(function(x){return x.id===editingStoreId;});
   if(!s){el.innerHTML='<div style="color:var(--text3);font-size:13px;padding:12px">店舗を選択してください</div>';return;}
+  if(!s.progressMode)s.progressMode='first';
+  var mode=s.progressMode;
+  var steps=progressStepsFor(s);
   var prog=s.progress||{};
   var bs='font-size:13px;padding:5px 12px;border-radius:6px;cursor:pointer;border:1px solid;white-space:nowrap;';
-  el.innerHTML='<div style="padding-bottom:8px">'
-    +PROGRESS_STEPS.map(function(step,i){
-      var p=prog[step.key]||{status:'pending',date:''};
-      var isDone=p.status==='done';
-      var isNa=p.status==='na';
-      var circleStyle=isDone
-        ?'background:var(--green);border-color:var(--green);color:#fff'
-        :isNa
-        ?'background:var(--bg3);border-color:var(--border);color:var(--text3)'
-        :'background:var(--bg3);border-color:var(--border);color:var(--text3)';
-      var labelColor=isDone?'var(--green)':isNa?'var(--text3)':'var(--text)';
-      var suffix=isDone?' <span style="color:var(--green);font-size:12px">✓ 完了</span>':isNa?' <span style="color:var(--text3);font-size:12px">不要</span>':'';
-      var dateHtml=p.date?'<span style="font-size:12px;color:var(--text3);margin-left:8px">'+esc(p.date)+'</span>':'';
-      var btns='';
-      if(!isDone&&!isNa){
-        btns='<button style="'+bs+'background:var(--accent);color:#fff;border-color:var(--accent)" onclick="saveStepProgress(\''+step.key+'\',\'done\',document.getElementById(\'pg_'+step.key+'\').value)">完了</button>';
-        if(step.hasNa)btns+=' <button style="'+bs+'background:var(--bg3);color:var(--text2);border-color:var(--border)" onclick="saveStepProgress(\''+step.key+'\',\'na\',\'\')">不要</button>';
-      }else{
-        btns='<button style="'+bs+'background:var(--bg3);color:var(--text3);border-color:var(--border)" onclick="saveStepProgress(\''+step.key+'\',\'pending\',\'\')">取り消す</button>';
-      }
-      var salesJoinHtml='';
-      if(step.key==='kickoff'){
-        var sj=p.salesJoin?true:false;
-        salesJoinHtml='<label style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:'+(sj?'var(--accent)':'var(--text3)')+';cursor:pointer;margin-top:4px">'
-          +'<input type="checkbox" '+(sj?'checked':'')+' onchange="toggleKickoffSalesJoin(this.checked)" style="cursor:pointer">'
-          +'🤝 営業同席希望'+(sj?'（あり）':'')
+  /* 初回 / 2回目以降 切替トグル */
+  var tBtn=function(m,label){return'<button onclick="toggleProgressMode(\''+m+'\')" style="flex:1;'+bs+(mode===m?'background:var(--accent);color:#fff;border-color:var(--accent)':'background:var(--bg3);color:var(--text2);border-color:var(--border)')+'">'+label+'</button>';};
+  var toggle='<div style="display:flex;gap:6px;margin-bottom:14px">'+tBtn('first','初回（立ち上げ）')+tBtn('repeat','2回目以降')+'</div>';
+  var rows=steps.map(function(step,i){
+    var p=prog[step.key]||{status:'pending',date:''};
+    /* アカウント作成・連携：媒体サブチェックで完了判定 */
+    if(step.accounts){
+      var allDone=isAccountsDone(p);
+      var ac=p.accountChecks||{};
+      var circleStyle=allDone?'background:var(--green);border-color:var(--green);color:#fff':'background:var(--bg3);border-color:var(--border);color:var(--text3)';
+      var subBtns=step.accounts.map(function(n){
+        var on=ac[n];
+        return'<label style="display:inline-flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;padding:5px 10px;border-radius:var(--r);border:1px solid '+(on?'var(--green-border)':'var(--border)')+';background:'+(on?'var(--green-bg)':'var(--bg3)')+';color:'+(on?'var(--green)':'var(--text2)')+'">'
+          +'<input type="checkbox" '+(on?'checked':'')+' onchange="toggleAccountCheck(\''+n+'\')" style="width:auto;margin:0"> '+esc(n)
         +'</label>';
-      }
-      return '<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)">'
-        +'<div style="width:30px;height:30px;border-radius:50%;border:2px solid;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;'+circleStyle+'">'+(isDone?'✓':isNa?'—':String(i+1))+'</div>'
+      }).join('');
+      return '<div style="display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)">'
+        +'<div style="width:30px;height:30px;border-radius:50%;border:2px solid;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;'+circleStyle+'">'+(allDone?'✓':String(i+1))+'</div>'
         +'<div style="flex:1;min-width:0">'
-          +'<div style="font-size:14px;font-weight:600;color:'+labelColor+'">'+step.label+suffix+dateHtml+'</div>'
-          +salesJoinHtml
+          +'<div style="font-size:14px;font-weight:600;color:'+(allDone?'var(--green)':'var(--text)')+'">'+step.label+(allDone?' <span style="color:var(--green);font-size:12px">✓ 完了</span>':'')+'<span style="font-size:11px;color:var(--text3);font-weight:400;margin-left:6px">各アカウント作成 or 連携完了</span></div>'
+          +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">'+subBtns+'</div>'
         +'</div>'
-        +'<input type="date" id="pg_'+step.key+'" value="'+(p.date||'')+'" style="font-size:13px;padding:4px 6px;border:1px solid var(--border);border-radius:6px;background:var(--bg2);color:var(--text);width:140px;flex-shrink:0">'
-        +'<div style="display:flex;gap:6px;flex-shrink:0">'+btns+'</div>'
       +'</div>';
-    }).join('')
-  +'</div>';
+    }
+    /* 通常ステップ */
+    var isDone=p.status==='done';
+    var isNa=p.status==='na';
+    var circleStyle=isDone?'background:var(--green);border-color:var(--green);color:#fff':'background:var(--bg3);border-color:var(--border);color:var(--text3)';
+    var labelColor=isDone?'var(--green)':isNa?'var(--text3)':'var(--text)';
+    var suffix=isDone?' <span style="color:var(--green);font-size:12px">✓ 完了</span>':isNa?' <span style="color:var(--text3);font-size:12px">不要</span>':'';
+    var dateHtml=p.date?'<span style="font-size:12px;color:var(--text3);margin-left:8px">'+esc(p.date)+'</span>':'';
+    var btns='';
+    if(!isDone&&!isNa){
+      btns='<button style="'+bs+'background:var(--accent);color:#fff;border-color:var(--accent)" onclick="saveStepProgress(\''+step.key+'\',\'done\',document.getElementById(\'pg_'+step.key+'\').value)">完了</button>';
+      if(step.hasNa)btns+=' <button style="'+bs+'background:var(--bg3);color:var(--text2);border-color:var(--border)" onclick="saveStepProgress(\''+step.key+'\',\'na\',\'\')">不要</button>';
+    }else{
+      btns='<button style="'+bs+'background:var(--bg3);color:var(--text3);border-color:var(--border)" onclick="saveStepProgress(\''+step.key+'\',\'pending\',\'\')">取り消す</button>';
+    }
+    var salesJoinHtml='';
+    if(step.key==='kickoff'){
+      var sj=p.salesJoin?true:false;
+      salesJoinHtml='<label style="display:inline-flex;align-items:center;gap:5px;font-size:12px;color:'+(sj?'var(--accent)':'var(--text3)')+';cursor:pointer;margin-top:4px">'
+        +'<input type="checkbox" '+(sj?'checked':'')+' onchange="toggleKickoffSalesJoin(this.checked)" style="cursor:pointer">'
+        +'🤝 営業同席希望'+(sj?'（あり）':'')
+      +'</label>';
+    }
+    return '<div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--border)">'
+      +'<div style="width:30px;height:30px;border-radius:50%;border:2px solid;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;'+circleStyle+'">'+(isDone?'✓':isNa?'—':String(i+1))+'</div>'
+      +'<div style="flex:1;min-width:0">'
+        +'<div style="font-size:14px;font-weight:600;color:'+labelColor+'">'+step.label+suffix+dateHtml+'</div>'
+        +salesJoinHtml
+      +'</div>'
+      +'<input type="date" id="pg_'+step.key+'" value="'+(p.date||'')+'" style="font-size:13px;padding:4px 6px;border:1px solid var(--border);border-radius:6px;background:var(--bg2);color:var(--text);width:140px;flex-shrink:0">'
+      +'<div style="display:flex;gap:6px;flex-shrink:0">'+btns+'</div>'
+    +'</div>';
+  }).join('');
+  el.innerHTML=toggle+'<div style="padding-bottom:8px">'+rows+'</div>';
+}
+
+function toggleProgressMode(mode){
+  var s=DB.stores.find(function(x){return x.id===editingStoreId;});
+  if(!s)return;
+  s.progressMode=mode;
+  saveItem('stores',s);
+  renderProgressTab();
+  renderTodoList();
+}
+function toggleAccountCheck(name){
+  var s=DB.stores.find(function(x){return x.id===editingStoreId;});
+  if(!s)return;
+  if(!s.progress)s.progress={};
+  var p=s.progress.accounts||{status:'pending',date:'',accountChecks:{}};
+  if(!p.accountChecks)p.accountChecks={};
+  p.accountChecks[name]=!p.accountChecks[name];
+  p.status=isAccountsDone(p)?'done':'pending';
+  if(p.status==='done'&&!p.date){var d=new Date();p.date=d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+  s.progress.accounts=p;
+  saveItem('stores',s);
+  renderProgressTab();
+  renderTodoList();
 }
 
 function saveStepProgress(stepKey,status,date){
@@ -294,7 +358,6 @@ function clearStoreForm(){
   document.getElementById('sVideos').value='2';
   document.getElementById('sPlanId').value='';
   document.getElementById('sPlanPreview').textContent='';
-  document.querySelectorAll('#setupChecklist .check-item').forEach(function(el){el.classList.remove('done');el.querySelector('.check-box').textContent='';});
   ['hIssue','hTargetWant','hTargetNow','hTiming','hIdealCustomer','hStrength','hArea','hIgPurpose','hMenu','hKpi','hTargetAge','hTargetGender','hTargetRegion','hTargetInterest','hRefAccount','hNg','hPastAd','hAccMgr','hLoginShare','hFbPage','hInPost','hDmMgr','hPostContent','hPostFlow','hApprovalDays','hPhotoAsset','hVideoAsset','hNewShoot','hLogo','hPastAsset','hTonmana','hAdIg','hAdStart','hAdBudget','hLpUrl','hInfStart','hInfEnd','hInfCount','hInfGenre','hInfFollowers','hInfMust','hHashtag','hOpStart','hShootDate','hPostStart','hAdStart2','hInfPostDate','hOther'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';}); 
 }
 
@@ -329,7 +392,6 @@ function openStoreModal(id){
       /* 営業時間・定休日を復元 */
       restoreHoursUI(s.hours||'');
       showPlanPreview();
-      if(s.setupChecks){var items=document.querySelectorAll('#setupChecklist .check-item');s.setupChecks.forEach(function(v,i){if(items[i]&&v){items[i].classList.add('done');items[i].querySelector('.check-box').textContent='✓';}});}
       if(s.hearing){Object.keys(s.hearing).forEach(function(k){var el=document.getElementById(k);if(el)el.value=s.hearing[k]||'';});}
       var naEl=document.getElementById('sNextAction');if(naEl)naEl.value=s.nextAction||'';
       var nmEl=document.getElementById('sNegotiatingMemo');if(nmEl)nmEl.value=s.negotiatingMemo||'';
@@ -373,9 +435,8 @@ function saveStore(){
   var colorIdx=isEdit?(DB.stores.findIndex(function(x){return x.id===id;})):(DB.stores.length);
   if(colorIdx<0)colorIdx=DB.stores.length;
   var color=existing?existing.color:COLORS[colorIdx%COLORS.length];
-  var checks=Array.from(document.querySelectorAll('#setupChecklist .check-item')).map(function(el){return el.classList.contains('done');});
   var s={
-    id:id,color:color,setupChecks:checks,
+    id:id,color:color,
     name:name,
     corpId:document.getElementById('sCorpId')?document.getElementById('sCorpId').value:'',
     genre:document.getElementById('sGenre').value,
@@ -417,6 +478,7 @@ function saveStore(){
     managerLog:managerLog,
     prevManagers:existing?existing.prevManagers||[]:[],
     progress:existing?existing.progress||{}:{},
+    progressMode:existing?existing.progressMode||'first':'first',
     nextAction:document.getElementById('sNextAction').value,
     negotiatingMemo:document.getElementById('sNegotiatingMemo').value,
     adBilling:existing?existing.adBilling||{}:{},
@@ -504,7 +566,7 @@ function renderStoreTable(){
   if(!list.length){tb.innerHTML='';return;}
   var metaLabels={none:'—',basic:'<span class="badge b-amber">基礎あり</span>',advanced:'<span class="badge b-green">豊富</span>'};
   tb.innerHTML=list.map(function(s){
-    var pct=setupPct(s);
+    var pct=progressPct(s);
     var sns='';
     if(s.ig)sns+='<span style="font-size:11px;color:#e1306c;margin-right:3px;font-weight:500">IG</span>';
     if(s.fb)sns+='<span style="font-size:11px;color:#1877f2;margin-right:3px;font-weight:500">FB</span>';
@@ -555,7 +617,7 @@ function showDetail(id){
   if(!s)return;
   var myPosts=DB.posts.filter(function(p){return p.storeId===id;}).sort(function(a,b){return new Date(a.date)-new Date(b.date);});
   var myCast=DB.castings.filter(function(c){return c.storeId===id;});
-  var pct=setupPct(s);
+  var pct=progressPct(s);
   var plan=DB.plans.find(function(p){return p.id===s.planId;});
   var corp=DB.corporations&&s.corpId?DB.corporations.find(function(c){return c.id===s.corpId;}):null;
 
@@ -641,23 +703,29 @@ function showDetail(id){
     /* 要望 */
     +(s.request?'<div style="margin-bottom:14px;padding:10px 12px;background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:var(--r);font-size:13px;white-space:pre-wrap">'+esc(s.request)+'</div>':'')
 
-    /* 初期設定進捗 */
-    +'<div style="margin-bottom:14px">'
-      +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'
-        +'<span style="font-size:12px;font-weight:500;color:var(--text2)">初期設定</span>'
-        +'<div class="pbar-wrap" style="flex:1"><div class="pbar" style="background:'+(pct===100?'var(--green)':'var(--accent)')+';width:'+pct+'%"></div></div>'
-        +'<span style="font-size:12px;color:var(--text3)">'+pct+'%</span>'
-      +'</div>'
-      +'<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px">'
-        +SETUP_LABELS.map(function(label,i){
-          var done=s.setupChecks&&s.setupChecks[i];
-          return'<div style="display:flex;align-items:center;gap:4px;padding:4px 6px;border-radius:var(--r);background:'+(done?'var(--green-bg)':'var(--bg3)')+';border:1px solid '+(done?'var(--green-border)':'var(--border)')+'">'
-            +'<span style="font-size:11px;color:'+(done?'var(--green)':'var(--text3)')+'">'+(done?'✓':'○')+'</span>'
-            +'<span style="font-size:11px;color:'+(done?'var(--text)':'var(--text3)')+'">'+esc(label)+'</span>'
-          +'</div>';
-        }).join('')
-      +'</div>'
-    +'</div>'
+    /* 案件進捗 */
+    +(function(){
+      var steps=progressStepsFor(s);var prog=s.progress||{};
+      var modeLabel=(s.progressMode==='repeat')?'2回目以降':'初回（立ち上げ）';
+      return'<div style="margin-bottom:14px">'
+        +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'
+          +'<span style="font-size:12px;font-weight:500;color:var(--text2)">案件進捗</span>'
+          +'<span class="badge b-gray" style="font-size:11px">'+modeLabel+'</span>'
+          +'<div class="pbar-wrap" style="flex:1"><div class="pbar" style="background:'+(pct===100?'var(--green)':'var(--accent)')+';width:'+pct+'%"></div></div>'
+          +'<span style="font-size:12px;color:var(--text3)">'+pct+'%</span>'
+        +'</div>'
+        +'<div style="display:flex;gap:4px;flex-wrap:wrap">'
+          +steps.map(function(step){
+            var p=prog[step.key]||{};
+            var done=step.accounts?isAccountsDone(p):(p.status==='done'||p.status==='na');
+            return'<div style="display:flex;align-items:center;gap:4px;padding:4px 8px;border-radius:var(--r);background:'+(done?'var(--green-bg)':'var(--bg3)')+';border:1px solid '+(done?'var(--green-border)':'var(--border)')+'">'
+              +'<span style="font-size:11px;color:'+(done?'var(--green)':'var(--text3)')+'">'+(done?'✓':'○')+'</span>'
+              +'<span style="font-size:11px;color:'+(done?'var(--text)':'var(--text3)')+'">'+esc(step.label)+'</span>'
+            +'</div>';
+          }).join('')
+        +'</div>'
+      +'</div>';
+    })()
 
     /* 投稿履歴 */
     +'<div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:8px">投稿履歴 ('+myPosts.length+'件)</div>'

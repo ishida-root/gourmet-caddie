@@ -261,32 +261,34 @@ function renderCheckPage(){
   }).sort(function(a,b){return new Date(a.date)-new Date(b.date);});
   setSection('chk-creative','chk-creative-count',noCreative,'クリエイティブ未設定の投稿はありません ✓');
 
-  /* ④ 初期設定未完了 */
+  /* ④ 案件進捗 未完了 */
   var setupEl=document.getElementById('chk-setup');
   var setupCntEl=document.getElementById('chk-setup-count');
   var incomplete=DB.stores.filter(function(s){
-    return s.status==='active'&&setupPct(s)<100;
+    return s.status==='active'&&progressPct(s)<100;
   });
   if(setupCntEl)setupCntEl.textContent=incomplete.length+'店舗';
   if(setupEl){
     if(!incomplete.length){
-      setupEl.innerHTML='<div style="padding:12px 14px;font-size:13px;color:var(--text3)">全店舗の初期設定が完了しています ✓</div>';
+      setupEl.innerHTML='<div style="padding:12px 14px;font-size:13px;color:var(--text3)">全店舗の案件進捗が完了しています ✓</div>';
     }else{
       setupEl.innerHTML='<div style="border-radius:0 0 var(--r) var(--r);overflow:hidden">'
         +incomplete.map(function(s){
-          var pct=setupPct(s);
-          var checks=(s.setupChecks||[]);
-          var missing=SETUP_LABELS.filter(function(l,i){return!checks[i];});
+          var pct=progressPct(s);
+          var steps=progressStepsFor(s);var prog=s.progress||{};
+          var missing=steps.filter(function(step){var p=prog[step.key]||{};return step.accounts?!isAccountsDone(p):!(p.status==='done'||p.status==='na');});
+          var modeLabel=(s.progressMode==='repeat')?'2回目以降':'初回';
           return'<div style="padding:10px 14px;border-bottom:1px solid var(--border)">'
             +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">'
               +'<span style="width:5px;height:5px;border-radius:50%;background:'+storeColor(s.id)+';display:inline-block"></span>'
               +'<span style="font-size:13px;font-weight:500;cursor:pointer;color:var(--accent)" onclick="navigate(\'stores\');setTimeout(function(){showDetail(\''+s.id+'\');},100)">'+esc(s.name)+'</span>'
+              +'<span class="badge b-gray" style="font-size:10px">'+modeLabel+'</span>'
               +'<div class="pbar-wrap" style="width:80px"><div class="pbar" style="width:'+pct+'%;background:'+(pct>=80?'var(--green)':pct>=50?'var(--amber)':'var(--red)')+'"></div></div>'
               +'<span style="font-size:12px;color:var(--text3)">'+pct+'%</span>'
-              +'<button class="btn btn-sm" onclick="openStoreModal(\''+s.id+'\')">設定</button>'
+              +'<button class="btn btn-sm" onclick="openStoreModal(\''+s.id+'\')">進捗</button>'
             +'</div>'
             +(missing.length?'<div style="display:flex;gap:4px;flex-wrap:wrap">'
-              +missing.map(function(l){return'<span style="font-size:11px;padding:2px 7px;border-radius:10px;background:var(--red-bg);color:var(--red)">'+esc(l)+'</span>';}).join('')
+              +missing.map(function(step){return'<span style="font-size:11px;padding:2px 7px;border-radius:10px;background:var(--red-bg);color:var(--red)">'+esc(step.label)+'</span>';}).join('')
             +'</div>':'')
           +'</div>';
         }).join('')

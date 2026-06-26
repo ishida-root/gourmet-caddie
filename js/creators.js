@@ -27,9 +27,6 @@ function skillValLabel(skillId,val){
 
 
 
-/* ============================================================
-   時間ピッカー（営業時間用）24:00〜翌表記対応、30分刻み
-   makeTimePicker24(wrapperId, hiddenId, onChange)
 function initDatePickers(){
   makeDatePicker('crBirthdayWrap','crBirthday',{yearFrom:1950,yearTo:new Date().getFullYear()-10,yearLabel:'年'});
   makeDatePicker('crInterviewDateWrap','crInterviewDate',{yearFrom:2020,yearTo:new Date().getFullYear()+1,yearLabel:'年'});

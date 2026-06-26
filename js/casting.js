@@ -218,23 +218,25 @@ function renderTodoList(){
     return'<span style="font-size:11px;font-weight:600;padding:1px 6px;border-radius:4px;border:1px solid '+bd+';background:'+bg+';color:'+fg+';margin-right:5px;vertical-align:middle">'+text+'</span>';
   }
 
-  /* ① 案件進捗：未着手ステップ */
+  /* ① 案件進捗：次の未完了ステップ（フローに応じて1件提示） */
   DB.stores.filter(function(s){return s.status==='active';}).forEach(function(s){
     var prog=s.progress||{};
-    var btn='<button style="'+bsNav+'" onclick="openStoreFromNotif(\''+s.id+'\',6)">進捗を開く →</button>';
-    if((prog.creator||{status:'pending'}).status==='pending'){
-      items.push({priority:2,date:today,main:esc(s.name),sub:actionBadge('要対応','amber')+'クリエイター未確定',btns:btn});
-    }
-    if((prog.creator||{}).status==='done'&&(prog.plan||{status:'pending'}).status==='pending'){
-      items.push({priority:2,date:today,main:esc(s.name),sub:actionBadge('要提出','amber')+'企画書 未提出',btns:btn});
-    }
-    var ko=prog.kickoff||{status:'pending'};
-    if((prog.plan||{}).status==='done'&&ko.status==='pending'&&ko.salesJoin){
-      items.push({priority:1,date:today,main:esc(s.name),sub:actionBadge('要対応','red')+'キックオフ 営業同席希望あり（未実施）',btns:btn});
-    }
-    var koStatus=ko.status;
-    if((prog.plan||{}).status==='done'&&(koStatus==='done'||koStatus==='na')&&(prog.storyboard||{status:'pending'}).status==='pending'){
-      items.push({priority:2,date:today,main:esc(s.name),sub:actionBadge('要提出','amber')+'絵コンテ 未提出',btns:btn});
+    var steps=progressStepsFor(s);
+    var btn='<button style="'+bsNav+'" onclick="openStoreFromNotif(\''+s.id+'\',5)">進捗を開く →</button>';
+    for(var i=0;i<steps.length;i++){
+      var step=steps[i];
+      var p=prog[step.key]||{};
+      var done=step.accounts?isAccountsDone(p):(p.status==='done'||p.status==='na');
+      if(done)continue;
+      if(step.key==='kickoff'&&p.salesJoin){
+        items.push({priority:1,date:today,main:esc(s.name),sub:actionBadge('要対応','red')+'キックオフ 営業同席希望あり（未実施）',btns:btn});
+      }else if(step.accounts){
+        var missing=step.accounts.filter(function(n){return!(p.accountChecks||{})[n];});
+        items.push({priority:2,date:today,main:esc(s.name),sub:actionBadge('要対応','amber')+'アカウント未連携：'+missing.join('・'),btns:btn});
+      }else{
+        items.push({priority:2,date:today,main:esc(s.name),sub:actionBadge('要対応','amber')+step.label+' 未完了',btns:btn});
+      }
+      break;
     }
   });
 
