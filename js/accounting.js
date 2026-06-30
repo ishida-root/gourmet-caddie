@@ -12,7 +12,7 @@ function openInvoiceModal(id,opts){
   var storeSel=document.getElementById('invStoreId');
   storeSel.innerHTML='<option value="">選択...</option>'+DB.stores.map(function(s){return'<option value="'+s.id+'">'+esc(s.name)+'</option>';}).join('');
   /* フォームリセット */
-  ['invPrFee','invTransport','invFood','invMakeFee','invCrTransport','invOther','invAdFee','invAdMonth','invNote'].forEach(function(fid){var el=document.getElementById(fid);if(el)el.value='';});
+  ['invPrFee','invTransport','invFood','invMakeFee','invCrTransport','invOther','invAdFee','invAdMonth','invBillingName','invNote'].forEach(function(fid){var el=document.getElementById(fid);if(el)el.value='';});
   if(crSel)crSel.value='';
   var adPlatEl=document.getElementById('invAdPlatform');if(adPlatEl)adPlatEl.value='Meta広告';
   /* 税区分・税率リセット（既定：税別10%） */
@@ -47,6 +47,7 @@ function openInvoiceModal(id,opts){
       if(adPlatEl)adPlatEl.value=inv.adPlatform||'Meta広告';
       var tm=document.querySelector('input[name="invTaxModeRadio"][value="'+(inv.taxMode||'excl')+'"]');if(tm)tm.checked=true;
       if(taxRateEl)taxRateEl.value=String(inv.taxRate!=null?inv.taxRate:10);
+      document.getElementById('invBillingName').value=inv.billingName||'';
       document.getElementById('invNote').value=inv.note||'';
       document.getElementById('invCastingId').value=inv.castingId||'';
     }
@@ -101,6 +102,7 @@ function onInvoiceTypeChange(){
   show('invAdCosts',isAd);
   show('invReceivedDateField',!isAd);
   show('invAdMonthField',isAd);
+  show('invBillingNameField',!isAd);
   /* 広告費は店舗必須 */
   var req=document.getElementById('invStoreReq');if(req)req.style.display=isAd?'':'none';
   /* キャスティング文脈はインフルエンサーのみ */
@@ -186,6 +188,8 @@ function saveInvoice(){
   var tmEl=document.querySelector('input[name="invTaxModeRadio"]:checked');
   inv.taxMode=tmEl?tmEl.value:'excl';
   inv.taxRate=Number((document.getElementById('invTaxRate')||{}).value)||0;
+  /* 請求書記載名（広告費以外） */
+  inv.billingName=(payeeType==='ad')?'':((document.getElementById('invBillingName')||{}).value||'');
   if(!DB.invoices)DB.invoices=[];
   if(isEdit){
     var idx=DB.invoices.findIndex(function(x){return x.id===id;});
@@ -279,7 +283,7 @@ function renderAccounting(){
     return'<tr>'
       +'<td class="td-mono" style="white-space:nowrap">'+dateCell+'</td>'
       +'<td>'+typeBadge+'</td>'
-      +'<td style="font-weight:500">'+payeeName+'</td>'
+      +'<td style="font-weight:500">'+payeeName+(inv.billingName?'<div style="font-size:11px;color:var(--text3);font-weight:400">請求名義：'+esc(inv.billingName)+'</div>':'')+'</td>'
       +'<td style="color:var(--text2)">'+storeName2+'</td>'
       +'<td style="font-size:12px">'+breakdownHtml+'</td>'
       +'<td class="td-mono" style="text-align:right;white-space:nowrap"><div style="font-weight:500;color:var(--accent)">¥'+incl.toLocaleString()+'<span style="font-size:10px;color:var(--text3);font-weight:400"> 税込</span></div><div style="font-size:11px;color:var(--text3)">¥'+excl.toLocaleString()+' 税別</div></td>'
