@@ -388,10 +388,10 @@
     <div class="page" id="page-accounting">
       <!-- サマリー -->
       <div class="stats-row" style="grid-template-columns:repeat(4,1fr)">
-        <div class="stat-card blue"><div class="stat-val" id="acc-count">0</div><div class="stat-label">請求書件数</div></div>
-        <div class="stat-card"><div class="stat-val" id="acc-pr">¥0</div><div class="stat-label">PR費 合計</div></div>
-        <div class="stat-card"><div class="stat-val" id="acc-transport">¥0</div><div class="stat-label">交通費 合計</div></div>
-        <div class="stat-card"><div class="stat-val" id="acc-food">¥0</div><div class="stat-label">飲食代 合計</div></div>
+        <div class="stat-card blue"><div class="stat-val" id="acc-count">0</div><div class="stat-label">件数</div></div>
+        <div class="stat-card"><div class="stat-val" id="acc-total">¥0</div><div class="stat-label">総額</div></div>
+        <div class="stat-card"><div class="stat-val" id="acc-inf">¥0</div><div class="stat-label">インフルエンサー費用</div></div>
+        <div class="stat-card"><div class="stat-val" id="acc-creator">¥0</div><div class="stat-label">クリエイター費用</div></div>
       </div>
       <div class="card">
         <div class="card-header">
@@ -413,10 +413,8 @@
         <div class="table-wrap">
           <table>
             <thead><tr>
-              <th>受領日</th><th>インフルエンサー</th><th>店舗</th>
-              <th style="text-align:right">PR費</th>
-              <th style="text-align:right">交通費</th>
-              <th style="text-align:right">飲食代</th>
+              <th>受領日</th><th>種別</th><th>支払先</th><th>店舗</th>
+              <th>費用内訳</th>
               <th style="text-align:right">合計</th>
               <th>進捗フロー</th><th>備考</th><th></th>
             </tr></thead>
@@ -808,13 +806,23 @@
     <button class="modal-close" onclick="closeModal('invoiceModal')">✕</button>
   </div>
   <div class="modal-body">
+    <!-- 費用種別トグル -->
+    <div class="fr1 field" style="margin-bottom:12px">
+      <label>費用種別 *</label>
+      <div style="display:flex;gap:8px;margin-top:4px" id="invTypeGroup">
+        <label style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;font-size:13px;cursor:pointer;padding:9px 10px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg3)"><input type="radio" name="invTypeRadio" value="influencer" onchange="onInvoiceTypeChange()" style="width:auto;margin:0" checked> 👤 インフルエンサー</label>
+        <label style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;font-size:13px;cursor:pointer;padding:9px 10px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg3)"><input type="radio" name="invTypeRadio" value="creator" onchange="onInvoiceTypeChange()" style="width:auto;margin:0"> 🎬 クリエイター</label>
+      </div>
+    </div>
+    <input type="hidden" id="invPayeeType" value="influencer">
     <!-- キャスティングから呼ばれた時にキャスティング情報を表示 -->
     <div id="invCastingCtxBox" style="display:none;margin-bottom:12px;padding:10px 14px;background:var(--accent-bg);border:1px solid var(--accent-border);border-radius:var(--r)">
       <div style="font-size:11px;color:var(--text3);margin-bottom:4px;letter-spacing:.5px">📋 キャスティング</div>
       <div id="invCastingCtxLabel" style="font-size:14px;font-weight:500;color:var(--text)"></div>
     </div>
     <div id="invInfStoreRow" class="fr">
-      <div class="field"><label>インフルエンサー *</label><select id="invInfId"><option value="">選択...</option></select></div>
+      <div class="field" id="invInfField"><label>インフルエンサー *</label><select id="invInfId"><option value="">選択...</option></select></div>
+      <div class="field" id="invCreatorField" style="display:none"><label>クリエイター *</label><select id="invCreatorId"><option value="">選択...</option></select></div>
       <div class="field"><label>店舗</label><select id="invStoreId"><option value="">選択...</option></select></div>
     </div>
     <div class="fr">
@@ -834,10 +842,15 @@
     </div>
     <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:10px">
       <div style="font-size:13px;font-weight:500;color:var(--text2);margin-bottom:10px">費用内訳（円）</div>
-      <div class="fr3">
+      <div class="fr3" id="invInfCosts">
         <div class="field"><label>PR費</label><input type="number" id="invPrFee" placeholder="0" oninput="calcInvTotal()"></div>
         <div class="field"><label>交通費</label><input type="number" id="invTransport" placeholder="0" oninput="calcInvTotal()"></div>
         <div class="field"><label>飲食代</label><input type="number" id="invFood" placeholder="0" oninput="calcInvTotal()"></div>
+      </div>
+      <div class="fr3" id="invCreatorCosts" style="display:none">
+        <div class="field"><label>制作費</label><input type="number" id="invMakeFee" placeholder="0" oninput="calcInvTotal()"></div>
+        <div class="field"><label>交通費</label><input type="number" id="invCrTransport" placeholder="0" oninput="calcInvTotal()"></div>
+        <div class="field"><label>その他</label><input type="number" id="invOther" placeholder="0" oninput="calcInvTotal()"></div>
       </div>
       <div style="display:flex;justify-content:flex-end;align-items:center;gap:8px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">
         <span style="font-size:13px;color:var(--text2)">合計</span>
