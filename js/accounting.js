@@ -112,14 +112,17 @@ function calcInvTotal(){
   var t=document.querySelector('input[name="invTypeRadio"]:checked');
   var val=t?t.value:'influencer';
   var g=function(id){return Number(document.getElementById(id).value)||0;};
-  var sum=val==='creator'?g('invMakeFee')+g('invCrTransport')+g('invOther')
-    :val==='ad'?g('invAdFee')
-    :g('invPrFee')+g('invTransport')+g('invFood');
+  /* 課税対象（報酬）と実費経費を分離 */
+  var taxable,expense;
+  if(val==='creator'){taxable=g('invMakeFee');expense=g('invCrTransport')+g('invOther');}
+  else if(val==='ad'){taxable=g('invAdFee');expense=0;}
+  else{taxable=g('invPrFee');expense=g('invTransport')+g('invFood');}
   var modeEl=document.querySelector('input[name="invTaxModeRadio"]:checked');
   var mode=modeEl?modeEl.value:'excl';
   var rate=(Number((document.getElementById('invTaxRate')||{}).value)||0)/100;
-  var excl=mode==='incl'?Math.round(sum/(1+rate)):sum;
-  var incl=mode==='incl'?sum:Math.round(sum*(1+rate));
+  var taxExcl=mode==='incl'?Math.round(taxable/(1+rate)):taxable;
+  var taxIncl=mode==='incl'?taxable:Math.round(taxable*(1+rate));
+  var excl=taxExcl+expense,incl=taxIncl+expense;
   var exclEl=document.getElementById('invTotalExcl');if(exclEl)exclEl.textContent='¥'+excl.toLocaleString();
   document.getElementById('invTotal').textContent='¥'+incl.toLocaleString();
 }
@@ -292,14 +295,18 @@ function renderAccounting(){
   }).join('');
 }
 
-function invTotalOf(inv){
-  return inv.payeeType==='ad'
-    ?(inv.adFee||0)
-    :inv.payeeType==='creator'
-    ?(inv.makeFee||0)+(inv.crTransport||0)+(inv.other||0)
-    :(inv.prFee||0)+(inv.transport||0)+(inv.food||0);
+/* 課税対象（報酬・サービス対価）のみ消費税を計算。
+   交通費・飲食代・その他は実費精算（立替経費）のため税対象外。 */
+function invTaxableOf(inv){
+  return inv.payeeType==='ad'?(inv.adFee||0)
+    :inv.payeeType==='creator'?(inv.makeFee||0)
+    :(inv.prFee||0);
 }
-/* 入力値(invTotalOf)はtaxMode基準。税別/税込を相互換算 */
+function invExpenseOf(inv){
+  return inv.payeeType==='ad'?0
+    :inv.payeeType==='creator'?(inv.crTransport||0)+(inv.other||0)
+    :(inv.transport||0)+(inv.food||0);
+}
 function invTaxRate(inv){return inv.taxRate!=null?inv.taxRate:10;}
-function invExclTotal(inv){var s=invTotalOf(inv),r=invTaxRate(inv)/100;return inv.taxMode==='incl'?Math.round(s/(1+r)):s;}
-function invInclTotal(inv){var s=invTotalOf(inv),r=invTaxRate(inv)/100;return inv.taxMode==='incl'?s:Math.round(s*(1+r));}
+function invExclTotal(inv){var tax=invTaxableOf(inv),r=invTaxRate(inv)/100;var taxExcl=inv.taxMode==='incl'?Math.round(tax/(1+r)):tax;return taxExcl+invExpenseOf(inv);}
+function invInclTotal(inv){var tax=invTaxableOf(inv),r=invTaxRate(inv)/100;var taxIncl=inv.taxMode==='incl'?tax:Math.round(tax*(1+r));return taxIncl+invExpenseOf(inv);}

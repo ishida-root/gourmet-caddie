@@ -876,7 +876,8 @@
           <div class="field"><label>確定広告費</label><input type="number" id="invAdFee" placeholder="0" oninput="calcInvTotal()"></div>
         </div>
       </div>
-      <div style="display:flex;align-items:center;gap:10px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border);flex-wrap:wrap">
+      <div style="font-size:11px;color:var(--text3);margin-top:8px">※消費税は報酬（PR費・制作費・広告費）のみ。交通費・飲食代・その他は実費精算のため税対象外です。</div>
+      <div style="display:flex;align-items:center;gap:10px;margin-top:8px;padding-top:10px;border-top:1px solid var(--border);flex-wrap:wrap">
         <div style="display:flex;gap:4px" id="invTaxModeGroup">
           <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;padding:4px 8px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg2)"><input type="radio" name="invTaxModeRadio" value="excl" onchange="calcInvTotal()" style="width:auto;margin:0" checked> 税別で入力</label>
           <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;padding:4px 8px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg2)"><input type="radio" name="invTaxModeRadio" value="incl" onchange="calcInvTotal()" style="width:auto;margin:0"> 税込で入力</label>
