@@ -15,6 +15,9 @@ function openInvoiceModal(id,opts){
   ['invPrFee','invTransport','invFood','invMakeFee','invCrTransport','invOther','invAdFee','invAdMonth','invNote'].forEach(function(fid){var el=document.getElementById(fid);if(el)el.value='';});
   if(crSel)crSel.value='';
   var adPlatEl=document.getElementById('invAdPlatform');if(adPlatEl)adPlatEl.value='Meta広告';
+  /* 税区分・税率リセット（既定：税別10%） */
+  var taxExcl=document.querySelector('input[name="invTaxModeRadio"][value="excl"]');if(taxExcl)taxExcl.checked=true;
+  var taxRateEl=document.getElementById('invTaxRate');if(taxRateEl)taxRateEl.value='10';
   document.getElementById('invReceivedDate').value='';
   document.getElementById('invStatus').value='pending';
   document.getElementById('invTotal').textContent='¥0';
@@ -42,6 +45,8 @@ function openInvoiceModal(id,opts){
       document.getElementById('invAdFee').value=inv.adFee||'';
       document.getElementById('invAdMonth').value=inv.adMonth||'';
       if(adPlatEl)adPlatEl.value=inv.adPlatform||'Meta広告';
+      var tm=document.querySelector('input[name="invTaxModeRadio"][value="'+(inv.taxMode||'excl')+'"]');if(tm)tm.checked=true;
+      if(taxRateEl)taxRateEl.value=String(inv.taxRate!=null?inv.taxRate:10);
       document.getElementById('invNote').value=inv.note||'';
       document.getElementById('invCastingId').value=inv.castingId||'';
     }
@@ -110,7 +115,13 @@ function calcInvTotal(){
   var sum=val==='creator'?g('invMakeFee')+g('invCrTransport')+g('invOther')
     :val==='ad'?g('invAdFee')
     :g('invPrFee')+g('invTransport')+g('invFood');
-  document.getElementById('invTotal').textContent='¥'+sum.toLocaleString();
+  var modeEl=document.querySelector('input[name="invTaxModeRadio"]:checked');
+  var mode=modeEl?modeEl.value:'excl';
+  var rate=(Number((document.getElementById('invTaxRate')||{}).value)||0)/100;
+  var excl=mode==='incl'?Math.round(sum/(1+rate)):sum;
+  var incl=mode==='incl'?sum:Math.round(sum*(1+rate));
+  var exclEl=document.getElementById('invTotalExcl');if(exclEl)exclEl.textContent='¥'+excl.toLocaleString();
+  document.getElementById('invTotal').textContent='¥'+incl.toLocaleString();
 }
 
 function saveInvoice(){
@@ -168,6 +179,10 @@ function saveInvoice(){
       note:document.getElementById('invNote').value
     };
   }
+  /* 税区分・税率（全種別共通） */
+  var tmEl=document.querySelector('input[name="invTaxModeRadio"]:checked');
+  inv.taxMode=tmEl?tmEl.value:'excl';
+  inv.taxRate=Number((document.getElementById('invTaxRate')||{}).value)||0;
   if(!DB.invoices)DB.invoices=[];
   if(isEdit){
     var idx=DB.invoices.findIndex(function(x){return x.id===id;});
@@ -231,9 +246,9 @@ function renderAccounting(){
     return true;
   }).sort(function(a,b){return invMonthOf(b).localeCompare(invMonthOf(a))||(b.receivedDate||'').localeCompare(a.receivedDate||'');});
 
-  /* サマリー集計（フィルタ後） */
+  /* サマリー集計（フィルタ後・税込ベース） */
   var totalAll=0,totalInf=0,totalCr=0,totalAd=0;
-  list.forEach(function(inv){var t=invTotalOf(inv);totalAll+=t;if(inv.payeeType==='creator')totalCr+=t;else if(inv.payeeType==='ad')totalAd+=t;else totalInf+=t;});
+  list.forEach(function(inv){var t=invInclTotal(inv);totalAll+=t;if(inv.payeeType==='creator')totalCr+=t;else if(inv.payeeType==='ad')totalAd+=t;else totalInf+=t;});
   var setVal=function(id,v){var el=document.getElementById(id);if(el)el.textContent=v;};
   setVal('acc-count',list.length);
   setVal('acc-total','¥'+totalAll.toLocaleString());
@@ -251,7 +266,7 @@ function renderAccounting(){
       :isCreator?(function(){var c=(DB.creators||[]).find(function(x){return x.id===inv.creatorId;});return c?esc(c.crName):'—';})()
       :(function(){var i=DB.influencers.find(function(x){return x.id===inv.infId;});return i?esc(i.name):'—';})();
     var storeName2=inv.storeId?(function(){var s=DB.stores.find(function(x){return x.id===inv.storeId;});return s?esc(s.name):'—';})():'—';
-    var total=invTotalOf(inv);
+    var incl=invInclTotal(inv),excl=invExclTotal(inv);
     var typeBadge=isAd?'<span class="badge b-amber">📢 広告費</span>':isCreator?'<span class="badge b-pink">🎬 クリエイター</span>':'<span class="badge b-purple">👤 INF</span>';
     var dateCell=isAd?(inv.adMonth?inv.adMonth+'<span style="color:var(--text3);font-size:11px"> 対象月</span>':'—'):(inv.receivedDate||'—');
     var breakdown=isAd?[['確定広告費',inv.adFee]]
@@ -264,7 +279,7 @@ function renderAccounting(){
       +'<td style="font-weight:500">'+payeeName+'</td>'
       +'<td style="color:var(--text2)">'+storeName2+'</td>'
       +'<td style="font-size:12px">'+breakdownHtml+'</td>'
-      +'<td class="td-mono" style="text-align:right;font-weight:500;color:var(--accent)">¥'+total.toLocaleString()+'</td>'
+      +'<td class="td-mono" style="text-align:right;white-space:nowrap"><div style="font-weight:500;color:var(--accent)">¥'+incl.toLocaleString()+'<span style="font-size:10px;color:var(--text3);font-weight:400"> 税込</span></div><div style="font-size:11px;color:var(--text3)">¥'+excl.toLocaleString()+' 税別</div></td>'
       +'<td onclick="event.stopPropagation()" style="min-width:220px">'
         +renderInvFlow(inv)
       +'</td>'
@@ -284,3 +299,7 @@ function invTotalOf(inv){
     ?(inv.makeFee||0)+(inv.crTransport||0)+(inv.other||0)
     :(inv.prFee||0)+(inv.transport||0)+(inv.food||0);
 }
+/* 入力値(invTotalOf)はtaxMode基準。税別/税込を相互換算 */
+function invTaxRate(inv){return inv.taxRate!=null?inv.taxRate:10;}
+function invExclTotal(inv){var s=invTotalOf(inv),r=invTaxRate(inv)/100;return inv.taxMode==='incl'?Math.round(s/(1+r)):s;}
+function invInclTotal(inv){var s=invTotalOf(inv),r=invTaxRate(inv)/100;return inv.taxMode==='incl'?s:Math.round(s*(1+r));}

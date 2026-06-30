@@ -428,7 +428,7 @@ function renderDashboard(){
             :(DB.influencers.find(function(x){return x.id===inv.infId;})||{}).name;
           var icon=isAd?'📢 ':isCreator?'🎬 ':'';
           var storeObj=DB.stores.find(function(x){return x.id===inv.storeId;})||{};
-          var total=invTotalOf(inv);
+          var total=invInclTotal(inv);
           return'<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--amber-bg)">'
             +'<div style="flex:1;min-width:0">'
               +'<div style="font-size:14px;font-weight:500">'+icon+esc(payeeName||'—')+'</div>'
