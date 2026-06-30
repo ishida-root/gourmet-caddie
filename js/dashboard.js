@@ -421,15 +421,17 @@ function renderDashboard(){
     }else{
       accEl.innerHTML='<div style="border-radius:0 0 var(--r) var(--r);overflow:hidden">'
         +accPending.map(function(inv){
-          var isCreator=inv.payeeType==='creator';
-          var payeeName=isCreator
-            ?((DB.creators||[]).find(function(x){return x.id===inv.creatorId;})||{}).crName
+          var type=inv.payeeType||'influencer';
+          var isCreator=type==='creator',isAd=type==='ad';
+          var payeeName=isAd?inv.adPlatform
+            :isCreator?((DB.creators||[]).find(function(x){return x.id===inv.creatorId;})||{}).crName
             :(DB.influencers.find(function(x){return x.id===inv.infId;})||{}).name;
+          var icon=isAd?'📢 ':isCreator?'🎬 ':'';
           var storeObj=DB.stores.find(function(x){return x.id===inv.storeId;})||{};
           var total=invTotalOf(inv);
           return'<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);background:var(--amber-bg)">'
             +'<div style="flex:1;min-width:0">'
-              +'<div style="font-size:14px;font-weight:500">'+(isCreator?'🎬 ':'')+esc(payeeName||'—')+'</div>'
+              +'<div style="font-size:14px;font-weight:500">'+icon+esc(payeeName||'—')+'</div>'
               +'<div style="font-size:12px;color:var(--text2);margin-top:2px">'
                 +esc(storeObj.name||'—')
                 +(inv.receivedDate?' | 受領日：'+inv.receivedDate:'')

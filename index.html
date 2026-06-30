@@ -387,16 +387,29 @@
     <!-- ACCOUNTING -->
     <div class="page" id="page-accounting">
       <!-- サマリー -->
-      <div class="stats-row" style="grid-template-columns:repeat(4,1fr)">
+      <div class="stats-row" style="grid-template-columns:repeat(5,1fr)">
         <div class="stat-card blue"><div class="stat-val" id="acc-count">0</div><div class="stat-label">件数</div></div>
         <div class="stat-card"><div class="stat-val" id="acc-total">¥0</div><div class="stat-label">総額</div></div>
         <div class="stat-card"><div class="stat-val" id="acc-inf">¥0</div><div class="stat-label">インフルエンサー費用</div></div>
         <div class="stat-card"><div class="stat-val" id="acc-creator">¥0</div><div class="stat-label">クリエイター費用</div></div>
+        <div class="stat-card"><div class="stat-val" id="acc-ad">¥0</div><div class="stat-label">広告費</div></div>
       </div>
       <div class="card">
         <div class="card-header">
-          <span class="card-title">請求書管理</span>
-          <div style="display:flex;gap:6px;align-items:center">
+          <span class="card-title">費用管理</span>
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+            <select id="accFilterStore" onchange="renderAccounting()" style="font-size:13px;padding:4px 8px;width:auto">
+              <option value="">全店舗</option>
+            </select>
+            <select id="accFilterSales" onchange="renderAccounting()" style="font-size:13px;padding:4px 8px;width:auto">
+              <option value="">担当営業：全員</option>
+            </select>
+            <select id="accFilterType" onchange="renderAccounting()" style="font-size:13px;padding:4px 8px;width:auto">
+              <option value="">全種別</option>
+              <option value="influencer">👤 インフルエンサー</option>
+              <option value="creator">🎬 クリエイター</option>
+              <option value="ad">📢 広告費</option>
+            </select>
             <select id="accFilterStatus" onchange="renderAccounting()" style="font-size:13px;padding:4px 8px;width:auto">
               <option value="">すべて</option>
               <option value="pending">📄 未受領</option>
@@ -407,7 +420,7 @@
             <select id="accFilterMonth" onchange="renderAccounting()" style="font-size:13px;padding:4px 8px;width:auto">
               <option value="">全期間</option>
             </select>
-            <button class="btn btn-primary btn-sm" onclick="openInvoiceModal()">＋ 請求書追加</button>
+            <button class="btn btn-primary btn-sm" onclick="openInvoiceModal()">＋ 費用追加</button>
           </div>
         </div>
         <div class="table-wrap">
@@ -812,6 +825,7 @@
       <div style="display:flex;gap:8px;margin-top:4px" id="invTypeGroup">
         <label style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;font-size:13px;cursor:pointer;padding:9px 10px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg3)"><input type="radio" name="invTypeRadio" value="influencer" onchange="onInvoiceTypeChange()" style="width:auto;margin:0" checked> 👤 インフルエンサー</label>
         <label style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;font-size:13px;cursor:pointer;padding:9px 10px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg3)"><input type="radio" name="invTypeRadio" value="creator" onchange="onInvoiceTypeChange()" style="width:auto;margin:0"> 🎬 クリエイター</label>
+        <label style="flex:1;display:flex;align-items:center;justify-content:center;gap:6px;font-size:13px;cursor:pointer;padding:9px 10px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg3)"><input type="radio" name="invTypeRadio" value="ad" onchange="onInvoiceTypeChange()" style="width:auto;margin:0"> 📢 広告費</label>
       </div>
     </div>
     <input type="hidden" id="invPayeeType" value="influencer">
@@ -823,12 +837,16 @@
     <div id="invInfStoreRow" class="fr">
       <div class="field" id="invInfField"><label>インフルエンサー *</label><select id="invInfId"><option value="">選択...</option></select></div>
       <div class="field" id="invCreatorField" style="display:none"><label>クリエイター *</label><select id="invCreatorId"><option value="">選択...</option></select></div>
-      <div class="field"><label>店舗</label><select id="invStoreId"><option value="">選択...</option></select></div>
+      <div class="field" id="invStoreField"><label>店舗<span id="invStoreReq" style="display:none">  *</span></label><select id="invStoreId"><option value="">選択...</option></select></div>
     </div>
     <div class="fr">
-      <div class="field">
+      <div class="field" id="invReceivedDateField">
         <label>受領日</label>
         <input type="date" id="invReceivedDate">
+      </div>
+      <div class="field" id="invAdMonthField" style="display:none">
+        <label>対象月 *</label>
+        <input type="month" id="invAdMonth">
       </div>
       <div class="field">
         <label>進捗ステータス</label>
@@ -851,6 +869,12 @@
         <div class="field"><label>制作費</label><input type="number" id="invMakeFee" placeholder="0" oninput="calcInvTotal()"></div>
         <div class="field"><label>交通費</label><input type="number" id="invCrTransport" placeholder="0" oninput="calcInvTotal()"></div>
         <div class="field"><label>その他</label><input type="number" id="invOther" placeholder="0" oninput="calcInvTotal()"></div>
+      </div>
+      <div id="invAdCosts" style="display:none">
+        <div class="fr">
+          <div class="field"><label>媒体</label><select id="invAdPlatform"><option value="Meta広告">Meta広告</option><option value="Google広告">Google広告</option><option value="その他">その他</option></select></div>
+          <div class="field"><label>確定広告費</label><input type="number" id="invAdFee" placeholder="0" oninput="calcInvTotal()"></div>
+        </div>
       </div>
       <div style="display:flex;justify-content:flex-end;align-items:center;gap:8px;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">
         <span style="font-size:13px;color:var(--text2)">合計</span>
