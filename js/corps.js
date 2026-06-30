@@ -101,7 +101,7 @@ function openCorpDetail(id){
     '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:18px">'
       +'<div class="card-sm" style="text-align:center"><div style="font-size:22px;font-weight:500;font-family:"Noto Sans JP",sans-serif">'+stores.length+'</div><div style="font-size:11px;color:var(--text3);margin-top:2px">契約店舗数</div></div>'
       +'<div class="card-sm" style="text-align:center"><div style="font-size:22px;font-weight:500;font-family:"Noto Sans JP",sans-serif;color:var(--green)">'+active.length+'</div><div style="font-size:11px;color:var(--text3);margin-top:2px">稼働中</div></div>'
-      +'<div class="card-sm" style="text-align:center"><div style="font-size:15px;font-weight:500;font-family:"Noto Sans JP",sans-serif;color:var(--accent)">'+totalRev.toLocaleString()+'円</div><div style="font-size:11px;color:var(--text3);margin-top:2px">月次売上</div></div>'
+      +'<div class="card-sm" style="text-align:center"><div style="font-size:15px;font-weight:500;font-family:"Noto Sans JP",sans-serif;color:var(--accent)">'+totalRev.toLocaleString()+'円</div><div style="font-size:11px;color:var(--text3);margin-top:2px">希望広告月額</div></div>'
     +'</div>'
     +'<div class="grid2" style="margin-bottom:16px">'
       +'<div>'
