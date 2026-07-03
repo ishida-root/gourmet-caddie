@@ -202,13 +202,24 @@ function getActiveStaff(roleFilter){
     return true;
   });
 }
+/* 担当営業の全候補名 = ローカルの在籍営業マスタ ∪ 同期済みデータ内の担当名
+   （担当営業マスタはlocalStorageのみで端末間共有されないため、
+     同期済みの store.ourManager / store.salesBy も候補に含めて表示ズレを防ぐ） */
+function allSalesNames(){
+  var seen={},names=[];
+  getActiveStaff('sales').forEach(function(p){if(!seen[p.name]){seen[p.name]=1;names.push(p.name);}});
+  (DB.stores||[]).forEach(function(s){
+    [s.ourManager,s.salesBy].forEach(function(n){if(n&&!seen[n]){seen[n]=1;names.push(n);}});
+  });
+  return names;
+}
 function updateSalesPersonSelects(){
   var salesOnly=getActiveStaff('sales');
   var salesOpts='<option value="">選択...</option>'+salesOnly.map(function(p){return'<option value="'+esc(p.name)+'">'+esc(p.name)+'</option>';}).join('');
   var sl=document.getElementById('sl-sales');
   if(sl){var pv=sl.value;sl.innerHTML=salesOpts;if(pv)sl.value=pv;}
-  var salesActive=getActiveStaff('sales');
-  var salesOpts2='<option value="">選択...</option>'+salesActive.map(function(p){return'<option value="'+esc(p.name)+'">'+esc(p.name)+'</option>';}).join('');
+  /* 弊社担当は同期データの担当名も候補に含める（端末間の反映ズレ対策） */
+  var salesOpts2='<option value="">選択...</option>'+allSalesNames().map(function(n){return'<option value="'+esc(n)+'">'+esc(n)+'</option>';}).join('');
   var om=document.getElementById('sOurManager');
   if(om){var pv2=om.value;om.innerHTML=salesOpts2;if(pv2)om.value=pv2;}
   /* 退職済み担当者の表示更新 */
