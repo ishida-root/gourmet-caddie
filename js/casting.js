@@ -218,6 +218,13 @@ function renderTodoList(){
     return'<span style="font-size:11px;font-weight:600;padding:1px 6px;border-radius:4px;border:1px solid '+bd+';background:'+bg+';color:'+fg+';margin-right:5px;vertical-align:middle">'+text+'</span>';
   }
 
+  /* 対象店舗に未完了の予定投稿があるか（③と重複する撮影/投稿ステップの抑制用） */
+  var hasActivePost=function(sid,types){
+    return DB.posts.some(function(p){
+      return p.storeId===sid&&types.indexOf(p.type)>=0
+        &&p.status!=='done'&&p.status!=='visited'&&p.status!=='cancelled'&&p.status!=='approved';
+    });
+  };
   /* ① 案件進捗：次の未完了ステップ（フローに応じて1件提示） */
   DB.stores.filter(function(s){return s.status==='active';}).forEach(function(s){
     var prog=s.progress||{};
@@ -228,6 +235,9 @@ function renderTodoList(){
       var p=prog[step.key]||{};
       var done=step.accounts?isAccountsDone(p):(p.status==='done'||p.status==='na');
       if(done)continue;
+      /* 撮影/投稿ステップは実際の予定投稿（③）と重複するため、制作系の予定があれば進捗行は省略
+         （クリエイター動画は投稿自体が撮影→編集→納品→投稿の状態を持つため二重表示になる） */
+      if((step.key==='shoot'||step.key==='post')&&hasActivePost(s.id,['shooting','video','image','reel','story']))break;
       if(step.key==='kickoff'&&p.salesJoin){
         items.push({priority:1,date:today,main:esc(s.name),sub:actionBadge('要対応','red')+'キックオフ 営業同席希望あり（未実施）',btns:btn});
       }else if(step.accounts){
