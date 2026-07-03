@@ -316,7 +316,7 @@ function renderSchedule(){
     var infCell;
     if(isInf&&p.infId){
       infCell='<span style="color:var(--purple)">'+esc(infName(p.infId).split(' ')[0])+'</span>';
-    }else if(p.creatorId&&(p.type==='video'||p.type==='image'||p.type==='reel'||p.type==='story')){
+    }else if(p.creatorId){
       var _crInf=DB.creators?DB.creators.find(function(x){return x.id===p.creatorId;}):null;
       infCell='<span style="color:#db2777">📷 '+esc((_crInf&&_crInf.crName)||'クリエイター')+'</span>';
     }else{
