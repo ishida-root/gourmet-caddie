@@ -266,7 +266,7 @@ function renderCreators(){
   if(!DB.creators)DB.creators=[];
   var tb=document.getElementById('creatorTableBody');
   if(!tb)return;
-  if(!DB.creators.length){tb.innerHTML='<tr><td colspan="8" class="empty-state">クリエイターが登録されていません</td></tr>';return;}
+  if(!DB.creators.length){tb.innerHTML='<tr><td colspan="7" class="empty-state">クリエイターが登録されていません</td></tr>';return;}
   var nb=document.getElementById('nb-creators');
   if(nb)nb.textContent=DB.creators.length;
   tb.innerHTML=DB.creators.map(function(cr){
@@ -277,8 +277,7 @@ function renderCreators(){
       +'<td><div style="font-weight:500;color:var(--accent)">'+esc(cr.crName)+'</div>'+(age?'<div style="font-size:11px;color:var(--text3)">'+age+'歳</div>':'')+'</td>'
       +'<td>'+(crStatusBadge(cr.crStatus,cr.crVisitDate)||'<span style="color:var(--text3)">—</span>')+'</td>'
       +'<td>'+(cr.crGender?'<span class="badge b-gray">'+esc(cr.crGender)+'</span>':'—')+'</td>'
-      +'<td style="font-size:13px;color:var(--text2);max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(cr.crArea||'—')+'</td>'
-      +'<td style="font-size:13px;color:var(--text2)">'+esc(cr.crSpecialty||'—')+'</td>'
+      +'<td style="font-size:13px;color:var(--text2);line-height:1.5;min-width:240px;max-width:440px;white-space:normal">'+esc(cr.crArea||'—')+'</td>'
       +'<td>'+(cr.crPromanage?'<span class="badge '+proColors[cr.crPromanage]+'">'+proLabels[cr.crPromanage]+'</span>':'—')+'</td>'
       +'<td style="font-size:12px;color:var(--text2);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(cr.crTel||cr.crEmail||'—')+'</td>'
       +'<td onclick="event.stopPropagation()" style="white-space:nowrap"><button class="btn btn-sm" style="margin-right:4px" onclick="openCreatorModal(\''+cr.id+'\')">編集</button><button class="btn-ghost-danger" onclick="deleteCreator(\''+cr.id+'\')">削除</button></td>'
