@@ -532,9 +532,19 @@ function deleteStore(id){
 function renderStoreTable(){
   var filter=document.getElementById('filterStatus').value;
   var search=(document.getElementById('globalSearch').value||'').toLowerCase();
+  /* 担当営業フィルタ（弊社担当 ourManager で絞り込み） */
+  var salesSel=document.getElementById('filterSales');
+  var filterSales=salesSel?salesSel.value:'';
+  if(salesSel){
+    var mgrs=[];var seen={};
+    DB.stores.forEach(function(s){if(s.ourManager&&!seen[s.ourManager]){seen[s.ourManager]=1;mgrs.push(s.ourManager);}});
+    mgrs.sort();
+    salesSel.innerHTML='<option value="">担当営業：全員</option>'+mgrs.map(function(n){return'<option value="'+esc(n)+'"'+(n===filterSales?' selected':'')+'>'+esc(n)+'</option>';}).join('');
+  }
+  var matchSales=function(s){return!filterSales||s.ourManager===filterSales;};
   /* 商談中セクション */
   var negBox=document.getElementById('negotiatingBox');
-  var negList=DB.stores.filter(function(s){return s.status==='negotiating'&&(!search||(s.name||'').toLowerCase().includes(search));});
+  var negList=DB.stores.filter(function(s){return s.status==='negotiating'&&matchSales(s)&&(!search||(s.name||'').toLowerCase().includes(search));});
   if(negBox){
     if(negList.length&&(!filter||filter==='negotiating')){
       var bs2='font-size:12px;padding:3px 9px;border-radius:6px;cursor:pointer;border:1px solid;white-space:nowrap;';
@@ -560,7 +570,7 @@ function renderStoreTable(){
       negBox.style.display='none';
     }
   }
-  var list=DB.stores.filter(function(s){if(s.status==='negotiating')return false;if(filter&&s.status!==filter)return false;if(search&&!(s.name||'').toLowerCase().includes(search)&&!(s.genre||'').toLowerCase().includes(search))return false;return true;});
+  var list=DB.stores.filter(function(s){if(s.status==='negotiating')return false;if(filter&&s.status!==filter)return false;if(!matchSales(s))return false;if(search&&!(s.name||'').toLowerCase().includes(search)&&!(s.genre||'').toLowerCase().includes(search))return false;return true;});
   var tb=document.getElementById('storeTableBody');
   if(!list.length&&!negList.length){tb.innerHTML='<tr><td colspan="14" class="empty-state">店舗がありません</td></tr>';return;}
   if(!list.length){tb.innerHTML='';return;}

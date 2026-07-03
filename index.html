@@ -222,9 +222,14 @@
     <div class="page" id="page-stores">
       <div class="card">
         <div class="card-header"><span class="card-title">全店舗</span>
-          <select id="filterStatus" onchange="renderStoreTable()" style="width:110px;font-size:12px;padding:4px 8px">
-            <option value="">全ステータス</option><option value="negotiating">商談中</option><option value="active">稼働中</option><option value="pending">準備中</option><option value="ended">終了</option>
-          </select>
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+            <select id="filterSales" onchange="renderStoreTable()" style="font-size:12px;padding:4px 8px;width:auto">
+              <option value="">担当営業：全員</option>
+            </select>
+            <select id="filterStatus" onchange="renderStoreTable()" style="width:110px;font-size:12px;padding:4px 8px">
+              <option value="">全ステータス</option><option value="negotiating">商談中</option><option value="active">稼働中</option><option value="pending">準備中</option><option value="ended">終了</option>
+            </select>
+          </div>
         </div>
         <div id="negotiatingBox" style="display:none;margin-bottom:16px;padding:12px 14px;background:var(--accent-bg);border:1px solid var(--accent-border);border-radius:var(--r)"></div>
         <div class="table-wrap"><table><thead><tr><th>店舗名</th><th>業種</th><th>契約プラン</th><th>契約期間</th><th>更新日</th><th>店舗担当</th><th>弊社担当</th><th>SNS</th><th>INF</th><th>今月請求</th><th>今月振返</th><th>案件進捗</th><th>ステータス</th><th></th></tr></thead><tbody id="storeTableBody"></tbody></table></div>
