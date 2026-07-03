@@ -271,15 +271,14 @@ function renderCreators(){
   if(nb)nb.textContent=DB.creators.length;
   tb.innerHTML=DB.creators.map(function(cr){
     var age=calcAge(cr.crBirthday);
-    var topSkills=Object.keys(CREATOR_SKILL_LABELS).filter(function(k){return cr[k]==='3';}).map(function(k){return CREATOR_SKILL_LABELS[k];}).slice(0,3);
     var proColors={yes:'b-green',no:'b-red',pending:'b-amber'};
     var proLabels={yes:'可',no:'不可',pending:'要相談'};
     return'<tr style="cursor:pointer" onclick="openCreatorDetail(\''+cr.id+'\')">'
       +'<td><div style="font-weight:500;color:var(--accent)">'+esc(cr.crName)+'</div>'+(age?'<div style="font-size:11px;color:var(--text3)">'+age+'歳</div>':'')+'</td>'
+      +'<td>'+(crStatusBadge(cr.crStatus,cr.crVisitDate)||'<span style="color:var(--text3)">—</span>')+'</td>'
       +'<td>'+(cr.crGender?'<span class="badge b-gray">'+esc(cr.crGender)+'</span>':'—')+'</td>'
-      +'<td style="font-size:13px;color:var(--text2)">'+esc(cr.crArea||'—')+'</td>'
-      +'<td>'+topSkills.map(function(s){return'<span class="badge b-blue" style="margin-right:2px">'+esc(s)+'</span>';}).join('')+'</td>'
-      +'<td style="font-size:13px">'+(cr.crInterviewDate?fmtD(cr.crInterviewDate):'—')+'</td>'
+      +'<td style="font-size:13px;color:var(--text2);max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(cr.crArea||'—')+'</td>'
+      +'<td style="font-size:13px;color:var(--text2)">'+esc(cr.crSpecialty||'—')+'</td>'
       +'<td>'+(cr.crPromanage?'<span class="badge '+proColors[cr.crPromanage]+'">'+proLabels[cr.crPromanage]+'</span>':'—')+'</td>'
       +'<td style="font-size:12px;color:var(--text2);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(cr.crTel||cr.crEmail||'—')+'</td>'
       +'<td onclick="event.stopPropagation()" style="white-space:nowrap"><button class="btn btn-sm" style="margin-right:4px" onclick="openCreatorModal(\''+cr.id+'\')">編集</button><button class="btn-ghost-danger" onclick="deleteCreator(\''+cr.id+'\')">削除</button></td>'
