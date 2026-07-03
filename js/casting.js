@@ -239,12 +239,12 @@ function renderTodoList(){
          （クリエイター動画は投稿自体が撮影→編集→納品→投稿の状態を持つため二重表示になる） */
       if((step.key==='shoot'||step.key==='post')&&hasActivePost(s.id,['shooting','video','image','reel','story']))break;
       if(step.key==='kickoff'&&p.salesJoin){
-        items.push({priority:1,date:today,main:esc(s.name),sub:actionBadge('要対応','red')+'キックオフ 営業同席希望あり（未実施）',btns:btn});
+        items.push({priority:1,date:today,main:esc(s.name),sub:actionBadge('要対応','red')+'キックオフ 営業同席希望あり（未実施）',btns:btn,storeId:s.id});
       }else if(step.accounts){
         var missing=step.accounts.filter(function(n){return!(p.accountChecks||{})[n];});
-        items.push({priority:2,date:today,main:esc(s.name),sub:actionBadge('要対応','amber')+'アカウント未連携：'+missing.join('・'),btns:btn});
+        items.push({priority:2,date:today,main:esc(s.name),sub:actionBadge('要対応','amber')+'アカウント未連携：'+missing.join('・'),btns:btn,storeId:s.id});
       }else{
-        items.push({priority:2,date:today,main:esc(s.name),sub:actionBadge('要対応','amber')+step.label+' 未完了',btns:btn});
+        items.push({priority:2,date:today,main:esc(s.name),sub:actionBadge('要対応','amber')+step.label+' 未完了',btns:btn,storeId:s.id});
       }
       break;
     }
@@ -253,7 +253,7 @@ function renderTodoList(){
   /* ② 楽々販売未登録の店舗 */
   DB.stores.filter(function(s){return s.status==='active'&&!s.rakurakuRegistered;}).forEach(function(s){
     items.push({
-      priority:1,date:today,
+      priority:1,date:today,storeId:s.id,
       main:esc(s.name),
       sub:actionBadge('要登録','red')+'楽々販売 未登録',
       btns:'<button style="'+bsAction+'" onclick="markRakurakuDone(\''+s.id+'\')">✓ 登録済みにする</button>'
@@ -277,34 +277,34 @@ function renderTodoList(){
     if(p.type==='inf_visit'){
       var mainName=inf?esc(inf.name.split(/[\s　]/)[0]):'インフルエンサー';
       if(p.status==='unbooked'){
-        var sub=actionBadge('要予約','red')+dateStr+' 来店（'+esc(storeName(p.storeId))+'）';
+        var sub=actionBadge('要予約','red')+dateStr+' 来店';
         btnHtml='<button style="'+bsAction+'" onclick="updatePostStatus(\''+p.id+'\',\'booked\')">✓ 予約済みにする</button>';
-        items.push({priority:priority,date:dt,main:mainName,sub:sub,btns:btnHtml});
+        items.push({priority:priority,date:dt,main:mainName,sub:sub,btns:btnHtml,storeId:p.storeId,person:mainName});
       }else{
-        var sub=actionBadge('来店予定','blue')+dateStr+' 来店（'+esc(storeName(p.storeId))+'）';
+        var sub=actionBadge('来店予定','blue')+dateStr+' 来店';
         btnHtml='<button style="'+bsAction+'" onclick="updatePostStatus(\''+p.id+'\',\'visited\')">✓ 来店済みにする</button>'
                +'<button style="'+bsAmber+'margin-left:4px" onclick="reschedulePost(\''+p.id+'\')">リスケ</button>'
                +'<button style="'+bsRed+'margin-left:4px" onclick="updatePostStatus(\''+p.id+'\',\'cancelled\')">キャンセル</button>';
-        items.push({priority:priority,date:dt,main:mainName,sub:sub,btns:btnHtml});
+        items.push({priority:priority,date:dt,main:mainName,sub:sub,btns:btnHtml,storeId:p.storeId,person:mainName});
       }
 
     }else if(p.type==='inf_draft'){
       var mainName=inf?esc(inf.name.split(/[\s　]/)[0]):'インフルエンサー';
-      var sub=actionBadge('要確認','blue')+dateStr+' 初稿確認（'+esc(storeName(p.storeId))+'）';
+      var sub=actionBadge('要確認','blue')+dateStr+' 初稿確認';
       btnHtml='<button style="'+bsAction+'" onclick="updatePostStatus(\''+p.id+'\',\'approved\')">✓ 確認済みにする</button>';
-      items.push({priority:priority,date:dt,main:mainName,sub:sub,btns:btnHtml});
+      items.push({priority:priority,date:dt,main:mainName,sub:sub,btns:btnHtml,storeId:p.storeId,person:mainName});
 
     }else if(p.type==='inf_post'){
       var mainName=inf?esc(inf.name.split(/[\s　]/)[0]):'インフルエンサー';
-      var sub=actionBadge(isOverdue?'投稿期限超過':'要投稿',isOverdue?'red':'blue')+dateStr+' 投稿（'+esc(storeName(p.storeId))+'）';
+      var sub=actionBadge(isOverdue?'投稿期限超過':'要投稿',isOverdue?'red':'blue')+dateStr+' 投稿';
       btnHtml='<button style="'+bsAction+'" onclick="updatePostStatus(\''+p.id+'\',\'done\')">✓ 投稿済みにする</button>';
-      items.push({priority:priority,date:dt,main:mainName,sub:sub,btns:btnHtml});
+      items.push({priority:priority,date:dt,main:mainName,sub:sub,btns:btnHtml,storeId:p.storeId,person:mainName});
 
     }else if(p.type==='shooting'){
       var crName=cr?esc(cr.crName):'クリエイター';
       var sub=actionBadge(isOverdue?'撮影期限超過':'撮影予定',isOverdue?'red':'blue')+dateStr+' 撮影（'+crName+'）';
       btnHtml='<button style="'+bsAction+'" onclick="updatePostStatus(\''+p.id+'\',\'done\')">✓ 撮影済みにする</button>';
-      items.push({priority:priority,date:dt,main:esc(storeName(p.storeId)),sub:sub,btns:btnHtml});
+      items.push({priority:priority,date:dt,main:esc(storeName(p.storeId)),sub:sub,btns:btnHtml,storeId:p.storeId});
 
     }else if(p.type==='video'||p.type==='image'||p.type==='reel'||p.type==='story'){
       var typeL=TYPE_LABEL[p.type]||p.type;
@@ -322,26 +322,41 @@ function renderTodoList(){
       }
       var sub=actionBadge(bdgLabel,bdgColor)+dateStr+' '+typeL;
       btnHtml='<button style="'+bsAction+'" onclick="updatePostStatus(\''+p.id+'\',\''+nextStatus+'\')">'+nextLabel+'</button>';
-      items.push({priority:priority,date:dt,main:esc(storeName(p.storeId)),sub:sub,btns:btnHtml});
+      items.push({priority:priority,date:dt,main:esc(storeName(p.storeId)),sub:sub,btns:btnHtml,storeId:p.storeId});
     }
   });
-
-  /* 優先度→日付でソート */
-  items.sort(function(a,b){return a.priority-b.priority||(a.date-b.date);});
 
   if(!items.length){
     el.innerHTML='<div class="empty-state" style="padding:20px">✓ 今のところやることはありません</div>';
     return;
   }
-  el.innerHTML=items.map(function(item){
-    var barColor=item.priority===0?'var(--red)':item.priority===1?'var(--amber)':'var(--border2)';
-    var rowBg=item.priority===0?'background:var(--red-bg);':item.priority===1?'background:var(--amber-bg);':'';
-    return'<div style="display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);border-left:3px solid '+barColor+';'+rowBg+'">'
-      +'<div style="flex:1;min-width:0">'
-        +'<div style="font-size:14px;font-weight:500;color:var(--text)">'+item.main+'</div>'
-        +'<div style="font-size:12px;color:var(--text3);margin-top:3px">'+item.sub+'</div>'
-      +'</div>'
-      +'<div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end">'+item.btns+'</div>'
+  /* 店舗ごとにグルーピング（1店舗=1行にまとめる） */
+  var groups={},order=[];
+  items.forEach(function(it){
+    var sid=it.storeId||'_';
+    if(!groups[sid]){groups[sid]={items:[],priority:it.priority,date:it.date};order.push(sid);}
+    var g=groups[sid];
+    g.items.push(it);
+    if(it.priority<g.priority)g.priority=it.priority;
+    if(it.date<g.date)g.date=it.date;
+  });
+  order.forEach(function(sid){groups[sid].items.sort(function(a,b){return a.priority-b.priority||(a.date-b.date);});});
+  order.sort(function(a,b){return groups[a].priority-groups[b].priority||(groups[a].date-groups[b].date);});
+  el.innerHTML=order.map(function(sid){
+    var g=groups[sid];
+    var barColor=g.priority===0?'var(--red)':g.priority===1?'var(--amber)':'var(--border2)';
+    var rowBg=g.priority===0?'background:var(--red-bg);':g.priority===1?'background:var(--amber-bg);':'';
+    var storeNm=(sid==='_')?'その他':esc(storeName(sid));
+    var tasks=g.items.map(function(it,idx){
+      var person=it.person?'<span style="color:#db2777;font-weight:500">'+it.person+'</span> ':'';
+      return'<div style="display:flex;align-items:center;gap:10px;padding:6px 0'+(idx<g.items.length-1?';border-bottom:1px dashed var(--border)':'')+'">'
+        +'<div style="flex:1;min-width:0;font-size:12px;color:var(--text3)">'+person+it.sub+'</div>'
+        +'<div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end">'+it.btns+'</div>'
+      +'</div>';
+    }).join('');
+    return'<div style="padding:10px 14px;border-bottom:1px solid var(--border);border-left:3px solid '+barColor+';'+rowBg+'">'
+      +'<div style="font-size:14px;font-weight:500;color:var(--text);margin-bottom:2px">'+storeNm+(g.items.length>1?' <span style="font-size:11px;color:var(--text3);font-weight:400">('+g.items.length+'件)</span>':'')+'</div>'
+      +tasks
     +'</div>';
   }).join('');
 }
