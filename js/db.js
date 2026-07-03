@@ -47,7 +47,7 @@ function showApp(){
   document.getElementById('loginScreen').style.display='none';
   document.getElementById('mainApp').style.display='flex';
   applyRoleUI();
-  loadDB().then(function(){renderDashboard();updateSidebarStats();updateCorpSelects();});
+  loadDB().then(function(){return loadAppSettings();}).then(function(){renderDashboard();updateSidebarStats();updateCorpSelects();});
   if(_refreshTimer)clearInterval(_refreshTimer);
   _refreshTimer=setInterval(function(){refreshToken().catch(function(){});},30*60*1000);
 }
@@ -257,6 +257,55 @@ async function apiUpsert(table,item){
 async function apiDelete(table,id){
   var r=await fetch(apiUrl(table)+'?id=eq.'+encodeURIComponent(id),{method:'DELETE',headers:apiHeaders()});
   if(!r.ok)throw new Error('delete '+table+' failed');
+}
+
+/* ============================================================
+   共有設定（app_settings）同期
+   端末間で共有すべき設定・マスタ（担当営業/業種/売上目標/Chatwork）を
+   Supabaseで同期。localStorageはオフライン用キャッシュとして併用。
+   ============================================================ */
+async function saveAppSetting(key,value){
+  try{
+    var body=JSON.stringify({id:key,data:{value:value}});
+    var opt={method:'POST',headers:Object.assign({},apiHeaders(),{'Prefer':'resolution=merge-duplicates,return=minimal'}),body:body};
+    var r=await fetch(apiUrl('app_settings'),opt);
+    if(r.status===401){var ok=await refreshToken();if(ok)await fetch(apiUrl('app_settings'),Object.assign({},opt,{headers:Object.assign({},apiHeaders(),{'Prefer':'resolution=merge-duplicates,return=minimal'})}));}
+  }catch(e){}
+}
+function applyAppSettings(map){
+  if(Array.isArray(map.staff_members)){
+    STAFF_MEMBERS=map.staff_members;SALES_PERSONS=STAFF_MEMBERS;
+    try{localStorage.setItem('gc_staff_members',JSON.stringify(STAFF_MEMBERS));}catch(e){}
+  }
+  if(Array.isArray(map.genres)){
+    GENRES=map.genres;
+    try{localStorage.setItem('gc_genres',JSON.stringify(GENRES));}catch(e){}
+    if(typeof updateGenreDatalist==='function')updateGenreDatalist();
+  }
+  if(map.sales_goal!=null){
+    try{localStorage.setItem('gc_sales_goal',String(map.sales_goal));}catch(e){}
+  }
+  if(map.chatwork&&typeof map.chatwork==='object'){
+    try{localStorage.setItem('gc_cw_settings',JSON.stringify(map.chatwork));}catch(e){}
+  }
+  if(typeof updateSalesPersonSelects==='function')updateSalesPersonSelects();
+}
+async function loadAppSettings(){
+  try{
+    var r=await fetch(apiUrl('app_settings')+'?select=*',{headers:apiHeaders()});
+    if(r.status===401){var ok=await refreshToken();if(ok)r=await fetch(apiUrl('app_settings')+'?select=*',{headers:apiHeaders()});}
+    if(!r||!r.ok)return;
+    var rows=await r.json();
+    if(!Array.isArray(rows))return;
+    var map={};
+    rows.forEach(function(row){if(row&&row.id&&row.data&&('value' in row.data))map[row.id]=row.data.value;});
+    applyAppSettings(map);
+    /* Supabase未登録のキーはローカル値でシード（初回のみ） */
+    if(!('staff_members' in map)&&STAFF_MEMBERS&&STAFF_MEMBERS.length)saveAppSetting('staff_members',STAFF_MEMBERS);
+    if(!('genres' in map)&&GENRES&&GENRES.length)saveAppSetting('genres',GENRES);
+    if(!('sales_goal' in map)){var g=localStorage.getItem('gc_sales_goal');if(g)saveAppSetting('sales_goal',Number(g));}
+    if(!('chatwork' in map)){var cw=localStorage.getItem('gc_cw_settings');if(cw){try{saveAppSetting('chatwork',JSON.parse(cw));}catch(e){}}}
+  }catch(e){}
 }
 
 /* ============================================================

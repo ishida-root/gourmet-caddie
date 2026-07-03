@@ -3,6 +3,7 @@
 }
 function saveGenres(){
   try{localStorage.setItem('gc_genres',JSON.stringify(GENRES));}catch(e){}
+  if(typeof saveAppSetting==='function')saveAppSetting('genres',GENRES);
 }
 function updateGenreDatalist(){
   var dl=document.getElementById('genreList');
@@ -56,6 +57,7 @@ function saveChatworkSettings(){
   var get=function(id){var el=document.getElementById(id);return el?el.value.trim():'';};
   var s={snsRoomId:get('cwSnsRoomId'),csRoomId:get('cwCsRoomId')};
   try{localStorage.setItem('gc_cw_settings',JSON.stringify(s));}catch(e){}
+  if(typeof saveAppSetting==='function')saveAppSetting('chatwork',s);
   var statusEl=document.getElementById('cwStatus');
   if(statusEl)statusEl.innerHTML='<span style="color:var(--green)">✓ 保存しました</span>';
   setTimeout(function(){var el=document.getElementById('cwStatus');if(el)el.innerHTML='';},2000);
@@ -192,6 +194,7 @@ function loadSalesPersons(){
 }
 function saveSalesPersons(){
   try{localStorage.setItem('gc_staff_members',JSON.stringify(STAFF_MEMBERS));}catch(e){}
+  if(typeof saveAppSetting==='function')saveAppSetting('staff_members',STAFF_MEMBERS);
 }
 var ROLE_LABELS={sales:'営業',sns:'SNS',office:'事務',president:'社長'};
 var ROLE_BADGE={sales:'b-blue',sns:'b-purple',office:'b-green',president:'b-amber'};

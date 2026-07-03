@@ -344,6 +344,7 @@ function openGoalEdit(){
   var num=Number(val.replace(/[,，円]/g,''));
   if(!num||num<1){alert('正しい金額を入力してください');return;}
   localStorage.setItem('gc_sales_goal',String(num));
+  if(typeof saveAppSetting==='function')saveAppSetting('sales_goal',num);
   refreshAll();
 }
 
