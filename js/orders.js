@@ -46,6 +46,23 @@ function openOrderModal(opts){
   var today=new Date();
   var todayIso=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
 
+  /* 受託者セレクト（クリエイターリスト）を構築 */
+  var creatorSel=document.getElementById('orderCreator');
+  if(creatorSel){
+    var opt='<option value="">— 選択 —</option>';
+    (DB.creators||[]).forEach(function(cr){
+      var label=cr.crRealName||cr.crName||'?';
+      opt+='<option value="'+esc(label)+'">'+esc(label)+'</option>';
+    });
+    opt+='<option value="">——— その他（手入力）</option>';
+    creatorSel.innerHTML=opt;
+    /* creatorId が指定されていればプリセット */
+    if(opts.creatorId){
+      var cr=(DB.creators||[]).find(function(x){return x.id===opts.creatorId;});
+      if(cr){creatorSel.value=cr.crRealName||cr.crName||'';}
+    }
+  }
+
   /* 担当者セレクトを最新のスタッフで再構築（退職者は除外） */
   var staffSel=document.getElementById('orderStaff');
   if(staffSel){
@@ -57,13 +74,10 @@ function openOrderModal(opts){
   }
 
   /* テキスト系の初期値 */
-  var creator=opts.creatorId?(DB.creators||[]).find(function(x){return x.id===opts.creatorId;}):null;
-  var creatorName=creator?(creator.crRealName||creator.crName||''):'';
   var subject=opts.storeId?storeName(opts.storeId):'';
 
   var setVal=function(id,v){var el=document.getElementById(id);if(el)el.value=v;};
   setVal('orderNumber',orderNextNumber());
-  setVal('orderCreator',creatorName);
   setVal('orderSubject',subject);
   setVal('orderDeliveryMethod','ギガファイル便');
   setVal('orderInspectDays','5');
