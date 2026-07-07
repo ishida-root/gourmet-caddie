@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=1">
+<link rel="stylesheet" href="css/app.css?v=2">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -983,20 +983,60 @@
 </div>
 </div>
 
-<script src="js/config.js?v=1"></script>
-<script src="js/db.js?v=1"></script>
-<script src="js/utils.js?v=1"></script>
-<script src="js/settings.js?v=1"></script>
-<script src="js/stores.js?v=1"></script>
-<script src="js/schedule.js?v=1"></script>
-<script src="js/casting.js?v=1"></script>
-<script src="js/check.js?v=1"></script>
-<script src="js/accounting.js?v=1"></script>
-<script src="js/plans.js?v=1"></script>
-<script src="js/creators.js?v=1"></script>
-<script src="js/corps.js?v=1"></script>
-<script src="js/dashboard.js?v=1"></script>
-<script src="js/app.js?v=1"></script>
+<!-- ORDER MODAL (発注書作成) -->
+<div class="modal-overlay" id="orderModal">
+<div class="modal" style="width:600px">
+  <div class="modal-header"><span class="modal-title">発注書を作成</span><button class="modal-close" onclick="closeModal('orderModal')">✕</button></div>
+  <div class="modal-body">
+    <div class="fr">
+      <div class="field"><label>発注番号</label><input id="orderNumber" type="text" placeholder="GC-2026-0001"></div>
+      <div class="field"><label>発注日</label><div id="orderDateWrap"></div><input type="hidden" id="orderDate"></div>
+    </div>
+    <div class="fr1 field"><label>受託者名 *</label><input id="orderCreator" type="text" placeholder="例: 山田 太郎"></div>
+    <div class="fr">
+      <div class="field"><label>基本契約 締結日 <span style="font-size:11px;color:var(--text3);font-weight:400">冒頭文の日付</span></label><div id="orderContractWrap"></div><input type="hidden" id="orderContract"></div>
+      <div class="field"><label>担当者</label><select id="orderStaff"></select></div>
+    </div>
+    <div class="fr1 field"><label>件名 <span style="font-size:11px;color:var(--text3);font-weight:400">動画制作業務（　）内</span></label><input id="orderSubject" type="text" placeholder="例: 焼肉ロッヂ 梅田店"></div>
+    <div class="fr">
+      <div class="field"><label>企画書提出期限</label><div id="orderPlanWrap"></div><input type="hidden" id="orderPlan"></div>
+      <div class="field"><label>納期</label><div id="orderDeliveryWrap"></div><input type="hidden" id="orderDelivery"></div>
+    </div>
+    <div class="fr">
+      <div class="field"><label>納品方法</label><input id="orderDeliveryMethod" type="text" placeholder="例: ギガファイル便"></div>
+      <div class="field"><label>検収期間（営業日）</label><input id="orderInspectDays" type="number" min="0" placeholder="5"></div>
+    </div>
+    <div class="fr">
+      <div class="field"><label>業務報酬 ￥</label><input id="orderFee" type="text" placeholder="例: 150,000"></div>
+      <div class="field"><label>税区分</label><select id="orderTax"><option value="税込">税込</option><option value="税別">税別</option></select></div>
+    </div>
+    <div class="fr1 field"><label>再委託の可否</label><select id="orderSubcontract"><option value="不可">不可</option><option value="可（要事前承諾）">可（要事前承諾）</option></select></div>
+    <div id="orderStatus" style="font-size:13px;min-height:18px;margin-top:4px"></div>
+    <div class="form-actions" style="border-top:1px solid var(--border);margin-top:12px;padding-top:14px">
+      <button class="btn" onclick="closeModal('orderModal')">閉じる</button>
+      <button class="btn btn-primary" onclick="generateOrder()">Word をダウンロード</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<script src="js/vendor/pizzip.min.js?v=1"></script>
+<script src="js/vendor/docxtemplater.min.js?v=1"></script>
+<script src="js/config.js?v=2"></script>
+<script src="js/db.js?v=2"></script>
+<script src="js/utils.js?v=2"></script>
+<script src="js/settings.js?v=2"></script>
+<script src="js/stores.js?v=2"></script>
+<script src="js/schedule.js?v=2"></script>
+<script src="js/casting.js?v=2"></script>
+<script src="js/check.js?v=2"></script>
+<script src="js/accounting.js?v=2"></script>
+<script src="js/plans.js?v=2"></script>
+<script src="js/creators.js?v=2"></script>
+<script src="js/corps.js?v=2"></script>
+<script src="js/orders.js?v=2"></script>
+<script src="js/dashboard.js?v=2"></script>
+<script src="js/app.js?v=2"></script>
 <!-- GENRE MODAL -->
 <div class="modal-overlay" id="genreModal">
 <div class="modal" style="width:400px">

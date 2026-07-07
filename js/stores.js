@@ -770,6 +770,7 @@ function showDetail(id){
     /* 編集ボタン */
     +'<div class="form-actions" style="border-top:1px solid var(--border);margin-top:16px;padding-top:14px">'
       +'<button class="btn" onclick="closeModal(\'detailModal\')">閉じる</button>'
+      +'<button class="btn" onclick="closeModal(\'detailModal\');openOrderModal({storeId:\''+s.id+'\'})">📄 発注書</button>'
       +'<button class="btn btn-primary" onclick="closeModal(\'detailModal\');openStoreModal(\''+s.id+'\')">編集</button>'
     +'</div>';
 

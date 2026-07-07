@@ -256,6 +256,7 @@ function openCreatorDetail(id){
     +'<div class="form-actions" style="border-top:1px solid var(--border);margin-top:4px;padding-top:14px">'
       +'<button class="btn-ghost-danger" onclick="deleteCreator(\''+id+'\')">削除</button>'
       +'<button class="btn" onclick="closeModal(\'creatorDetailModal\')">閉じる</button>'
+      +'<button class="btn" onclick="closeModal(\'creatorDetailModal\');openOrderModal({creatorId:\''+id+'\'})">📄 発注書</button>'
       +'<button class="btn btn-primary" onclick="closeModal(\'creatorDetailModal\');openCreatorModal(\''+id+'\')">編集</button>'
     +'</div>';
 
