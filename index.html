@@ -159,7 +159,7 @@
         <div class="card"><div class="card-header"><span class="card-title">🎯 売上目標トラッカー</span><button class="btn btn-sm" onclick="openGoalEdit()">目標変更</button></div><div id="dash-goal"></div></div>
       </div>
       <div class="card"><div class="card-header"><span class="card-title">📬 営業からの通知</span><button class="btn btn-sm" onclick="clearSalesNotifs()">全て既読</button></div><div id="salesNotifList"></div></div>
-      <div class="card"><div class="card-header"><span class="card-title">📊 経理処理待ち</span><button class="btn btn-sm" onclick="navigate('accounting')">経理管理へ</button></div><div id="dash-accounting"></div></div>
+      <div class="card"><div class="card-header"><span class="card-title">📊 未決済（支払い・入金待ち）</span><button class="btn btn-sm" onclick="navigate('accounting')">経理管理へ</button></div><div id="dash-accounting"></div></div>
       <div class="card"><div class="card-header"><span class="card-title">案件進捗</span></div><div id="dash-setup"></div></div>
     </div>
 
@@ -417,10 +417,10 @@
             </select>
             <select id="accFilterStatus" onchange="renderAccounting()" style="font-size:13px;padding:4px 8px;width:auto">
               <option value="">すべて</option>
-              <option value="pending">📄 未受領</option>
-              <option value="sns_received">✅ SNS受領済み</option>
-              <option value="accounting_submitted">📊 経理申請済み</option>
-              <option value="done">🎉 経理処理済み</option>
+              <option value="pending">📄 未処理</option>
+              <option value="invoiced">📤 請求書送付済み</option>
+              <option value="received">✅ 入金確認済み</option>
+              <option value="paid">💸 支払い済み</option>
             </select>
             <select id="accFilterMonth" onchange="renderAccounting()" style="font-size:13px;padding:4px 8px;width:auto">
               <option value="">全期間</option>
@@ -857,10 +857,8 @@
       <div class="field">
         <label>進捗ステータス</label>
         <select id="invStatus">
-          <option value="pending">📄 未受領</option>
-          <option value="sns_received">✅ SNS局 受領済み</option>
-          <option value="accounting_submitted">📊 経理申請済み</option>
-          <option value="done">🎉 経理処理済み</option>
+          <option value="pending">📄 未払い</option>
+          <option value="paid">💸 支払い済み</option>
         </select>
       </div>
     </div>
@@ -1023,8 +1021,8 @@
 </div>
 </div>
 
-<script src="js/vendor/pizzip.min.js?v=1"></script>
-<script src="js/vendor/docxtemplater.min.js?v=1"></script>
+<script src="js/vendor/pizzip.min.js?v=2"></script>
+<script src="js/vendor/docxtemplater.min.js?v=2"></script>
 <script src="js/config.js?v=2"></script>
 <script src="js/db.js?v=2"></script>
 <script src="js/utils.js?v=2"></script>

@@ -53,6 +53,12 @@ function openInvoiceModal(id,opts){
     }
   }
   onInvoiceTypeChange();
+  /* ステータス選択肢は種別確定後に再構築されるため、編集時はここで再適用 */
+  if(id){
+    var _inv=DB.invoices.find(function(x){return x.id===id;});
+    var ss=document.getElementById('invStatus');
+    if(_inv&&ss&&ss.querySelector('option[value="'+(_inv.status||'pending')+'"]'))ss.value=_inv.status||'pending';
+  }
   calcInvTotal();
   /* キャスティングからの呼び出し時にプリフィル */
   if(opts){
@@ -107,6 +113,14 @@ function onInvoiceTypeChange(){
   var req=document.getElementById('invStoreReq');if(req)req.style.display=isAd?'':'none';
   /* キャスティング文脈はインフルエンサーのみ */
   if(!isInf){var ctx=document.getElementById('invCastingCtxBox');if(ctx)ctx.style.display='none';}
+  /* 進捗ステータスの選択肢を方向（支払い/入金）に応じて切替 */
+  var statusSel=document.getElementById('invStatus');
+  if(statusSel){
+    var flow=isAd?INV_FLOW_RECEIVABLE:INV_FLOW_PAYABLE;
+    var cur=statusSel.value;
+    statusSel.innerHTML=flow.map(function(s){return'<option value="'+s.key+'">'+s.icon+' '+s.label+'</option>';}).join('');
+    if(flow.some(function(s){return s.key===cur;}))statusSel.value=cur;
+  }
   calcInvTotal();
 }
 

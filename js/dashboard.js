@@ -412,12 +412,12 @@ function renderDashboard(){
       +planTable;
   }
 
-  /* 経理処理待ち */
-  var accPending=(DB.invoices||[]).filter(function(inv){return inv.status==='accounting_submitted';});
+  /* 未決済（支払い待ち / 入金待ち） */
+  var accPending=(DB.invoices||[]).filter(function(inv){return typeof invSettled==='function'?!invSettled(inv):inv.status!=='done';});
   var accEl=document.getElementById('dash-accounting');
   if(accEl){
     if(!accPending.length){
-      accEl.innerHTML='<div class="empty-state" style="padding:16px">✓ 経理処理待ちはありません</div>';
+      accEl.innerHTML='<div class="empty-state" style="padding:16px">✓ 未決済の費用はありません</div>';
     }else{
       accEl.innerHTML='<div style="border-radius:0 0 var(--r) var(--r);overflow:hidden">'
         +accPending.map(function(inv){
@@ -439,7 +439,7 @@ function renderDashboard(){
               +'</div>'
             +'</div>'
             +'<button class="btn btn-sm" style="background:var(--green-bg);color:var(--green);border-color:var(--green-border);white-space:nowrap" '
-              +'onclick="markInvDone(\''+inv.id+'\')">✓ 処理済み</button>'
+              +'onclick="markInvDone(\''+inv.id+'\')">'+(isAd?'✓ 入金確認':'✓ 支払い済み')+'</button>'
           +'</div>';
         }).join('')
       +'</div>';

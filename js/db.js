@@ -335,6 +335,21 @@ function migrateSetupChecks(){
     }
   });
 }
+/* 請求書ステータスの新フロー移行（冪等）
+   旧: pending/sns_received/accounting_submitted/done
+   新: 支払い系[pending→paid]、広告費(入金系)[pending→invoiced→received] */
+function migrateInvoiceStatus(){
+  if(!DB.invoices)return;
+  DB.invoices.forEach(function(inv){
+    if(inv.payeeType==='ad'){
+      if(inv.status==='done')inv.status='received';
+      else if(inv.status==='sns_received'||inv.status==='accounting_submitted')inv.status='invoiced';
+    }else{
+      if(inv.status==='done')inv.status='paid';
+      else if(inv.status==='sns_received'||inv.status==='accounting_submitted')inv.status='pending';
+    }
+  });
+}
 
 async function loadDB(){
   setSyncStatus('saving','読み込み中...');
@@ -346,7 +361,7 @@ async function loadDB(){
     });
     if(!DB.plans)DB.plans=[];
     if(!DB.salesNotifs)DB.salesNotifs=[];
-    migrateSetupChecks();
+    migrateSetupChecks();migrateInvoiceStatus();
     try{localStorage.setItem('adcore3',JSON.stringify(DB));}catch(e){}
     setSyncStatus('ok','同期済み');
   }catch(e){
@@ -360,13 +375,13 @@ async function loadDB(){
       });
       if(!DB.plans)DB.plans=[];
       if(!DB.salesNotifs)DB.salesNotifs=[];
-      migrateSetupChecks();
+      migrateSetupChecks();migrateInvoiceStatus();
       try{localStorage.setItem('adcore3',JSON.stringify(DB));}catch(e2){}
       setSyncStatus('ok','同期済み');
     }catch(e2){
       var cached=localStorage.getItem('adcore3');
       if(cached){try{var d=JSON.parse(cached);Object.assign(DB,d);if(!DB.plans)DB.plans=[];if(!DB.salesNotifs)DB.salesNotifs=[];}catch(e3){}}
-      migrateSetupChecks();
+      migrateSetupChecks();migrateInvoiceStatus();
       setSyncStatus('error','オフライン（キャッシュ表示中）');
     }
   }

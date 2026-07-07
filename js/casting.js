@@ -172,18 +172,27 @@ function reschedulePost(id){
   openPostModal(id);
 }
 
-var INV_FLOW=[
-  {key:'pending',           label:'未受領',      icon:'📄', color:'var(--text3)',    bg:'var(--bg3)',        border:'var(--border)'},
-  {key:'sns_received',      label:'SNS受領',     icon:'✅', color:'var(--accent)',   bg:'var(--accent-bg)', border:'var(--accent-border)'},
-  {key:'accounting_submitted',label:'経理申請',  icon:'📊', color:'var(--amber)',    bg:'var(--amber-bg)',  border:'var(--amber-border)'},
-  {key:'done',              label:'経理処理済み', icon:'🎉', color:'var(--green)',    bg:'var(--green-bg)',  border:'var(--green-border)'}
+/* 支払い（弊社から出ていく：インフルエンサー/クリエイター） */
+var INV_FLOW_PAYABLE=[
+  {key:'pending', label:'未払い',    icon:'📄', color:'var(--text3)', bg:'var(--bg3)',       border:'var(--border)'},
+  {key:'paid',    label:'支払い済み', icon:'💸', color:'var(--green)', bg:'var(--green-bg)', border:'var(--green-border)'}
 ];
+/* 入金（弊社が受け取る：広告費） */
+var INV_FLOW_RECEIVABLE=[
+  {key:'pending',  label:'未送付',        icon:'📄', color:'var(--text3)', bg:'var(--bg3)',        border:'var(--border)'},
+  {key:'invoiced', label:'請求書送付済み', icon:'📤', color:'var(--accent)', bg:'var(--accent-bg)', border:'var(--accent-border)'},
+  {key:'received', label:'入金確認済み',   icon:'✅', color:'var(--green)',  bg:'var(--green-bg)',  border:'var(--green-border)'}
+];
+function invFlowFor(inv){return inv.payeeType==='ad'?INV_FLOW_RECEIVABLE:INV_FLOW_PAYABLE;}
+/* 決済完了（支払い済み or 入金確認済み） */
+function invSettled(inv){return inv.payeeType==='ad'?inv.status==='received':inv.status==='paid';}
 
 function renderInvFlow(inv){
+  var FLOW=invFlowFor(inv);
   var cur=inv.status||'pending';
-  var curIdx=INV_FLOW.findIndex(function(s){return s.key===cur;});
+  var curIdx=FLOW.findIndex(function(s){return s.key===cur;});
   return'<div style="display:flex;align-items:center;gap:3px">'
-    +INV_FLOW.map(function(step,i){
+    +FLOW.map(function(step,i){
       var done=i<=curIdx;
       var isNext=i===curIdx+1;
       var style='font-size:12px;padding:3px 7px;border-radius:5px;border:1px solid;white-space:nowrap;'
@@ -193,7 +202,7 @@ function renderInvFlow(inv){
         +(isNext?';cursor:pointer;opacity:0.7':'');
       var click=isNext?'onclick="advanceInvFlow(\''+inv.id+'\',\''+step.key+'\')"':'';
       return'<span style="'+style+'" '+click+' title="'+(isNext?'クリックで次へ':'')+'">'+step.icon+' '+step.label+'</span>'
-        +(i<INV_FLOW.length-1?'<span style="color:var(--text3);font-size:11px">›</span>':'');
+        +(i<FLOW.length-1?'<span style="color:var(--text3);font-size:11px">›</span>':'');
     }).join('')
   +'</div>';
 }
@@ -377,7 +386,7 @@ function markInvDone(invId){
   if(!DB.invoices)return;
   var inv=DB.invoices.find(function(x){return x.id===invId;});
   if(!inv)return;
-  inv.status='done';
+  inv.status=inv.payeeType==='ad'?'received':'paid';
   saveItem('invoices',inv);
   refreshAll();
   if(currentPage==='accounting')renderAccounting();
@@ -770,7 +779,7 @@ function renderCasting(){
   });
   var tb=document.getElementById('castBody');
   if(!list.length){tb.innerHTML='<tr><td colspan="12" class="empty-state">キャスティング履歴がありません</td></tr>';return;}
-  var INV_STATUS_LABEL={pending:'📄 未受領',sns_received:'✅ 受領済み',accounting_submitted:'📊 経理申請済み',done:'🎉 処理済み'};
+  var INV_STATUS_LABEL={pending:'📄 未払い',paid:'💸 支払い済み',invoiced:'📤 請求書送付済み',received:'✅ 入金確認済み'};
   tb.innerHTML=list.map(function(c){
     var inv=(DB.invoices||[]).find(function(x){return x.castingId===c.id;});
     var invCell;
