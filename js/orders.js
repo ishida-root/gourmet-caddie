@@ -5,7 +5,7 @@
    - ライブラリはローカル同梱（js/vendor/pizzip.min.js, docxtemplater.min.js）。
      実行時に外部通信は行わない。
    ============================================================ */
-var ORDER_TEMPLATE_URL='assets/発注書_template.docx?v=1';
+var ORDER_TEMPLATE_URL='assets/発注書_template.docx?v=2';
 
 /* YYYY-MM-DD → YYYY年M月D日（未入力は空） */
 function orderFmtDate(iso){
@@ -13,6 +13,14 @@ function orderFmtDate(iso){
   var p=String(iso).split('-');
   if(p.length!==3)return'';
   return (+p[0])+'年'+(+p[1])+'月'+(+p[2])+'日';
+}
+
+/* 業務報酬入力欄：数字のみ抽出してカンマ区切りに整形（カーソルは末尾維持） */
+function formatOrderFeeInput(){
+  var el=document.getElementById('orderFee');
+  if(!el)return;
+  var digits=el.value.replace(/[^\d]/g,'');
+  el.value=digits?Number(digits).toLocaleString():'';
 }
 
 /* 発注番号の次候補（localStorageの連番。手動上書き可） */
@@ -86,6 +94,7 @@ function openOrderModal(opts){
   setVal('orderSubject',subject);
   setVal('orderDeliveryMethod','ギガファイル便または指定のGoogleドライブフォルダ');
   setVal('orderInspectDays','5');
+  setVal('orderVideoCount','1');
   var taxSel=document.getElementById('orderTax');if(taxSel)taxSel.value='税込';
   var subSel=document.getElementById('orderSubcontract');if(subSel)subSel.value='不可';
   setVal('orderFee','');
@@ -116,6 +125,14 @@ async function generateOrder(){
   if(!creator){setStatus('受託者名を入力してください','var(--red)');return;}
 
   var number=val('orderNumber');
+
+  /* 業務報酬：税別入力なら税込金額（10%）に換算してWordには常に「税込」で記載 */
+  var feeDigits=val('orderFee').replace(/[^\d]/g,'');
+  var feeAmount=feeDigits?Number(feeDigits):0;
+  var taxInput=val('orderTax');
+  if(taxInput==='税別')feeAmount=Math.round(feeAmount*1.1);
+  var feeDisplay=feeDigits?feeAmount.toLocaleString():'';
+
   var data={
     発注番号:number,
     発注日:orderFmtDate(val('orderDate')),
@@ -123,12 +140,13 @@ async function generateOrder(){
     契約日:orderFmtDate(val('orderContract')),
     担当者:val('orderStaff'),
     件名:val('orderSubject'),
+    本数:val('orderVideoCount'),
     企画書提出期限:orderFmtDate(val('orderPlan')),
     納期:orderFmtDate(val('orderDelivery')),
     納品方法:val('orderDeliveryMethod'),
     検収営業日:val('orderInspectDays'),
-    報酬金額:val('orderFee'),
-    税区分:val('orderTax'),
+    報酬金額:feeDisplay,
+    税区分:'税込',
     再委託:val('orderSubcontract')
   };
 

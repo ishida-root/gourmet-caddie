@@ -997,7 +997,10 @@
       <div class="field"><label>基本契約 締結日 <span style="font-size:11px;color:var(--text3);font-weight:400">冒頭文の日付</span></label><div id="orderContractWrap"></div><input type="hidden" id="orderContract"></div>
       <div class="field"><label>担当者</label><select id="orderStaff"></select></div>
     </div>
-    <div class="fr1 field"><label>件名 <span style="font-size:11px;color:var(--text3);font-weight:400">動画制作業務（　）内</span></label><input id="orderSubject" type="text" placeholder="例: 焼肉ロッヂ 梅田店"></div>
+    <div class="fr">
+      <div class="field" style="flex:1"><label>件名 <span style="font-size:11px;color:var(--text3);font-weight:400">動画制作業務（　）内</span></label><input id="orderSubject" type="text" placeholder="例: 焼肉ロッヂ 梅田店"></div>
+      <div class="field" style="width:100px"><label>動画本数</label><input id="orderVideoCount" type="number" min="1" placeholder="1"></div>
+    </div>
     <div class="fr">
       <div class="field"><label>企画書提出期限</label><div id="orderPlanWrap"></div><input type="hidden" id="orderPlan"></div>
       <div class="field"><label>納期</label><div id="orderDeliveryWrap"></div><input type="hidden" id="orderDelivery"></div>
@@ -1007,7 +1010,7 @@
       <div class="field"><label>検収期間（営業日）</label><input id="orderInspectDays" type="number" min="0" placeholder="5"></div>
     </div>
     <div class="fr">
-      <div class="field"><label>業務報酬 ￥</label><input id="orderFee" type="text" placeholder="例: 150,000"></div>
+      <div class="field"><label>業務報酬 ￥ <span style="font-size:11px;color:var(--text3);font-weight:400">税別入力時はWordには税込金額を記載</span></label><input id="orderFee" type="text" inputmode="numeric" placeholder="例: 150,000" oninput="formatOrderFeeInput()"></div>
       <div class="field"><label>税区分</label><select id="orderTax"><option value="税込">税込</option><option value="税別">税別</option></select></div>
     </div>
     <div class="fr1 field"><label>再委託の可否</label><select id="orderSubcontract"><option value="不可">不可</option><option value="可（要事前承諾）">可（要事前承諾）</option></select></div>
