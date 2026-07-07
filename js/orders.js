@@ -50,11 +50,16 @@ function openOrderModal(opts){
   var creatorSel=document.getElementById('orderCreator');
   if(creatorSel){
     var opt='<option value="">— 選択 —</option>';
-    (DB.creators||[]).forEach(function(cr){
-      var label=cr.crRealName||cr.crName||'?';
-      opt+='<option value="'+esc(label)+'">'+esc(label)+'</option>';
-    });
-    opt+='<option value="">——— その他（手入力）</option>';
+    var creators=DB.creators||[];
+    if(creators.length){
+      creators.forEach(function(cr){
+        var label=cr.crRealName||cr.crName||'?';
+        opt+='<option value="'+esc(label)+'">'+esc(label)+'</option>';
+      });
+      opt+='<option value="">——— その他（手入力）</option>';
+    }else{
+      opt+='<option value="">クリエイターがまだ登録されていません</option>';
+    }
     creatorSel.innerHTML=opt;
     /* creatorId が指定されていればプリセット */
     if(opts.creatorId){
@@ -74,12 +79,12 @@ function openOrderModal(opts){
   }
 
   /* テキスト系の初期値 */
-  var subject=opts.storeId?storeName(opts.storeId):'';
+  var subject=opts.storeId?(storeName(opts.storeId)+'　PR動画作成'):'';
 
   var setVal=function(id,v){var el=document.getElementById(id);if(el)el.value=v;};
   setVal('orderNumber',orderNextNumber());
   setVal('orderSubject',subject);
-  setVal('orderDeliveryMethod','ギガファイル便');
+  setVal('orderDeliveryMethod','ギガファイル便または指定のGoogleドライブフォルダ');
   setVal('orderInspectDays','5');
   var taxSel=document.getElementById('orderTax');if(taxSel)taxSel.value='税込';
   var subSel=document.getElementById('orderSubcontract');if(subSel)subSel.value='不可';
