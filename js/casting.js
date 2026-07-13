@@ -172,10 +172,13 @@ function reschedulePost(id){
   openPostModal(id);
 }
 
-/* 支払い（弊社から出ていく：インフルエンサー/クリエイター） */
+/* 支払い（弊社から出ていく：インフルエンサー/クリエイター）
+   中間ステップは維持し、最終段階のみ「支払い済み」に。既存キーはそのまま。 */
 var INV_FLOW_PAYABLE=[
-  {key:'pending', label:'未払い',    icon:'📄', color:'var(--text3)', bg:'var(--bg3)',       border:'var(--border)'},
-  {key:'paid',    label:'支払い済み', icon:'💸', color:'var(--green)', bg:'var(--green-bg)', border:'var(--green-border)'}
+  {key:'pending',             label:'未受領',    icon:'📄', color:'var(--text3)', bg:'var(--bg3)',        border:'var(--border)'},
+  {key:'sns_received',        label:'請求書受領', icon:'📥', color:'var(--accent)', bg:'var(--accent-bg)', border:'var(--accent-border)'},
+  {key:'accounting_submitted',label:'経理申請',   icon:'📊', color:'var(--amber)',  bg:'var(--amber-bg)',  border:'var(--amber-border)'},
+  {key:'done',                label:'支払い済み', icon:'💸', color:'var(--green)',  bg:'var(--green-bg)',  border:'var(--green-border)'}
 ];
 /* 入金（弊社が受け取る：広告費） */
 var INV_FLOW_RECEIVABLE=[
@@ -185,7 +188,7 @@ var INV_FLOW_RECEIVABLE=[
 ];
 function invFlowFor(inv){return inv.payeeType==='ad'?INV_FLOW_RECEIVABLE:INV_FLOW_PAYABLE;}
 /* 決済完了（支払い済み or 入金確認済み） */
-function invSettled(inv){return inv.payeeType==='ad'?inv.status==='received':inv.status==='paid';}
+function invSettled(inv){return inv.payeeType==='ad'?inv.status==='received':inv.status==='done';}
 
 function renderInvFlow(inv){
   var FLOW=invFlowFor(inv);
@@ -386,7 +389,7 @@ function markInvDone(invId){
   if(!DB.invoices)return;
   var inv=DB.invoices.find(function(x){return x.id===invId;});
   if(!inv)return;
-  inv.status=inv.payeeType==='ad'?'received':'paid';
+  inv.status=inv.payeeType==='ad'?'received':'done';
   saveItem('invoices',inv);
   refreshAll();
   if(currentPage==='accounting')renderAccounting();
@@ -779,7 +782,7 @@ function renderCasting(){
   });
   var tb=document.getElementById('castBody');
   if(!list.length){tb.innerHTML='<tr><td colspan="12" class="empty-state">キャスティング履歴がありません</td></tr>';return;}
-  var INV_STATUS_LABEL={pending:'📄 未払い',paid:'💸 支払い済み',invoiced:'📤 請求書送付済み',received:'✅ 入金確認済み'};
+  var INV_STATUS_LABEL={pending:'📄 未受領',sns_received:'📥 請求書受領',accounting_submitted:'📊 経理申請',done:'💸 支払い済み',invoiced:'📤 請求書送付済み',received:'✅ 入金確認済み'};
   tb.innerHTML=list.map(function(c){
     var inv=(DB.invoices||[]).find(function(x){return x.castingId===c.id;});
     var invCell;

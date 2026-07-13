@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=2">
+<link rel="stylesheet" href="css/app.css?v=3">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -417,10 +417,12 @@
             </select>
             <select id="accFilterStatus" onchange="renderAccounting()" style="font-size:13px;padding:4px 8px;width:auto">
               <option value="">すべて</option>
-              <option value="pending">📄 未処理</option>
+              <option value="pending">📄 未受領/未送付</option>
+              <option value="sns_received">📥 請求書受領</option>
+              <option value="accounting_submitted">📊 経理申請</option>
               <option value="invoiced">📤 請求書送付済み</option>
               <option value="received">✅ 入金確認済み</option>
-              <option value="paid">💸 支払い済み</option>
+              <option value="done">💸 支払い済み</option>
             </select>
             <select id="accFilterMonth" onchange="renderAccounting()" style="font-size:13px;padding:4px 8px;width:auto">
               <option value="">全期間</option>
@@ -857,8 +859,10 @@
       <div class="field">
         <label>進捗ステータス</label>
         <select id="invStatus">
-          <option value="pending">📄 未払い</option>
-          <option value="paid">💸 支払い済み</option>
+          <option value="pending">📄 未受領</option>
+          <option value="sns_received">📥 請求書受領</option>
+          <option value="accounting_submitted">📊 経理申請</option>
+          <option value="done">💸 支払い済み</option>
         </select>
       </div>
     </div>
@@ -1021,23 +1025,23 @@
 </div>
 </div>
 
-<script src="js/vendor/pizzip.min.js?v=2"></script>
-<script src="js/vendor/docxtemplater.min.js?v=2"></script>
-<script src="js/config.js?v=2"></script>
-<script src="js/db.js?v=2"></script>
-<script src="js/utils.js?v=2"></script>
-<script src="js/settings.js?v=2"></script>
-<script src="js/stores.js?v=2"></script>
-<script src="js/schedule.js?v=2"></script>
-<script src="js/casting.js?v=2"></script>
-<script src="js/check.js?v=2"></script>
-<script src="js/accounting.js?v=2"></script>
-<script src="js/plans.js?v=2"></script>
-<script src="js/creators.js?v=2"></script>
-<script src="js/corps.js?v=2"></script>
-<script src="js/orders.js?v=2"></script>
-<script src="js/dashboard.js?v=2"></script>
-<script src="js/app.js?v=2"></script>
+<script src="js/vendor/pizzip.min.js?v=3"></script>
+<script src="js/vendor/docxtemplater.min.js?v=3"></script>
+<script src="js/config.js?v=3"></script>
+<script src="js/db.js?v=3"></script>
+<script src="js/utils.js?v=3"></script>
+<script src="js/settings.js?v=3"></script>
+<script src="js/stores.js?v=3"></script>
+<script src="js/schedule.js?v=3"></script>
+<script src="js/casting.js?v=3"></script>
+<script src="js/check.js?v=3"></script>
+<script src="js/accounting.js?v=3"></script>
+<script src="js/plans.js?v=3"></script>
+<script src="js/creators.js?v=3"></script>
+<script src="js/corps.js?v=3"></script>
+<script src="js/orders.js?v=3"></script>
+<script src="js/dashboard.js?v=3"></script>
+<script src="js/app.js?v=3"></script>
 <!-- GENRE MODAL -->
 <div class="modal-overlay" id="genreModal">
 <div class="modal" style="width:400px">

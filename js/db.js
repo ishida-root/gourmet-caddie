@@ -335,18 +335,19 @@ function migrateSetupChecks(){
     }
   });
 }
-/* 請求書ステータスの新フロー移行（冪等）
-   旧: pending/sns_received/accounting_submitted/done
-   新: 支払い系[pending→paid]、広告費(入金系)[pending→invoiced→received] */
+/* 請求書ステータスの移行（冪等）
+   支払いフロー（インフル/クリエイター）は旧キーを維持
+     [pending→sns_received→accounting_submitted→done]（doneの表示のみ「支払い済み」に変更）
+   広告費（入金フロー）は [pending→invoiced→received] に変換 */
 function migrateInvoiceStatus(){
   if(!DB.invoices)return;
   DB.invoices.forEach(function(inv){
     if(inv.payeeType==='ad'){
-      if(inv.status==='done')inv.status='received';
+      if(inv.status==='done'||inv.status==='paid')inv.status='received';
       else if(inv.status==='sns_received'||inv.status==='accounting_submitted')inv.status='invoiced';
     }else{
-      if(inv.status==='done')inv.status='paid';
-      else if(inv.status==='sns_received'||inv.status==='accounting_submitted')inv.status='pending';
+      /* 前リリースで一時的にpaidにした分だけdoneへ戻す（中間ステップは維持） */
+      if(inv.status==='paid')inv.status='done';
     }
   });
 }
