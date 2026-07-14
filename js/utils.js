@@ -7,6 +7,13 @@ function fmtMoney(v){if(v===''||v===null||v===undefined)return'—';return Numbe
 function storeName(id){var s=DB.stores.find(function(x){return x.id===id;});return s?s.name:'不明';}
 function storeColor(id){var s=DB.stores.find(function(x){return x.id===id;});return s?s.color:'#888';}
 function infName(id){var i=DB.influencers.find(function(x){return x.id===id;});return i?(i.name+' '+(i.handle||'')):'不明';}
+/* Instagramハンドル（@handle）または既存URLからプロフィールURLを生成 */
+function igProfileUrl(h){
+  h=String(h||'').trim();
+  if(!h)return'';
+  if(/^https?:\/\//i.test(h))return h;
+  return'https://www.instagram.com/'+h.replace(/^@/,'');
+}
 /* 都道府県+市区町村番地から「市区町村」までを抽出（丁目・番地以降は省略） */
 function addressCity(pref,area){
   var a=String(area||'');

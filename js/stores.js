@@ -683,7 +683,7 @@ function showDetail(id){
     /* SNS */
     +(s.ig||s.fb||s.tw||s.tt||s.yt
       ?'<div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:8px">SNS</div><div style="margin-bottom:14px">'
-        +row('Instagram',s.ig)
+        +(s.ig?'<div style="display:flex;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);font-size:13px"><span style="color:var(--text3);min-width:90px;flex-shrink:0">Instagram</span><span style="flex:1;word-break:break-all"><a href="'+esc(igProfileUrl(s.ig))+'" target="_blank" rel="noopener" style="color:var(--accent)">'+esc(s.ig)+'</a></span></div>':'')
         +row('Facebook',s.fb)
         +row('X',s.tw)
         +row('TikTok',s.tt)

@@ -628,11 +628,12 @@ function openInfluencerDetail(id){
     +(castings.length===0
       ?'<div class="empty-state" style="padding:16px">まだ起用履歴がありません</div>'
       :('<div style="margin-bottom:12px;font-size:13px;color:var(--text3)">累計費用 <strong style="color:var(--text)">'+totalFee.toLocaleString()+'円</strong> ／ 累計リーチ <strong style="color:var(--text)">'+totalReach.toLocaleString()+'</strong></div>'
-        +'<div class="table-wrap"><table><thead><tr><th>店舗</th><th>投稿日</th><th>媒体</th><th>費用</th><th>リーチ</th><th>成果メモ</th></tr></thead><tbody>'
+        +'<div class="table-wrap"><table><thead><tr><th>店舗</th><th>投稿日</th><th>媒体</th><th>費用</th><th>リーチ</th><th>成果メモ</th><th>投稿</th></tr></thead><tbody>'
         +castings.map(function(c){
           var pp=c.platforms&&c.platforms.length?c.platforms:(c.platform?[c.platform]:[]);
           var platCell=pp.length?pp.map(function(p){return'<span style="font-size:11px;padding:1px 5px;background:var(--accent-bg);color:var(--accent);border-radius:3px;margin:1px;display:inline-block">'+esc(p)+'</span>';}).join(''):'—';
-          return '<tr><td>'+esc(storeName(c.storeId))+'</td><td class="td-mono">'+fmtD(c.date)+'</td><td>'+platCell+'</td><td class="td-mono">'+fmtMoney(c.fee)+'</td><td class="td-mono">'+(c.reach?Number(c.reach).toLocaleString():'—')+'</td><td style="color:var(--text3);max-width:160px">'+esc((c.result||'').slice(0,60))+'</td></tr>';
+          var postCell=c.postUrl?'<a href="'+esc(c.postUrl)+'" target="_blank" rel="noopener" style="color:var(--accent)">🔗 見る</a>':'<span style="color:var(--text3)">—</span>';
+          return '<tr><td>'+esc(storeName(c.storeId))+'</td><td class="td-mono">'+fmtD(c.date)+'</td><td>'+platCell+'</td><td class="td-mono">'+fmtMoney(c.fee)+'</td><td class="td-mono">'+(c.reach?Number(c.reach).toLocaleString():'—')+'</td><td style="color:var(--text3);max-width:160px">'+esc((c.result||'').slice(0,60))+'</td><td onclick="event.stopPropagation()">'+postCell+'</td></tr>';
         }).join('')
         +'</tbody></table></div>'
       )
@@ -684,7 +685,7 @@ var editingCastId=null;
 function openCastingModal(opts){
   updateCastSelects();
   editingCastId=null;
-  ['cFee','cReach','cResult','cVisitDate','cDraftDate','cDate'].forEach(function(fid){
+  ['cFee','cReach','cResult','cVisitDate','cDraftDate','cDate','cPostUrl'].forEach(function(fid){
     var el=document.getElementById(fid);if(el)el.value='';
   });
   var ccb=document.getElementById('cContractSent');if(ccb)ccb.checked=false;
@@ -715,7 +716,7 @@ function openCastingModal(opts){
           });
           onCastPlatformChange();
         },50);
-        set('cReach',ec.reach);set('cResult',ec.result);
+        set('cReach',ec.reach);set('cResult',ec.result);set('cPostUrl',ec.postUrl);
         set('cVisitDate',ec.visitDate);set('cDraftDate',ec.draftDate);set('cDate',ec.date);
         var ccbEdit=document.getElementById('cContractSent');if(ccbEdit)ccbEdit.checked=!!ec.contractSent;
       }
@@ -844,6 +845,7 @@ function saveCasting(){
     platform:platform,platforms:platforms,fee:fee,
     reach:document.getElementById('cReach').value,
     result:document.getElementById('cResult').value,
+    postUrl:document.getElementById('cPostUrl').value.trim(),
     contractSent:!!(document.getElementById('cContractSent')&&document.getElementById('cContractSent').checked)
   };
   /* 常に既存posts（同castingId）をSupabase＆メモリから先に削除してから再生成 */
