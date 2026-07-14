@@ -114,7 +114,7 @@ button{cursor:pointer;border:none;border-radius:var(--r);transition:all .15s;fon
 .b-pink{background:#fdf2f8;color:#be185d;border:1px solid #fbcfe8}
 
 .table-wrap{overflow-x:auto}
-table{width:100%;border-collapse:collapse}
+table{width:100%;min-width:max-content;border-collapse:collapse}
 th{font-size:13px;color:var(--text2);font-weight:500;text-align:left;padding:7px 12px;border-bottom:1px solid var(--border);letter-spacing:.2px;white-space:nowrap;background:var(--bg3)}
 td{padding:10px 12px;border-bottom:1px solid var(--border);vertical-align:middle;color:var(--text);font-size:14px}
 tr:last-child td{border-bottom:none}
