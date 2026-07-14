@@ -572,16 +572,11 @@ function renderStoreTable(){
   }
   var list=DB.stores.filter(function(s){if(s.status==='negotiating')return false;if(filter&&s.status!==filter)return false;if(!matchSales(s))return false;if(search&&!(s.name||'').toLowerCase().includes(search)&&!(s.genre||'').toLowerCase().includes(search))return false;return true;});
   var tb=document.getElementById('storeTableBody');
-  if(!list.length&&!negList.length){tb.innerHTML='<tr><td colspan="14" class="empty-state">店舗がありません</td></tr>';return;}
+  if(!list.length&&!negList.length){tb.innerHTML='<tr><td colspan="12" class="empty-state">店舗がありません</td></tr>';return;}
   if(!list.length){tb.innerHTML='';return;}
   var metaLabels={none:'—',basic:'<span class="badge b-amber">基礎あり</span>',advanced:'<span class="badge b-green">豊富</span>'};
   tb.innerHTML=list.map(function(s){
     var pct=progressPct(s);
-    var sns='';
-    if(s.ig)sns+='<span style="font-size:11px;color:#e1306c;margin-right:3px;font-weight:500">IG</span>';
-    if(s.fb)sns+='<span style="font-size:11px;color:#1877f2;margin-right:3px;font-weight:500">FB</span>';
-    if(s.tw)sns+='<span style="font-size:11px;color:#000;margin-right:3px;font-weight:500">X</span>';
-    if(s.tt)sns+='<span style="font-size:11px;color:#010101;margin-right:3px;font-weight:500">TT</span>';
     var plan=s.planId?DB.plans.find(function(x){return x.id===s.planId;}):null;
     var planCell=plan?'<div style="font-size:13px;font-weight:400">'+esc(plan.name)+'</div><div style="font-size:12px;color:var(--text3)">'+fmtMoney(plan.price)+'</div>':'<span style="color:var(--text3)">—</span>';
     var mgr=s.ourManager||'';
@@ -597,21 +592,8 @@ function renderStoreTable(){
       +'<td>'+esc(s.genre||'—')+'</td>'
       +'<td>'+planCell+'</td>'
       +'<td class="td-mono">'+(s.contractStart||'—')+'<div style="font-size:11px;color:var(--text3)">'+(s.contractTerm?s.contractTerm+'ヶ月':'')+'</div></td>'
-      +(function(){
-          var end=contractEndDate(s);
-          if(!end)return'<td style="color:var(--text3)">—</td>';
-          var today2=new Date();today2.setHours(0,0,0,0);
-          var daysLeft=Math.ceil((end-today2)/86400000);
-          var mm=(end.getMonth()+1)+'/'+end.getDate();
-          if(s.status==='ended')return'<td><span style="font-size:13px;color:var(--text3)">'+mm+'</span></td>';
-          if(daysLeft<0)return'<td><span class="badge b-gray">終了済み</span></td>';
-          if(daysLeft<=30)return'<td><span class="badge b-red">⚠ '+mm+'（残'+daysLeft+'日）</span></td>';
-          if(daysLeft<=60)return'<td><span class="badge b-amber">'+mm+'（残'+daysLeft+'日）</span></td>';
-          return'<td><span style="font-size:13px">'+mm+'</span><div style="font-size:11px;color:var(--text3)">残'+daysLeft+'日</div></td>';
-        })()
       +'<td>'+esc(s.contactName||'—')+'</td>'
       +'<td>'+mgrCell+'</td>'
-      +'<td>'+sns+'</td>'
       +'<td>'+(DB.castings.some(function(c){return c.storeId===s.id;})?'<span class="badge b-purple" style="font-size:11px">👤 あり</span>':'<span style="color:var(--text3);font-size:12px">—</span>')+'</td>'
       +(function(){var done=isMonthlyDone(s,'adBilling');return'<td><button class="btn btn-sm" style="font-size:11px;padding:2px 8px;'+(done?'background:var(--green-bg);color:var(--green);border-color:var(--green-border)':'background:var(--bg3);color:var(--text2)')+'" onclick="event.stopPropagation();toggleMonthlyDone(\''+s.id+'\',\'adBilling\')">'+(done?'✓ 済':'未')+'</button></td>';})()
       +(function(){var done=isMonthlyDone(s,'monthlyReview');return'<td><button class="btn btn-sm" style="font-size:11px;padding:2px 8px;'+(done?'background:var(--green-bg);color:var(--green);border-color:var(--green-border)':'background:var(--bg3);color:var(--text2)')+'" onclick="event.stopPropagation();toggleMonthlyDone(\''+s.id+'\',\'monthlyReview\')">'+(done?'✓ 済':'未')+'</button></td>';})()
