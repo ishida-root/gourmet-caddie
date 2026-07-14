@@ -7,6 +7,13 @@ function fmtMoney(v){if(v===''||v===null||v===undefined)return'—';return Numbe
 function storeName(id){var s=DB.stores.find(function(x){return x.id===id;});return s?s.name:'不明';}
 function storeColor(id){var s=DB.stores.find(function(x){return x.id===id;});return s?s.color:'#888';}
 function infName(id){var i=DB.influencers.find(function(x){return x.id===id;});return i?(i.name+' '+(i.handle||'')):'不明';}
+/* 都道府県+市区町村番地から「市区町村」までを抽出（丁目・番地以降は省略） */
+function addressCity(pref,area){
+  var a=String(area||'');
+  var m=a.match(/^(.*?(?:市.*?区|市|区|町|村))/);
+  var city=m?m[1]:a.replace(/[\d０-９].*$/,'')||a;
+  return(pref?pref+' ':'')+city;
+}
 function closeModal(id){document.getElementById(id).classList.remove('open');}
 function openModal(id){document.getElementById(id).classList.add('open');}
 function switchStoreTab(idx){

@@ -593,7 +593,7 @@ function renderStoreTable(){
       )
       :'<span style="color:var(--text3);font-size:12px">—</span>';
     return'<tr>'
-      +'<td><div style="display:flex;align-items:center;gap:7px"><div style="width:6px;height:6px;border-radius:50%;background:'+s.color+';flex-shrink:0"></div><span style="cursor:pointer;color:var(--accent);font-weight:400" onclick="showDetail(\''+s.id+'\')">'+esc(s.name)+'</span></div><div style="font-size:11px;color:var(--text3);margin-top:1px">'+esc(s.pref||'')+' '+esc((s.area||'').slice(0,16))+'</div></td>'
+      +'<td><div style="display:flex;align-items:center;gap:7px"><div style="width:6px;height:6px;border-radius:50%;background:'+s.color+';flex-shrink:0"></div><span style="cursor:pointer;color:var(--accent);font-weight:400" onclick="showDetail(\''+s.id+'\')">'+esc(s.name)+'</span></div><div style="font-size:11px;color:var(--text3);margin-top:1px">'+esc(addressCity(s.pref,s.area))+'</div></td>'
       +'<td>'+esc(s.genre||'—')+'</td>'
       +'<td>'+planCell+'</td>'
       +'<td class="td-mono">'+(s.contractStart||'—')+'<div style="font-size:11px;color:var(--text3)">'+(s.contractTerm?s.contractTerm+'ヶ月':'')+'</div></td>'
