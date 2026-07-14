@@ -10,7 +10,7 @@ function showPlanPreview(){
   var el=document.getElementById('sPlanPreview');
   if(!pid){el.textContent='';return;}
   var p=DB.plans.find(function(x){return x.id===pid;});
-  if(p){el.innerHTML='月額 <strong>'+fmtMoney(p.price)+'</strong>'+(p.setup?' / 初期 '+fmtMoney(p.setup):'')+(p.desc?' — '+esc(p.desc.slice(0,40)):'');}
+  if(p){el.innerHTML='月額 <strong>'+fmtMoney(p.price)+'</strong>'+(p.setup?' / 初期 '+fmtMoney(p.setup):'')+(p.adBudget?' / 広告費 '+fmtMoney(p.adBudget)+'含む':'')+(p.desc?' — '+esc(p.desc.slice(0,40)):'');}
 }
 function toggleOpenPrice(){
   var chk=document.getElementById('plOpenPrice');
@@ -26,16 +26,17 @@ document.addEventListener('DOMContentLoaded',function(){
   if(plNameEl){
     plNameEl.addEventListener('change',function(){
       var defaults={
-        'パター':{price:100000,setup:100000},
-        'ウェッジ':{price:200000,setup:100000},
-        'アイアン':{price:304000,setup:120000},
-        'ドライバー':{price:304000,setup:120000}
+        'パター':{price:100000,setup:100000,adBudget:40000},
+        'ウェッジ':{price:200000,setup:100000,adBudget:100000},
+        'アイアン':{price:304000,setup:120000,adBudget:120000},
+        'ドライバー':{price:304000,setup:120000,adBudget:120000}
       };
       var d=defaults[this.value];
       if(d){
-        var pe=document.getElementById('plPrice');var se=document.getElementById('plSetup');
+        var pe=document.getElementById('plPrice');var se=document.getElementById('plSetup');var ae=document.getElementById('plAdBudget');
         if(pe&&!pe.value)pe.value=d.price;
         if(se&&!se.value)se.value=d.setup;
+        if(ae&&!ae.value)ae.value=d.adBudget;
         if(this.value==='ドライバー'){
           var chk=document.getElementById('plOpenPrice');if(chk)chk.checked=true;
           toggleOpenPrice();
@@ -54,6 +55,7 @@ function savePlan(){
   if(!name){alert('プランを選択してください');return;}
   var price=document.getElementById('plPrice').value;
   var setup=document.getElementById('plSetup').value;
+  var adBudget=document.getElementById('plAdBudget').value;
   var openPrice=document.getElementById('plOpenPrice').checked;
   var desc=document.getElementById('plDesc').value;
   var p={
@@ -61,6 +63,7 @@ function savePlan(){
     name:name,
     price:price,
     setup:setup,
+    adBudget:adBudget,
     openPrice:openPrice,
     desc:desc
   };
@@ -68,6 +71,7 @@ function savePlan(){
   nameEl.value='';
   document.getElementById('plPrice').value='';
   document.getElementById('plSetup').value='';
+  document.getElementById('plAdBudget').value='';
   document.getElementById('plOpenPrice').checked=false;
   document.getElementById('plDesc').value='';
   renderPlans();
@@ -89,7 +93,7 @@ function renderPlans(){
   var tb=document.getElementById('planTableBody');
   if(!tb)return;
   if(!DB.plans.length){
-    tb.innerHTML='<tr><td colspan="7" class="empty-state">プランがありません<br><span style="font-size:12px;color:var(--text3)">パター・ウェッジ・アイアン・ドライバーの順に登録してください</span></td></tr>';
+    tb.innerHTML='<tr><td colspan="8" class="empty-state">プランがありません<br><span style="font-size:12px;color:var(--text3)">パター・ウェッジ・アイアン・ドライバーの順に登録してください</span></td></tr>';
     return;
   }
   var sorted=DB.plans.slice().sort(function(a,b){
@@ -103,6 +107,7 @@ function renderPlans(){
     return'<tr>'
       +'<td><span class="badge '+(PLAN_BADGE[p.name]||'b-gray')+'">'+esc(p.name)+'</span></td>'
       +'<td class="td-mono" style="font-size:14px;font-weight:500;color:var(--text)">'+priceStr+'</td>'
+      +'<td class="td-mono" style="color:var(--text2)">'+(p.adBudget?fmtMoney(p.adBudget):'—')+'</td>'
       +'<td class="td-mono">'+fmtMoney(p.setup)+'</td>'
       +'<td style="text-align:center">'+(p.openPrice?'<span class="badge b-amber">応相談</span>':'—')+'</td>'
       +'<td style="text-align:center"><span style="font-size:14px;font-weight:500;color:var(--accent)">'+count+'</span></td>'
