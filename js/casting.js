@@ -5,93 +5,245 @@
   {id:'ig_pin',        label:'Instagram ピン留め'},
   {id:'ig_collab',     label:'Instagram コラボ投稿'},
   {id:'tiktok',        label:'TikTok'},
+  {id:'facebook',      label:'Facebook'},
   {id:'lemon8',        label:'Lemon8'},
   {id:'google_review', label:'Googleマップ クチコミ'},
   {id:'tabelog',       label:'食べログ'},
+  {id:'tripadvisor',   label:'TripAdvisor'},
   {id:'yt_shorts',     label:'YouTube Shorts'},
 ];
+
+/* 対応媒体・費用設定：
+   ・上段は「対応可否」チェックリスト（チェックのみ、料金は持たない）
+   ・下段は「料金設定」。個別料金、または複数媒体をまとめた「セット料金」を選べる。
+   セット料金は _bundles[bundleId]={fee,taxIncl,transIncl} に保持し、
+   各媒体エントリは {enabled, bundleId} のみを持つ（個別のfeeは持たない）。 */
+var _curPlatformData={};
+var _bundleCreateOpen=false;
+
+function platformFeeInfo(pd,plId){
+  var d=(pd&&pd[plId])||{};
+  if(d.bundleId&&pd._bundles&&pd._bundles[d.bundleId]){
+    var b=pd._bundles[d.bundleId];
+    return{fee:b.fee||0,taxIncl:!!b.taxIncl,transIncl:!!b.transIncl,bundleId:d.bundleId};
+  }
+  return{fee:d.fee||0,taxIncl:!!d.taxIncl,transIncl:!!d.transIncl,bundleId:null};
+}
+
+function platFeeInputHtml(id,val){
+  return'<div style="display:flex;align-items:center;gap:6px">'
+    +'<span style="font-size:13px;color:var(--text2)">PR費用</span>'
+    +'<input type="number" id="'+id+'" value="'+(val||'')+'" placeholder="例: 50000" style="width:110px;font-size:13px;padding:4px 8px">'
+    +'<span style="font-size:13px;color:var(--text3)">円</span>'
+  +'</div>';
+}
+function platTaxToggleHtml(fn,key,taxIncl){
+  var name='pltax_'+fn+'_'+key;
+  return'<div style="display:flex;gap:4px">'
+    +'<label style="font-size:12px;padding:3px 8px;border-radius:4px;cursor:pointer;border:1px solid var(--border);background:'+(taxIncl?'var(--accent)':'var(--bg3)')+';color:'+(taxIncl?'#fff':'var(--text2)')+'" onclick="'+fn+'(\''+key+'\',true)">'
+      +'<input type="radio" name="'+name+'" value="1" '+(taxIncl?'checked':'')+' style="display:none"> 税込</label>'
+    +'<label style="font-size:12px;padding:3px 8px;border-radius:4px;cursor:pointer;border:1px solid var(--border);background:'+(!taxIncl?'var(--accent)':'var(--bg3)')+';color:'+(!taxIncl?'#fff':'var(--text2)')+'" onclick="'+fn+'(\''+key+'\',false)">'
+      +'<input type="radio" name="'+name+'" value="0" '+(!taxIncl?'checked':'')+' style="display:none"> 税別</label>'
+  +'</div>';
+}
+function platTransToggleHtml(fn,key,transIncl){
+  var name='pltrans_'+fn+'_'+key;
+  return'<div style="display:flex;gap:4px">'
+    +'<label style="font-size:12px;padding:3px 8px;border-radius:4px;cursor:pointer;border:1px solid var(--border);background:'+(transIncl?'var(--green)':'var(--bg3)')+';color:'+(transIncl?'#fff':'var(--text2)')+'" onclick="'+fn+'(\''+key+'\',true)">'
+      +'<input type="radio" name="'+name+'" value="1" '+(transIncl?'checked':'')+' style="display:none"> 交通費込</label>'
+    +'<label style="font-size:12px;padding:3px 8px;border-radius:4px;cursor:pointer;border:1px solid var(--border);background:'+(!transIncl?'var(--green)':'var(--bg3)')+';color:'+(!transIncl?'#fff':'var(--text2)')+'" onclick="'+fn+'(\''+key+'\',false)">'
+      +'<input type="radio" name="'+name+'" value="0" '+(!transIncl?'checked':'')+' style="display:none"> 交通費別</label>'
+  +'</div>';
+}
 
 function renderPlatformDetails(saved){
   var el=document.getElementById('iPlatformDetails');
   if(!el)return;
-  el.innerHTML=INF_PLATFORM_LIST.map(function(pl,i){
-    var d=saved&&saved[pl.id]?saved[pl.id]:{};
-    var checked=!!d.enabled;
-    var fee=d.fee||'';
-    var taxIncl=d.taxIncl!==undefined?d.taxIncl:false;
-    var transIncl=d.transIncl!==undefined?d.transIncl:false;
-    var rowBg=i%2===1?'background:var(--bg3)':'background:var(--bg2)';
-    return'<div style="'+rowBg+';border-bottom:1px solid var(--border);padding:8px 12px" id="plrow_'+pl.id+'">'
-      +'<div style="display:flex;align-items:center;gap:10px">'
-        +'<input type="checkbox" id="plchk_'+pl.id+'" '+(checked?'checked':'')+' onchange="onPlatformCheck(\''+pl.id+'\')" style="width:15px;height:15px;cursor:pointer;accent-color:var(--accent);flex-shrink:0">'
-        +'<label for="plchk_'+pl.id+'" style="font-size:14px;font-weight:'+(checked?'500':'400')+';cursor:pointer;flex:1">'+pl.label+'</label>'
-      +'</div>'
-      +'<div id="pldetail_'+pl.id+'" style="display:'+(checked?'block':'none')+';margin-top:8px;padding-left:25px">'
-        +'<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">'
-          +'<div style="display:flex;align-items:center;gap:6px">'
-            +'<span style="font-size:13px;color:var(--text2)">PR費用</span>'
-            +'<input type="number" id="plfee_'+pl.id+'" value="'+fee+'" placeholder="例: 50000" style="width:110px;font-size:13px;padding:4px 8px">'
-            +'<span style="font-size:13px;color:var(--text3)">円</span>'
-          +'</div>'
-          +'<div style="display:flex;gap:4px">'
-            +'<label style="font-size:12px;padding:3px 8px;border-radius:4px;cursor:pointer;border:1px solid var(--border);background:'+(taxIncl?'var(--accent)':'var(--bg3)')+';color:'+(taxIncl?'#fff':'var(--text2)')+'" onclick="setPlatformTax(\''+pl.id+'\',true)">'
-              +'<input type="radio" name="pltax_'+pl.id+'" value="1" '+(taxIncl?'checked':'')+' style="display:none"> 税込</label>'
-            +'<label style="font-size:12px;padding:3px 8px;border-radius:4px;cursor:pointer;border:1px solid var(--border);background:'+(!taxIncl?'var(--accent)':'var(--bg3)')+';color:'+(!taxIncl?'#fff':'var(--text2)')+'" onclick="setPlatformTax(\''+pl.id+'\',false)">'
-              +'<input type="radio" name="pltax_'+pl.id+'" value="0" '+(!taxIncl?'checked':'')+' style="display:none"> 税別</label>'
-          +'</div>'
-          +'<div style="display:flex;gap:4px">'
-            +'<label style="font-size:12px;padding:3px 8px;border-radius:4px;cursor:pointer;border:1px solid var(--border);background:'+(transIncl?'var(--green)':'var(--bg3)')+';color:'+(transIncl?'#fff':'var(--text2)')+'" onclick="setPlatformTrans(\''+pl.id+'\',true)">'
-              +'<input type="radio" name="pltrans_'+pl.id+'" value="1" '+(transIncl?'checked':'')+' style="display:none"> 交通費込</label>'
-            +'<label style="font-size:12px;padding:3px 8px;border-radius:4px;cursor:pointer;border:1px solid var(--border);background:'+(!transIncl?'var(--green)':'var(--bg3)')+';color:'+(!transIncl?'#fff':'var(--text2)')+'" onclick="setPlatformTrans(\''+pl.id+'\',false)">'
-              +'<input type="radio" name="pltrans_'+pl.id+'" value="0" '+(!transIncl?'checked':'')+' style="display:none"> 交通費別</label>'
-          +'</div>'
+  saved=saved||{};
+  _curPlatformData=saved;
+  var bundles=saved._bundles||{};
+
+  /* ① 対応可否チェックリスト */
+  var checklistHtml='<div style="padding:10px 12px;border-bottom:1px solid var(--border)">'
+    +'<div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:8px">対応媒体</div>'
+    +'<div style="display:flex;flex-wrap:wrap;gap:6px 16px">'
+    +INF_PLATFORM_LIST.map(function(pl){
+      var checked=!!(saved[pl.id]&&saved[pl.id].enabled);
+      return'<label style="display:inline-flex;align-items:center;gap:6px;font-size:13px;cursor:pointer">'
+        +'<input type="checkbox" id="plchk_'+pl.id+'" '+(checked?'checked':'')+' onchange="onPlatformCheck(\''+pl.id+'\')" style="width:15px;height:15px;cursor:pointer;accent-color:var(--accent)">'
+        +esc(pl.label)
+      +'</label>';
+    }).join('')
+    +'</div></div>';
+
+  /* ② 料金設定（対応中の媒体のみ。セット済みはまとめて1行） */
+  var enabledIds=INF_PLATFORM_LIST.filter(function(pl){return saved[pl.id]&&saved[pl.id].enabled;}).map(function(pl){return pl.id;});
+  var shown={};
+  var feeRowsHtml=enabledIds.map(function(pid){
+    if(shown[pid])return'';
+    var d=saved[pid]||{};
+    var bid=d.bundleId;
+    if(bid&&bundles[bid]){
+      var members=enabledIds.filter(function(x){return(saved[x]||{}).bundleId===bid;});
+      members.forEach(function(m){shown[m]=true;});
+      var b=bundles[bid];
+      var labels=members.map(function(m){var p=INF_PLATFORM_LIST.find(function(x){return x.id===m;});return p?p.label:m;});
+      return'<div style="padding:8px 10px;background:var(--accent-bg);border:1px solid var(--accent-border);border-radius:var(--r);margin-bottom:6px">'
+        +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">'
+          +'<div style="font-size:13px;font-weight:500;color:var(--accent)">📦 セット：'+labels.map(esc).join('＋')+'</div>'
+          +'<button type="button" class="btn-ghost-danger" style="font-size:11px;padding:2px 8px" onclick="dissolveBundle(\''+bid+'\')">解除</button>'
         +'</div>'
+        +'<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">'
+          +platFeeInputHtml('bundlefee_'+bid,b.fee)
+          +platTaxToggleHtml('setBundleTax',bid,!!b.taxIncl)
+          +platTransToggleHtml('setBundleTrans',bid,!!b.transIncl)
+        +'</div>'
+      +'</div>';
+    }
+    shown[pid]=true;
+    var pl=INF_PLATFORM_LIST.find(function(x){return x.id===pid;});
+    return'<div style="padding:8px 0;border-bottom:1px solid var(--border)">'
+      +'<div style="font-size:13px;font-weight:500;margin-bottom:6px">'+esc(pl?pl.label:pid)+'</div>'
+      +'<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">'
+        +platFeeInputHtml('plfee_'+pid,d.fee)
+        +platTaxToggleHtml('setPlatformTax',pid,!!d.taxIncl)
+        +platTransToggleHtml('setPlatformTrans',pid,!!d.transIncl)
       +'</div>'
     +'</div>';
   }).join('');
+
+  var ungrouped=enabledIds.filter(function(id){return!(saved[id]&&saved[id].bundleId);});
+  var bundleBtnHtml=ungrouped.length>=2?'<button type="button" class="btn btn-sm" onclick="toggleBundleCreatePanel()">＋ セット料金を作る</button>':'';
+  var bundlePanelHtml='';
+  if(_bundleCreateOpen){
+    if(ungrouped.length<2){
+      bundlePanelHtml='<div style="margin-top:8px;padding:10px;background:var(--bg3);border-radius:var(--r);font-size:12px;color:var(--text3)">セットにできる未グループの媒体が2つ以上必要です</div>';
+    }else{
+      bundlePanelHtml='<div style="margin-top:8px;padding:10px;background:var(--bg3);border-radius:var(--r)">'
+        +'<div style="font-size:12px;color:var(--text2);margin-bottom:6px">セットにする媒体を選択（2つ以上・例：料理写真セットで5万円）</div>'
+        +'<div style="display:flex;flex-wrap:wrap;gap:6px 14px;margin-bottom:8px">'
+        +ungrouped.map(function(id){
+          var pl=INF_PLATFORM_LIST.find(function(x){return x.id===id;});
+          return'<label style="display:inline-flex;align-items:center;gap:5px;font-size:12px;cursor:pointer">'
+            +'<input type="checkbox" class="bundle-create-chk" value="'+id+'" style="width:14px;height:14px;cursor:pointer;accent-color:var(--accent)"> '+esc(pl?pl.label:id)
+          +'</label>';
+        }).join('')
+        +'</div>'
+        +'<button type="button" class="btn btn-sm btn-primary" onclick="createPlatformBundle()">セットを作成</button>'
+        +' <button type="button" class="btn btn-sm" onclick="toggleBundleCreatePanel()">キャンセル</button>'
+      +'</div>';
+    }
+  }
+
+  var feeSectionHtml='<div style="padding:10px 12px">'
+    +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">'
+      +'<span style="font-size:12px;font-weight:500;color:var(--text2)">料金設定</span>'
+      +bundleBtnHtml
+    +'</div>'
+    +(enabledIds.length?feeRowsHtml:'<div style="font-size:12px;color:var(--text3)">上で対応媒体を選択してください</div>')
+    +bundlePanelHtml
+  +'</div>';
+
+  el.innerHTML=checklistHtml+feeSectionHtml;
 }
 
 function onPlatformCheck(pid){
-  var chk=document.getElementById('plchk_'+pid);
-  var detail=document.getElementById('pldetail_'+pid);
-  var lbl=chk?chk.nextElementSibling:null;
-  if(detail)detail.style.display=chk&&chk.checked?'block':'none';
-  if(lbl)lbl.style.fontWeight=chk&&chk.checked?'500':'400';
+  renderPlatformDetails(getPlatformData());
 }
 
 function setPlatformTax(pid,val){
-  renderPlatformDetails(getPlatformData());
-  var chk=document.getElementById('plchk_'+pid);
-  if(chk&&!chk.checked){chk.checked=true;onPlatformCheck(pid);}
-  /* 再描画後に値を反映 */
   var d=getPlatformData();
-  if(!d[pid])d[pid]={};
-  d[pid].enabled=true;d[pid].taxIncl=val;
+  if(!d[pid])d[pid]={enabled:true};
+  d[pid].taxIncl=val;
   renderPlatformDetails(d);
 }
 
 function setPlatformTrans(pid,val){
   var d=getPlatformData();
-  if(!d[pid])d[pid]={};
-  d[pid].enabled=true;d[pid].transIncl=val;
+  if(!d[pid])d[pid]={enabled:true};
+  d[pid].transIncl=val;
   renderPlatformDetails(d);
 }
 
+function setBundleTax(bid,val){
+  var d=getPlatformData();
+  if(!d._bundles)d._bundles={};
+  if(!d._bundles[bid])d._bundles[bid]={fee:0,taxIncl:false,transIncl:false};
+  d._bundles[bid].taxIncl=val;
+  renderPlatformDetails(d);
+}
+
+function setBundleTrans(bid,val){
+  var d=getPlatformData();
+  if(!d._bundles)d._bundles={};
+  if(!d._bundles[bid])d._bundles[bid]={fee:0,taxIncl:false,transIncl:false};
+  d._bundles[bid].transIncl=val;
+  renderPlatformDetails(d);
+}
+
+function toggleBundleCreatePanel(){
+  _bundleCreateOpen=!_bundleCreateOpen;
+  renderPlatformDetails(getPlatformData());
+}
+
+function createPlatformBundle(){
+  var checked=Array.from(document.querySelectorAll('.bundle-create-chk:checked')).map(function(cb){return cb.value;});
+  if(checked.length<2){alert('2つ以上の媒体を選んでください');return;}
+  var data=getPlatformData();
+  var bid=uid();
+  if(!data._bundles)data._bundles={};
+  data._bundles[bid]={fee:0,taxIncl:false,transIncl:false};
+  checked.forEach(function(id){
+    if(!data[id])data[id]={enabled:true};
+    data[id].bundleId=bid;
+  });
+  _bundleCreateOpen=false;
+  renderPlatformDetails(data);
+}
+
+function dissolveBundle(bid){
+  var data=getPlatformData();
+  var b=(data._bundles||{})[bid];
+  var memberIds=Object.keys(data).filter(function(k){return k!=='_bundles'&&data[k]&&data[k].bundleId===bid;});
+  memberIds.forEach(function(id,i){
+    data[id].bundleId=null;
+    data[id].fee=(i===0&&b)?(b.fee||0):0;
+    data[id].taxIncl=b?!!b.taxIncl:false;
+    data[id].transIncl=b?!!b.transIncl:false;
+  });
+  if(data._bundles)delete data._bundles[bid];
+  renderPlatformDetails(data);
+}
+
 function getPlatformData(){
-  var result={};
+  var prev=_curPlatformData||{};
+  var prevBundles=prev._bundles||{};
+  var result={_bundles:{}};
+  Object.keys(prevBundles).forEach(function(bid){
+    var feeEl=document.getElementById('bundlefee_'+bid);
+    result._bundles[bid]={
+      fee:feeEl?(Number(feeEl.value)||0):(prevBundles[bid].fee||0),
+      taxIncl:!!prevBundles[bid].taxIncl,
+      transIncl:!!prevBundles[bid].transIncl
+    };
+  });
   INF_PLATFORM_LIST.forEach(function(pl){
     var chk=document.getElementById('plchk_'+pl.id);
-    if(!chk)return;
-    var enabled=chk.checked;
-    var feeEl=document.getElementById('plfee_'+pl.id);
-    var taxEl=document.querySelector('input[name="pltax_'+pl.id+'"]:checked');
-    var transEl=document.querySelector('input[name="pltrans_'+pl.id+'"]:checked');
-    result[pl.id]={
-      enabled:enabled,
-      fee:feeEl?Number(feeEl.value)||0:0,
-      taxIncl:taxEl?taxEl.value==='1':false,
-      transIncl:transEl?transEl.value==='1':false
-    };
+    var enabled=chk?chk.checked:!!(prev[pl.id]&&prev[pl.id].enabled);
+    var bundleId=(prev[pl.id]&&prev[pl.id].bundleId)||null;
+    if(bundleId&&result._bundles[bundleId]){
+      result[pl.id]={enabled:enabled,bundleId:bundleId};
+    }else{
+      var feeEl=document.getElementById('plfee_'+pl.id);
+      var taxEl=document.querySelector('input[name="pltax_setPlatformTax_'+pl.id+'"]:checked');
+      var transEl=document.querySelector('input[name="pltrans_setPlatformTrans_'+pl.id+'"]:checked');
+      result[pl.id]={
+        enabled:enabled,
+        fee:feeEl?(Number(feeEl.value)||0):((prev[pl.id]&&prev[pl.id].fee)||0),
+        taxIncl:taxEl?taxEl.value==='1':!!(prev[pl.id]&&prev[pl.id].taxIncl),
+        transIncl:transEl?transEl.value==='1':!!(prev[pl.id]&&prev[pl.id].transIncl)
+      };
+    }
   });
   return result;
 }
@@ -488,21 +640,37 @@ function openInfluencerDetail(id){
     +'<div class="form-actions" style="border-top:1px solid var(--border);margin-top:16px;padding-top:14px">'
       +(function(){
         var pd=inf.platformDetails||{};
-        var enabled=INF_PLATFORM_LIST.filter(function(pl){return pd[pl.id]&&pd[pl.id].enabled;});
-        if(!enabled.length)return'';
-        return'<div style="margin-bottom:14px">'
-          +'<div style="font-size:13px;font-weight:500;color:var(--text2);margin-bottom:8px">📱 対応媒体・費用</div>'
-          +'<div style="display:flex;flex-wrap:wrap;gap:6px">'
-          +enabled.map(function(pl){
-            var d=pd[pl.id];
-            var feeStr=d.fee?'¥'+Number(d.fee).toLocaleString()+(d.taxIncl?' 税込':' 税別'):'料金未設定';
-            var transStr=d.transIncl?'交通費込':'交通費別';
+        var enabledIds=INF_PLATFORM_LIST.filter(function(pl){return pd[pl.id]&&pd[pl.id].enabled;}).map(function(pl){return pl.id;});
+        if(!enabledIds.length)return'';
+        var shown={};
+        var chips=enabledIds.map(function(pid){
+          if(shown[pid])return'';
+          var d=pd[pid]||{};
+          var bid=d.bundleId;
+          if(bid&&pd._bundles&&pd._bundles[bid]){
+            var members=enabledIds.filter(function(x){return(pd[x]||{}).bundleId===bid;});
+            members.forEach(function(m){shown[m]=true;});
+            var b=pd._bundles[bid];
+            var labels=members.map(function(m){var p=INF_PLATFORM_LIST.find(function(x){return x.id===m;});return p?p.label:m;});
+            var feeStr=b.fee?'¥'+Number(b.fee).toLocaleString()+(b.taxIncl?' 税込':' 税別'):'料金未設定';
+            var transStr=b.transIncl?'交通費込':'交通費別';
             return'<div style="padding:6px 10px;background:var(--accent-bg);border:1px solid var(--accent-border);border-radius:var(--r);font-size:12px">'
-              +'<div style="font-weight:500;color:var(--accent)">'+pl.label+'</div>'
+              +'<div style="font-weight:500;color:var(--accent)">📦 '+labels.map(esc).join('＋')+'（セット）</div>'
               +'<div style="color:var(--text2);margin-top:2px">'+feeStr+' ・ '+transStr+'</div>'
             +'</div>';
-          }).join('')
-          +'</div></div>';
+          }
+          shown[pid]=true;
+          var pl=INF_PLATFORM_LIST.find(function(x){return x.id===pid;});
+          var feeStr=d.fee?'¥'+Number(d.fee).toLocaleString()+(d.taxIncl?' 税込':' 税別'):'料金未設定';
+          var transStr=d.transIncl?'交通費込':'交通費別';
+          return'<div style="padding:6px 10px;background:var(--accent-bg);border:1px solid var(--accent-border);border-radius:var(--r);font-size:12px">'
+            +'<div style="font-weight:500;color:var(--accent)">'+esc(pl?pl.label:pid)+'</div>'
+            +'<div style="color:var(--text2);margin-top:2px">'+feeStr+' ・ '+transStr+'</div>'
+          +'</div>';
+        }).join('');
+        return'<div style="margin-bottom:14px">'
+          +'<div style="font-size:13px;font-weight:500;color:var(--text2);margin-bottom:8px">📱 対応媒体・費用</div>'
+          +'<div style="display:flex;flex-wrap:wrap;gap:6px">'+chips+'</div></div>';
       })()
       +'<button class="btn-ghost-danger" onclick="deleteInfluencer(\''+id+'\')">削除</button>'
       +'<button class="btn" onclick="closeModal(\'infDetailModal\')">閉じる</button>'
@@ -596,8 +764,8 @@ function updateCastPlatformBoxes(){
   var box=document.getElementById('cPlatformBoxes');
   if(!box)return;
   box.innerHTML=showList.map(function(pl){
-    var d=pd[pl.id];
-    var feeStr=d&&d.fee?' <span style="font-size:12px;color:var(--accent)">¥'+Number(d.fee).toLocaleString()+'</span>':'';
+    var info=platformFeeInfo(pd,pl.id);
+    var feeStr=info.fee?' <span style="font-size:12px;color:var(--accent)">¥'+Number(info.fee).toLocaleString()+(info.bundleId?' (セット)':'')+'</span>':'';
     return'<label style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:20px;cursor:pointer;font-size:13px;white-space:nowrap;transition:background .1s,border-color .1s">'
       +'<input type="checkbox" value="'+pl.id+'" class="cast-plat-chk" onchange="onCastPlatformChange()" style="width:13px;height:13px;accent-color:var(--accent)">'
       +esc(pl.label)+feeStr
@@ -630,10 +798,14 @@ function onCastPlatformChange(){
     document.getElementById('cFeeTransLabel').textContent='';
     return;
   }
-  var totalFee=0;var taxSet={};var transSet={};
+  var totalFee=0;var taxSet={};var transSet={};var countedBundles={};
   checked.forEach(function(cb){
-    var d=pd[cb.value];
-    if(d&&d.fee){totalFee+=Number(d.fee);taxSet[d.taxIncl?'税込':'税別']=1;transSet[d.transIncl?'交通費込':'交通費別途']=1;}
+    var info=platformFeeInfo(pd,cb.value);
+    if(info.bundleId){
+      if(countedBundles[info.bundleId])return; /* セット料金は1回のみ加算 */
+      countedBundles[info.bundleId]=true;
+    }
+    if(info.fee){totalFee+=Number(info.fee);taxSet[info.taxIncl?'税込':'税別']=1;transSet[info.transIncl?'交通費込':'交通費別途']=1;}
   });
   if(totalFee>0){
     document.getElementById('cFee').value=totalFee;
