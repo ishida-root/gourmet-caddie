@@ -48,9 +48,13 @@ var _orderDatePickerIds=[
   ['orderDeliveryWrap','orderDelivery']
 ];
 
+/* 発注書モーダルを開いた際の文脈（店舗/クリエイター）。generateOrderでの記録保存に使う */
+var _orderCtx={storeId:null,creatorId:null};
+
 /* 発注書モーダルを開く（creatorId / storeId は任意でプリフィル） */
 function openOrderModal(opts){
   opts=opts||{};
+  _orderCtx={storeId:opts.storeId||null,creatorId:opts.creatorId||null};
   var today=new Date();
   var todayIso=today.getFullYear()+'-'+String(today.getMonth()+1).padStart(2,'0')+'-'+String(today.getDate()).padStart(2,'0');
 
@@ -110,7 +114,33 @@ function openOrderModal(opts){
   if(odWrap&&odWrap._setDate)odWrap._setDate(todayIso);
 }
 
-/* フォーム値を集めて .docx を生成・ダウンロード */
+/* テンプレートデータ(data)から.docxを生成してダウンロードする（新規作成・再ダウンロード共通） */
+async function buildAndDownloadOrderDocx(data,creator,number){
+  var resp=await fetch(ORDER_TEMPLATE_URL);
+  if(!resp.ok)throw new Error('テンプレート取得失敗 ('+resp.status+')');
+  var buf=await resp.arrayBuffer();
+  var zip=new window.PizZip(buf);
+  var doc=new window.docxtemplater(zip,{
+    delimiters:{start:'{',end:'}'},
+    paragraphLoop:true,
+    linebreaks:true
+  });
+  doc.render(data);
+  var out=doc.getZip().generate({
+    type:'blob',
+    mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+  });
+  var safe=function(s){return String(s||'').replace(/[\\\/:*?"<>|]/g,'_');};
+  var fname='発注書_'+safe(creator)+'_'+safe(number)+'.docx';
+  var url=URL.createObjectURL(out);
+  var a=document.createElement('a');
+  a.href=url;a.download=fname;
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(function(){URL.revokeObjectURL(url);},1000);
+  return fname;
+}
+
+/* フォーム値を集めて .docx を生成・ダウンロードし、発注記録をDBに保存する */
 async function generateOrder(){
   var statusEl=document.getElementById('orderStatus');
   var setStatus=function(msg,color){if(statusEl){statusEl.textContent=msg;statusEl.style.color=color||'var(--text2)';}};
@@ -152,33 +182,73 @@ async function generateOrder(){
 
   setStatus('作成中...','var(--amber)');
   try{
-    var resp=await fetch(ORDER_TEMPLATE_URL);
-    if(!resp.ok)throw new Error('テンプレート取得失敗 ('+resp.status+')');
-    var buf=await resp.arrayBuffer();
-    var zip=new window.PizZip(buf);
-    var doc=new window.docxtemplater(zip,{
-      delimiters:{start:'{',end:'}'},
-      paragraphLoop:true,
-      linebreaks:true
-    });
-    doc.render(data);
-    var out=doc.getZip().generate({
-      type:'blob',
-      mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-    });
-    var safe=function(s){return String(s||'').replace(/[\\\/:*?"<>|]/g,'_');};
-    var fname='発注書_'+safe(creator)+'_'+safe(number)+'.docx';
-    var url=URL.createObjectURL(out);
-    var a=document.createElement('a');
-    a.href=url;a.download=fname;
-    document.body.appendChild(a);a.click();a.remove();
-    setTimeout(function(){URL.revokeObjectURL(url);},1000);
-
+    var fname=await buildAndDownloadOrderDocx(data,creator,number);
     orderCommitNumber(number);
+
+    /* 発注記録を保存（店舗/クリエイター詳細から履歴として参照・再ダウンロード可能） */
+    if(!DB.orders)DB.orders=[];
+    var rec={
+      id:uid(),
+      storeId:_orderCtx.storeId||'',
+      creatorId:_orderCtx.creatorId||'',
+      number:number,
+      creatorName:creator,
+      subject:val('orderSubject'),
+      feeAmount:feeAmount,
+      templateData:data,
+      createdAt:new Date().toISOString()
+    };
+    DB.orders.push(rec);
+    saveItem('orders',rec);
+
     setStatus('✓ ダウンロードしました：'+fname,'var(--green)');
   }catch(e){
     console.error('[generateOrder]',e);
     var msg=(e&&e.properties&&e.properties.errors)?'テンプレートのプレースホルダにエラーがあります':(e.message||'生成に失敗しました');
     setStatus('エラー: '+msg,'var(--red)');
   }
+}
+
+/* 保存済みの発注記録から.docxを再ダウンロード */
+async function redownloadOrder(orderId){
+  var rec=(DB.orders||[]).find(function(x){return x.id===orderId;});
+  if(!rec)return;
+  try{
+    await buildAndDownloadOrderDocx(rec.templateData,rec.creatorName,rec.number);
+  }catch(e){
+    console.error('[redownloadOrder]',e);
+    alert('再ダウンロードに失敗しました: '+(e.message||''));
+  }
+}
+
+function deleteOrder(orderId){
+  if(!confirm('この発注記録を削除しますか？（ダウンロード済みのWordファイルには影響しません）'))return;
+  var rec=(DB.orders||[]).find(function(x){return x.id===orderId;});
+  DB.orders=(DB.orders||[]).filter(function(x){return x.id!==orderId;});
+  deleteItem('orders',orderId);
+  /* 開いている詳細モーダルがあれば履歴表示を再構築 */
+  if(rec&&rec.storeId&&document.getElementById('detailModal')&&document.getElementById('detailModal').classList.contains('open')){
+    showDetail(rec.storeId);
+  }else if(rec&&rec.creatorId&&document.getElementById('creatorDetailModal')&&document.getElementById('creatorDetailModal').classList.contains('open')){
+    openCreatorDetail(rec.creatorId);
+  }
+}
+
+/* 発注履歴の一覧HTML（店舗詳細・クリエイター詳細で共用） */
+function renderOrderHistoryHtml(list){
+  if(!list||!list.length)return'';
+  var sorted=list.slice().sort(function(a,b){return new Date(b.createdAt)-new Date(a.createdAt);});
+  return'<div style="border-top:1px solid var(--border);margin-top:12px;padding-top:12px">'
+    +'<div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:8px">📄 発注書履歴 ('+sorted.length+'件)</div>'
+    +sorted.map(function(o){
+      return'<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--bg3);border-radius:var(--r);margin-bottom:4px">'
+        +'<span style="font-size:12px;color:var(--text3);white-space:nowrap">'+esc(o.number||'')+'</span>'
+        +'<span style="font-size:13px;color:var(--text2);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(o.subject||o.creatorName||'')+'</span>'
+        +(o.feeAmount?'<span style="font-size:12px;color:var(--accent);white-space:nowrap">¥'+Number(o.feeAmount).toLocaleString()+'</span>':'')
+        +'<span style="font-size:11px;color:var(--text3);white-space:nowrap">'+fmtD((o.createdAt||'').split('T')[0])+'</span>'
+        +'<button class="btn btn-sm" style="white-space:nowrap" onclick="event.stopPropagation();redownloadOrder(\''+o.id+'\')">再DL</button>'
+        +'<button class="btn-ghost-danger" style="white-space:nowrap" onclick="event.stopPropagation();deleteOrder(\''+o.id+'\')">削除</button>'
+      +'</div>';
+    }).join('')
+  +'</div>';
 }

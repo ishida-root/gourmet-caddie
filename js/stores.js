@@ -767,6 +767,9 @@ function showDetail(id){
         +'<div style="font-size:13px;color:var(--text3);padding:8px 0 0 12px">この店舗にはインフルエンサー案件がありません</div></details>'
     )
 
+    /* 発注書履歴 */
+    +renderOrderHistoryHtml((DB.orders||[]).filter(function(o){return o.storeId===id;}))
+
     /* 編集ボタン */
     +'<div class="form-actions" style="border-top:1px solid var(--border);margin-top:16px;padding-top:14px">'
       +'<button class="btn" onclick="closeModal(\'detailModal\')">閉じる</button>'

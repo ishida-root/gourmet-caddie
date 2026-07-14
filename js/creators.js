@@ -253,6 +253,9 @@ function openCreatorDetail(id){
         +'</div>';
     })()
 
+    /* 発注書履歴 */
+    +renderOrderHistoryHtml((DB.orders||[]).filter(function(o){return o.creatorId===id;}))
+
     +'<div class="form-actions" style="border-top:1px solid var(--border);margin-top:4px;padding-top:14px">'
       +'<button class="btn-ghost-danger" onclick="deleteCreator(\''+id+'\')">削除</button>'
       +'<button class="btn" onclick="closeModal(\'creatorDetailModal\')">閉じる</button>'
