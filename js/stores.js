@@ -432,6 +432,13 @@ function saveStore(){
   if(isEdit&&existing&&existing.ourManager&&existing.ourManager!==newManager&&newManager){
     managerLog.push({from:existing.ourManager,to:newManager,at:new Date().toISOString()});
   }
+  /* プラン変更履歴を記録（いつ・どのプランからどのプランに変わったか） */
+  var newPlanId=document.getElementById('sPlanId').value;
+  var planLog=existing?existing.planLog||[]:[];
+  if(isEdit&&existing&&existing.planId!==newPlanId){
+    var findPlanName=function(pid){if(!pid)return'未設定';var p=DB.plans.find(function(x){return x.id===pid;});return p?p.name:'未設定';};
+    planLog.push({from:findPlanName(existing.planId),to:findPlanName(newPlanId),fromFee:existing.monthlyFee||'',toFee:document.getElementById('sMonthlyFee').value,at:new Date().toISOString()});
+  }
   var colorIdx=isEdit?(DB.stores.findIndex(function(x){return x.id===id;})):(DB.stores.length);
   if(colorIdx<0)colorIdx=DB.stores.length;
   var color=existing?existing.color:COLORS[colorIdx%COLORS.length];
@@ -476,6 +483,7 @@ function saveStore(){
     rakurakuRegistered:existing?existing.rakurakuRegistered:false,
     hearing:{hIssue:(function(){var e=document.getElementById('hIssue');return e?e.value:'';})(),hTargetWant:(function(){var e=document.getElementById('hTargetWant');return e?e.value:'';})(),hTargetNow:(function(){var e=document.getElementById('hTargetNow');return e?e.value:'';})(),hTiming:(function(){var e=document.getElementById('hTiming');return e?e.value:'';})(),hIdealCustomer:(function(){var e=document.getElementById('hIdealCustomer');return e?e.value:'';})(),hStrength:(function(){var e=document.getElementById('hStrength');return e?e.value:'';})(),hArea:(function(){var e=document.getElementById('hArea');return e?e.value:'';})(),hIgPurpose:(function(){var e=document.getElementById('hIgPurpose');return e?e.value:'';})(),hMenu:(function(){var e=document.getElementById('hMenu');return e?e.value:'';})(),hKpi:(function(){var e=document.getElementById('hKpi');return e?e.value:'';})(),hTargetAge:(function(){var e=document.getElementById('hTargetAge');return e?e.value:'';})(),hTargetGender:(function(){var e=document.getElementById('hTargetGender');return e?e.value:'';})(),hTargetRegion:(function(){var e=document.getElementById('hTargetRegion');return e?e.value:'';})(),hTargetInterest:(function(){var e=document.getElementById('hTargetInterest');return e?e.value:'';})(),hRefAccount:(function(){var e=document.getElementById('hRefAccount');return e?e.value:'';})(),hNg:(function(){var e=document.getElementById('hNg');return e?e.value:'';})(),hPastAd:(function(){var e=document.getElementById('hPastAd');return e?e.value:'';})(),hAccMgr:(function(){var e=document.getElementById('hAccMgr');return e?e.value:'';})(),hLoginShare:(function(){var e=document.getElementById('hLoginShare');return e?e.value:'';})(),hFbPage:(function(){var e=document.getElementById('hFbPage');return e?e.value:'';})(),hInPost:(function(){var e=document.getElementById('hInPost');return e?e.value:'';})(),hDmMgr:(function(){var e=document.getElementById('hDmMgr');return e?e.value:'';})(),hPostContent:(function(){var e=document.getElementById('hPostContent');return e?e.value:'';})(),hPostFlow:(function(){var e=document.getElementById('hPostFlow');return e?e.value:'';})(),hApprovalDays:(function(){var e=document.getElementById('hApprovalDays');return e?e.value:'';})(),hPhotoAsset:(function(){var e=document.getElementById('hPhotoAsset');return e?e.value:'';})(),hVideoAsset:(function(){var e=document.getElementById('hVideoAsset');return e?e.value:'';})(),hNewShoot:(function(){var e=document.getElementById('hNewShoot');return e?e.value:'';})(),hLogo:(function(){var e=document.getElementById('hLogo');return e?e.value:'';})(),hPastAsset:(function(){var e=document.getElementById('hPastAsset');return e?e.value:'';})(),hTonmana:(function(){var e=document.getElementById('hTonmana');return e?e.value:'';})(),hAdIg:(function(){var e=document.getElementById('hAdIg');return e?e.value:'';})(),hAdStart:(function(){var e=document.getElementById('hAdStart');return e?e.value:'';})(),hAdBudget:(function(){var e=document.getElementById('hAdBudget');return e?e.value:'';})(),hLpUrl:(function(){var e=document.getElementById('hLpUrl');return e?e.value:'';})(),hInfStart:(function(){var e=document.getElementById('hInfStart');return e?e.value:'';})(),hInfEnd:(function(){var e=document.getElementById('hInfEnd');return e?e.value:'';})(),hInfCount:(function(){var e=document.getElementById('hInfCount');return e?e.value:'';})(),hInfGenre:(function(){var e=document.getElementById('hInfGenre');return e?e.value:'';})(),hInfFollowers:(function(){var e=document.getElementById('hInfFollowers');return e?e.value:'';})(),hInfMust:(function(){var e=document.getElementById('hInfMust');return e?e.value:'';})(),hHashtag:(function(){var e=document.getElementById('hHashtag');return e?e.value:'';})(),hOpStart:(function(){var e=document.getElementById('hOpStart');return e?e.value:'';})(),hShootDate:(function(){var e=document.getElementById('hShootDate');return e?e.value:'';})(),hPostStart:(function(){var e=document.getElementById('hPostStart');return e?e.value:'';})(),hAdStart2:(function(){var e=document.getElementById('hAdStart2');return e?e.value:'';})(),hInfPostDate:(function(){var e=document.getElementById('hInfPostDate');return e?e.value:'';})(),hOther:(function(){var e=document.getElementById('hOther');return e?e.value:'';})()},
     managerLog:managerLog,
+    planLog:planLog,
     prevManagers:existing?existing.prevManagers||[]:[],
     progress:existing?existing.progress||{}:{},
     progressMode:existing?existing.progressMode||'first':'first',
@@ -679,6 +687,20 @@ function showDetail(id){
       +row('Meta広告ID',s.metaId)
       +row('Meta経験',s.metaExp==='none'?null:s.metaExp)
     +'</div>'
+
+    /* プラン変更履歴（いつ・どのプランからどのプランに変わったか） */
+    +(s.planLog&&s.planLog.length
+      ?'<details style="margin-bottom:14px"><summary style="font-size:12px;font-weight:500;color:var(--text2);cursor:pointer">📈 プラン変更履歴（'+s.planLog.length+'件）</summary>'
+        +'<div style="margin-top:8px">'
+        +s.planLog.slice().reverse().map(function(l){
+          var feeChange=(l.fromFee||l.toFee)?'<span style="color:var(--text3);font-size:12px"> ('+fmtMoney(l.fromFee)+' → '+fmtMoney(l.toFee)+')</span>':'';
+          return'<div style="font-size:13px;padding:5px 0;border-bottom:1px solid var(--border)">'
+            +'<span style="color:var(--text3)">'+fmtD(l.at)+'</span> '
+            +esc(l.from)+' → <strong>'+esc(l.to)+'</strong>'+feeChange
+          +'</div>';
+        }).join('')
+        +'</div></details>'
+      :'')
 
     /* SNS */
     +(s.ig||s.fb||s.tw||s.tt||s.yt
