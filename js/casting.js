@@ -629,42 +629,44 @@ function openInfluencerDetail(id){
         +'</tbody></table></div>'
       )
     )
-    +'<div class="form-actions" style="border-top:1px solid var(--border);margin-top:16px;padding-top:14px">'
-      +(function(){
-        var pd=inf.platformDetails||{};
-        var enabledIds=INF_PLATFORM_LIST.filter(function(pl){return pd[pl.id]&&pd[pl.id].enabled;}).map(function(pl){return pl.id;});
-        if(!enabledIds.length)return'';
-        var shown={};
-        var chips=enabledIds.map(function(pid){
-          if(shown[pid])return'';
-          var d=pd[pid]||{};
-          var bid=d.bundleId;
-          if(bid&&pd._bundles&&pd._bundles[bid]){
-            var members=enabledIds.filter(function(x){return(pd[x]||{}).bundleId===bid;});
-            members.forEach(function(m){shown[m]=true;});
-            var b=pd._bundles[bid];
-            var labels=members.map(function(m){var p=INF_PLATFORM_LIST.find(function(x){return x.id===m;});return p?p.label:m;});
-            var feeStr=b.fee?'¥'+Number(b.fee).toLocaleString()+(b.taxIncl?' 税込':' 税別'):'料金未設定';
-            var transStr=b.transIncl?'交通費込':'交通費別';
-            var titleHtml=labels.length>1?'📦 '+labels.map(esc).join('＋')+'（セット）':esc(labels[0]);
-            return'<div style="padding:6px 10px;background:var(--accent-bg);border:1px solid var(--accent-border);border-radius:var(--r);font-size:12px">'
-              +'<div style="font-weight:500;color:var(--accent)">'+titleHtml+'</div>'
-              +'<div style="color:var(--text2);margin-top:2px">'+feeStr+' ・ '+transStr+'</div>'
-            +'</div>';
-          }
+    /* 対応媒体・費用（テキストのみ。ボタン行とは独立させる） */
+    +(function(){
+      var pd=inf.platformDetails||{};
+      var enabledIds=INF_PLATFORM_LIST.filter(function(pl){return pd[pl.id]&&pd[pl.id].enabled;}).map(function(pl){return pl.id;});
+      if(!enabledIds.length)return'';
+      var shown={};
+      var lines=enabledIds.map(function(pid){
+        if(shown[pid])return'';
+        var d=pd[pid]||{};
+        var bid=d.bundleId;
+        var label,feeStr,transStr;
+        if(bid&&pd._bundles&&pd._bundles[bid]){
+          var members=enabledIds.filter(function(x){return(pd[x]||{}).bundleId===bid;});
+          members.forEach(function(m){shown[m]=true;});
+          var b=pd._bundles[bid];
+          var labels=members.map(function(m){var p=INF_PLATFORM_LIST.find(function(x){return x.id===m;});return p?p.label:m;});
+          label=labels.length>1?labels.join('＋')+'（セット）':labels[0];
+          feeStr=b.fee?'¥'+Number(b.fee).toLocaleString()+(b.taxIncl?' 税込':' 税別'):'料金未設定';
+          transStr=b.transIncl?'交通費込':'交通費別';
+        }else{
           shown[pid]=true;
           var pl=INF_PLATFORM_LIST.find(function(x){return x.id===pid;});
-          var feeStr=d.fee?'¥'+Number(d.fee).toLocaleString()+(d.taxIncl?' 税込':' 税別'):'料金未設定';
-          var transStr=d.transIncl?'交通費込':'交通費別';
-          return'<div style="padding:6px 10px;background:var(--accent-bg);border:1px solid var(--accent-border);border-radius:var(--r);font-size:12px">'
-            +'<div style="font-weight:500;color:var(--accent)">'+esc(pl?pl.label:pid)+'</div>'
-            +'<div style="color:var(--text2);margin-top:2px">'+feeStr+' ・ '+transStr+'</div>'
-          +'</div>';
-        }).join('');
-        return'<div style="margin-bottom:14px">'
-          +'<div style="font-size:13px;font-weight:500;color:var(--text2);margin-bottom:8px">📱 対応媒体・費用</div>'
-          +'<div style="display:flex;flex-wrap:wrap;gap:6px">'+chips+'</div></div>';
-      })()
+          label=pl?pl.label:pid;
+          feeStr=d.fee?'¥'+Number(d.fee).toLocaleString()+(d.taxIncl?' 税込':' 税別'):'料金未設定';
+          transStr=d.transIncl?'交通費込':'交通費別';
+        }
+        return'<div style="display:flex;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);font-size:13px">'
+          +'<span style="color:var(--text3);min-width:140px;flex-shrink:0">'+esc(label)+'</span>'
+          +'<span style="flex:1;color:var(--text2)">'+feeStr+' ・ '+transStr+'</span>'
+        +'</div>';
+      }).join('');
+      return'<div style="margin-bottom:14px">'
+        +'<div style="font-size:13px;font-weight:500;color:var(--text2);margin-bottom:6px">📱 対応媒体・費用</div>'
+        +lines
+      +'</div>';
+    })()
+
+    +'<div class="form-actions" style="border-top:1px solid var(--border);margin-top:16px;padding-top:14px">'
       +'<button class="btn-ghost-danger" onclick="deleteInfluencer(\''+id+'\')">削除</button>'
       +'<button class="btn" onclick="closeModal(\'infDetailModal\')">閉じる</button>'
       +'<button class="btn" onclick="closeModal(\'infDetailModal\');openCastingModal({infId:\''+id+'\'})">キャスティング登録</button>'
