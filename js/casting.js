@@ -76,51 +76,42 @@ function renderPlatformDetails(saved){
     }).join('')
     +'</div></div>';
 
-  /* ② 料金設定（対応中の媒体のみ。セット済みはまとめて1行） */
+  /* ② 料金設定（対応中の媒体のみ。「＋料金を作る」で1媒体〜まとめて設定） */
   var enabledIds=INF_PLATFORM_LIST.filter(function(pl){return saved[pl.id]&&saved[pl.id].enabled;}).map(function(pl){return pl.id;});
   var shown={};
   var feeRowsHtml=enabledIds.map(function(pid){
     if(shown[pid])return'';
     var d=saved[pid]||{};
     var bid=d.bundleId;
-    if(bid&&bundles[bid]){
-      var members=enabledIds.filter(function(x){return(saved[x]||{}).bundleId===bid;});
-      members.forEach(function(m){shown[m]=true;});
-      var b=bundles[bid];
-      var labels=members.map(function(m){var p=INF_PLATFORM_LIST.find(function(x){return x.id===m;});return p?p.label:m;});
-      return'<div style="padding:8px 10px;background:var(--accent-bg);border:1px solid var(--accent-border);border-radius:var(--r);margin-bottom:6px">'
-        +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">'
-          +'<div style="font-size:13px;font-weight:500;color:var(--accent)">📦 セット：'+labels.map(esc).join('＋')+'</div>'
-          +'<button type="button" class="btn-ghost-danger" style="font-size:11px;padding:2px 8px" onclick="dissolveBundle(\''+bid+'\')">解除</button>'
-        +'</div>'
-        +'<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">'
-          +platFeeInputHtml('bundlefee_'+bid,b.fee)
-          +platTaxToggleHtml('setBundleTax',bid,!!b.taxIncl)
-          +platTransToggleHtml('setBundleTrans',bid,!!b.transIncl)
-        +'</div>'
-      +'</div>';
-    }
-    shown[pid]=true;
-    var pl=INF_PLATFORM_LIST.find(function(x){return x.id===pid;});
-    return'<div style="padding:8px 0;border-bottom:1px solid var(--border)">'
-      +'<div style="font-size:13px;font-weight:500;margin-bottom:6px">'+esc(pl?pl.label:pid)+'</div>'
+    if(!bid||!bundles[bid])return'';
+    var members=enabledIds.filter(function(x){return(saved[x]||{}).bundleId===bid;});
+    members.forEach(function(m){shown[m]=true;});
+    var b=bundles[bid];
+    var labels=members.map(function(m){var p=INF_PLATFORM_LIST.find(function(x){return x.id===m;});return p?p.label:m;});
+    var titleHtml=labels.length>1?'📦 セット：'+labels.map(esc).join('＋'):esc(labels[0]);
+    var undoLabel=labels.length>1?'解除':'削除';
+    return'<div style="padding:8px 10px;background:var(--accent-bg);border:1px solid var(--accent-border);border-radius:var(--r);margin-bottom:6px">'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">'
+        +'<div style="font-size:13px;font-weight:500;color:var(--accent)">'+titleHtml+'</div>'
+        +'<button type="button" class="btn-ghost-danger" style="font-size:11px;padding:2px 8px" onclick="dissolveBundle(\''+bid+'\')">'+undoLabel+'</button>'
+      +'</div>'
       +'<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">'
-        +platFeeInputHtml('plfee_'+pid,d.fee)
-        +platTaxToggleHtml('setPlatformTax',pid,!!d.taxIncl)
-        +platTransToggleHtml('setPlatformTrans',pid,!!d.transIncl)
+        +platFeeInputHtml('bundlefee_'+bid,b.fee)
+        +platTaxToggleHtml('setBundleTax',bid,!!b.taxIncl)
+        +platTransToggleHtml('setBundleTrans',bid,!!b.transIncl)
       +'</div>'
     +'</div>';
   }).join('');
 
   var ungrouped=enabledIds.filter(function(id){return!(saved[id]&&saved[id].bundleId);});
-  var bundleBtnHtml=ungrouped.length>=2?'<button type="button" class="btn btn-sm" onclick="toggleBundleCreatePanel()">＋ セット料金を作る</button>':'';
+  var bundleBtnHtml=ungrouped.length>=1?'<button type="button" class="btn btn-sm" onclick="toggleBundleCreatePanel()">＋ セット料金を作る</button>':'';
   var bundlePanelHtml='';
   if(_bundleCreateOpen){
-    if(ungrouped.length<2){
-      bundlePanelHtml='<div style="margin-top:8px;padding:10px;background:var(--bg3);border-radius:var(--r);font-size:12px;color:var(--text3)">セットにできる未グループの媒体が2つ以上必要です</div>';
+    if(ungrouped.length<1){
+      bundlePanelHtml='<div style="margin-top:8px;padding:10px;background:var(--bg3);border-radius:var(--r);font-size:12px;color:var(--text3)">料金未設定の対応媒体がありません</div>';
     }else{
       bundlePanelHtml='<div style="margin-top:8px;padding:10px;background:var(--bg3);border-radius:var(--r)">'
-        +'<div style="font-size:12px;color:var(--text2);margin-bottom:6px">セットにする媒体を選択（2つ以上・例：料理写真セットで5万円）</div>'
+        +'<div style="font-size:12px;color:var(--text2);margin-bottom:6px">料金を設定する媒体を選択（1つでも可・複数選ぶとセット料金に・例：料理写真セットで5万円）</div>'
         +'<div style="display:flex;flex-wrap:wrap;gap:6px 14px;margin-bottom:8px">'
         +ungrouped.map(function(id){
           var pl=INF_PLATFORM_LIST.find(function(x){return x.id===id;});
@@ -129,7 +120,7 @@ function renderPlatformDetails(saved){
           +'</label>';
         }).join('')
         +'</div>'
-        +'<button type="button" class="btn btn-sm btn-primary" onclick="createPlatformBundle()">セットを作成</button>'
+        +'<button type="button" class="btn btn-sm btn-primary" onclick="createPlatformBundle()">作成</button>'
         +' <button type="button" class="btn btn-sm" onclick="toggleBundleCreatePanel()">キャンセル</button>'
       +'</div>';
     }
@@ -140,7 +131,7 @@ function renderPlatformDetails(saved){
       +'<span style="font-size:12px;font-weight:500;color:var(--text2)">料金設定</span>'
       +bundleBtnHtml
     +'</div>'
-    +(enabledIds.length?feeRowsHtml:'<div style="font-size:12px;color:var(--text3)">上で対応媒体を選択してください</div>')
+    +(enabledIds.length?(feeRowsHtml||'<div style="font-size:12px;color:var(--text3)">「＋ セット料金を作る」から料金を設定してください</div>'):'<div style="font-size:12px;color:var(--text3)">上で対応媒体を選択してください</div>')
     +bundlePanelHtml
   +'</div>';
 
@@ -188,7 +179,7 @@ function toggleBundleCreatePanel(){
 
 function createPlatformBundle(){
   var checked=Array.from(document.querySelectorAll('.bundle-create-chk:checked')).map(function(cb){return cb.value;});
-  if(checked.length<2){alert('2つ以上の媒体を選んでください');return;}
+  if(checked.length<1){alert('媒体を選んでください');return;}
   var data=getPlatformData();
   var bid=uid();
   if(!data._bundles)data._bundles={};
@@ -655,8 +646,9 @@ function openInfluencerDetail(id){
             var labels=members.map(function(m){var p=INF_PLATFORM_LIST.find(function(x){return x.id===m;});return p?p.label:m;});
             var feeStr=b.fee?'¥'+Number(b.fee).toLocaleString()+(b.taxIncl?' 税込':' 税別'):'料金未設定';
             var transStr=b.transIncl?'交通費込':'交通費別';
+            var titleHtml=labels.length>1?'📦 '+labels.map(esc).join('＋')+'（セット）':esc(labels[0]);
             return'<div style="padding:6px 10px;background:var(--accent-bg);border:1px solid var(--accent-border);border-radius:var(--r);font-size:12px">'
-              +'<div style="font-weight:500;color:var(--accent)">📦 '+labels.map(esc).join('＋')+'（セット）</div>'
+              +'<div style="font-weight:500;color:var(--accent)">'+titleHtml+'</div>'
               +'<div style="color:var(--text2);margin-top:2px">'+feeStr+' ・ '+transStr+'</div>'
             +'</div>';
           }
