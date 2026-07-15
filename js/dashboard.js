@@ -280,8 +280,8 @@ function postStatusBadge(v){var m={draft:'<span class="badge b-gray">下書き</
 function generateAlerts(){
   var alerts=[],today=new Date();
 
-  /* 楽々販売未登録 */
-  DB.stores.filter(function(s){return s.rakurakuRegistered===false;}).forEach(function(s){
+  /* 楽々販売未登録（商談中・準備中は対象外。稼働中の店舗のみ通知） */
+  DB.stores.filter(function(s){return s.status==='active'&&s.rakurakuRegistered===false;}).forEach(function(s){
     alerts.push({level:'warn',msg:'📋 楽々販売未登録【'+s.name+'】登録をお願いします',storeId:s.id});
   });
 
