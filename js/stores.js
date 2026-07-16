@@ -613,6 +613,48 @@ function renderStoreTable(){
   }).join('');
 }
 
+/* 追加費用（初期設定の追加契約など、後から発生する一時金）
+   経理管理への反映は未定のため、店舗詳細の履歴＋やること一覧への表示のみ行う */
+function openAddFeeModal(storeId){
+  document.getElementById('afStoreId').value=storeId;
+  document.getElementById('afDesc').value='';
+  document.getElementById('afAmount').value='';
+  openModal('addFeeModal');
+}
+function saveAdditionalFee(){
+  var storeId=document.getElementById('afStoreId').value;
+  var desc=document.getElementById('afDesc').value.trim();
+  var amount=document.getElementById('afAmount').value;
+  if(!desc){alert('内容を入力してください');return;}
+  if(!amount||Number(amount)<=0){alert('金額を入力してください');return;}
+  var s=DB.stores.find(function(x){return x.id===storeId;});
+  if(!s)return;
+  if(!s.additionalFees)s.additionalFees=[];
+  s.additionalFees.push({
+    id:uid(),
+    description:desc,
+    amount:Number(amount),
+    status:'pending',
+    createdAt:new Date().toISOString(),
+    doneAt:null
+  });
+  saveItem('stores',s);
+  closeModal('addFeeModal');
+  refreshAll();
+  if(document.getElementById('detailModal').classList.contains('open'))showDetail(storeId);
+}
+function markFeeDone(storeId,feeId){
+  var s=DB.stores.find(function(x){return x.id===storeId;});
+  if(!s||!s.additionalFees)return;
+  var f=s.additionalFees.find(function(x){return x.id===feeId;});
+  if(!f)return;
+  f.status='done';
+  f.doneAt=new Date().toISOString();
+  saveItem('stores',s);
+  refreshAll();
+  if(document.getElementById('detailModal').classList.contains('open'))showDetail(storeId);
+}
+
 function showDetail(id){
   var s=DB.stores.find(function(x){return x.id===id;});
   if(!s)return;
@@ -702,6 +744,27 @@ function showDetail(id){
         }).join('')
         +'</div></details>'
       :'')
+
+    /* 追加費用（初期設定の追加契約など、後から発生する一時金） */
+    +'<div style="margin-bottom:14px">'
+      +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">'
+        +'<span style="font-size:12px;font-weight:500;color:var(--text2)">💰 追加費用</span>'
+        +'<button class="btn btn-sm" onclick="openAddFeeModal(\''+s.id+'\')">＋ 追加費用を登録</button>'
+      +'</div>'
+      +(s.additionalFees&&s.additionalFees.length
+        ?s.additionalFees.slice().reverse().map(function(f){
+            var isDone=f.status==='done';
+            var badge=isDone?'<span class="badge b-green">対応済み</span>':'<span class="badge b-amber">未対応</span>';
+            var btn=isDone?'':'<button class="btn btn-sm" style="margin-left:8px" onclick="markFeeDone(\''+s.id+'\',\''+f.id+'\')">対応済みにする</button>';
+            return'<div style="display:flex;align-items:center;gap:8px;font-size:13px;padding:6px 0;border-bottom:1px solid var(--border)">'
+              +'<span style="color:var(--text3);white-space:nowrap">'+fmtD(f.createdAt)+'</span>'
+              +'<span style="flex:1">'+esc(f.description)+'</span>'
+              +'<span style="color:var(--accent);font-weight:500">'+fmtMoney(f.amount)+'</span>'
+              +badge+btn
+            +'</div>';
+          }).join('')
+        :'<div style="font-size:13px;color:var(--text3)">追加費用の登録はありません</div>')
+    +'</div>'
 
     /* SNS */
     +(s.ig||s.fb||s.tw||s.tt||s.yt

@@ -431,7 +431,19 @@ function renderTodoList(){
     });
   });
 
-  /* ③ 投稿スケジュール関連 */
+  /* ③ 追加費用（未対応） */
+  DB.stores.forEach(function(s){
+    (s.additionalFees||[]).filter(function(f){return f.status!=='done';}).forEach(function(f){
+      items.push({
+        priority:1,date:today,storeId:s.id,
+        main:esc(s.name),
+        sub:actionBadge('要対応','amber')+'追加費用 未対応：'+esc(f.description)+'（'+fmtMoney(f.amount)+'）',
+        btns:'<button style="'+bsAction+'" onclick="markFeeDone(\''+s.id+'\',\''+f.id+'\')">✓ 対応済みにする</button>'
+      });
+    });
+  });
+
+  /* ④ 投稿スケジュール関連 */
   DB.posts.filter(function(p){
     return p.status!=='done'&&p.status!=='visited'&&p.status!=='cancelled'&&p.status!=='approved';
   }).sort(function(a,b){return new Date(a.date)-new Date(b.date);}).forEach(function(p){

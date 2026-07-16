@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=17">
+<link rel="stylesheet" href="css/app.css?v=18">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -1025,24 +1025,38 @@
 </div>
 </div>
 
-<script src="js/vendor/pizzip.min.js?v=17"></script>
-<script src="js/vendor/docxtemplater.min.js?v=17"></script>
-<script src="js/config.js?v=17"></script>
-<script src="js/db.js?v=17"></script>
-<script src="js/utils.js?v=17"></script>
-<script src="js/settings.js?v=17"></script>
-<script src="js/stores.js?v=17"></script>
-<script src="js/schedule.js?v=17"></script>
-<script src="js/casting.js?v=17"></script>
-<script src="js/check.js?v=17"></script>
-<script src="js/accounting.js?v=17"></script>
-<script src="js/plans.js?v=17"></script>
-<script src="js/creators.js?v=17"></script>
-<script src="js/corps.js?v=17"></script>
-<script src="js/orders.js?v=17"></script>
-<script src="js/dashboard.js?v=17"></script>
-<script src="js/app.js?v=17"></script>
+<script src="js/vendor/pizzip.min.js?v=18"></script>
+<script src="js/vendor/docxtemplater.min.js?v=18"></script>
+<script src="js/config.js?v=18"></script>
+<script src="js/db.js?v=18"></script>
+<script src="js/utils.js?v=18"></script>
+<script src="js/settings.js?v=18"></script>
+<script src="js/stores.js?v=18"></script>
+<script src="js/schedule.js?v=18"></script>
+<script src="js/casting.js?v=18"></script>
+<script src="js/check.js?v=18"></script>
+<script src="js/accounting.js?v=18"></script>
+<script src="js/plans.js?v=18"></script>
+<script src="js/creators.js?v=18"></script>
+<script src="js/corps.js?v=18"></script>
+<script src="js/orders.js?v=18"></script>
+<script src="js/dashboard.js?v=18"></script>
+<script src="js/app.js?v=18"></script>
 <!-- GENRE MODAL -->
+<!-- 追加費用モーダル -->
+<div class="modal-overlay" id="addFeeModal">
+<div class="modal" style="width:420px">
+  <div class="modal-header"><span class="modal-title">追加費用を登録</span><button class="modal-close" onclick="closeModal('addFeeModal')">✕</button></div>
+  <div class="modal-body">
+    <input type="hidden" id="afStoreId">
+    <div class="fr1 field" style="margin-bottom:10px"><label>内容 *</label><input id="afDesc" type="text" placeholder="例: 初期設定 追加契約"></div>
+    <div class="fr1 field" style="margin-bottom:10px"><label>金額（円） *</label><input id="afAmount" type="number" placeholder="100000"></div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:10px">登録すると「未対応」としてダッシュボードのやること一覧に表示されます。対応後はチェックして完了にしてください。</div>
+    <div class="form-actions"><button class="btn" onclick="closeModal('addFeeModal')">キャンセル</button><button class="btn btn-primary" onclick="saveAdditionalFee()">登録</button></div>
+  </div>
+</div>
+</div>
+
 <div class="modal-overlay" id="genreModal">
 <div class="modal" style="width:400px">
   <div class="modal-header"><span class="modal-title">業種を管理</span><button class="modal-close" onclick="closeModal('genreModal')">✕</button></div>
