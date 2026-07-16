@@ -25,17 +25,28 @@ function platformFeeInfo(pd,plId){
   var d=(pd&&pd[plId])||{};
   if(d.bundleId&&pd._bundles&&pd._bundles[d.bundleId]){
     var b=pd._bundles[d.bundleId];
-    return{fee:b.fee||0,taxIncl:!!b.taxIncl,transIncl:!!b.transIncl,bundleId:d.bundleId};
+    var lo=b.feeLow!==undefined?b.feeLow:b.fee;
+    return{fee:lo||0,feeLow:lo||0,feeHigh:b.feeHigh||0,taxIncl:!!b.taxIncl,transIncl:!!b.transIncl,bundleId:d.bundleId};
   }
-  return{fee:d.fee||0,taxIncl:!!d.taxIncl,transIncl:!!d.transIncl,bundleId:null};
+  return{fee:d.fee||0,feeLow:d.fee||0,feeHigh:0,taxIncl:!!d.taxIncl,transIncl:!!d.transIncl,bundleId:null};
 }
 
-function platFeeInputHtml(id,val){
-  return'<div style="display:flex;align-items:center;gap:6px">'
+function platFeeInputHtml(idLow,idHigh,valLow,valHigh){
+  return'<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap">'
     +'<span style="font-size:13px;color:var(--text2)">PR費用</span>'
-    +'<input type="number" id="'+id+'" value="'+(val||'')+'" placeholder="例: 50000" style="width:110px;font-size:13px;padding:4px 8px">'
+    +'<input type="number" id="'+idLow+'" value="'+(valLow||'')+'" placeholder="例: 50000（下限）" style="width:130px;font-size:13px;padding:4px 8px">'
+    +'<span style="font-size:13px;color:var(--text3)">〜</span>'
+    +'<input type="number" id="'+idHigh+'" value="'+(valHigh||'')+'" placeholder="上限（幅なしは空欄）" style="width:150px;font-size:13px;padding:4px 8px">'
     +'<span style="font-size:13px;color:var(--text3)">円</span>'
   +'</div>';
+}
+/* 費用表示：下限≠上限なら「下限〜上限」、幅がなければ1個だけ表示 */
+function feeRangeStr(low,high,taxIncl){
+  var lo=Number(low)||0,hi=Number(high)||0;
+  if(!lo&&!hi)return'料金未設定';
+  var taxLabel=taxIncl?' 税込':' 税別';
+  if(hi&&lo&&lo!==hi)return'¥'+lo.toLocaleString()+'〜¥'+hi.toLocaleString()+taxLabel;
+  return'¥'+(lo||hi).toLocaleString()+taxLabel;
 }
 function platTaxToggleHtml(fn,key,taxIncl){
   var name='pltax_'+fn+'_'+key;
@@ -96,10 +107,11 @@ function renderPlatformDetails(saved){
         +'<button type="button" class="btn-ghost-danger" style="font-size:11px;padding:2px 8px" onclick="dissolveBundle(\''+bid+'\')">'+undoLabel+'</button>'
       +'</div>'
       +'<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">'
-        +platFeeInputHtml('bundlefee_'+bid,b.fee)
+        +platFeeInputHtml('bundlefee_'+bid,'bundlefeehigh_'+bid,(b.feeLow!==undefined?b.feeLow:b.fee),b.feeHigh)
         +platTaxToggleHtml('setBundleTax',bid,!!b.taxIncl)
         +platTransToggleHtml('setBundleTrans',bid,!!b.transIncl)
       +'</div>'
+      +'<div style="font-size:12px;color:var(--text3);margin-top:4px">→ '+feeRangeStr(b.feeLow!==undefined?b.feeLow:b.fee,b.feeHigh,b.taxIncl)+'</div>'
     +'</div>';
   }).join('');
 
@@ -159,7 +171,7 @@ function setPlatformTrans(pid,val){
 function setBundleTax(bid,val){
   var d=getPlatformData();
   if(!d._bundles)d._bundles={};
-  if(!d._bundles[bid])d._bundles[bid]={fee:0,taxIncl:false,transIncl:false};
+  if(!d._bundles[bid])d._bundles[bid]={feeLow:0,feeHigh:0,taxIncl:false,transIncl:false};
   d._bundles[bid].taxIncl=val;
   renderPlatformDetails(d);
 }
@@ -167,7 +179,7 @@ function setBundleTax(bid,val){
 function setBundleTrans(bid,val){
   var d=getPlatformData();
   if(!d._bundles)d._bundles={};
-  if(!d._bundles[bid])d._bundles[bid]={fee:0,taxIncl:false,transIncl:false};
+  if(!d._bundles[bid])d._bundles[bid]={feeLow:0,feeHigh:0,taxIncl:false,transIncl:false};
   d._bundles[bid].transIncl=val;
   renderPlatformDetails(d);
 }
@@ -183,7 +195,7 @@ function createPlatformBundle(){
   var data=getPlatformData();
   var bid=uid();
   if(!data._bundles)data._bundles={};
-  data._bundles[bid]={fee:0,taxIncl:false,transIncl:false};
+  data._bundles[bid]={feeLow:0,feeHigh:0,taxIncl:false,transIncl:false};
   checked.forEach(function(id){
     if(!data[id])data[id]={enabled:true};
     data[id].bundleId=bid;
@@ -198,7 +210,7 @@ function dissolveBundle(bid){
   var memberIds=Object.keys(data).filter(function(k){return k!=='_bundles'&&data[k]&&data[k].bundleId===bid;});
   memberIds.forEach(function(id,i){
     data[id].bundleId=null;
-    data[id].fee=(i===0&&b)?(b.fee||0):0;
+    data[id].fee=(i===0&&b)?(b.feeLow!==undefined?b.feeLow:b.fee)||0:0;
     data[id].taxIncl=b?!!b.taxIncl:false;
     data[id].transIncl=b?!!b.transIncl:false;
   });
@@ -212,8 +224,11 @@ function getPlatformData(){
   var result={_bundles:{}};
   Object.keys(prevBundles).forEach(function(bid){
     var feeEl=document.getElementById('bundlefee_'+bid);
+    var feeHighEl=document.getElementById('bundlefeehigh_'+bid);
+    var prevLow=prevBundles[bid].feeLow!==undefined?prevBundles[bid].feeLow:prevBundles[bid].fee;
     result._bundles[bid]={
-      fee:feeEl?(Number(feeEl.value)||0):(prevBundles[bid].fee||0),
+      feeLow:feeEl?(Number(feeEl.value)||0):(prevLow||0),
+      feeHigh:feeHighEl?(Number(feeHighEl.value)||0):(prevBundles[bid].feeHigh||0),
       taxIncl:!!prevBundles[bid].taxIncl,
       transIncl:!!prevBundles[bid].transIncl
     };
@@ -646,13 +661,13 @@ function openInfluencerDetail(id){
           var b=pd._bundles[bid];
           var labels=members.map(function(m){var p=INF_PLATFORM_LIST.find(function(x){return x.id===m;});return p?p.label:m;});
           label=labels.length>1?labels.join('＋')+'（セット）':labels[0];
-          feeStr=b.fee?'¥'+Number(b.fee).toLocaleString()+(b.taxIncl?' 税込':' 税別'):'料金未設定';
+          feeStr=feeRangeStr(b.feeLow!==undefined?b.feeLow:b.fee,b.feeHigh,b.taxIncl);
           transStr=b.transIncl?'交通費込':'交通費別';
         }else{
           shown[pid]=true;
           var pl=INF_PLATFORM_LIST.find(function(x){return x.id===pid;});
           label=pl?pl.label:pid;
-          feeStr=d.fee?'¥'+Number(d.fee).toLocaleString()+(d.taxIncl?' 税込':' 税別'):'料金未設定';
+          feeStr=feeRangeStr(d.fee,d.feeHigh,d.taxIncl);
           transStr=d.transIncl?'交通費込':'交通費別';
         }
         return'<div style="display:flex;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);font-size:13px">'
