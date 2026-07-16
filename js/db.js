@@ -412,6 +412,15 @@ function toggleMonthlyDone(storeId,key){
   renderStoreTable();
 }
 
+/* インフルエンサー契約の有無（手動フラグ。キャスティング実績とは独立して管理） */
+function toggleInfContract(storeId){
+  var s=DB.stores.find(function(x){return x.id===storeId;});
+  if(!s)return;
+  s.infContract=!s.infContract;
+  saveItem('stores',s);
+  renderStoreTable();
+}
+
 async function deleteItem(table,id){
   setSyncStatus('saving','削除中...');
   try{
