@@ -5,7 +5,7 @@
    - ライブラリはローカル同梱（js/vendor/pizzip.min.js, docxtemplater.min.js）。
      実行時に外部通信は行わない。
    ============================================================ */
-var ORDER_TEMPLATE_URL='assets/発注書_template.docx?v=2';
+var ORDER_TEMPLATE_URL='assets/発注書_template.docx?v=3';
 
 /* YYYY-MM-DD → YYYY年M月D日（未入力は空） */
 function orderFmtDate(iso){
@@ -99,6 +99,7 @@ function openOrderModal(opts){
   setVal('orderDeliveryMethod','ギガファイル便または指定のGoogleドライブフォルダ');
   setVal('orderInspectDays','5');
   setVal('orderVideoCount','1');
+  setVal('orderPhotoCount','0');
   var taxSel=document.getElementById('orderTax');if(taxSel)taxSel.value='税込';
   var subSel=document.getElementById('orderSubcontract');if(subSel)subSel.value='不可';
   setVal('orderFee','');
@@ -163,6 +164,14 @@ async function generateOrder(){
   if(taxInput==='税別')feeAmount=Math.round(feeAmount*1.1);
   var feeDisplay=feeDigits?feeAmount.toLocaleString():'';
 
+  /* 制作内容：動画●本、静止画●枚（0/空欄の種別は表記しない） */
+  var videoCount=Number(val('orderVideoCount'))||0;
+  var photoCount=Number(val('orderPhotoCount'))||0;
+  var workParts=[];
+  if(videoCount>0)workParts.push('動画'+videoCount+'本');
+  if(photoCount>0)workParts.push('静止画'+photoCount+'枚');
+  var workContent=workParts.length?workParts.join('、'):'動画・静止画';
+
   var data={
     発注番号:number,
     発注日:orderFmtDate(val('orderDate')),
@@ -170,7 +179,7 @@ async function generateOrder(){
     契約日:orderFmtDate(val('orderContract')),
     担当者:val('orderStaff'),
     件名:val('orderSubject'),
-    本数:val('orderVideoCount'),
+    制作内容:workContent,
     企画書提出期限:orderFmtDate(val('orderPlan')),
     納期:orderFmtDate(val('orderDelivery')),
     納品方法:val('orderDeliveryMethod'),
