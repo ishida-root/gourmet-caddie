@@ -26,6 +26,29 @@ function progressPct(s){
   return steps.length?Math.round(done/steps.length*100):0;
 }
 
+/* 原価（楽々販売への原価入力用）
+   広告費原価：プランに含む広告費（プラン管理で設定）
+   クリエイティブ費用：直近のクリエイター請求（経理管理）の制作費。累計ではなく現案件分のみ */
+function currentCreativeCost(storeId){
+  var list=(DB.invoices||[]).filter(function(inv){return inv.storeId===storeId&&inv.payeeType==='creator';});
+  if(!list.length)return null;
+  list.sort(function(a,b){return new Date(b.receivedDate||0)-new Date(a.receivedDate||0);});
+  var latest=list[0];
+  var cr=(DB.creators||[]).find(function(c){return c.id===latest.creatorId;});
+  return{amount:latest.makeFee||0,creatorName:cr?cr.crName:'—',date:latest.receivedDate||''};
+}
+function storeCostInfo(s){
+  var plan=s.planId?DB.plans.find(function(p){return p.id===s.planId;}):null;
+  var adBudget=plan&&plan.adBudget?Number(plan.adBudget):0;
+  var creative=currentCreativeCost(s.id);
+  var creativeAmount=creative?Number(creative.amount)||0:0;
+  return{
+    adBudget:adBudget,
+    creative:creative,
+    total:adBudget+creativeAmount
+  };
+}
+
 function renderProgressTab(){
   var el=document.getElementById('progressSteps');
   if(!el)return;
@@ -581,13 +604,18 @@ function renderStoreTable(){
   }
   var list=DB.stores.filter(function(s){if(s.status==='negotiating')return false;if(filter&&s.status!==filter)return false;if(!matchSales(s))return false;if(search&&!(s.name||'').toLowerCase().includes(search)&&!(s.genre||'').toLowerCase().includes(search))return false;return true;});
   var tb=document.getElementById('storeTableBody');
-  if(!list.length&&!negList.length){tb.innerHTML='<tr><td colspan="12" class="empty-state">店舗がありません</td></tr>';return;}
+  if(!list.length&&!negList.length){tb.innerHTML='<tr><td colspan="13" class="empty-state">店舗がありません</td></tr>';return;}
   if(!list.length){tb.innerHTML='';return;}
   var metaLabels={none:'—',basic:'<span class="badge b-amber">基礎あり</span>',advanced:'<span class="badge b-green">豊富</span>'};
   tb.innerHTML=list.map(function(s){
     var pct=progressPct(s);
     var plan=s.planId?DB.plans.find(function(x){return x.id===s.planId;}):null;
     var planCell=plan?'<div style="font-size:13px;font-weight:400">'+esc(plan.name)+'</div><div style="font-size:12px;color:var(--text3)">'+fmtMoney(plan.price)+'</div>':'<span style="color:var(--text3)">—</span>';
+    var costInfo=storeCostInfo(s);
+    var costCell=(costInfo.adBudget||costInfo.creative)
+      ?'<div style="font-size:13px;font-weight:500;color:var(--text)">'+fmtMoney(costInfo.total)+'</div>'
+        +'<div style="font-size:11px;color:var(--text3)">広告'+fmtMoney(costInfo.adBudget)+(costInfo.creative?' ・ 制作'+fmtMoney(costInfo.creative.amount):'')+'</div>'
+      :'<span style="color:var(--text3)">—</span>';
     var mgr=s.ourManager||'';
     var mgrRetired=mgr&&isRetiredStaff(mgr);
     var mgrCell=mgr
@@ -600,6 +628,7 @@ function renderStoreTable(){
       +'<td><div style="display:flex;align-items:center;gap:7px"><div style="width:6px;height:6px;border-radius:50%;background:'+s.color+';flex-shrink:0"></div><span style="cursor:pointer;color:var(--accent);font-weight:400" onclick="showDetail(\''+s.id+'\')">'+esc(s.name)+'</span></div><div style="font-size:11px;color:var(--text3);margin-top:1px">'+esc(addressCity(s.pref,s.area))+'</div></td>'
       +'<td>'+esc(s.genre||'—')+'</td>'
       +'<td>'+planCell+'</td>'
+      +'<td>'+costCell+'</td>'
       +'<td class="td-mono">'+(s.contractStart||'—')+'<div style="font-size:11px;color:var(--text3)">'+(s.contractTerm?s.contractTerm+'ヶ月':'')+'</div></td>'
       +'<td>'+esc(s.contactName||'—')+'</td>'
       +'<td>'+mgrCell+'</td>'
@@ -690,6 +719,22 @@ function showDetail(id){
     '<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;padding:8px 12px;background:var(--bg3);border-radius:var(--r)">'
       +'<span style="font-size:13px;color:var(--text2)">楽々販売：</span>'+rakurakuBadge+rakurakuBtn
     +'</div>'
+
+    /* 原価（楽々販売への原価入力用） */
+    +(function(){
+      var ci=storeCostInfo(s);
+      if(!ci.adBudget&&!ci.creative)return'';
+      return'<div style="margin-bottom:14px;padding:10px 12px;background:var(--bg3);border-radius:var(--r)">'
+        +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">'
+          +'<span style="font-size:12px;font-weight:500;color:var(--text2)">💴 原価（楽々販売入力用）</span>'
+          +'<span style="font-size:15px;font-weight:500;color:var(--accent)">'+fmtMoney(ci.total)+'</span>'
+        +'</div>'
+        +'<div style="font-size:13px;color:var(--text2);padding:3px 0">広告費原価　<span style="color:var(--text3)">'+(plan?esc(plan.name)+'　':'')+'</span>'+fmtMoney(ci.adBudget)+'</div>'
+        +(ci.creative
+          ?'<div style="font-size:13px;color:var(--text2);padding:3px 0">クリエイティブ費用　<span style="color:var(--text3)">'+esc(ci.creative.creatorName)+(ci.creative.date?'　'+fmtD(ci.creative.date):'')+'</span>　'+fmtMoney(ci.creative.amount)+'</div>'
+          :'<div style="font-size:12px;color:var(--text3);padding:3px 0">クリエイティブ費用　案件なし</div>')
+      +'</div>';
+    })()
 
     /* KPIカード */
     +'<div class="grid3" style="margin-bottom:16px">'
