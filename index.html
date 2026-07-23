@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=20">
+<link rel="stylesheet" href="css/app.css?v=21">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -427,6 +427,7 @@
             <select id="accFilterMonth" onchange="renderAccounting()" style="font-size:13px;padding:4px 8px;width:auto">
               <option value="">全期間</option>
             </select>
+            <button class="btn btn-sm" id="accShowSettledBtn" onclick="toggleAccShowSettled()">すべて表示</button>
             <button class="btn btn-primary btn-sm" onclick="openInvoiceModal()">＋ 費用追加</button>
           </div>
         </div>
@@ -1026,23 +1027,23 @@
 </div>
 </div>
 
-<script src="js/vendor/pizzip.min.js?v=20"></script>
-<script src="js/vendor/docxtemplater.min.js?v=20"></script>
-<script src="js/config.js?v=20"></script>
-<script src="js/db.js?v=20"></script>
-<script src="js/utils.js?v=20"></script>
-<script src="js/settings.js?v=20"></script>
-<script src="js/stores.js?v=20"></script>
-<script src="js/schedule.js?v=20"></script>
-<script src="js/casting.js?v=20"></script>
-<script src="js/check.js?v=20"></script>
-<script src="js/accounting.js?v=20"></script>
-<script src="js/plans.js?v=20"></script>
-<script src="js/creators.js?v=20"></script>
-<script src="js/corps.js?v=20"></script>
-<script src="js/orders.js?v=20"></script>
-<script src="js/dashboard.js?v=20"></script>
-<script src="js/app.js?v=20"></script>
+<script src="js/vendor/pizzip.min.js?v=21"></script>
+<script src="js/vendor/docxtemplater.min.js?v=21"></script>
+<script src="js/config.js?v=21"></script>
+<script src="js/db.js?v=21"></script>
+<script src="js/utils.js?v=21"></script>
+<script src="js/settings.js?v=21"></script>
+<script src="js/stores.js?v=21"></script>
+<script src="js/schedule.js?v=21"></script>
+<script src="js/casting.js?v=21"></script>
+<script src="js/check.js?v=21"></script>
+<script src="js/accounting.js?v=21"></script>
+<script src="js/plans.js?v=21"></script>
+<script src="js/creators.js?v=21"></script>
+<script src="js/corps.js?v=21"></script>
+<script src="js/orders.js?v=21"></script>
+<script src="js/dashboard.js?v=21"></script>
+<script src="js/app.js?v=21"></script>
 <!-- GENRE MODAL -->
 <!-- 追加費用モーダル -->
 <div class="modal-overlay" id="addFeeModal">

@@ -230,6 +230,19 @@ function deleteInvoice(id){
 function invMonthOf(inv){return inv.payeeType==='ad'?(inv.adMonth||''):(inv.receivedDate||'').slice(0,7);}
 function invSalesOf(inv){var s=DB.stores.find(function(x){return x.id===inv.storeId;});return s?(s.ourManager||''):'';}
 
+var accShowSettled=false;
+function toggleAccShowSettled(){
+  accShowSettled=!accShowSettled;
+  var btn=document.getElementById('accShowSettledBtn');
+  if(btn){
+    btn.textContent=accShowSettled?'未決済のみ表示':'すべて表示';
+    btn.style.background=accShowSettled?'var(--accent-bg)':'';
+    btn.style.color=accShowSettled?'var(--accent)':'';
+    btn.style.borderColor=accShowSettled?'var(--accent-border)':'';
+  }
+  renderAccounting();
+}
+
 function renderAccounting(){
   if(!DB.invoices)DB.invoices=[];
   var getV=function(id){var el=document.getElementById(id);return el?el.value:'';};
@@ -259,6 +272,7 @@ function renderAccounting(){
   }
 
   var list=DB.invoices.slice().filter(function(inv){
+    if(!accShowSettled&&invSettled(inv))return false;
     if(filterStatus&&inv.status!==filterStatus)return false;
     if(filterMonth&&invMonthOf(inv)!==filterMonth)return false;
     if(filterStore&&inv.storeId!==filterStore)return false;
@@ -279,8 +293,13 @@ function renderAccounting(){
 
   var tb=document.getElementById('accBody');
   if(!tb)return;
-  if(!list.length){tb.innerHTML='<tr><td colspan="9" class="empty-state">費用記録がありません</td></tr>';return;}
+  if(!list.length){
+    tb.innerHTML='<tr><td colspan="9" class="empty-state">'+(accShowSettled?'費用記録がありません':'未決済の費用記録はありません（「すべて表示」で過去分も見られます）')+'</td></tr>';
+    return;
+  }
   tb.innerHTML=list.map(function(inv){
+    var settled=invSettled(inv);
+    var rowStyle=settled?'opacity:0.55;background:var(--bg3)':'';
     var type=inv.payeeType||'influencer';
     var isCreator=type==='creator',isAd=type==='ad';
     var payeeName=isAd?esc(inv.adPlatform||'広告')
@@ -294,7 +313,7 @@ function renderAccounting(){
       :isCreator?[['制作費',inv.makeFee],['交通費',inv.crTransport],['その他',inv.other]]
       :[['PR費',inv.prFee],['交通費',inv.transport],['飲食代',inv.food]];
     var breakdownHtml=breakdown.filter(function(b){return b[1];}).map(function(b){return'<span style="white-space:nowrap;color:var(--text3)">'+b[0]+' ¥'+Number(b[1]).toLocaleString()+'</span>';}).join('<span style="color:var(--text3)"> / </span>')||'<span style="color:var(--text3)">—</span>';
-    return'<tr>'
+    return'<tr style="'+rowStyle+'">'
       +'<td class="td-mono" style="white-space:nowrap">'+dateCell+'</td>'
       +'<td>'+typeBadge+'</td>'
       +'<td style="font-weight:500">'+payeeName+(inv.billingName?'<div style="font-size:11px;color:var(--text3);font-weight:400">請求名義：'+esc(inv.billingName)+'</div>':'')+'</td>'
