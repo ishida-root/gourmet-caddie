@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=22">
+<link rel="stylesheet" href="css/app.css?v=23">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -837,6 +837,11 @@
       </div>
     </div>
     <input type="hidden" id="invPayeeType" value="influencer">
+    <div class="fr1 field" style="margin-bottom:12px">
+      <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-size:13px;font-weight:400">
+        <input type="checkbox" id="invIsEstimate" style="width:auto;margin:0" onchange="onInvoiceEstimateChange()"> 🔖 仮の費用として登録（請求書発行前の見込み金額・経費抜き）
+      </label>
+    </div>
     <!-- キャスティングから呼ばれた時にキャスティング情報を表示 -->
     <div id="invCastingCtxBox" style="display:none;margin-bottom:12px;padding:10px 14px;background:var(--accent-bg);border:1px solid var(--accent-border);border-radius:var(--r)">
       <div style="font-size:11px;color:var(--text3);margin-bottom:4px;letter-spacing:.5px">📋 キャスティング</div>
@@ -870,19 +875,19 @@
     <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:10px">
       <div style="font-size:13px;font-weight:500;color:var(--text2);margin-bottom:10px">費用内訳（円）</div>
       <div class="fr3" id="invInfCosts">
-        <div class="field"><label>PR費</label><input type="number" id="invPrFee" placeholder="0" oninput="calcInvTotal()"></div>
-        <div class="field"><label>交通費</label><input type="number" id="invTransport" placeholder="0" oninput="calcInvTotal()"></div>
-        <div class="field"><label>飲食代</label><input type="number" id="invFood" placeholder="0" oninput="calcInvTotal()"></div>
+        <div class="field"><label id="invPrFeeLabel">PR費</label><input type="number" id="invPrFee" placeholder="0" oninput="calcInvTotal()"></div>
+        <div class="field" id="invTransportField"><label>交通費</label><input type="number" id="invTransport" placeholder="0" oninput="calcInvTotal()"></div>
+        <div class="field" id="invFoodField"><label>飲食代</label><input type="number" id="invFood" placeholder="0" oninput="calcInvTotal()"></div>
       </div>
       <div class="fr3" id="invCreatorCosts" style="display:none">
-        <div class="field"><label>制作費</label><input type="number" id="invMakeFee" placeholder="0" oninput="calcInvTotal()"></div>
-        <div class="field"><label>交通費</label><input type="number" id="invCrTransport" placeholder="0" oninput="calcInvTotal()"></div>
-        <div class="field"><label>その他</label><input type="number" id="invOther" placeholder="0" oninput="calcInvTotal()"></div>
+        <div class="field"><label id="invMakeFeeLabel">制作費</label><input type="number" id="invMakeFee" placeholder="0" oninput="calcInvTotal()"></div>
+        <div class="field" id="invCrTransportField"><label>交通費</label><input type="number" id="invCrTransport" placeholder="0" oninput="calcInvTotal()"></div>
+        <div class="field" id="invOtherField"><label>その他</label><input type="number" id="invOther" placeholder="0" oninput="calcInvTotal()"></div>
       </div>
       <div id="invAdCosts" style="display:none">
         <div class="fr">
           <div class="field"><label>媒体</label><select id="invAdPlatform"><option value="Meta広告">Meta広告</option><option value="TikTok広告">TikTok広告</option><option value="Google広告">Google広告</option><option value="その他">その他</option></select></div>
-          <div class="field"><label>確定広告費</label><input type="number" id="invAdFee" placeholder="0" oninput="calcInvTotal()"></div>
+          <div class="field"><label id="invAdFeeLabel">確定広告費</label><input type="number" id="invAdFee" placeholder="0" oninput="calcInvTotal()"></div>
         </div>
       </div>
       <div style="font-size:11px;color:var(--text3);margin-top:8px">※消費税は報酬（PR費・制作費・広告費）のみ。交通費・飲食代・その他は実費精算のため税対象外です。</div>
@@ -1027,23 +1032,23 @@
 </div>
 </div>
 
-<script src="js/vendor/pizzip.min.js?v=22"></script>
-<script src="js/vendor/docxtemplater.min.js?v=22"></script>
-<script src="js/config.js?v=22"></script>
-<script src="js/db.js?v=22"></script>
-<script src="js/utils.js?v=22"></script>
-<script src="js/settings.js?v=22"></script>
-<script src="js/stores.js?v=22"></script>
-<script src="js/schedule.js?v=22"></script>
-<script src="js/casting.js?v=22"></script>
-<script src="js/check.js?v=22"></script>
-<script src="js/accounting.js?v=22"></script>
-<script src="js/plans.js?v=22"></script>
-<script src="js/creators.js?v=22"></script>
-<script src="js/corps.js?v=22"></script>
-<script src="js/orders.js?v=22"></script>
-<script src="js/dashboard.js?v=22"></script>
-<script src="js/app.js?v=22"></script>
+<script src="js/vendor/pizzip.min.js?v=23"></script>
+<script src="js/vendor/docxtemplater.min.js?v=23"></script>
+<script src="js/config.js?v=23"></script>
+<script src="js/db.js?v=23"></script>
+<script src="js/utils.js?v=23"></script>
+<script src="js/settings.js?v=23"></script>
+<script src="js/stores.js?v=23"></script>
+<script src="js/schedule.js?v=23"></script>
+<script src="js/casting.js?v=23"></script>
+<script src="js/check.js?v=23"></script>
+<script src="js/accounting.js?v=23"></script>
+<script src="js/plans.js?v=23"></script>
+<script src="js/creators.js?v=23"></script>
+<script src="js/corps.js?v=23"></script>
+<script src="js/orders.js?v=23"></script>
+<script src="js/dashboard.js?v=23"></script>
+<script src="js/app.js?v=23"></script>
 <!-- GENRE MODAL -->
 <!-- 追加費用モーダル -->
 <div class="modal-overlay" id="addFeeModal">

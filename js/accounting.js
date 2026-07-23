@@ -1,5 +1,23 @@
 ﻿var editingInvoiceId=null;
 
+function onInvoiceEstimateChange(){
+  var isEst=!!document.getElementById('invIsEstimate').checked;
+  var show=function(id,on){var el=document.getElementById(id);if(el)el.style.display=on?'':'none';};
+  show('invTransportField',!isEst);
+  show('invFoodField',!isEst);
+  show('invCrTransportField',!isEst);
+  show('invOtherField',!isEst);
+  var setLabel=function(id,txt){var el=document.getElementById(id);if(el)el.textContent=txt;};
+  setLabel('invPrFeeLabel',isEst?'見込みPR費（経費抜き）':'PR費');
+  setLabel('invMakeFeeLabel',isEst?'見込み制作費（経費抜き）':'制作費');
+  setLabel('invAdFeeLabel',isEst?'見込み広告費':'確定広告費');
+  if(isEst){
+    var zero=function(fid){var el=document.getElementById(fid);if(el)el.value='';};
+    zero('invTransport');zero('invFood');zero('invCrTransport');zero('invOther');
+    calcInvTotal();
+  }
+}
+
 function openInvoiceModal(id,opts){
   editingInvoiceId=id||null;
   var titleEl=document.getElementById('invoiceModalTitle');
@@ -22,6 +40,7 @@ function openInvoiceModal(id,opts){
   document.getElementById('invStatus').value='pending';
   document.getElementById('invTotal').textContent='¥0';
   document.getElementById('invCastingId').value='';
+  document.getElementById('invIsEstimate').checked=false;
   /* 費用種別をリセット（既定：インフルエンサー） */
   var typeRadio=document.querySelector('input[name="invTypeRadio"][value="influencer"]');
   if(typeRadio)typeRadio.checked=true;
@@ -50,9 +69,11 @@ function openInvoiceModal(id,opts){
       document.getElementById('invBillingName').value=inv.billingName||'';
       document.getElementById('invNote').value=inv.note||'';
       document.getElementById('invCastingId').value=inv.castingId||'';
+      document.getElementById('invIsEstimate').checked=!!inv.isEstimate;
     }
   }
   onInvoiceTypeChange();
+  onInvoiceEstimateChange();
   /* ステータス選択肢は種別確定後に再構築されるため、編集時はここで再適用 */
   if(id){
     var _inv=DB.invoices.find(function(x){return x.id===id;});
@@ -204,6 +225,8 @@ function saveInvoice(){
   inv.taxRate=Number((document.getElementById('invTaxRate')||{}).value)||0;
   /* 請求書記載名（広告費以外） */
   inv.billingName=(payeeType==='ad')?'':((document.getElementById('invBillingName')||{}).value||'');
+  /* 仮の費用（請求書発行前の見込み・経費抜き） */
+  inv.isEstimate=!!document.getElementById('invIsEstimate').checked;
   if(!DB.invoices)DB.invoices=[];
   if(isEdit){
     var idx=DB.invoices.findIndex(function(x){return x.id===id;});
@@ -304,7 +327,7 @@ function renderAccounting(){
   }
   tb.innerHTML=list.map(function(inv){
     var settled=invSettled(inv);
-    var rowStyle=settled?'opacity:0.55;background:var(--bg3)':'';
+    var rowStyle=settled?'opacity:0.55;background:var(--bg3)':(inv.isEstimate?'border-left:3px solid var(--amber)':'');
     var type=inv.payeeType||'influencer';
     var isCreator=type==='creator',isAd=type==='ad';
     var payeeName=isAd?esc(inv.adPlatform||'広告')
@@ -312,7 +335,8 @@ function renderAccounting(){
       :(function(){var i=DB.influencers.find(function(x){return x.id===inv.infId;});return i?esc(i.name):'—';})();
     var storeName2=inv.storeId?(function(){var s=DB.stores.find(function(x){return x.id===inv.storeId;});return s?esc(s.name):'—';})():'—';
     var incl=invInclTotal(inv),excl=invExclTotal(inv);
-    var typeBadge=isAd?'<span class="badge b-amber">📢 広告費</span>':isCreator?'<span class="badge b-pink">🎬 クリエイター</span>':'<span class="badge b-purple">👤 INF</span>';
+    var typeBadge=(isAd?'<span class="badge b-amber">📢 広告費</span>':isCreator?'<span class="badge b-pink">🎬 クリエイター</span>':'<span class="badge b-purple">👤 INF</span>')
+      +(inv.isEstimate?' <span class="badge" style="background:var(--amber-bg);color:var(--amber);border-color:var(--amber-border)">🔖 仮</span>':'');
     var dateCell=isAd?(inv.adMonth?inv.adMonth+'<span style="color:var(--text3);font-size:11px"> 対象月</span>':'—'):(inv.receivedDate||'—');
     var breakdown=isAd?[['確定広告費',inv.adFee]]
       :isCreator?[['制作費',inv.makeFee],['交通費',inv.crTransport],['その他',inv.other]]
