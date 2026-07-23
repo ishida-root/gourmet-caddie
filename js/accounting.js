@@ -271,19 +271,24 @@ function renderAccounting(){
     monthSel.innerHTML='<option value="">全期間</option>'+months.map(function(m){return'<option value="'+m+'"'+(m===curMonth?' selected':'')+'>'+m+'</option>';}).join('');
   }
 
-  var list=DB.invoices.slice().filter(function(inv){
-    if(!accShowSettled&&invSettled(inv))return false;
+  var baseFilter=function(inv){
     if(filterStatus&&inv.status!==filterStatus)return false;
     if(filterMonth&&invMonthOf(inv)!==filterMonth)return false;
     if(filterStore&&inv.storeId!==filterStore)return false;
     if(filterSales&&invSalesOf(inv)!==filterSales)return false;
     if(filterType&&(inv.payeeType||'influencer')!==filterType)return false;
     return true;
+  };
+  /* サマリーは「すべて表示」トグルの影響を受けず、選択中の条件全体の金額を表示する */
+  var summaryList=DB.invoices.slice().filter(baseFilter);
+  var list=summaryList.filter(function(inv){
+    if(!accShowSettled&&invSettled(inv))return false;
+    return true;
   }).sort(function(a,b){return invMonthOf(b).localeCompare(invMonthOf(a))||(b.receivedDate||'').localeCompare(a.receivedDate||'');});
 
-  /* サマリー集計（フィルタ後・税込ベース） */
+  /* サマリー集計（すべて表示トグル無視・税込ベース） */
   var totalAll=0,totalInf=0,totalCr=0,totalAd=0;
-  list.forEach(function(inv){var t=invInclTotal(inv);totalAll+=t;if(inv.payeeType==='creator')totalCr+=t;else if(inv.payeeType==='ad')totalAd+=t;else totalInf+=t;});
+  summaryList.forEach(function(inv){var t=invInclTotal(inv);totalAll+=t;if(inv.payeeType==='creator')totalCr+=t;else if(inv.payeeType==='ad')totalAd+=t;else totalInf+=t;});
   var setVal=function(id,v){var el=document.getElementById(id);if(el)el.textContent=v;};
   setVal('acc-count',list.length);
   setVal('acc-total','¥'+totalAll.toLocaleString());
