@@ -598,6 +598,17 @@ function ratingStars(r){
   return '<span style="color:'+colors[n]+';font-size:13px">'+stars+'</span>';
 }
 
+function platformAbbr(label){
+  if(!label)return'';
+  if(label.indexOf('Instagram')===0)return'IG';
+  if(label==='TikTok')return'TT';
+  if(label.indexOf('YouTube')===0)return'YT';
+  if(label==='Facebook')return'FB';
+  if(label==='Lemon8')return'L8';
+  if(label.indexOf('Google')===0)return'Google';
+  return label;
+}
+
 function castPostUrlEntries(c){
   var entries=[];
   var pu=c.postUrls||{};
@@ -757,7 +768,10 @@ function openCastingModal(opts){
         if(titleEl)titleEl.textContent='キャスティングを編集';
         var set=function(fid,v){var el=document.getElementById(fid);if(el&&v)el.value=v;};
         set('cStore',ec.storeId);set('cInf',ec.infId);
-        set('cFee',ec.fee);
+        /* 経理管理に紐づく請求書があれば、そちらの確定PR費用を優先する */
+        var linkedInv=(DB.invoices||[]).find(function(x){return x.castingId===ec.id&&x.payeeType!=='ad';});
+        var savedFee=(linkedInv&&linkedInv.prFee)?linkedInv.prFee:ec.fee;
+        set('cFee',savedFee);
         /* 媒体は INF選択後に更新してから復元 */
         setTimeout(function(){
           updateCastPlatformBoxes();
@@ -776,7 +790,10 @@ function openCastingModal(opts){
             var pl0=INF_PLATFORM_LIST.find(function(p){return p.label===savedPlats[0];});
             if(pl0)_curCastPostUrls[pl0.id]=ec.postUrl;
           }
+          /* onCastPlatformChangeは料金表からの自動計算で上書きするため、
+             編集時は保存済み（または請求書確定済み）の実額を再度優先する */
           onCastPlatformChange();
+          if(savedFee)document.getElementById('cFee').value=savedFee;
         },50);
         set('cReach',ec.reach);set('cResult',ec.result);
         set('cVisitDate',ec.visitDate);set('cDraftDate',ec.draftDate);set('cDate',ec.date);
@@ -1041,33 +1058,23 @@ function renderCasting(){
       ||infName(c.infId).toLowerCase().includes(search);
   });
   var tb=document.getElementById('castBody');
-  if(!list.length){tb.innerHTML='<tr><td colspan="12" class="empty-state">キャスティング履歴がありません</td></tr>';return;}
+  if(!list.length){tb.innerHTML='<tr><td colspan="7" class="empty-state">キャスティング履歴がありません</td></tr>';return;}
   var INV_STATUS_LABEL={pending:'📄 未受領',sns_received:'📥 請求書受領',accounting_submitted:'📊 経理申請',done:'💸 支払い済み',invoiced:'📤 請求書送付済み',received:'✅ 入金確認済み'};
   tb.innerHTML=list.map(function(c){
     var inv=(DB.invoices||[]).find(function(x){return x.castingId===c.id;});
-    var invCell;
-    if(inv){
-      invCell='<span style="font-size:12px;padding:2px 7px;border-radius:4px;background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-border)">'+(INV_STATUS_LABEL[inv.status]||inv.status)+'</span>'
-        +' <button class="btn btn-sm" onclick="openInvoiceModal(\''+inv.id+'\')">編集</button>';
-    }else{
-      invCell='<button class="btn btn-sm" onclick="openInvoiceFromCasting(\''+c.id+'\')">＋ 請求書</button>';
-    }
+    var invCell=inv
+      ?'<span style="font-size:12px;padding:2px 7px;border-radius:4px;background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-border);white-space:nowrap">'+(INV_STATUS_LABEL[inv.status]||inv.status)+'</span>'
+      :'<span style="font-size:12px;color:var(--text3)">未登録</span>';
+    var pp=c.platforms&&c.platforms.length?c.platforms:(c.platform?[c.platform]:[]);
+    var abbrs=[...new Set(pp.map(platformAbbr).filter(Boolean))];
+    var platCell=abbrs.length?abbrs.map(function(a){return'<span style="display:inline-block;font-size:11px;padding:1px 6px;background:var(--accent-bg);color:var(--accent);border-radius:3px;margin:1px;white-space:nowrap">'+esc(a)+'</span>';}).join(''):'—';
     return'<tr>'
       +'<td>'+esc(storeName(c.storeId))+'</td>'
-      +'<td style="color:var(--purple);font-weight:500">'+esc(infName(c.infId))+'</td>'
+      +'<td style="color:var(--purple);font-weight:500;cursor:pointer;text-decoration:underline" onclick="openInfluencerDetail(\''+c.infId+'\')">'+esc(infName(c.infId))+'</td>'
       +'<td class="td-mono" style="color:var(--amber)">'+(c.visitDate?fmtD(c.visitDate):'—')+'</td>'
-      +'<td class="td-mono" style="color:var(--green)">'+(c.draftDate?fmtD(c.draftDate):'—')+'</td>'
       +'<td class="td-mono">'+fmtD(c.date)+'</td>'
-      +'<td>'+(function(){var pp=c.platforms&&c.platforms.length?c.platforms:(c.platform?[c.platform]:[]);return pp.length?pp.map(function(p){return'<span style="display:inline-block;font-size:11px;padding:1px 6px;background:var(--accent-bg);color:var(--accent);border-radius:3px;margin:1px;white-space:nowrap">'+esc(p)+'</span>';}).join(''):'—';})()+'</td>'
-      +'<td class="td-mono">'+fmtMoney(c.fee)+'</td>'
-      +'<td class="td-mono">'+(c.reach?Number(c.reach).toLocaleString():'—')+'</td>'
-      +'<td style="color:var(--text3);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc((c.result||'').slice(0,30))+'</td>'
-      +'<td onclick="event.stopPropagation()">'
-        +'<button onclick="toggleCastContractSent(\''+c.id+'\')" style="font-size:12px;padding:3px 8px;border-radius:5px;cursor:pointer;border:1px solid;white-space:nowrap;background:'+(c.contractSent?'var(--green-bg)':'var(--bg3)')+';color:'+(c.contractSent?'var(--green)':'var(--text3)')+';border-color:'+(c.contractSent?'var(--green-border)':'var(--border)')+';">'
-          +(c.contractSent?'✓ 送付済み':'未送付')
-        +'</button>'
-      +'</td>'
-      +'<td onclick="event.stopPropagation()" style="white-space:nowrap">'+invCell+'</td>'
+      +'<td>'+platCell+'</td>'
+      +'<td style="white-space:nowrap">'+invCell+'</td>'
       +'<td onclick="event.stopPropagation()" style="white-space:nowrap"><button class="btn btn-sm" style="margin-right:4px" onclick="openCastingModal({editId:\''+c.id+'\'})">編集</button><button class="btn-ghost-danger" onclick="deleteCasting(\''+c.id+'\')">削除</button></td>'
     +'</tr>';
   }).join('');
