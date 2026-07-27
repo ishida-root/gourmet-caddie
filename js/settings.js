@@ -122,6 +122,8 @@ function buildCsTaskBody(corpName,storeName,planName,salesBy){
     +'\n・プラン名：'+planName;
 }
 
+/* 楽々販売登録の運用を見直し中のため、CS宛タスク作成は一旦停止（SNS局への通知は継続） */
+var CW_CS_TASK_ENABLED=false;
 async function notifyChatwork(storeName,plan,salesBy,contactName,tel,email,corpName){
   var s=getCwSettings();
   var snsRoom=CW_SNS_ROOM||(s.snsRoomId||'');
@@ -132,7 +134,7 @@ async function notifyChatwork(storeName,plan,salesBy,contactName,tel,email,corpN
     var ok1=await ghDispatch(snsRoom,snsMsg,'message','');
     results.push({to:'SNS局',ok:ok1});
   }
-  if(csRoom){
+  if(csRoom&&CW_CS_TASK_ENABLED){
     var taskBody=buildCsTaskBody(corpName||contactName||storeName,storeName,plan,salesBy);
     var ok2=await ghDispatch(csRoom,taskBody,'task','8306474');
     results.push({to:'CSタスク',ok:ok2});

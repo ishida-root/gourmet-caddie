@@ -412,8 +412,11 @@ function renderDashboard(){
       +planTable;
   }
 
-  /* 未決済（支払い待ち / 入金待ち） */
-  var accPending=(DB.invoices||[]).filter(function(inv){return typeof invSettled==='function'?!invSettled(inv):inv.status!=='done';});
+  /* 未決済（支払い待ち / 入金待ち）：仮の費用（見込み・未確定）は請求書が届くまで掲載しない */
+  var accPending=(DB.invoices||[]).filter(function(inv){
+    if(inv.isEstimate)return false;
+    return typeof invSettled==='function'?!invSettled(inv):inv.status!=='done';
+  });
   var accEl=document.getElementById('dash-accounting');
   if(accEl){
     if(!accPending.length){
@@ -438,38 +441,12 @@ function renderDashboard(){
                 +' | 合計：¥'+total.toLocaleString()
               +'</div>'
             +'</div>'
-            +'<button class="btn btn-sm" style="background:var(--green-bg);color:var(--green);border-color:var(--green-border);white-space:nowrap" '
-              +'onclick="markInvDone(\''+inv.id+'\')">'+(isAd?'✓ 入金確認':'✓ 支払い済み')+'</button>'
+            +'<button class="btn btn-sm" style="background:var(--accent);color:#fff;border-color:var(--accent);white-space:nowrap" '
+              +'onclick="markInvDone(\''+inv.id+'\')">'+(isAd?'入金確認する':'支払い済みにする')+'</button>'
           +'</div>';
         }).join('')
       +'</div>';
     }
   }
-
-  var setupPending=DB.stores.filter(function(s){return s.status==='active'&&progressPct(s)<100;}).slice(0,6);
-  var se=document.getElementById('dash-setup');
-  if(!setupPending.length){se.innerHTML='<div class="empty-state" style="padding:16px">全店舗の案件進捗が完了 ✓</div>';return;}
-  se.innerHTML=setupPending.map(function(s){
-    var steps=progressStepsFor(s);var prog=s.progress||{};
-    var pct=progressPct(s);
-    var done=Math.round(pct/100*steps.length);
-    var modeLabel=(s.progressMode==='repeat')?'2回目以降':'初回';
-    return'<div style="padding:10px 0;border-bottom:1px solid var(--border)">'
-      +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:5px">'
-        +'<span style="font-size:13px;font-weight:500;cursor:pointer;color:var(--accent)" onclick="navigate(\'stores\');setTimeout(function(){showDetail(\''+s.id+'\');},100)">'+esc(s.name)+'</span>'
-        +'<span class="badge b-gray" style="font-size:10px">'+modeLabel+'</span>'
-        +'<div class="pbar-wrap" style="flex:1"><div class="pbar" style="width:'+pct+'%;background:'+(pct===100?'var(--green)':pct>=60?'var(--accent)':'var(--amber)')+'"></div></div>'
-        +'<span style="font-size:12px;color:var(--text3)">'+done+'/'+steps.length+'</span>'
-        +'<button class="btn btn-sm" style="font-size:11px;padding:2px 7px" onclick="openStoreModal(\''+s.id+'\')" >進捗</button>'
-      +'</div>'
-      +'<div style="display:flex;gap:3px;flex-wrap:wrap">'
-        +steps.map(function(step){
-          var p=prog[step.key]||{};
-          var isDone=step.accounts?isAccountsDone(p):(p.status==='done'||p.status==='na');
-          return'<span style="font-size:10px;padding:1px 5px;border-radius:10px;white-space:nowrap;background:'+(isDone?'var(--green-bg)':'var(--bg3)')+';color:'+(isDone?'var(--green)':'var(--text3)')+';border:1px solid '+(isDone?'var(--green-border)':'var(--border)')+';">'+(isDone?'✓ ':'')+esc(step.label)+'</span>';
-        }).join('')
-      +'</div>'
-    +'</div>';
-  }).join('');
 }
 

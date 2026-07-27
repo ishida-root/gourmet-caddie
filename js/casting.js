@@ -368,177 +368,84 @@ function renderInvFlow(inv){
   +'</div>';
 }
 
+/* やること一覧：案件名＋現状のみのシンプルな一覧（チェック機能なし・各管理ページへのリンクのみ）
+   投稿スケジュール系の更新はスケジュール管理ページ、進捗・追加費用は店舗詳細から行う。 */
 function renderTodoList(){
   var el=document.getElementById('dash-todo');
   if(!el)return;
   var today=new Date(); today.setHours(0,0,0,0);
-  var items=[];
-  /* ボタンスタイル */
-  var bsBase='font-size:13px;padding:5px 12px;border-radius:6px;cursor:pointer;border:1px solid;white-space:nowrap;flex-shrink:0;font-weight:500;';
-  var bsAction=bsBase+'background:var(--accent);color:#fff;border-color:var(--accent);'; /* 青：完了アクション */
-  var bsNav=bsBase+'background:var(--bg3);color:var(--text2);border-color:var(--border);'; /* グレー：画面遷移 */
-  var bsAmber=bsBase+'background:var(--amber-bg);color:var(--amber);border-color:var(--amber-border);';
-  var bsRed=bsBase+'background:var(--red-bg);color:var(--red);border-color:var(--red-border);';
+  var rows=[];
 
-  /* アクションバッジ生成ヘルパー */
-  function actionBadge(text,color){
-    var bg=color==='red'?'var(--red-bg)':color==='amber'?'var(--amber-bg)':color==='purple'?'var(--purple-bg)':'var(--accent-bg)';
-    var fg=color==='red'?'var(--red)':color==='amber'?'var(--amber)':color==='purple'?'var(--purple)':'var(--accent)';
-    var bd=color==='red'?'var(--red-border)':color==='amber'?'var(--amber-border)':color==='purple'?'var(--purple-border)':'var(--accent-border)';
+  function badge(text,color){
+    var bg=color==='red'?'var(--red-bg)':color==='amber'?'var(--amber-bg)':'var(--accent-bg)';
+    var fg=color==='red'?'var(--red)':color==='amber'?'var(--amber)':'var(--accent)';
+    var bd=color==='red'?'var(--red-border)':color==='amber'?'var(--amber-border)':'var(--accent-border)';
     return'<span style="font-size:11px;font-weight:600;padding:1px 6px;border-radius:4px;border:1px solid '+bd+';background:'+bg+';color:'+fg+';margin-right:5px;vertical-align:middle">'+text+'</span>';
   }
+  var navStore='<button style="font-size:13px;padding:5px 12px;border-radius:6px;cursor:pointer;border:1px solid var(--border);background:var(--bg3);color:var(--text2);white-space:nowrap;flex-shrink:0" onclick="openStoreFromNotif(\'STOREID\')">店舗を開く →</button>';
+  var navSchedule='<button style="font-size:13px;padding:5px 12px;border-radius:6px;cursor:pointer;border:1px solid var(--border);background:var(--bg3);color:var(--text2);white-space:nowrap;flex-shrink:0" onclick="navigate(\'schedule\')">スケジュールを開く →</button>';
 
-  /* 対象店舗に未完了の予定投稿があるか（③と重複する撮影/投稿ステップの抑制用） */
-  var hasActivePost=function(sid,types){
-    return DB.posts.some(function(p){
-      return p.storeId===sid&&types.indexOf(p.type)>=0
-        &&p.status!=='done'&&p.status!=='visited'&&p.status!=='cancelled'&&p.status!=='approved';
-    });
-  };
-  /* ① 案件進捗：次の未完了ステップ（フローに応じて1件提示） */
   DB.stores.filter(function(s){return s.status==='active';}).forEach(function(s){
-    var prog=s.progress||{};
-    var steps=progressStepsFor(s);
-    var btn='<button style="'+bsNav+'" onclick="openStoreFromNotif(\''+s.id+'\',5)">進捗を開く →</button>';
-    for(var i=0;i<steps.length;i++){
-      var step=steps[i];
-      var p=prog[step.key]||{};
-      var done=step.accounts?isAccountsDone(p):(p.status==='done'||p.status==='na');
-      if(done)continue;
-      /* 撮影/投稿ステップは実際の予定投稿（③）と重複するため、制作系の予定があれば進捗行は省略
-         （クリエイター動画は投稿自体が撮影→編集→納品→投稿の状態を持つため二重表示になる） */
-      if((step.key==='shoot'||step.key==='post')&&hasActivePost(s.id,['shooting','video','image','reel','story']))break;
-      if(step.key==='kickoff'&&p.salesJoin){
-        items.push({priority:1,date:today,main:esc(s.name),sub:actionBadge('要対応','red')+'キックオフ 営業同席希望あり（未実施）',btns:btn,storeId:s.id});
-      }else if(step.accounts){
-        var missing=step.accounts.filter(function(n){return!(p.accountChecks||{})[n];});
-        items.push({priority:2,date:today,main:esc(s.name),sub:actionBadge('要対応','amber')+'アカウント未連携：'+missing.join('・'),btns:btn,storeId:s.id});
-      }else{
-        items.push({priority:2,date:today,main:esc(s.name),sub:actionBadge('要対応','amber')+step.label+' 未完了',btns:btn,storeId:s.id});
-      }
-      break;
+    var current=null; /* {label, color} */
+
+    /* 1. 追加費用（未対応） */
+    var pendingFee=(s.additionalFees||[]).find(function(f){return f.status!=='done';});
+    if(pendingFee){
+      current={label:'追加費用 未対応：'+esc(pendingFee.description)+'（'+fmtMoney(pendingFee.amount)+'）',color:'amber',nav:navStore.replace('STOREID',s.id)};
     }
-  });
 
-  /* ② 楽々販売未登録の店舗 */
-  DB.stores.filter(function(s){return s.status==='active'&&!s.rakurakuRegistered;}).forEach(function(s){
-    items.push({
-      priority:1,date:today,storeId:s.id,
-      main:esc(s.name),
-      sub:actionBadge('要登録','red')+'楽々販売 未登録',
-      btns:'<button style="'+bsAction+'" onclick="markRakurakuDone(\''+s.id+'\')">✓ 登録済みにする</button>'
-           +'<button style="'+bsNav+'margin-left:4px" onclick="openStoreFromNotif(\''+s.id+'\')">詳細</button>'
-    });
-  });
-
-  /* ③ 追加費用（未対応） */
-  DB.stores.forEach(function(s){
-    (s.additionalFees||[]).filter(function(f){return f.status!=='done';}).forEach(function(f){
-      items.push({
-        priority:1,date:today,storeId:s.id,
-        main:esc(s.name),
-        sub:actionBadge('要対応','amber')+'追加費用 未対応：'+esc(f.description)+'（'+fmtMoney(f.amount)+'）',
-        btns:'<button style="'+bsAction+'" onclick="markFeeDone(\''+s.id+'\',\''+f.id+'\')">✓ 対応済みにする</button>'
-      });
-    });
-  });
-
-  /* ④ 投稿スケジュール関連 */
-  DB.posts.filter(function(p){
-    return p.status!=='done'&&p.status!=='visited'&&p.status!=='cancelled'&&p.status!=='approved';
-  }).sort(function(a,b){return new Date(a.date)-new Date(b.date);}).forEach(function(p){
-    var dt=new Date(p.date);
-    var daysLeft=Math.ceil((dt-today)/86400000);
-    var isOverdue=dt<today;
-    var priority=isOverdue?0:daysLeft<=3?1:daysLeft<=7?2:3;
-    var dateStr=(dt.getMonth()+1)+'/'+dt.getDate()+' '+String(dt.getHours()).padStart(2,'0')+':'+String(dt.getMinutes()).padStart(2,'0');
-    var inf=p.infId?DB.influencers.find(function(x){return x.id===p.infId;}):null;
-    var cr=p.creatorId?DB.creators.find(function(x){return x.id===p.creatorId;}):null;
-    var btnHtml='';
-
-    if(p.type==='inf_visit'){
-      var mainName=inf?esc(inf.name.split(/[\s　]/)[0]):'インフルエンサー';
-      if(p.status==='unbooked'){
-        var sub=actionBadge('要予約','red')+dateStr+' 来店';
-        btnHtml='<button style="'+bsAction+'" onclick="updatePostStatus(\''+p.id+'\',\'booked\')">✓ 予約済みにする</button>';
-        items.push({priority:priority,date:dt,main:mainName,sub:sub,btns:btnHtml,storeId:p.storeId,person:mainName});
-      }else{
-        var sub=actionBadge('来店予定','blue')+dateStr+' 来店';
-        btnHtml='<button style="'+bsAction+'" onclick="updatePostStatus(\''+p.id+'\',\'visited\')">✓ 来店済みにする</button>'
-               +'<button style="'+bsAmber+'margin-left:4px" onclick="reschedulePost(\''+p.id+'\')">リスケ</button>'
-               +'<button style="'+bsRed+'margin-left:4px" onclick="updatePostStatus(\''+p.id+'\',\'cancelled\')">キャンセル</button>';
-        items.push({priority:priority,date:dt,main:mainName,sub:sub,btns:btnHtml,storeId:p.storeId,person:mainName});
+    /* 2. 案件進捗：次の未完了ステップ */
+    if(!current){
+      var prog=s.progress||{};
+      var steps=progressStepsFor(s);
+      for(var i=0;i<steps.length;i++){
+        var step=steps[i];
+        var p=prog[step.key]||{};
+        var done=step.accounts?isAccountsDone(p):(p.status==='done'||p.status==='na');
+        if(done)continue;
+        if(step.key==='kickoff'&&p.salesJoin){
+          current={label:'キックオフ 営業同席希望あり（未実施）',color:'red',nav:navStore.replace('STOREID',s.id)};
+        }else if(step.accounts){
+          var missing=step.accounts.filter(function(n){return!(p.accountChecks||{})[n];});
+          current={label:'アカウント未連携：'+missing.join('・'),color:'amber',nav:navStore.replace('STOREID',s.id)};
+        }else{
+          current={label:step.label+' 未完了',color:'amber',nav:navStore.replace('STOREID',s.id)};
+        }
+        break;
       }
-
-    }else if(p.type==='inf_draft'){
-      var mainName=inf?esc(inf.name.split(/[\s　]/)[0]):'インフルエンサー';
-      var sub=actionBadge('要確認','blue')+dateStr+' 初稿確認';
-      btnHtml='<button style="'+bsAction+'" onclick="updatePostStatus(\''+p.id+'\',\'approved\')">✓ 確認済みにする</button>';
-      items.push({priority:priority,date:dt,main:mainName,sub:sub,btns:btnHtml,storeId:p.storeId,person:mainName});
-
-    }else if(p.type==='inf_post'){
-      var mainName=inf?esc(inf.name.split(/[\s　]/)[0]):'インフルエンサー';
-      var sub=actionBadge(isOverdue?'投稿期限超過':'要投稿',isOverdue?'red':'blue')+dateStr+' 投稿';
-      btnHtml='<button style="'+bsAction+'" onclick="updatePostStatus(\''+p.id+'\',\'done\')">✓ 投稿済みにする</button>';
-      items.push({priority:priority,date:dt,main:mainName,sub:sub,btns:btnHtml,storeId:p.storeId,person:mainName});
-
-    }else if(p.type==='shooting'){
-      var crName=cr?esc(cr.crName):'クリエイター';
-      var sub=actionBadge(isOverdue?'撮影期限超過':'撮影予定',isOverdue?'red':'blue')+dateStr+' 撮影（'+crName+'）';
-      btnHtml='<button style="'+bsAction+'" onclick="updatePostStatus(\''+p.id+'\',\'done\')">✓ 撮影済みにする</button>';
-      items.push({priority:priority,date:dt,main:esc(storeName(p.storeId)),sub:sub,btns:btnHtml,storeId:p.storeId});
-
-    }else if(p.type==='video'||p.type==='image'||p.type==='reel'||p.type==='story'){
-      var typeL=TYPE_LABEL[p.type]||p.type;
-      var st=p.status;
-      var bdgLabel,bdgColor,nextStatus,nextLabel;
-      if(st==='shoot_set'){
-        bdgLabel=isOverdue?'撮影日超過':'撮影予定';bdgColor=isOverdue?'red':'blue';nextStatus='editing';nextLabel='✓ 撮影完了 → 編集中へ';
-      }else if(st==='editing'){
-        bdgLabel='編集中';bdgColor='amber';nextStatus='delivered';nextLabel='✓ 納品済みにする';
-      }else if(st==='delivered'){
-        bdgLabel='納品済み・投稿待ち';bdgColor='purple';nextStatus='scheduled';nextLabel='✓ 投稿予約済みにする';
-      }else{
-        /* scheduled（投稿予約済み）／旧draft */
-        bdgLabel=isOverdue?'投稿期限超過':'要投稿';bdgColor=isOverdue?'red':'blue';nextStatus='done';nextLabel='✓ 投稿済みにする';
-      }
-      var sub=actionBadge(bdgLabel,bdgColor)+dateStr+' '+typeL;
-      btnHtml='<button style="'+bsAction+'" onclick="updatePostStatus(\''+p.id+'\',\''+nextStatus+'\')">'+nextLabel+'</button>';
-      items.push({priority:priority,date:dt,main:esc(storeName(p.storeId)),sub:sub,btns:btnHtml,storeId:p.storeId});
     }
+
+    /* 3. 投稿スケジュール：最も近い（または最も超過している）未完了の予定 */
+    if(!current){
+      var pending=DB.posts.filter(function(p){
+        return p.storeId===s.id&&p.status!=='done'&&p.status!=='visited'&&p.status!=='cancelled'&&p.status!=='approved';
+      }).sort(function(a,b){return new Date(a.date)-new Date(b.date);});
+      if(pending.length){
+        var post=pending[0];
+        var dt=new Date(post.date);
+        var isOverdue=dt<today;
+        var dateStr=(dt.getMonth()+1)+'/'+dt.getDate()+' '+String(dt.getHours()).padStart(2,'0')+':'+String(dt.getMinutes()).padStart(2,'0');
+        var typeL=TYPE_LABEL[post.type]||post.type;
+        current={label:dateStr+' '+typeL+(isOverdue?'（期限超過）':''),color:isOverdue?'red':'accent',nav:navSchedule};
+      }
+    }
+
+    if(current)rows.push({storeId:s.id,name:s.name,current:current});
   });
 
-  if(!items.length){
+  if(!rows.length){
     el.innerHTML='<div class="empty-state" style="padding:20px">✓ 今のところやることはありません</div>';
     return;
   }
-  /* 店舗ごとにグルーピング（1店舗=1行にまとめる） */
-  var groups={},order=[];
-  items.forEach(function(it){
-    var sid=it.storeId||'_';
-    if(!groups[sid]){groups[sid]={items:[],priority:it.priority,date:it.date};order.push(sid);}
-    var g=groups[sid];
-    g.items.push(it);
-    if(it.priority<g.priority)g.priority=it.priority;
-    if(it.date<g.date)g.date=it.date;
-  });
-  order.forEach(function(sid){groups[sid].items.sort(function(a,b){return a.priority-b.priority||(a.date-b.date);});});
-  order.sort(function(a,b){return groups[a].priority-groups[b].priority||(groups[a].date-groups[b].date);});
-  el.innerHTML=order.map(function(sid){
-    var g=groups[sid];
-    var barColor=g.priority===0?'var(--red)':g.priority===1?'var(--amber)':'var(--border2)';
-    var rowBg=g.priority===0?'background:var(--red-bg);':g.priority===1?'background:var(--amber-bg);':'';
-    var storeNm=(sid==='_')?'その他':esc(storeName(sid));
-    var tasks=g.items.map(function(it,idx){
-      var person=it.person?'<span style="color:#db2777;font-weight:500">'+it.person+'</span> ':'';
-      return'<div style="display:flex;align-items:center;gap:10px;padding:6px 0'+(idx<g.items.length-1?';border-bottom:1px dashed var(--border)':'')+'">'
-        +'<div style="flex:1;min-width:0;font-size:12px;color:var(--text3)">'+person+it.sub+'</div>'
-        +'<div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end">'+it.btns+'</div>'
-      +'</div>';
-    }).join('');
-    return'<div style="padding:10px 14px;border-bottom:1px solid var(--border);border-left:3px solid '+barColor+';'+rowBg+'">'
-      +'<div style="font-size:14px;font-weight:500;color:var(--text);margin-bottom:2px">'+storeNm+(g.items.length>1?' <span style="font-size:11px;color:var(--text3);font-weight:400">('+g.items.length+'件)</span>':'')+'</div>'
-      +tasks
+  rows.sort(function(a,b){var order={red:0,amber:1,accent:2};return(order[a.current.color]||3)-(order[b.current.color]||3);});
+  el.innerHTML=rows.map(function(r){
+    var barColor=r.current.color==='red'?'var(--red)':r.current.color==='amber'?'var(--amber)':'var(--border2)';
+    return'<div style="display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);border-left:3px solid '+barColor+'">'
+      +'<div style="min-width:0">'
+        +'<div style="font-size:14px;font-weight:500;color:var(--text)">'+esc(r.name)+'</div>'
+        +'<div style="font-size:12px;color:var(--text3);margin-top:2px">'+badge(r.current.color==='red'?'要対応':r.current.color==='amber'?'要対応':'予定',r.current.color)+r.current.label+'</div>'
+      +'</div>'
+      +r.current.nav
     +'</div>';
   }).join('');
 }
@@ -951,12 +858,6 @@ function saveCasting(){
     postUrls:(function(){var o={};Object.keys(_curCastPostUrls).forEach(function(k){if(_curCastPostUrls[k])o[k]=_curCastPostUrls[k];});return o;})(),
     contractSent:!!(document.getElementById('cContractSent')&&document.getElementById('cContractSent').checked)
   };
-  /* 常に既存posts（同castingId）をSupabase＆メモリから先に削除してから再生成 */
-  if(oldCastId){
-    var toDelete=DB.posts.filter(function(p){return p.castingId===oldCastId;});
-    toDelete.forEach(function(p){deleteItem('posts',p.id);});
-    DB.posts=DB.posts.filter(function(p){return p.castingId!==oldCastId;});
-  }
   if(isEdit){
     var eidx=DB.castings.findIndex(function(x){return x.id===c.id;});
     if(eidx>=0){DB.castings[eidx]=c;}else{DB.castings.push(c);}
@@ -964,34 +865,39 @@ function saveCasting(){
     DB.castings.push(c);
   }
 
-  /* 投稿スケジュールに3ステップを自動登録 */
-  var newPosts=[];
-  if(visitDate){
-    var visitTime=document.getElementById('cVisitTime')?document.getElementById('cVisitTime').value:'12:00';
-    var vp={id:uid(),storeId:sid,infId:iid,type:'inf_visit',
-      date:visitDate+'T'+visitTime,platform:platform,infFee:fee,
-      status:'unbooked',note:'キャスティングID:'+c.id,castingId:c.id};
-    DB.posts.push(vp);newPosts.push(vp);
+  /* 投稿スケジュール3ステップ：日付が変わっていなければ既存のステータス（完了済みなど）を維持する。
+     日付が実際に変更された場合のみ「リスケ」としてステータスをリセットする。
+     日付欄が空になった場合はそのステップの予定を削除する。 */
+  var existingPosts=oldCastId?DB.posts.filter(function(p){return p.castingId===oldCastId;}):[];
+  function upsertSchedulePost(type,dateVal,defaultStatus,noteText,extra){
+    var existing=existingPosts.find(function(p){return p.type===type;});
+    if(!dateVal){
+      if(existing){DB.posts=DB.posts.filter(function(p){return p.id!==existing.id;});deleteItem('posts',existing.id);}
+      return;
+    }
+    if(existing){
+      var rescheduled=existing.date!==dateVal;
+      existing.date=dateVal;
+      if(rescheduled)existing.status=defaultStatus;
+      Object.assign(existing,extra);
+      existing.note=noteText;
+      saveItem('posts',existing);
+    }else{
+      var np=Object.assign({id:uid(),storeId:sid,infId:iid,castingId:c.id,type:type,date:dateVal,status:defaultStatus,note:noteText},extra);
+      DB.posts.push(np);
+      saveItem('posts',np);
+    }
   }
-  if(draftDate){
-    var dp={id:uid(),storeId:sid,infId:iid,type:'inf_draft',
-      date:draftDate+'T12:00',platform:platform,
-      status:'draft',note:'初稿確認 キャスティングID:'+c.id,castingId:c.id};
-    DB.posts.push(dp);newPosts.push(dp);
-  }
-  if(dt){
-    var pp={id:uid(),storeId:sid,infId:iid,type:'inf_post',
-      date:dt+'T12:00',platform:platform,infFee:fee,
-      status:'scheduled',note:'投稿予定 キャスティングID:'+c.id,castingId:c.id};
-    DB.posts.push(pp);newPosts.push(pp);
-  }
+  var visitTime=document.getElementById('cVisitTime')?document.getElementById('cVisitTime').value:'12:00';
+  upsertSchedulePost('inf_visit',visitDate?visitDate+'T'+visitTime:'','unbooked','キャスティングID:'+c.id,{platform:platform,infFee:fee});
+  upsertSchedulePost('inf_draft',draftDate?draftDate+'T12:00':'','draft','初稿確認 キャスティングID:'+c.id,{platform:platform});
+  upsertSchedulePost('inf_post',dt?dt+'T12:00':'','scheduled','投稿予定 キャスティングID:'+c.id,{platform:platform,infFee:fee});
 
   closeModal('castModal');
   ['cFee','cReach','cResult','cVisitDate','cDraftDate','cDate'].forEach(function(id){
     var el=document.getElementById(id);if(el)el.value='';
   });
   saveItem('castings',c);
-  newPosts.forEach(function(p){saveItem('posts',p);});
   refreshAll();
 }
 function toggleCastContractSent(id){
@@ -1058,7 +964,7 @@ function renderCasting(){
       ||infName(c.infId).toLowerCase().includes(search);
   });
   var tb=document.getElementById('castBody');
-  if(!list.length){tb.innerHTML='<tr><td colspan="7" class="empty-state">キャスティング履歴がありません</td></tr>';return;}
+  if(!list.length){tb.innerHTML='<tr><td colspan="8" class="empty-state">キャスティング履歴がありません</td></tr>';return;}
   var INV_STATUS_LABEL={pending:'📄 未受領',sns_received:'📥 請求書受領',accounting_submitted:'📊 経理申請',done:'💸 支払い済み',invoiced:'📤 請求書送付済み',received:'✅ 入金確認済み'};
   tb.innerHTML=list.map(function(c){
     var inv=(DB.invoices||[]).find(function(x){return x.castingId===c.id;});
@@ -1074,6 +980,11 @@ function renderCasting(){
       +'<td class="td-mono" style="color:var(--amber)">'+(c.visitDate?fmtD(c.visitDate):'—')+'</td>'
       +'<td class="td-mono">'+fmtD(c.date)+'</td>'
       +'<td>'+platCell+'</td>'
+      +'<td onclick="event.stopPropagation()" style="white-space:nowrap">'
+        +'<button onclick="toggleCastContractSent(\''+c.id+'\')" style="font-size:12px;padding:3px 8px;border-radius:5px;cursor:pointer;border:1px solid;white-space:nowrap;background:'+(c.contractSent?'var(--green-bg)':'var(--bg3)')+';color:'+(c.contractSent?'var(--green)':'var(--text3)')+';border-color:'+(c.contractSent?'var(--green-border)':'var(--border)')+';">'
+          +(c.contractSent?'✓ 送付済み':'未送付')
+        +'</button>'
+      +'</td>'
       +'<td style="white-space:nowrap">'+invCell+'</td>'
       +'<td onclick="event.stopPropagation()" style="white-space:nowrap"><button class="btn btn-sm" style="margin-right:4px" onclick="openCastingModal({editId:\''+c.id+'\'})">編集</button><button class="btn-ghost-danger" onclick="deleteCasting(\''+c.id+'\')">削除</button></td>'
     +'</tr>';

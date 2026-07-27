@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=26">
+<link rel="stylesheet" href="css/app.css?v=29">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -159,7 +159,6 @@
         <div class="card"><div class="card-header"><span class="card-title">🎯 売上目標トラッカー</span><button class="btn btn-sm" onclick="openGoalEdit()">目標変更</button></div><div id="dash-goal"></div></div>
       </div>
       <div class="card"><div class="card-header"><span class="card-title">📊 未決済（支払い・入金待ち）</span><button class="btn btn-sm" onclick="navigate('accounting')">経理管理へ</button></div><div id="dash-accounting"></div></div>
-      <div class="card"><div class="card-header"><span class="card-title">案件進捗</span></div><div id="dash-setup"></div></div>
     </div>
 
     <!-- SALES -->
@@ -549,7 +548,7 @@
     <div class="page" id="page-casting">
       <div class="card">
         <div class="card-header"><span class="card-title">キャスティング履歴</span><button class="btn btn-primary btn-sm" onclick="openCastingModal()">＋ 記録追加</button></div>
-        <div class="table-wrap"><table><thead><tr><th>店舗</th><th>インフルエンサー</th><th>来店日</th><th>投稿日</th><th>媒体</th><th>請求書状況</th><th></th></tr></thead><tbody id="castBody"></tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>店舗</th><th>インフルエンサー</th><th>来店日</th><th>投稿日</th><th>媒体</th><th>契約書</th><th>請求書状況</th><th></th></tr></thead><tbody id="castBody"></tbody></table></div>
       </div>
     </div>
 
@@ -1036,23 +1035,23 @@
 </div>
 </div>
 
-<script src="js/vendor/pizzip.min.js?v=26"></script>
-<script src="js/vendor/docxtemplater.min.js?v=26"></script>
-<script src="js/config.js?v=26"></script>
-<script src="js/db.js?v=26"></script>
-<script src="js/utils.js?v=26"></script>
-<script src="js/settings.js?v=26"></script>
-<script src="js/stores.js?v=26"></script>
-<script src="js/schedule.js?v=26"></script>
-<script src="js/casting.js?v=26"></script>
-<script src="js/check.js?v=26"></script>
-<script src="js/accounting.js?v=26"></script>
-<script src="js/plans.js?v=26"></script>
-<script src="js/creators.js?v=26"></script>
-<script src="js/corps.js?v=26"></script>
-<script src="js/orders.js?v=26"></script>
-<script src="js/dashboard.js?v=26"></script>
-<script src="js/app.js?v=26"></script>
+<script src="js/vendor/pizzip.min.js?v=29"></script>
+<script src="js/vendor/docxtemplater.min.js?v=29"></script>
+<script src="js/config.js?v=29"></script>
+<script src="js/db.js?v=29"></script>
+<script src="js/utils.js?v=29"></script>
+<script src="js/settings.js?v=29"></script>
+<script src="js/stores.js?v=29"></script>
+<script src="js/schedule.js?v=29"></script>
+<script src="js/casting.js?v=29"></script>
+<script src="js/check.js?v=29"></script>
+<script src="js/accounting.js?v=29"></script>
+<script src="js/plans.js?v=29"></script>
+<script src="js/creators.js?v=29"></script>
+<script src="js/corps.js?v=29"></script>
+<script src="js/orders.js?v=29"></script>
+<script src="js/dashboard.js?v=29"></script>
+<script src="js/app.js?v=29"></script>
 <!-- GENRE MODAL -->
 <!-- 追加費用モーダル -->
 <div class="modal-overlay" id="addFeeModal">
