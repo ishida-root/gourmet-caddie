@@ -598,6 +598,21 @@ function ratingStars(r){
   return '<span style="color:'+colors[n]+';font-size:13px">'+stars+'</span>';
 }
 
+function castPostUrlEntries(c){
+  var entries=[];
+  var pu=c.postUrls||{};
+  Object.keys(pu).forEach(function(pid){
+    if(!pu[pid])return;
+    var pl=INF_PLATFORM_LIST.find(function(p){return p.id===pid;});
+    entries.push({label:pl?pl.label:pid,url:pu[pid]});
+  });
+  if(!entries.length&&c.postUrl){
+    var pp=c.platforms&&c.platforms.length?c.platforms:(c.platform?[c.platform]:[]);
+    entries.push({label:pp[0]||'投稿',url:c.postUrl});
+  }
+  return entries;
+}
+
 function openInfluencerDetail(id){
   var inf=DB.influencers.find(function(x){return x.id===id;});
   if(!inf)return;
@@ -650,12 +665,30 @@ function openInfluencerDetail(id){
         +castings.map(function(c){
           var pp=c.platforms&&c.platforms.length?c.platforms:(c.platform?[c.platform]:[]);
           var platCell=pp.length?pp.map(function(p){return'<span style="font-size:11px;padding:1px 5px;background:var(--accent-bg);color:var(--accent);border-radius:3px;margin:1px;display:inline-block">'+esc(p)+'</span>';}).join(''):'—';
-          var postCell=c.postUrl?'<a href="'+esc(c.postUrl)+'" target="_blank" rel="noopener" style="color:var(--accent)">🔗 見る</a>':'<span style="color:var(--text3)">—</span>';
+          var urlEntries=castPostUrlEntries(c);
+          var postCell=urlEntries.length?urlEntries.map(function(e){return'<a href="'+esc(e.url)+'" target="_blank" rel="noopener" style="color:var(--accent);display:block;white-space:nowrap;font-size:12px">'+esc(e.label)+' 🔗</a>';}).join(''):'<span style="color:var(--text3)">—</span>';
           return '<tr><td>'+esc(storeName(c.storeId))+'</td><td class="td-mono">'+fmtD(c.date)+'</td><td>'+platCell+'</td><td class="td-mono">'+fmtMoney(c.fee)+'</td><td class="td-mono">'+(c.reach?Number(c.reach).toLocaleString():'—')+'</td><td style="color:var(--text3);max-width:160px">'+esc((c.result||'').slice(0,60))+'</td><td onclick="event.stopPropagation()">'+postCell+'</td></tr>';
         }).join('')
         +'</tbody></table></div>'
       )
     )
+    /* 投稿URL一覧（案件ごとに蓄積） */
+    +(function(){
+      var withUrls=castings.filter(function(c){return castPostUrlEntries(c).length>0;});
+      if(!withUrls.length)return'';
+      return'<div style="margin-top:16px;margin-bottom:16px">'
+        +'<div style="font-size:13px;font-weight:500;color:var(--text2);margin-bottom:8px">🔗 投稿URL一覧</div>'
+        +withUrls.map(function(c){
+          var entries=castPostUrlEntries(c);
+          return'<div style="padding:10px 12px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);margin-bottom:8px">'
+            +'<div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:6px">'+esc(storeName(c.storeId))+' <span style="font-weight:400;color:var(--text3);font-size:12px">'+(c.date?fmtD(c.date):'—')+'</span></div>'
+            +entries.map(function(e){
+              return'<div style="font-size:12px;color:var(--text2);padding:2px 0;overflow-wrap:anywhere"><span style="color:var(--text3)">'+esc(e.label)+'：</span> <a href="'+esc(e.url)+'" target="_blank" rel="noopener" style="color:var(--accent)">'+esc(e.url)+'</a></div>';
+            }).join('')
+          +'</div>';
+        }).join('')
+      +'</div>';
+    })()
     /* 対応媒体・費用（テキストのみ。ボタン行とは独立させる） */
     +(function(){
       var pd=inf.platformDetails||{};
@@ -703,10 +736,12 @@ function openInfluencerDetail(id){
 }
 
 var editingCastId=null;
+var _curCastPostUrls={};
 function openCastingModal(opts){
   updateCastSelects();
   editingCastId=null;
-  ['cFee','cReach','cResult','cVisitDate','cDraftDate','cDate','cPostUrl'].forEach(function(fid){
+  _curCastPostUrls={};
+  ['cFee','cReach','cResult','cVisitDate','cDraftDate','cDate'].forEach(function(fid){
     var el=document.getElementById(fid);if(el)el.value='';
   });
   var ccb=document.getElementById('cContractSent');if(ccb)ccb.checked=false;
@@ -735,9 +770,15 @@ function openCastingModal(opts){
               cb.checked=true;
             }
           });
+          /* 投稿URL復元（新形式postUrls優先、旧形式postUrlは最初の媒体に割当） */
+          _curCastPostUrls=Object.assign({},ec.postUrls||{});
+          if(!Object.keys(_curCastPostUrls).length&&ec.postUrl&&savedPlats[0]){
+            var pl0=INF_PLATFORM_LIST.find(function(p){return p.label===savedPlats[0];});
+            if(pl0)_curCastPostUrls[pl0.id]=ec.postUrl;
+          }
           onCastPlatformChange();
         },50);
-        set('cReach',ec.reach);set('cResult',ec.result);set('cPostUrl',ec.postUrl);
+        set('cReach',ec.reach);set('cResult',ec.result);
         set('cVisitDate',ec.visitDate);set('cDraftDate',ec.draftDate);set('cDate',ec.date);
         var ccbEdit=document.getElementById('cContractSent');if(ccbEdit)ccbEdit.checked=!!ec.contractSent;
       }
@@ -796,6 +837,7 @@ function updateCastPlatformBoxes(){
   document.getElementById('cFee').value='';
   document.getElementById('cFeeTaxLabel').textContent='';
   document.getElementById('cFeeTransLabel').textContent='';
+  renderCastPostUrlBoxes();
 }
 /* 後方互換: 旧コードからの呼び出しがあればBoxesにリダイレクト */
 function updateCastPlatformSelect(){updateCastPlatformBoxes();}
@@ -834,6 +876,29 @@ function onCastPlatformChange(){
     document.getElementById('cFeeTaxLabel').textContent=Object.keys(taxSet).join('・');
     document.getElementById('cFeeTransLabel').textContent=Object.keys(transSet).join('・');
   }
+  renderCastPostUrlBoxes();
+}
+
+function renderCastPostUrlBoxes(){
+  var box=document.getElementById('cPostUrlBoxes');
+  if(!box)return;
+  var checked=Array.from(document.querySelectorAll('.cast-plat-chk:checked'));
+  if(!checked.length){
+    box.innerHTML='<div style="font-size:12px;color:var(--text3)">媒体を選択すると入力欄が表示されます</div>';
+    return;
+  }
+  box.innerHTML=checked.map(function(cb){
+    var pl=INF_PLATFORM_LIST.find(function(p){return p.id===cb.value;});
+    var label=pl?pl.label:cb.value;
+    var val=_curCastPostUrls[cb.value]||'';
+    return'<div style="display:flex;align-items:center;gap:8px">'
+      +'<span style="font-size:12px;color:var(--text2);min-width:80px;flex-shrink:0">'+esc(label)+'</span>'
+      +'<input type="url" data-plid="'+esc(cb.value)+'" class="cast-posturl-input" value="'+esc(val)+'" placeholder="https://..." style="flex:1" oninput="onCastPostUrlInput(this)">'
+    +'</div>';
+  }).join('');
+}
+function onCastPostUrlInput(el){
+  _curCastPostUrls[el.getAttribute('data-plid')]=el.value.trim();
 }
 
 function saveCasting(){
@@ -866,7 +931,7 @@ function saveCasting(){
     platform:platform,platforms:platforms,fee:fee,
     reach:document.getElementById('cReach').value,
     result:document.getElementById('cResult').value,
-    postUrl:document.getElementById('cPostUrl').value.trim(),
+    postUrls:(function(){var o={};Object.keys(_curCastPostUrls).forEach(function(k){if(_curCastPostUrls[k])o[k]=_curCastPostUrls[k];});return o;})(),
     contractSent:!!(document.getElementById('cContractSent')&&document.getElementById('cContractSent').checked)
   };
   /* 常に既存posts（同castingId）をSupabase＆メモリから先に削除してから再生成 */
