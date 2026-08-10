@@ -40,9 +40,9 @@ function navigate(page){
     if(item.getAttribute('onclick')==="navigate('"+page+"')")item.classList.add('active');
   });
   currentPage=page;
-  var titles={dashboard:'ダッシュボード',sales:'営業入力',stores:'店舗管理',schedule:'投稿スケジュール',check:'事前チェック',plans:'プラン管理',influencers:'インフルエンサー管理',casting:'キャスティング履歴',creators:'クリエイター管理',corporations:'法人管理',settings:'設定',accounting:'経理管理'};
+  var titles={dashboard:'ダッシュボード',sales:'営業入力',stores:'店舗管理',schedule:'投稿スケジュール',check:'事前チェック',plans:'プラン管理',influencers:'インフルエンサー管理',casting:'キャスティング履歴',creators:'クリエイター管理',corporations:'法人管理',faq:'よくある質問',settings:'設定',accounting:'経理管理'};
   document.getElementById('page-title').textContent=titles[page]||page;
-  var btnLabels={dashboard:'＋ 店舗追加',sales:'＋ 店舗入力',stores:'＋ 店舗追加',schedule:'＋ 追加',check:'＋ 店舗追加',plans:'＋ プラン追加',influencers:'＋ インフルエンサー追加',casting:'＋ キャスティング記録',creators:'＋ クリエイター追加',corporations:'＋ 法人追加',settings:''};
+  var btnLabels={dashboard:'＋ 店舗追加',sales:'＋ 店舗入力',stores:'＋ 店舗追加',schedule:'＋ 追加',check:'＋ 店舗追加',plans:'＋ プラン追加',influencers:'＋ インフルエンサー追加',casting:'＋ キャスティング記録',creators:'＋ クリエイター追加',corporations:'＋ 法人追加',faq:'＋ Q&A追加',settings:''};
   document.getElementById('addBtn').textContent=btnLabels[page]||'＋ 新規追加';
   document.getElementById('addBtn').style.display=page==='settings'?'none':'';
   if(page==='settings'){
@@ -68,6 +68,7 @@ function navigate(page){
   if(page==='check')renderCheckPage();
   if(page==='casting')renderCasting();
   if(page==='corporations')renderCorps();
+  if(page==='faq')renderFaqs();
   if(page==='creators')renderCreators();
   if(page==='plans'){renderPlans();renderRevSummary();}
 }
@@ -82,6 +83,7 @@ function topAddBtn(){
     influencers:openInfluencerModal,
     casting:openCastingModal,
     corporations:openCorpModal,
+    faq:openFaqModal,
     creators:openCreatorModal,
     plans:function(){document.getElementById('plName').focus();openModal&&document.getElementById('plName').scrollIntoView();}
   };
@@ -120,6 +122,7 @@ function refreshAll(){
   if(currentPage==='check')renderCheckPage();
   if(currentPage==='casting')renderCasting();
   if(currentPage==='corporations')renderCorps();
+  if(currentPage==='faq')renderFaqs();
   if(currentPage==='plans'){renderPlans();renderRevSummary();}
   if(currentPage==='sales'){renderSalesNotifs();}
   if(currentPage==='creators')renderCreators();

@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=29">
+<link rel="stylesheet" href="css/app.css?v=30">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -112,6 +112,11 @@
       <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="4" width="14" height="10" rx="1"/><path d="M4 4V3a1 1 0 011-1h6a1 1 0 011 1v1"/><path d="M1 8h14"/></svg>
       法人管理
       <span class="nav-badge" id="nb-corps">0</span>
+    </div>
+    <div class="nav-item" onclick="navigate('faq')">
+      <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6.5"/><path d="M6 6.2c0-1.2 1-2 2-2s2 .7 2 1.8c0 1.2-2 1.3-2 3"/><circle cx="8" cy="11.3" r="0.6" fill="currentColor" stroke="none"/></svg>
+      よくある質問
+      <span class="nav-badge" id="nb-faq">0</span>
     </div>
     <div class="nav-item" onclick="navigate('accounting')">
       <svg class="nav-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="1" y="2" width="14" height="12" rx="1.5"/><path d="M5 6h6M5 9h4"/><path d="M11 9l1.5 2.5"/></svg>
@@ -541,6 +546,17 @@
             <tbody id="corpTableBody"></tbody>
           </table>
         </div>
+      </div>
+    </div>
+
+    <!-- FAQ -->
+    <div class="page" id="page-faq">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">よくある質問</span>
+          <button class="btn btn-primary btn-sm" onclick="openFaqModal()">＋ 追加</button>
+        </div>
+        <div id="faqListBody"></div>
       </div>
     </div>
 
@@ -1035,23 +1051,24 @@
 </div>
 </div>
 
-<script src="js/vendor/pizzip.min.js?v=29"></script>
-<script src="js/vendor/docxtemplater.min.js?v=29"></script>
-<script src="js/config.js?v=29"></script>
-<script src="js/db.js?v=29"></script>
-<script src="js/utils.js?v=29"></script>
-<script src="js/settings.js?v=29"></script>
-<script src="js/stores.js?v=29"></script>
-<script src="js/schedule.js?v=29"></script>
-<script src="js/casting.js?v=29"></script>
-<script src="js/check.js?v=29"></script>
-<script src="js/accounting.js?v=29"></script>
-<script src="js/plans.js?v=29"></script>
-<script src="js/creators.js?v=29"></script>
-<script src="js/corps.js?v=29"></script>
-<script src="js/orders.js?v=29"></script>
-<script src="js/dashboard.js?v=29"></script>
-<script src="js/app.js?v=29"></script>
+<script src="js/vendor/pizzip.min.js?v=30"></script>
+<script src="js/vendor/docxtemplater.min.js?v=30"></script>
+<script src="js/config.js?v=30"></script>
+<script src="js/db.js?v=30"></script>
+<script src="js/utils.js?v=30"></script>
+<script src="js/settings.js?v=30"></script>
+<script src="js/stores.js?v=30"></script>
+<script src="js/schedule.js?v=30"></script>
+<script src="js/casting.js?v=30"></script>
+<script src="js/check.js?v=30"></script>
+<script src="js/accounting.js?v=30"></script>
+<script src="js/plans.js?v=30"></script>
+<script src="js/creators.js?v=30"></script>
+<script src="js/corps.js?v=30"></script>
+<script src="js/faqs.js?v=30"></script>
+<script src="js/orders.js?v=30"></script>
+<script src="js/dashboard.js?v=30"></script>
+<script src="js/app.js?v=30"></script>
 <!-- GENRE MODAL -->
 <!-- 追加費用モーダル -->
 <div class="modal-overlay" id="addFeeModal">
@@ -1131,6 +1148,24 @@
     <div class="form-actions">
       <button class="btn" onclick="closeModal('corpModal')">キャンセル</button>
       <button class="btn btn-primary" onclick="saveCorp()">保存</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- FAQ MODAL -->
+<div class="modal-overlay" id="faqModal">
+<div class="modal" style="width:520px">
+  <div class="modal-header">
+    <span class="modal-title" id="faqModalTitle">Q&amp;Aを追加</span>
+    <button class="modal-close" onclick="closeModal('faqModal')">✕</button>
+  </div>
+  <div class="modal-body">
+    <div class="fr1 field"><label>質問 *</label><input id="faqQuestion" type="text" placeholder="例：支払方法について"></div>
+    <div class="fr1 field"><label>回答 *</label><textarea id="faqAnswer" placeholder="回答内容を入力..." style="min-height:100px"></textarea></div>
+    <div class="form-actions">
+      <button class="btn" onclick="closeModal('faqModal')">キャンセル</button>
+      <button class="btn btn-primary" onclick="saveFaq()">保存</button>
     </div>
   </div>
 </div>
