@@ -1,5 +1,5 @@
 var editingFaqId=null;
-var FAQ_CATEGORIES=['支払い','契約','素材','運用','その他'];
+var FAQ_CATEGORIES=['料金','支払い','契約','素材','運用','その他'];
 var FAQ_SEED=[
   {q:'お支払い方法について',a:'お支払い方法は口座振替・請求書払いの2種類からお選びいただけます。特にご指定がない場合は、原則として口座振替にてご案内しております。',category:'支払い'},
   {q:'お支払いのタイミングについて',a:'弊社は前払い制を採用しており、ご利用月の前月末にお引き落としとなります。例えば8月からのご運用開始の場合、7月末のお引き落としとなります。',category:'支払い'},
@@ -16,14 +16,34 @@ var FAQ_WORDING_MIGRATIONS=[
   {oldQ:'広告費の決済は自分のカードになるんですか？',oldA:'いいえ。弊社でお支払いいたします。広告費はプランに含まれております。',newQ:'広告費のお支払いはお客様のカードになりますか？',newA:'いいえ、広告費のお支払いは弊社にて代行いたします。ご契約プランに広告費が含まれておりますので、お客様のご負担は発生いたしません。',newCategory:'支払い'},
   {oldQ:'撮影素材が欲しいです。くれますか？',oldA:'二次利用費をお支払いいただければ、お渡し可能です。（継続案件の場合無償お渡しも可能。要相談）',newQ:'撮影素材をいただくことは可能ですか？',newA:'二次利用費をお支払いいただくことで、撮影素材をお渡しすることが可能です。なお、継続してご契約いただいている案件につきましては、無償でのお渡しも可能な場合がございますので、お気軽にご相談ください。',newCategory:'素材'}
 ];
+/* 料金内訳のQ&A（後から追加分）。既存データに question が一致する項目が無ければ1回だけ追記する。 */
+var PRICING_FAQ_SEED=[
+  {q:'広告費はいくらですか？',a:'広告出稿費は月額固定費に含まれており、プランごとの内訳は以下の通りです（税抜）。\n\nパタープラン：¥40,000\nウェッジプラン：¥100,000\nアイアンプラン：¥120,000\nドライバープラン：¥120,000\n\nプラン内の金額を超えて広告配信を追加することも可能です（追加分に手数料20%）。\n\n例：パタープランで月6万円分の広告配信をご希望の場合\n広告費：40,000円（プラン内）+20,000円（追加分）+4,000円（追加分の手数料20%）=64,000円（税抜）\n月額売価：100,000円（パター月額）+24,000円（追加広告費）=124,000円',category:'料金'},
+  {q:'各プランの月額料金・初期費用を教えてください',a:'各プランの料金は以下の通りです（税抜）。\n\n【パタープラン】初期費用¥100,000／月額固定費¥100,000（広告費¥40,000込み）\n【ウェッジプラン】初期費用¥100,000／月額固定費¥200,000（広告費¥100,000込み）\n【アイアンプラン】初期費用¥120,000／月額固定費¥304,000（広告費¥120,000込み）\n【ドライバープラン】初期費用¥120,000／月額固定費¥304,000（広告費¥120,000込み）\n\n契約期間はいずれも6ヶ月間（自動更新なし）です。',category:'料金'},
+  {q:'プランごとに動画は月何本作成されますか？',a:'パター・ウェッジプランは月1本、アイアン・ドライバープランは月2本の動画制作となります。',category:'料金'},
+  {q:'オプション料金（二次利用・クリエイティブのみ・インフルエンサー起用）について教えてください',a:'主なオプション料金は以下の通りです（税抜）。\n\n【素材二次利用】パター・ウェッジ¥20,000／アイアン・ドライバー¥40,000\n（継続してご契約いただいている場合は無償でお渡し可能です）\n\n【クリエイティブのみ（3本）】パター・ウェッジ¥70,000／アイアン・ドライバー¥140,000\n\n【インフルエンサー起用（6ヶ月）】ドライバープランのみ¥240,000\n対応領域は集客・採用で、6か月間で総フォロワー10万人程度（およそ6名）への起用を想定しています。',category:'料金'}
+];
 var _faqSeeded=false;
 var _faqMigrated=false;
+var _pricingFaqsSeeded=false;
 function seedFaqsIfEmpty(){
   if(_faqSeeded)return;
   _faqSeeded=true;
   if(!DB.faqs)DB.faqs=[];
   if(DB.faqs.length)return;
   FAQ_SEED.forEach(function(item){
+    var f={id:uid(),question:item.q,answer:item.a,category:item.category||''};
+    DB.faqs.push(f);
+    saveItem('faqs',f);
+  });
+}
+function seedPricingFaqs(){
+  if(_pricingFaqsSeeded)return;
+  _pricingFaqsSeeded=true;
+  if(!DB.faqs)DB.faqs=[];
+  PRICING_FAQ_SEED.forEach(function(item){
+    var exists=DB.faqs.some(function(f){return f.question===item.q;});
+    if(exists)return;
     var f={id:uid(),question:item.q,answer:item.a,category:item.category||''};
     DB.faqs.push(f);
     saveItem('faqs',f);
@@ -129,6 +149,7 @@ function renderFaqs(){
   if(!DB.faqs)DB.faqs=[];
   seedFaqsIfEmpty();
   migrateFaqWording();
+  seedPricingFaqs();
   var badgeEl=document.getElementById('nb-faq');
   if(badgeEl)badgeEl.textContent=DB.faqs.length;
   renderFaqCategoryOptions();
