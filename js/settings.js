@@ -122,6 +122,22 @@ function buildCsTaskBody(corpName,storeName,planName,salesBy){
     +'\n・プラン名：'+planName;
 }
 
+/* 質問箱（よくある質問ページ）→ SNS局への通知 */
+function buildFaqQuestionMessage(question,askedBy,category){
+  return '[info][title]❓ 質問箱：新しい質問[/title]'
+    +'\n質問者：'+(askedBy||'不明')
+    +(category?'\nカテゴリ：'+category:'')
+    +'\n内容：'+question
+    +'\n\nグルメキャディの「よくある質問」ページから回答をお願いします。[/info]';
+}
+async function notifyFaqQuestion(question,askedBy,category){
+  var s=getCwSettings();
+  var snsRoom=CW_SNS_ROOM||(s.snsRoomId||'');
+  if(!snsRoom)return false;
+  var msg=buildFaqQuestionMessage(question,askedBy,category);
+  return await ghDispatch(snsRoom,msg,'message','');
+}
+
 /* 楽々販売登録の運用を見直し中のため、CS宛タスク作成は一旦停止（SNS局への通知は継続） */
 var CW_CS_TASK_ENABLED=false;
 async function notifyChatwork(storeName,plan,salesBy,contactName,tel,email,corpName){
