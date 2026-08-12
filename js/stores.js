@@ -15,6 +15,8 @@ var PROGRESS_STEPS_REPEAT=[
   {key:'post',  label:'投稿',     hasNa:false}
 ];
 function progressStepsFor(s){return(s&&s.progressMode==='repeat')?PROGRESS_STEPS_REPEAT:PROGRESS_STEPS_FIRST;}
+/* 6ヶ月契約などで毎月発生するステップ。単発の完了/取り消しではなく履歴を積み上げる */
+var RECURRING_STEP_KEYS=['plan','shoot','post'];
 function isAccountsDone(p){p=p||{};var ac=p.accountChecks||{};return ACCOUNT_PLATFORMS.every(function(n){return ac[n];});}
 function progressPct(s){
   var steps=progressStepsFor(s);var prog=s.progress||{};var done=0;
@@ -83,6 +85,35 @@ function renderProgressTab(){
         +'</div>'
       +'</div>';
     }
+    /* 繰り返し発生ステップ（企画提出・撮影・投稿）：6ヶ月契約などで毎月発生するため、
+       単発の完了/取り消しではなく履歴を積み上げていく */
+    if(RECURRING_STEP_KEYS.indexOf(step.key)>=0){
+      var history=(p.history&&p.history.length)?p.history.slice():(p.status==='done'&&p.date?[{date:p.date}]:[]);
+      var hasHistory=history.length>0;
+      var latest=hasHistory?history[history.length-1].date:'';
+      var circleStyle2=hasHistory?'background:var(--green);border-color:var(--green);color:#fff':'background:var(--bg3);border-color:var(--border);color:var(--text3)';
+      var labelColor2=hasHistory?'var(--green)':'var(--text)';
+      var suffix2=hasHistory?' <span style="color:var(--green);font-size:12px">✓ 完了（'+history.length+'回）</span>':'';
+      var latestHtml=latest?'<span style="font-size:12px;color:var(--text3);margin-left:8px">直近：'+esc(latest)+'</span>':'';
+      var historyRows=history.slice().reverse().map(function(h,hi){
+        var realIdx=history.length-1-hi;
+        return'<div style="display:flex;align-items:center;gap:8px;padding:4px 0;font-size:12px;color:var(--text2)">'
+          +'<span class="td-mono">'+esc(h.date)+'</span>'
+          +'<button style="font-size:11px;padding:2px 6px;border-radius:5px;border:1px solid var(--border);background:var(--bg3);color:var(--text3);cursor:pointer" onclick="removeStepOccurrence(\''+step.key+'\','+realIdx+')">削除</button>'
+        +'</div>';
+      }).join('');
+      return'<div style="padding:12px 0;border-bottom:1px solid var(--border)">'
+        +'<div style="display:flex;align-items:center;gap:12px">'
+          +'<div style="width:30px;height:30px;border-radius:50%;border:2px solid;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;'+circleStyle2+'">'+(hasHistory?'✓':String(i+1))+'</div>'
+          +'<div style="flex:1;min-width:0">'
+            +'<div style="font-size:14px;font-weight:600;color:'+labelColor2+'">'+step.label+suffix2+latestHtml+'</div>'
+          +'</div>'
+          +'<input type="date" id="pg_'+step.key+'" value="" style="font-size:13px;padding:4px 6px;border:1px solid var(--border);border-radius:6px;background:var(--bg2);color:var(--text);width:140px;flex-shrink:0">'
+          +'<button style="'+bs+'background:var(--accent);color:#fff;border-color:var(--accent);flex-shrink:0" onclick="addStepOccurrence(\''+step.key+'\',document.getElementById(\'pg_'+step.key+'\').value)">＋ 記録追加</button>'
+        +'</div>'
+        +(hasHistory?'<div style="margin-left:42px;margin-top:6px">'+historyRows+'</div>':'')
+      +'</div>';
+    }
     /* 通常ステップ */
     var isDone=p.status==='done';
     var isNa=p.status==='na';
@@ -146,7 +177,32 @@ function saveStepProgress(stepKey,status,date){
   if(!s)return;
   if(!s.progress)s.progress={};
   var prev=s.progress[stepKey]||{};
-  s.progress[stepKey]={status:status,date:date||'',salesJoin:prev.salesJoin||false};
+  s.progress[stepKey]={status:status,date:date||'',salesJoin:prev.salesJoin||false,history:prev.history};
+  saveItem('stores',s);
+  renderProgressTab();
+  renderTodoList();
+}
+function addStepOccurrence(stepKey,date){
+  if(!date){alert('日付を選択してください');return;}
+  var s=DB.stores.find(function(x){return x.id===editingStoreId;});
+  if(!s)return;
+  if(!s.progress)s.progress={};
+  var prev=s.progress[stepKey]||{};
+  var history=(prev.history&&prev.history.length)?prev.history.slice():(prev.status==='done'&&prev.date?[{date:prev.date}]:[]);
+  history.push({date:date});
+  history.sort(function(a,b){return a.date.localeCompare(b.date);});
+  s.progress[stepKey]={status:'done',date:history[history.length-1].date,history:history,salesJoin:prev.salesJoin||false};
+  saveItem('stores',s);
+  renderProgressTab();
+  renderTodoList();
+}
+function removeStepOccurrence(stepKey,idx){
+  var s=DB.stores.find(function(x){return x.id===editingStoreId;});
+  if(!s||!s.progress||!s.progress[stepKey])return;
+  var prev=s.progress[stepKey];
+  var history=(prev.history&&prev.history.length)?prev.history.slice():(prev.status==='done'&&prev.date?[{date:prev.date}]:[]);
+  history.splice(idx,1);
+  s.progress[stepKey]={status:history.length?'done':'pending',date:history.length?history[history.length-1].date:'',history:history,salesJoin:prev.salesJoin||false};
   saveItem('stores',s);
   renderProgressTab();
   renderTodoList();
@@ -841,9 +897,13 @@ function showDetail(id){
           +steps.map(function(step){
             var p=prog[step.key]||{};
             var done=step.accounts?isAccountsDone(p):(p.status==='done'||p.status==='na');
+            var isRecurring=RECURRING_STEP_KEYS.indexOf(step.key)>=0;
+            var histCount=isRecurring?((p.history&&p.history.length)?p.history.length:(p.status==='done'&&p.date?1:0)):0;
+            var countBadge=(isRecurring&&histCount>0)?'<span style="font-size:10px;color:'+(done?'var(--green)':'var(--text3)')+';margin-left:2px">（'+histCount+'回）</span>':'';
             return'<div style="display:flex;align-items:center;gap:4px;padding:4px 8px;border-radius:var(--r);background:'+(done?'var(--green-bg)':'var(--bg3)')+';border:1px solid '+(done?'var(--green-border)':'var(--border)')+'">'
               +'<span style="font-size:11px;color:'+(done?'var(--green)':'var(--text3)')+'">'+(done?'✓':'○')+'</span>'
               +'<span style="font-size:11px;color:'+(done?'var(--text)':'var(--text3)')+'">'+esc(step.label)+'</span>'
+              +countBadge
             +'</div>';
           }).join('')
         +'</div>'
@@ -855,10 +915,17 @@ function showDetail(id){
     +(myPosts.length
       ?'<div style="max-height:140px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--r);margin-bottom:14px">'
         +myPosts.map(function(p,i){
-          var isInf=p.type==='inf_visit'||p.type==='inf_post';
+          var isInf=p.type==='inf_visit'||p.type==='inf_draft'||p.type==='inf_post';
+          var typeLabel=(typeof TYPE_LABEL!=='undefined'&&TYPE_LABEL[p.type])||p.type;
+          var typeIcon=(typeof TYPE_ICON!=='undefined'&&TYPE_ICON[p.type])||'';
+          var label=isInf
+            ?typeIcon+' '+typeLabel+'：'+esc(infName(p.infId))
+            :typeIcon+' '+typeLabel+(p.caption?'：'+esc((p.caption||'').slice(0,30)):'');
+          var adBadge=(p.ad==='yes')?'<span class="badge b-blue" style="font-size:11px;margin-left:6px">📢 広告配信あり</span>':'';
+          var urlLink=p.postUrl?'<a href="'+esc(p.postUrl)+'" target="_blank" rel="noopener" style="margin-left:6px;color:var(--accent);font-size:12px">🔗</a>':'';
           return'<div style="display:flex;gap:10px;padding:7px 12px;border-bottom:'+(i<myPosts.length-1?'1px solid var(--border)':'none')+'">'
             +'<span class="td-mono" style="color:var(--text3);white-space:nowrap">'+fmtDT(p.date)+'</span>'
-            +'<span style="font-size:13px;flex:1">'+(isInf?'🏃 '+esc(infName(p.infId)):esc((p.caption||'').slice(0,40)))+'</span>'
+            +'<span style="font-size:13px;flex:1">'+label+adBadge+urlLink+'</span>'
             +postStatusBadge(p.status)
           +'</div>';
         }).join('')
