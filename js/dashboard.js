@@ -339,6 +339,8 @@ function renderDashboard(){
   document.getElementById('nb-alerts').textContent=alerts.length;
   /* やること一覧 */
   renderTodoList();
+  /* 今後1週間のインフルエンサー来店予定 */
+  renderUpcomingVisits();
   /* 売上目標トラッカー */
   var goalEl=document.getElementById('dash-goal');
   if(goalEl){

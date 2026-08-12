@@ -368,6 +368,37 @@ function renderInvFlow(inv){
   +'</div>';
 }
 
+/* 今後1週間のインフルエンサー来店予定：社内全体が一目で「何日何時に誰が来るか」を把握できるように */
+function renderUpcomingVisits(){
+  var el=document.getElementById('dash-upcoming-visits');
+  if(!el)return;
+  var today=new Date();today.setHours(0,0,0,0);
+  var weekLater=new Date(today.getTime()+7*86400000);
+  var upcoming=(DB.posts||[]).filter(function(p){
+    if(p.type!=='inf_visit'||p.status==='cancelled')return false;
+    var dt=new Date(p.date);
+    return dt>=today&&dt<weekLater;
+  }).sort(function(a,b){return new Date(a.date)-new Date(b.date);});
+  if(!upcoming.length){
+    el.innerHTML='<div class="empty-state" style="padding:16px">今後1週間の来店予定はありません</div>';
+    return;
+  }
+  var STATUS_LABEL={unbooked:'予約未',booked:'予約済み',visited:'来店済み'};
+  el.innerHTML=upcoming.map(function(p){
+    var dt=new Date(p.date);
+    var dateStr=(dt.getMonth()+1)+'/'+dt.getDate()+'（'+['日','月','火','水','木','金','土'][dt.getDay()]+'）'+pad(dt.getHours())+':'+pad(dt.getMinutes());
+    var inf=p.infId?DB.influencers.find(function(x){return x.id===p.infId;}):null;
+    var stLabel=STATUS_LABEL[p.status]||p.status;
+    var stColor=p.status==='booked'?'var(--accent)':p.status==='visited'?'var(--green)':'var(--amber)';
+    return'<div style="display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid var(--border)">'
+      +'<span class="td-mono" style="color:var(--text2);white-space:nowrap;min-width:110px">'+dateStr+'</span>'
+      +'<span style="font-size:14px;font-weight:500;color:var(--purple);flex:1;min-width:0">'+esc(inf?inf.name:'不明')+'</span>'
+      +'<span style="font-size:13px;color:var(--text3)">'+esc(storeName(p.storeId))+'</span>'
+      +'<span style="font-size:11px;padding:2px 8px;border-radius:10px;background:'+stColor+'18;color:'+stColor+';white-space:nowrap">'+stLabel+'</span>'
+    +'</div>';
+  }).join('');
+}
+
 /* やること一覧：案件名＋現状のみのシンプルな一覧（チェック機能なし・各管理ページへのリンクのみ）
    投稿スケジュール系の更新はスケジュール管理ページ、進捗・追加費用は店舗詳細から行う。 */
 function renderTodoList(){
@@ -980,9 +1011,10 @@ function renderCasting(){
     var pp=c.platforms&&c.platforms.length?c.platforms:(c.platform?[c.platform]:[]);
     var abbrs=[...new Set(pp.map(platformAbbr).filter(Boolean))];
     var platCell=abbrs.length?abbrs.map(function(a){return'<span style="display:inline-block;font-size:11px;padding:1px 6px;background:var(--accent-bg);color:var(--accent);border-radius:3px;margin:1px;white-space:nowrap">'+esc(a)+'</span>';}).join(''):'—';
+    var infObj=DB.influencers.find(function(x){return x.id===c.infId;});
     return'<tr>'
       +'<td>'+esc(storeName(c.storeId))+'</td>'
-      +'<td style="color:var(--purple);font-weight:500;cursor:pointer;text-decoration:underline" onclick="openInfluencerDetail(\''+c.infId+'\')">'+esc(infName(c.infId))+'</td>'
+      +'<td style="color:var(--purple);font-weight:500;cursor:pointer;text-decoration:underline" onclick="openInfluencerDetail(\''+c.infId+'\')">'+esc(infObj?infObj.name:'不明')+'</td>'
       +'<td class="td-mono" style="color:var(--amber)">'+(c.visitDate?fmtD(c.visitDate):'—')+'</td>'
       +'<td class="td-mono">'+fmtD(c.date)+'</td>'
       +'<td>'+platCell+'</td>'

@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=40">
+<link rel="stylesheet" href="css/app.css?v=41">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -159,6 +159,7 @@
         <div class="stat-card"><div class="stat-val" id="ds-posts">0</div><div class="stat-label">今月の投稿予定</div></div>
         <div class="stat-card"><div class="stat-val" id="ds-inf">0</div><div class="stat-label">インフルエンサー</div></div>
       </div>
+      <div class="card"><div class="card-header"><span class="card-title">📸 今後1週間のインフルエンサー来店予定</span><button class="btn btn-sm" onclick="navigate('casting')">キャスティング履歴へ</button></div><div id="dash-upcoming-visits"></div></div>
       <div class="grid2">
         <div class="card"><div class="card-header"><span class="card-title">📋 やること一覧</span><button class="btn btn-sm" onclick="navigate('schedule')">スケジュール</button></div><div id="dash-todo"></div></div>
         <div class="card"><div class="card-header"><span class="card-title">🎯 売上目標トラッカー</span><button class="btn btn-sm" onclick="openGoalEdit()">目標変更</button></div><div id="dash-goal"></div></div>
@@ -1059,24 +1060,24 @@
 </div>
 </div>
 
-<script src="js/vendor/pizzip.min.js?v=40"></script>
-<script src="js/vendor/docxtemplater.min.js?v=40"></script>
-<script src="js/config.js?v=40"></script>
-<script src="js/db.js?v=40"></script>
-<script src="js/utils.js?v=40"></script>
-<script src="js/settings.js?v=40"></script>
-<script src="js/stores.js?v=40"></script>
-<script src="js/schedule.js?v=40"></script>
-<script src="js/casting.js?v=40"></script>
-<script src="js/check.js?v=40"></script>
-<script src="js/accounting.js?v=40"></script>
-<script src="js/plans.js?v=40"></script>
-<script src="js/creators.js?v=40"></script>
-<script src="js/corps.js?v=40"></script>
-<script src="js/faqs.js?v=40"></script>
-<script src="js/orders.js?v=40"></script>
-<script src="js/dashboard.js?v=40"></script>
-<script src="js/app.js?v=40"></script>
+<script src="js/vendor/pizzip.min.js?v=41"></script>
+<script src="js/vendor/docxtemplater.min.js?v=41"></script>
+<script src="js/config.js?v=41"></script>
+<script src="js/db.js?v=41"></script>
+<script src="js/utils.js?v=41"></script>
+<script src="js/settings.js?v=41"></script>
+<script src="js/stores.js?v=41"></script>
+<script src="js/schedule.js?v=41"></script>
+<script src="js/casting.js?v=41"></script>
+<script src="js/check.js?v=41"></script>
+<script src="js/accounting.js?v=41"></script>
+<script src="js/plans.js?v=41"></script>
+<script src="js/creators.js?v=41"></script>
+<script src="js/corps.js?v=41"></script>
+<script src="js/faqs.js?v=41"></script>
+<script src="js/orders.js?v=41"></script>
+<script src="js/dashboard.js?v=41"></script>
+<script src="js/app.js?v=41"></script>
 <!-- GENRE MODAL -->
 <!-- 追加費用モーダル -->
 <div class="modal-overlay" id="addFeeModal">
