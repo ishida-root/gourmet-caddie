@@ -902,7 +902,8 @@ function saveCasting(){
   refreshAll();
   /* 来店予定日が新たに入力された（未入力→入力、または日付変更）タイミングでSNS局に通知 */
   if(visitDate&&visitDate!==prevVisitDate&&typeof notifyCastingVisit==='function'){
-    notifyCastingVisit(storeName(sid),infName(iid),platform,visitDate,visitTime,infAccountUrlById(iid)).catch(function(){});
+    var _infForNotif=DB.influencers.find(function(x){return x.id===iid;});
+    notifyCastingVisit(storeName(sid),(_infForNotif?_infForNotif.name:'不明'),platform,visitDate,visitTime,infAccountUrlById(iid)).catch(function(){});
   }
 }
 function toggleCastContractSent(id){

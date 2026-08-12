@@ -1,0 +1,20 @@
+name: Casting Visit Reminder
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # 00:00 UTC = 09:00 JST 毎日
+  workflow_dispatch: {}
+
+jobs:
+  remind:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: Send visit reminders
+        env:
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+          CHATWORK_TOKEN: ${{ secrets.CHATWORK_TOKEN }}
+        run: node scripts/casting-visit-reminder.js
