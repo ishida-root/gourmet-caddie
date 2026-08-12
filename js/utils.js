@@ -7,6 +7,15 @@ function fmtMoney(v){if(v===''||v===null||v===undefined)return'—';return Numbe
 function storeName(id){var s=DB.stores.find(function(x){return x.id===id;});return s?s.name:'不明';}
 function storeColor(id){var s=DB.stores.find(function(x){return x.id===id;});return s?s.color:'#888';}
 function infName(id){var i=DB.influencers.find(function(x){return x.id===id;});return i?(i.name+' '+(i.handle||'')):'不明';}
+/* インフルエンサーのアカウントURL（登録URL優先、無ければ媒体+ハンドルから生成） */
+function infAccountUrlById(id){
+  var i=DB.influencers.find(function(x){return x.id===id;});
+  if(!i)return'';
+  if(i.url)return i.url;
+  if(!i.handle)return'';
+  var platUrl={Instagram:'https://www.instagram.com/',TikTok:'https://www.tiktok.com/@',YouTube:'',X:'https://x.com/'};
+  return(platUrl[i.platform]||'')+i.handle.replace(/^@/,'');
+}
 /* Instagramハンドル（@handle）または既存URLからプロフィールURLを生成 */
 function igProfileUrl(h){
   h=String(h||'').trim();

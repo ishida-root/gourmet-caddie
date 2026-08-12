@@ -122,6 +122,26 @@ function buildCsTaskBody(corpName,storeName,planName,salesBy){
     +'\n・プラン名：'+planName;
 }
 
+/* インフルエンサー来店予定 → SNS局への全員宛通知 */
+function buildCastingVisitMessage(storeName,infName,platform,visitDate,visitTime,infUrl){
+  var dt=visitDate?visitDate.replace(/-/g,'/')+' '+(visitTime||'12:00'):'未定（決まり次第ご連絡します）';
+  return '[toall]\n[info][title]📸 インフルエンサー来店のお知らせ[/title]'
+    +'\n店舗名：'+storeName
+    +'\nインフルエンサー：'+infName+'さん'
+    +(infUrl?'\nアカウント：'+infUrl:'')
+    +(platform?'\n媒体：'+platform:'')
+    +'\n来店予定日：'+dt
+    +'\n\n上記日程でインフルエンサーが来店予定です。'
+    +'\n石田が不在の際など、お店の方から連絡が入った場合は一次対応をお願いする場合があります。[/info]';
+}
+async function notifyCastingVisit(storeName,infName,platform,visitDate,visitTime,infUrl){
+  var s=getCwSettings();
+  var snsRoom=CW_SNS_ROOM||(s.snsRoomId||'');
+  if(!snsRoom)return false;
+  var msg=buildCastingVisitMessage(storeName,infName,platform,visitDate,visitTime,infUrl);
+  return await ghDispatch(snsRoom,msg,'message','');
+}
+
 /* 質問箱（よくある質問ページ）→ SNS局への通知 */
 function buildFaqQuestionMessage(question,askedBy,category){
   return '[info][title]❓ 質問箱：新しい質問[/title]'

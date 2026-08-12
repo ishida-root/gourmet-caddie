@@ -849,6 +849,7 @@ function saveCasting(){
     if(existing){castId=existing.id;isEdit=true;}
   }
   var oldCastId=isEdit?castId:null;
+  var prevVisitDate=isEdit?((DB.castings.find(function(x){return x.id===castId;})||{}).visitDate||''):'';
   var c={
     id:castId,storeId:sid,infId:iid,date:dt,
     visitDate:visitDate,draftDate:draftDate,
@@ -899,6 +900,10 @@ function saveCasting(){
   });
   saveItem('castings',c);
   refreshAll();
+  /* 来店予定日が新たに入力された（未入力→入力、または日付変更）タイミングでSNS局に通知 */
+  if(visitDate&&visitDate!==prevVisitDate&&typeof notifyCastingVisit==='function'){
+    notifyCastingVisit(storeName(sid),infName(iid),platform,visitDate,visitTime,infAccountUrlById(iid)).catch(function(){});
+  }
 }
 function toggleCastContractSent(id){
   var c=DB.castings.find(function(x){return x.id===id;});
