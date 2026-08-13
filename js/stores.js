@@ -420,7 +420,7 @@ function formatHoursSummary(hoursVal){
 }
 
 function clearStoreForm(){
-  ['sName','sPref','sArea','sSeats','sTabelog','sHp','sMemo','sIg','sIgFollowers','sFb','sTw','sTt','sYt','sMetaId','sCreator','sContractStart','sMonthlyFee','sContactName','sContactRole','sContactTel','sContactEmail','sContactLine','sSetupMemo','sNextAction','sNegotiatingMemo'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+  ['sName','sPref','sArea','sSeats','sTabelog','sHp','sMemo','sCaution','sIg','sIgFollowers','sFb','sTw','sTt','sYt','sMetaId','sCreator','sContractStart','sMonthlyFee','sContactName','sContactRole','sContactTel','sContactEmail','sContactLine','sSetupMemo','sNextAction','sNegotiatingMemo'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('sGenre').value='';
   var scorp=document.getElementById('sCorpId');if(scorp)scorp.value='';
   document.getElementById('sHours').value='';
@@ -461,7 +461,7 @@ function openStoreModal(id){
   if(id){
     var s=DB.stores.find(function(x){return x.id===id;});
     if(s){
-      var map={sName:'name',sCorpId:'corpId',sGenre:'genre',sPref:'pref',sArea:'area',sZip:'zip',sSeats:'seats',sTabelog:'tabelog',sHp:'hp',sMemo:'memo',sIg:'ig',sIgFollowers:'igFollowers',sFb:'fb',sTw:'tw',sTt:'tt',sYt:'yt',sMetaId:'metaId',sMetaExp:'metaExp',sCreator:'creator',sContractStart:'contractStart',sContractTerm:'contractTerm',sMonthlyFee:'monthlyFee',sStatus:'status',sContactName:'contactName',sContactRole:'contactRole',sContactTel:'contactTel',sContactEmail:'contactEmail',sContactLine:'contactLine',sOurManager:'ourManager',sReviewCycle:'reviewCycle',sVideos:'videos',sAdDelivery:'adDelivery',sSetupMemo:'setupMemo',sPlanId:'planId'};
+      var map={sName:'name',sCorpId:'corpId',sGenre:'genre',sPref:'pref',sArea:'area',sZip:'zip',sSeats:'seats',sTabelog:'tabelog',sHp:'hp',sMemo:'memo',sCaution:'caution',sIg:'ig',sIgFollowers:'igFollowers',sFb:'fb',sTw:'tw',sTt:'tt',sYt:'yt',sMetaId:'metaId',sMetaExp:'metaExp',sCreator:'creator',sContractStart:'contractStart',sContractTerm:'contractTerm',sMonthlyFee:'monthlyFee',sStatus:'status',sContactName:'contactName',sContactRole:'contactRole',sContactTel:'contactTel',sContactEmail:'contactEmail',sContactLine:'contactLine',sOurManager:'ourManager',sReviewCycle:'reviewCycle',sVideos:'videos',sAdDelivery:'adDelivery',sSetupMemo:'setupMemo',sPlanId:'planId'};
       Object.keys(map).forEach(function(elId){var el=document.getElementById(elId);if(el&&s[map[elId]]!==undefined)el.value=s[map[elId]];});
       if(document.getElementById('sOurManager')&&!document.getElementById('sOurManager').value&&s.salesBy){
         document.getElementById('sOurManager').value=s.salesBy;
@@ -535,6 +535,7 @@ function saveStore(){
     tabelog:document.getElementById('sTabelog').value,
     hp:document.getElementById('sHp').value,
     memo:document.getElementById('sMemo').value,
+    caution:document.getElementById('sCaution').value,
     ig:document.getElementById('sIg').value,
     igFollowers:document.getElementById('sIgFollowers').value,
     fb:document.getElementById('sFb').value,
@@ -810,6 +811,7 @@ function showDetail(id){
       +row('食べログ',s.tabelog,true)
       +row('公式HP',s.hp,true)
       +(s.memo?'<div style="font-size:13px;padding:5px 0;border-bottom:1px solid var(--border);display:flex;gap:8px"><span style="color:var(--text3);min-width:90px;flex-shrink:0">備考</span><span style="flex:1;white-space:pre-wrap">'+esc(s.memo)+'</span></div>':'')
+      +(s.caution?'<div style="font-size:13px;padding:8px 10px;margin-top:6px;background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:var(--r);display:flex;gap:8px"><span style="color:var(--amber);min-width:90px;flex-shrink:0;font-weight:500">⚠️ 注意点</span><span style="flex:1;white-space:pre-wrap;color:var(--text)">'+esc(s.caution)+'</span></div>':'')
     +'</div>'
 
     /* 法人・連絡先 */
