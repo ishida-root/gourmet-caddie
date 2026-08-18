@@ -50,7 +50,7 @@ function navigate(page){
     var ghCard=document.getElementById('ghPatCard');
     if(ghCard)ghCard.style.display=(currentUser&&currentUser.email==='ishida@root-and-activation.co.jp')?'':'none';
   }
-  if(page==='sales'){updateSalesPlanSelect();updateSalesPersonSelects();}
+  if(page==='sales'){updateSalesPlanSelect();updateSalesPersonSelects();updateSalesExistingStoreSelect();}
   if(page==='dashboard')renderDashboard();
   if(page==='stores'){renderStoreTable();updateCorpSelects();}
   if(page==='schedule'){
@@ -124,7 +124,7 @@ function refreshAll(){
   if(currentPage==='corporations')renderCorps();
   if(currentPage==='faq')renderFaqs();
   if(currentPage==='plans'){renderPlans();renderRevSummary();}
-  if(currentPage==='sales'){renderSalesNotifs();}
+  if(currentPage==='sales'){renderSalesNotifs();updateSalesExistingStoreSelect();}
   if(currentPage==='creators')renderCreators();
 }
 
