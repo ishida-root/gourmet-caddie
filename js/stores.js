@@ -754,13 +754,6 @@ function showDetail(id){
   var hoursDisplay=formatHoursSummary(s.hours||s.hours||'');
   if(!hoursDisplay||hoursDisplay==='—')hoursDisplay=s.hours||'—';
 
-  /* 楽々販売 */
-  var rakurakuBadge=s.rakurakuRegistered
-    ?'<span class="badge b-green">✓ 楽々販売登録済み</span>'
-    :'<span class="badge b-red">未登録</span>';
-  var rakurakuBtn=s.rakurakuRegistered?''
-    :'<button class="btn btn-sm btn-primary" style="margin-left:8px" onclick="markRakurakuDone(\''+s.id+'\')">登録完了にする</button>';
-
   function row(label,val,link){
     if(!val&&val!==0)return'';
     var valHtml=link?'<a href="'+esc(val)+'" target="_blank" style="color:var(--accent)">'+esc(val)+'</a>':esc(String(val));
@@ -772,13 +765,8 @@ function showDetail(id){
   document.getElementById('detailTitle').textContent=s.name;
   document.getElementById('detailBody').innerHTML=
 
-    /* 楽々販売バー */
-    '<div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;padding:8px 12px;background:var(--bg3);border-radius:var(--r)">'
-      +'<span style="font-size:13px;color:var(--text2)">楽々販売：</span>'+rakurakuBadge+rakurakuBtn
-    +'</div>'
-
     /* 原価（楽々販売への原価入力用） */
-    +(function(){
+    (function(){
       var ci=storeCostInfo(s);
       if(!ci.adBudget&&!ci.creative)return'';
       return'<div style="margin-bottom:14px;padding:10px 12px;background:var(--bg3);border-radius:var(--r)">'
@@ -962,14 +950,4 @@ function showDetail(id){
   openModal('detailModal');
 }
 
-function markRakurakuDone(id){
-  var s=DB.stores.find(function(x){return x.id===id;});
-  if(!s)return;
-  s.rakurakuRegistered=true;
-  s.rakurakuDoneAt=new Date().toISOString();
-  saveItem('stores',s);
-  refreshAll();
-  closeModal('detailModal');
-  setTimeout(function(){showDetail(id);},100);
-}
 

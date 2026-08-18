@@ -108,11 +108,28 @@ function buildSnsMessage(storeName,plan,salesBy,contactName,tel,email){
   return '[To:11138491][To:2904189]\n[info][title]📢 新規契約店舗 登録通知[/title]'
     +'\n店舗名：'+storeName
     +'\nプラン：'+plan
-    +'\n担当者：'+contactName
+    +(contactName?'\n担当者：'+contactName:'')
     +(tel?'\nTEL：'+tel:'')
     +(email?'\nメール：'+email:'')
     +'\n営業担当：'+salesBy
     +'\n\n初期設定の準備をお願いします！[/info]';
+}
+/* 商談中の場合：契約はまだ確定していないため、初期設定ではなく提案資料の準備を依頼する */
+function buildSnsNegotiatingMessage(storeName,salesBy){
+  return '[To:11138491][To:2904189]\n[info][title]📢 商談中の店舗 登録通知[/title]'
+    +'\n店舗名：'+storeName
+    +'\n営業担当：'+salesBy
+    +'\n\n商談中の案件です。提案資料の作成をお願いします！[/info]';
+}
+async function notifyChatworkNegotiating(storeName,salesBy){
+  var s=getCwSettings();
+  var snsRoom=CW_SNS_ROOM||(s.snsRoomId||'');
+  var results=[];
+  if(snsRoom){
+    var ok=await ghDispatch(snsRoom,buildSnsNegotiatingMessage(storeName,salesBy),'message','');
+    results.push({to:'SNS局',ok:ok});
+  }
+  return results;
 }
 function buildCsTaskBody(corpName,storeName,planName,salesBy){
   return '◆'+(salesBy||'')
@@ -198,8 +215,7 @@ function renderCwPreview(){
   var el=document.getElementById('cwPreview');
   if(!el)return;
   var snsMsg=buildSnsMessage('◯◯焼肉 渋谷店','アイアンプラン','山田 花子','店長 鈴木','090-XXXX-XXXX','suzuki@example.com');
-  var taskBody=buildCsTaskBody('株式会社竹山','◯◯焼肉 渋谷店','アイアンプラン','山田 花子');
-  el.textContent='【SNS局 → メッセージ】\n'+snsMsg+'\n\n【CS → タスク作成】\n'+taskBody;
+  el.textContent='【SNS局 → メッセージ】\n'+snsMsg;
 }
 
 /* ============================================================

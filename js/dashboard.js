@@ -6,14 +6,7 @@
 
 /* 営業入力フォームの項目キー → 入力欄ID の対応表（既存店舗の自動入力・更新の両方で使う） */
 var SALES_FORM_FIELD_MAP={
-  name:'sl-name',clientId:'sl-client-id',contractType:'sl-contract-type',corp:'sl-corp',
-  genre:'sl-genre',zip:'sl-zip',pref:'sl-pref',area:'sl-area',corpTel:'sl-corp-tel',fax:'sl-fax',
-  planId:'sl-plan',contractTerm:'sl-term',contactName:'sl-contact',contactKana:'sl-contact-kana',
-  contactRole:'sl-role',contactTel:'sl-tel',contactEmail:'sl-email',billId:'sl-bill-id',
-  billCorp:'sl-bill-corp',billTel:'sl-bill-tel',billFax:'sl-bill-fax',billZip:'sl-bill-zip',
-  billPref:'sl-bill-pref',billArea:'sl-bill-area',billContact:'sl-bill-contact',
-  billContactTel:'sl-bill-contact-tel',billEmail:'sl-bill-email',billMethod:'sl-bill-method',
-  billPayment:'sl-bill-payment',memo:'sl-memo',request:'sl-request',monthlyFee:'sl-amount'
+  name:'sl-name',clientId:'sl-client-id',corp:'sl-corp',planId:'sl-plan',monthlyFee:'sl-amount'
 };
 
 /* 契約(商談)内容＝プランを選ぶと、そのプラン価格を金額欄に自動入力する（金額欄は編集可） */
@@ -39,29 +32,29 @@ function clearSalesForm(){
   Object.keys(SALES_FORM_FIELD_MAP).forEach(function(k){
     var el=document.getElementById(SALES_FORM_FIELD_MAP[k]);if(el)el.value='';
   });
-  var corpSel=document.getElementById('sl-corp-select');if(corpSel)corpSel.value='';
   var salesSel=document.getElementById('sl-sales');if(salesSel)salesSel.value='';
   var negoEl=document.getElementById('sl-negotiating');if(negoEl)negoEl.checked=false;
-  var zipStatus=document.getElementById('sl-zip-status');if(zipStatus)zipStatus.textContent='';
-  var billZipStatus=document.getElementById('sl-bill-zip-status');if(billZipStatus)billZipStatus.textContent='';
 }
 
-/* 既存店舗を選んだら内容を自動入力（簡易化：再入力不要にする） */
+/* 既存店舗を選んだら内容を自動入力（簡易化：再入力不要にする）
+   「商談中」は新規登録時のみ意味を持つ（既契約店舗は更新契約か他商品の商談か
+   区別できないため、既存店舗選択時はステータスを触らずチェックボックス自体を隠す） */
 function onSlExistingStoreChange(){
   var sel=document.getElementById('sl-existing-store');
   if(!sel)return;
   clearSalesForm();
-  if(!sel.value)return;
+  var negoRow=document.getElementById('sl-negotiating-row');
+  if(!sel.value){
+    if(negoRow)negoRow.style.display='';
+    return;
+  }
+  if(negoRow)negoRow.style.display='none';
   var s=DB.stores.find(function(x){return x.id===sel.value;});
   if(!s)return;
   Object.keys(SALES_FORM_FIELD_MAP).forEach(function(k){
     var el=document.getElementById(SALES_FORM_FIELD_MAP[k]);
     if(el&&s[k]!==undefined)el.value=s[k];
   });
-  var corpSel=document.getElementById('sl-corp-select');
-  if(corpSel&&s.corpId)corpSel.value=s.corpId;
-  var negoEl=document.getElementById('sl-negotiating');
-  if(negoEl)negoEl.checked=(s.status==='negotiating');
 }
 
 function submitSalesForm(){
@@ -69,10 +62,9 @@ function submitSalesForm(){
   var existingId=(document.getElementById('sl-existing-store')||{}).value||'';
   var clientId=g('sl-client-id');
   if(!clientId){alert('得意先ID（楽々販売のID）を入力してください');return;}
-  var negotiating=!!(document.getElementById('sl-negotiating')&&document.getElementById('sl-negotiating').checked);
 
   if(existingId){
-    /* 既存店舗の更新 */
+    /* 既存店舗の更新：更新契約か他商品の商談か区別できないため、ステータスは変更しない */
     var existing=DB.stores.find(function(x){return x.id===existingId;});
     if(!existing){alert('店舗が見つかりません');return;}
     var newPlanId=document.getElementById('sl-plan').value;
@@ -83,10 +75,7 @@ function submitSalesForm(){
       var el=document.getElementById(SALES_FORM_FIELD_MAP[k]);
       if(el)existing[k]=el.value;
     });
-    var corpSel=document.getElementById('sl-corp-select');
-    if(corpSel&&corpSel.value)existing.corpId=corpSel.value;
     if(g('sl-sales'))existing.salesBy=g('sl-sales');
-    if(negotiating)existing.status='negotiating';
     saveItem('stores',existing);
     clearSalesForm();
     document.getElementById('sl-existing-store').value='';
@@ -95,6 +84,8 @@ function submitSalesForm(){
     return;
   }
 
+  var negotiating=!!(document.getElementById('sl-negotiating')&&document.getElementById('sl-negotiating').checked);
+
   /* 新規店舗登録（必須は得意先IDのみ・他はあとで店舗編集からでも入力可） */
   var name=g('sl-name')||('(得意先ID: '+clientId+')');
   var sales=g('sl-sales');
@@ -102,35 +93,8 @@ function submitSalesForm(){
     id:uid(),
     name:name,
     clientId:clientId,
-    contractType:g('sl-contract-type'),
     corp:g('sl-corp'),
-    genre:document.getElementById('sl-genre').value,
-    zip:g('sl-zip'),
-    pref:document.getElementById('sl-pref').value,
-    area:document.getElementById('sl-area').value,
-    corpTel:g('sl-corp-tel'),
-    fax:g('sl-fax'),
     planId:document.getElementById('sl-plan').value,
-    contractTerm:document.getElementById('sl-term').value,
-    contactName:g('sl-contact'),
-    contactKana:g('sl-contact-kana'),
-    contactRole:g('sl-role'),
-    contactTel:g('sl-tel'),
-    contactEmail:g('sl-email'),
-    billId:g('sl-bill-id'),
-    billCorp:g('sl-bill-corp'),
-    billTel:g('sl-bill-tel'),
-    billFax:g('sl-bill-fax'),
-    billZip:g('sl-bill-zip'),
-    billPref:document.getElementById('sl-bill-pref').value,
-    billArea:document.getElementById('sl-bill-area').value,
-    billContact:g('sl-bill-contact'),
-    billContactTel:g('sl-bill-contact-tel'),
-    billEmail:g('sl-bill-email'),
-    billMethod:g('sl-bill-method'),
-    billPayment:g('sl-bill-payment'),
-    memo:document.getElementById('sl-memo').value,
-    request:document.getElementById('sl-request').value,
     status:negotiating?'negotiating':'pending',
     color:COLORS[DB.stores.length%COLORS.length],
     progress:{},
@@ -157,12 +121,12 @@ function submitSalesForm(){
   refreshAll();
 
   /* Webhook通知＋完了画面（ヒアリングシート依頼・原価表示） */
-  openSalesCompleteModal(s,sales,plan);
+  openSalesCompleteModal(s,sales,plan,negotiating);
 }
 
 /* 営業入力の完了画面：SNS通知結果・ヒアリングシート依頼文・原価を表示する */
 var _scLastStore=null;
-function openSalesCompleteModal(s,sales,plan){
+function openSalesCompleteModal(s,sales,plan,negotiating){
   _scLastStore=s;
   var statusEl=document.getElementById('scSnsStatus');
   if(statusEl){
@@ -170,7 +134,10 @@ function openSalesCompleteModal(s,sales,plan){
     statusEl.textContent='SNS局に通知を送信中...';
   }
   var planName=plan?plan.name:'未設定';
-  notifyChatwork(s.name,planName,sales,s.contactName,s.contactTel,s.contactEmail,s.corp).then(function(results){
+  var notifyPromise=negotiating
+    ?notifyChatworkNegotiating(s.name,sales)
+    :notifyChatwork(s.name,planName,sales,s.contactName,s.contactTel,s.contactEmail,s.corp);
+  notifyPromise.then(function(results){
     if(!statusEl)return;
     if(!results.length){statusEl.style.background='var(--bg3)';statusEl.style.color='var(--text2)';statusEl.textContent='SNS局への通知設定がありません（設定画面をご確認ください）';return;}
     var allOk=results.every(function(r){return r.ok;});
@@ -381,11 +348,6 @@ function postStatusBadge(v){var m={draft:'<span class="badge b-gray">下書き</
 
 function generateAlerts(){
   var alerts=[],today=new Date();
-
-  /* 楽々販売未登録（商談中・準備中は対象外。稼働中の店舗のみ通知） */
-  DB.stores.filter(function(s){return s.status==='active'&&s.rakurakuRegistered===false;}).forEach(function(s){
-    alerts.push({level:'warn',msg:'📋 楽々販売未登録【'+s.name+'】登録をお願いします',storeId:s.id});
-  });
 
   /* 営業からの未読通知 */
   var unreadNotifs=getSalesNotifs().filter(function(n){return!n.read;});

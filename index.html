@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=44">
+<link rel="stylesheet" href="css/app.css?v=46">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -187,47 +187,11 @@
             <div class="field"><label>契約（商談）内容</label><select id="sl-plan" onchange="onSlPlanChange()"><option value="">選択...</option></select></div>
             <div class="field"><label>金額</label><input id="sl-amount" type="text" placeholder="選択すると自動入力されます"></div>
           </div>
-          <div class="fr1 field">
+          <div class="fr1 field" id="sl-negotiating-row">
             <label style="display:flex;align-items:center;gap:6px;cursor:pointer;font-weight:400">
               <input type="checkbox" id="sl-negotiating" style="width:auto;margin:0"> 商談中（契約内容・金額は未定）
             </label>
           </div>
-
-          <!-- ▼ 詳細情報（あとで入力も可） -->
-          <details style="margin-top:16px;border-top:1px solid var(--border);padding-top:14px">
-            <summary style="font-size:12px;font-weight:500;color:var(--accent);cursor:pointer;margin-bottom:12px">詳細情報を入力する（あとで店舗編集からでも入力できます）</summary>
-
-            <div class="fr">
-              <div class="field"><label>契約区分</label><select id="sl-contract-type"><option value="">選択...</option><option>新規</option><option>既存新規</option><option>プランアップ</option><option>プランダウン</option><option>運営者変更</option><option>運営者変更イレギュラー</option><option>キャンペーン</option><option>特別</option><option>アップセル</option><option>店舗入替え</option></select></div>
-              <div class="field"><label>業種</label><input id="sl-genre" type="text" list="genreList" placeholder="例: 焼肉"></div>
-            </div>
-            <div class="fr1 field"><label>法人選択（登録済みの場合）</label><select id="sl-corp-select" onchange="onSlCorpSelect()"><option value="">新規法人 / 個人</option></select></div>
-            <div class="fr1 field"><label>郵便番号</label><div style="display:flex;gap:6px"><input id="sl-zip" type="text" placeholder="例: 150-0043" maxlength="8" style="max-width:160px" oninput="autoFillAddress(this.value,'sl-pref','sl-area')"><span style="font-size:13px;color:var(--text3);align-self:center" id="sl-zip-status"></span></div></div>
-            <div class="fr"><div class="field"><label>都道府県</label><input id="sl-pref" type="text" placeholder="東京都"></div><div class="field"><label>本社登記住所（市区町村・番地）</label><input id="sl-area" type="text" placeholder="渋谷区道玄坂1-1-1"></div></div>
-            <div class="fr"><div class="field"><label>代表電話番号</label><input id="sl-corp-tel" type="tel" placeholder="03-XXXX-XXXX"></div><div class="field"><label>FAX番号</label><input id="sl-fax" type="tel" placeholder="03-XXXX-XXXX"></div></div>
-            <div class="fr"><div class="field"></div><div class="field"><label>契約期間</label><select id="sl-term"><option value="1">1ヶ月</option><option value="3">3ヶ月</option><option value="6">6ヶ月</option><option value="12">12ヶ月</option></select></div></div>
-
-            <div style="font-size:12px;font-weight:500;color:var(--accent);padding:4px 0 7px;border-bottom:1px solid var(--border);margin:16px 0 12px">申込担当者</div>
-            <div class="fr"><div class="field"><label>申込担当者氏名</label><input id="sl-contact" type="text" placeholder="田中 太郎"></div><div class="field"><label>申込担当者フリガナ</label><input id="sl-contact-kana" type="text" placeholder="タナカ タロウ"></div></div>
-            <div class="fr"><div class="field"><label>役職</label><input id="sl-role" type="text" placeholder="店長"></div><div class="field"></div></div>
-            <div class="fr"><div class="field"><label>申込担当者電話番号</label><input id="sl-tel" type="tel" placeholder="090-XXXX-XXXX"></div><div class="field"><label>契約書送付先メールアドレス</label><input id="sl-email" type="email" placeholder="tanaka@example.com"></div></div>
-
-            <div style="font-size:12px;font-weight:500;color:var(--accent);padding:4px 0 7px;border-bottom:1px solid var(--border);margin:16px 0 8px">■ 請求先情報</div>
-            <div class="fr"><div class="field"><label>請求先ID</label><input id="sl-bill-id" type="text" placeholder="例: 67890"></div><div class="field"></div></div>
-            <div class="fr1 field"><label>法人名（請求先）</label><input id="sl-bill-corp" type="text" placeholder="株式会社○○"></div>
-            <div class="fr"><div class="field"><label>代表電話番号（請求先）</label><input id="sl-bill-tel" type="tel" placeholder="03-XXXX-XXXX"></div><div class="field"><label>FAX番号（請求先）</label><input id="sl-bill-fax" type="tel" placeholder="03-XXXX-XXXX"></div></div>
-            <div class="fr1 field"><label>郵便番号（請求先）</label><div style="display:flex;gap:6px"><input id="sl-bill-zip" type="text" placeholder="例: 150-0043" maxlength="8" style="max-width:160px" oninput="autoFillAddress(this.value,'sl-bill-pref','sl-bill-area')"><span style="font-size:13px;color:var(--text3);align-self:center" id="sl-bill-zip-status"></span></div></div>
-            <div class="fr"><div class="field"><label>都道府県（請求先）</label><input id="sl-bill-pref" type="text" placeholder="東京都"></div><div class="field"><label>住所（市区町村・番地）（請求先）</label><input id="sl-bill-area" type="text" placeholder="渋谷区道玄坂1-1-1"></div></div>
-            <div class="fr"><div class="field"><label>担当者名（請求先）</label><input id="sl-bill-contact" type="text" placeholder="鈴木 花子"></div><div class="field"><label>担当者電話番号（請求先）</label><input id="sl-bill-contact-tel" type="tel" placeholder="090-XXXX-XXXX"></div></div>
-            <div class="fr1 field"><label>メールアドレス（請求先）</label><input id="sl-bill-email" type="email" placeholder="suzuki@example.com"></div>
-            <div style="font-size:12px;color:var(--text3);margin-bottom:8px">※請求先がメーカーの場合は「請求書」で設定ください</div>
-            <div class="fr"><div class="field"><label>帳票送付方法</label><select id="sl-bill-method"><option value="">選択...</option><option>FAX</option><option>メール</option><option>郵送</option><option>請求書</option><option>EDI</option></select></div><div class="field"><label>支払方法</label><select id="sl-bill-payment"><option value="">選択...</option><option>銀行振込</option><option>口座振替</option><option>クレジットカード</option><option>請求書払い</option></select></div></div>
-
-            <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:16px">
-              <div class="fr1 field"><label>備考・メモ</label><textarea id="sl-memo" placeholder="特記事項、経緯など..." style="min-height:52px"></textarea></div>
-              <div class="fr1 field"><label>要望 <span style="font-size:11px;color:var(--text3);font-weight:400">店舗からの要望・特記事項</span></label><textarea id="sl-request" placeholder="例: 夜の雰囲気重視、料理写真は明るく、など..." style="min-height:52px"></textarea></div>
-            </div>
-          </details>
 
           <div class="fr1 field" style="margin-top:14px"><label>作成者 <span style="color:var(--red)">*</span></label><div style="display:flex;gap:8px"><select id="sl-sales" style="flex:1"><option value="">選択...</option></select><button type="button" class="btn btn-sm" onclick="openSalesPersonModal()" style="white-space:nowrap;flex-shrink:0">＋ 管理</button></div></div>
           <div style="display:flex;justify-content:flex-end;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
@@ -478,10 +442,6 @@
           <div style="border-top:1px solid var(--border);padding-top:14px;margin-bottom:14px">
             <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:8px">📢 SNS局 — メッセージ送信</div>
             <div class="fr1 field"><label>ルームID</label><input id="cwSnsRoomId" type="text" placeholder="例: 123456789"></div>
-          </div>
-          <div style="border-top:1px solid var(--border);padding-top:14px;margin-bottom:14px">
-            <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:8px">📋 CS — タスク作成（楽々販売登録依頼）</div>
-            <div class="fr1 field"><label>ルームID</label><input id="cwCsRoomId" type="text" placeholder="例: 987654321"></div>
           </div>
           <div style="display:flex;gap:8px;justify-content:flex-end">
             <button class="btn" onclick="testChatwork()">テスト送信</button>
@@ -1076,25 +1036,25 @@
 </div>
 </div>
 
-<script src="js/vendor/pizzip.min.js?v=44"></script>
-<script src="js/vendor/docxtemplater.min.js?v=44"></script>
-<script src="js/config.js?v=44"></script>
-<script src="js/db.js?v=44"></script>
-<script src="js/utils.js?v=44"></script>
-<script src="js/settings.js?v=44"></script>
-<script src="js/stores.js?v=44"></script>
-<script src="js/schedule.js?v=44"></script>
-<script src="js/casting.js?v=44"></script>
-<script src="js/check.js?v=44"></script>
-<script src="js/accounting.js?v=44"></script>
-<script src="js/plans.js?v=44"></script>
-<script src="js/creators.js?v=44"></script>
-<script src="js/corps.js?v=44"></script>
-<script src="js/faqs.js?v=44"></script>
-<script src="js/orders.js?v=44"></script>
-<script src="js/hearing.js?v=44"></script>
-<script src="js/dashboard.js?v=44"></script>
-<script src="js/app.js?v=44"></script>
+<script src="js/vendor/pizzip.min.js?v=46"></script>
+<script src="js/vendor/docxtemplater.min.js?v=46"></script>
+<script src="js/config.js?v=46"></script>
+<script src="js/db.js?v=46"></script>
+<script src="js/utils.js?v=46"></script>
+<script src="js/settings.js?v=46"></script>
+<script src="js/stores.js?v=46"></script>
+<script src="js/schedule.js?v=46"></script>
+<script src="js/casting.js?v=46"></script>
+<script src="js/check.js?v=46"></script>
+<script src="js/accounting.js?v=46"></script>
+<script src="js/plans.js?v=46"></script>
+<script src="js/creators.js?v=46"></script>
+<script src="js/corps.js?v=46"></script>
+<script src="js/faqs.js?v=46"></script>
+<script src="js/orders.js?v=46"></script>
+<script src="js/hearing.js?v=46"></script>
+<script src="js/dashboard.js?v=46"></script>
+<script src="js/app.js?v=46"></script>
 <!-- GENRE MODAL -->
 <!-- 追加費用モーダル -->
 <div class="modal-overlay" id="addFeeModal">
