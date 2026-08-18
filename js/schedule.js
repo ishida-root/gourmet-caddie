@@ -310,7 +310,7 @@ function renderSchedule(){
       ||(p.infId?infName(p.infId).toLowerCase().includes(search):false);
   });
   var tb=document.getElementById('schedBody');
-  if(!list.length){tb.innerHTML='<tr><td colspan="7" class="empty-state">スケジュールがありません</td></tr>';return;}
+  if(!list.length){tb.innerHTML='<tr><td colspan="6" class="empty-state">スケジュールがありません</td></tr>';return;}
   tb.innerHTML=list.map(function(p){
     var isInf=p.type==='inf_visit'||p.type==='inf_post'||p.type==='inf_draft';
     var infCell;
@@ -322,26 +322,20 @@ function renderSchedule(){
     }else{
       infCell='<span style="color:var(--text3)">—</span>';
     }
-    var captCell=isInf
-      ?(p.type==='inf_visit'?'<span style="color:var(--amber)">来店</span>':p.type==='inf_draft'?'<span style="color:var(--green)">初稿確認</span>':'<span style="color:var(--purple)">投稿予定</span>')
-      :(p.caption?esc((p.caption||'').slice(0,40))+((p.caption||'').length>40?'…':''):'—');
-    /* 行色：状態・遅延ベース */
+    /* 行色：期限超過だけを強調する（他の色は情報過多になるため付けない） */
     var now2=new Date();
     var postDate=new Date(p.date);
-    var daysLeft2=Math.ceil((postDate-now2)/86400000);
     var isDone=p.status==='done'||p.status==='visited'||p.status==='approved';
     var isOverdue=postDate<now2&&!isDone;
-    var isUrgent=daysLeft2>=0&&daysLeft2<=3&&!isDone;
-    var rowBg=isDone?'background:#f6fff8;opacity:0.7':isOverdue?'background:var(--red-bg)':isUrgent?'background:var(--amber-bg)':'';
-    return'<tr style="'+rowBg+'">'
+    var rowBg=isOverdue?'background:var(--red-bg)':'';
+    var adBadge=p.ad==='yes'?'<span class="badge b-blue" style="font-size:11px;margin-left:5px">📢広告</span>':'';
+    return'<tr style="'+rowBg+';cursor:pointer" onclick="openPostModal(\''+p.id+'\')">'
       +'<td><span class="badge '+TYPE_BADGE[p.type]+'">'+(TYPE_ICON[p.type]||'')+' '+(TYPE_LABEL[p.type]||p.type)+'</span></td>'
       +'<td><div style="display:flex;align-items:center;gap:5px"><span style="width:5px;height:5px;border-radius:50%;background:'+storeColor(p.storeId)+';display:inline-block;flex-shrink:0"></span>'+esc(storeName(p.storeId))+'</div></td>'
-      +'<td class="td-mono" style="white-space:nowrap;cursor:pointer" title="クリックで日時変更" onclick="inlineDateEdit(event,\''+p.id+'\')">'+fmtDT(p.date)+'</td>'
+      +'<td class="td-mono" style="white-space:nowrap" onclick="inlineDateEdit(event,\''+p.id+'\')" title="クリックで日時変更">'+fmtDT(p.date)+(isOverdue?' <span style="color:var(--red);font-size:11px">超過</span>':'')+'</td>'
       +'<td>'+infCell+'</td>'
-      +'<td>'+(p.ad==='yes'?'<span class="badge b-blue" style="font-size:12px">📢 広告配信あり</span>':'<span style="color:var(--text3);font-size:13px">—</span>')+'</td>'
-      +'<td>'+postStatusBadge(p.status)+'</td>'
-      +'<td style="white-space:nowrap">'
-        +'<button class="btn btn-sm" style="margin-right:4px" onclick="openPostModal(\''+p.id+'\')">編集</button>'
+      +'<td>'+postStatusBadge(p.status)+adBadge+'</td>'
+      +'<td onclick="event.stopPropagation()" style="white-space:nowrap">'
         +'<button class="btn-ghost-danger" onclick="deletePost(\''+p.id+'\')">削除</button>'
       +'</td>'
       +'</tr>';

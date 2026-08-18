@@ -139,6 +139,33 @@ function buildCsTaskBody(corpName,storeName,planName,salesBy){
     +'\n・プラン名：'+planName;
 }
 
+/* インフルエンサー来店予定 → 撮影スケジュール管理シート（Googleカレンダー自動登録）連携
+   石田さんのGoogle Apps Script（Webアプリ）にPOSTし、シートへの行追加とカレンダー登録を行う。
+   Content-Typeはtext/plainにしてCORSプリフライトを回避する（Apps Script側はJSON.parseで読む）。 */
+var GC_SHOOTING_CAL_URL='https://script.google.com/macros/s/AKfycbwU5y4VlDZbPI_mZ55kCAh6HfrSNJF4zDg8Fsv68MMesKEpgSjcySozJ9BVkGfzfbKb/exec';
+var GC_SHOOTING_CAL_SECRET='gc-cast2026-x7qP9mLk3vR';
+async function notifyShootingCalendar(storeName,shootDate,shootTime,influencerName,salesName){
+  if(!GC_SHOOTING_CAL_URL||!storeName||!shootDate||!shootTime||!influencerName||!salesName)return null;
+  try{
+    var res=await fetch(GC_SHOOTING_CAL_URL,{
+      method:'POST',
+      headers:{'Content-Type':'text/plain;charset=utf-8'},
+      body:JSON.stringify({
+        secret:GC_SHOOTING_CAL_SECRET,
+        storeName:storeName,
+        shootDate:shootDate,
+        shootTime:shootTime,
+        influencerName:influencerName,
+        salesName:salesName
+      })
+    });
+    return await res.json();
+  }catch(e){
+    console.error('[notifyShootingCalendar] failed:',e);
+    return {ok:false,message:e.message};
+  }
+}
+
 /* インフルエンサー来店予定 → SNS局への全員宛通知 */
 function buildCastingVisitMessage(storeName,infName,platform,visitDate,visitTime,infUrl){
   var dt=visitDate?visitDate.replace(/-/g,'/')+' '+(visitTime||'12:00'):'未定（決まり次第ご連絡します）';

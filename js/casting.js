@@ -934,13 +934,29 @@ function saveCasting(){
   /* 来店予定日が新たに入力された（未入力→入力、または日付変更）タイミングでSNS局に通知 */
   if(visitDate&&visitDate!==prevVisitDate&&typeof notifyCastingVisit==='function'){
     var _infForNotif=DB.influencers.find(function(x){return x.id===iid;});
-    notifyCastingVisit(storeName(sid),(_infForNotif?_infForNotif.name:'不明'),platform,visitDate,visitTime,infAccountUrlById(iid)).catch(function(){});
+    var _infNameForNotif=_infForNotif?_infForNotif.name:'不明';
+    notifyCastingVisit(storeName(sid),_infNameForNotif,platform,visitDate,visitTime,infAccountUrlById(iid)).catch(function(){});
+    /* 撮影スケジュール管理シート＋Googleカレンダー連携（担当営業マスタと名前が一致する場合のみ） */
+    if(typeof notifyShootingCalendar==='function'){
+      var _storeForCal=DB.stores.find(function(x){return x.id===sid;});
+      if(_storeForCal&&_storeForCal.ourManager){
+        notifyShootingCalendar(storeName(sid),visitDate,visitTime,_infNameForNotif,_storeForCal.ourManager).catch(function(){});
+      }
+    }
   }
 }
 function toggleCastContractSent(id){
   var c=DB.castings.find(function(x){return x.id===id;});
   if(!c)return;
   c.contractSent=!c.contractSent;
+  saveItem('castings',c);
+  renderCasting();
+}
+
+function toggleCastLiaison(id){
+  var c=DB.castings.find(function(x){return x.id===id;});
+  if(!c)return;
+  c.liaisonNeeded=!c.liaisonNeeded;
   saveItem('castings',c);
   renderCasting();
 }
@@ -1001,7 +1017,7 @@ function renderCasting(){
       ||infName(c.infId).toLowerCase().includes(search);
   });
   var tb=document.getElementById('castBody');
-  if(!list.length){tb.innerHTML='<tr><td colspan="8" class="empty-state">キャスティング履歴がありません</td></tr>';return;}
+  if(!list.length){tb.innerHTML='<tr><td colspan="9" class="empty-state">キャスティング履歴がありません</td></tr>';return;}
   var INV_STATUS_LABEL={pending:'📄 未受領',sns_received:'📥 請求書受領',accounting_submitted:'📊 経理申請',done:'💸 支払い済み',invoiced:'📤 請求書送付済み',received:'✅ 入金確認済み'};
   tb.innerHTML=list.map(function(c){
     var inv=(DB.invoices||[]).find(function(x){return x.castingId===c.id;});
@@ -1021,6 +1037,11 @@ function renderCasting(){
       +'<td onclick="event.stopPropagation()" style="white-space:nowrap">'
         +'<button onclick="toggleCastContractSent(\''+c.id+'\')" style="font-size:12px;padding:3px 8px;border-radius:5px;cursor:pointer;border:1px solid;white-space:nowrap;background:'+(c.contractSent?'var(--green-bg)':'var(--bg3)')+';color:'+(c.contractSent?'var(--green)':'var(--text3)')+';border-color:'+(c.contractSent?'var(--green-border)':'var(--border)')+';">'
           +(c.contractSent?'✓ 送付済み':'未送付')
+        +'</button>'
+      +'</td>'
+      +'<td onclick="event.stopPropagation()" style="white-space:nowrap">'
+        +'<button onclick="toggleCastLiaison(\''+c.id+'\')" style="font-size:12px;padding:3px 8px;border-radius:5px;cursor:pointer;border:1px solid;white-space:nowrap;background:'+(c.liaisonNeeded?'var(--red-bg)':'var(--bg3)')+';color:'+(c.liaisonNeeded?'var(--red)':'var(--text3)')+';border-color:'+(c.liaisonNeeded?'var(--red-border)':'var(--border)')+';">'
+          +(c.liaisonNeeded?'🚨 渉外対応':'—')
         +'</button>'
       +'</td>'
       +'<td style="white-space:nowrap">'+invCell+'</td>'

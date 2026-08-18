@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=46">
+<link rel="stylesheet" href="css/app.css?v=47">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -245,7 +245,7 @@
         <!-- リストビュー -->
         <div id="schedListView">
           <div class="table-wrap"><table>
-            <thead><tr><th>種別</th><th>店舗</th><th>日時</th><th>担当（INF / クリエイター）</th><th>広告配信</th><th>ステータス</th><th></th></tr></thead>
+            <thead><tr><th>種別</th><th>店舗</th><th>日時</th><th>担当（INF / クリエイター）</th><th>ステータス</th><th></th></tr></thead>
             <tbody id="schedBody"></tbody>
           </table></div>
         </div>
@@ -548,7 +548,7 @@
     <div class="page" id="page-casting">
       <div class="card">
         <div class="card-header"><span class="card-title">キャスティング履歴</span><button class="btn btn-primary btn-sm" onclick="openCastingModal()">＋ 記録追加</button></div>
-        <div class="table-wrap"><table><thead><tr><th>店舗</th><th>インフルエンサー</th><th>来店日</th><th>投稿日</th><th>媒体</th><th>契約書</th><th>請求書状況</th><th></th></tr></thead><tbody id="castBody"></tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>店舗</th><th>インフルエンサー</th><th>来店日</th><th>投稿日</th><th>媒体</th><th>契約書</th><th>渉外対応</th><th>請求書状況</th><th></th></tr></thead><tbody id="castBody"></tbody></table></div>
       </div>
     </div>
 
@@ -750,8 +750,10 @@
       </div>
       <div style="display:none;gap:6px;flex-wrap:wrap;margin-top:4px" id="pTypeGroupInf">
         <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;padding:5px 10px;border-radius:var(--r);border:1px solid var(--amber-border);background:var(--amber-bg);color:var(--amber)"><input type="radio" name="pTypeRadio" value="inf_visit" onchange="onPostTypeChange()" style="width:auto;margin:0"> 🏃 来店予定</label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;padding:5px 10px;border-radius:var(--r);border:1px solid var(--green-border);background:var(--green-bg);color:var(--green)"><input type="radio" name="pTypeRadio" value="inf_draft" onchange="onPostTypeChange()" style="width:auto;margin:0"> 📝 初稿確認</label>
         <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;padding:5px 10px;border-radius:var(--r);border:1px solid var(--purple-border);background:var(--purple-bg);color:var(--purple)"><input type="radio" name="pTypeRadio" value="inf_post" onchange="onPostTypeChange()" style="width:auto;margin:0"> ✦ INF投稿予定</label>
       </div>
+      <div style="font-size:11px;color:var(--text3);margin-top:6px">案件種別→種別の順に選ぶと、下の入力項目が自動で切り替わります</div>
     </div>
     <input id="pType" type="hidden" value="video">
     <div class="fr"><div class="field"><label>店舗 *</label><select id="pStore"><option value="">選択...</option></select></div><div class="field"><label>プラットフォーム</label><select id="pPlatform"><option>Instagram</option><option>Facebook</option><option>TikTok</option><option>X</option><option>Instagram+FB</option><option>YouTube</option></select></div></div>
@@ -1036,25 +1038,25 @@
 </div>
 </div>
 
-<script src="js/vendor/pizzip.min.js?v=46"></script>
-<script src="js/vendor/docxtemplater.min.js?v=46"></script>
-<script src="js/config.js?v=46"></script>
-<script src="js/db.js?v=46"></script>
-<script src="js/utils.js?v=46"></script>
-<script src="js/settings.js?v=46"></script>
-<script src="js/stores.js?v=46"></script>
-<script src="js/schedule.js?v=46"></script>
-<script src="js/casting.js?v=46"></script>
-<script src="js/check.js?v=46"></script>
-<script src="js/accounting.js?v=46"></script>
-<script src="js/plans.js?v=46"></script>
-<script src="js/creators.js?v=46"></script>
-<script src="js/corps.js?v=46"></script>
-<script src="js/faqs.js?v=46"></script>
-<script src="js/orders.js?v=46"></script>
-<script src="js/hearing.js?v=46"></script>
-<script src="js/dashboard.js?v=46"></script>
-<script src="js/app.js?v=46"></script>
+<script src="js/vendor/pizzip.min.js?v=47"></script>
+<script src="js/vendor/docxtemplater.min.js?v=47"></script>
+<script src="js/config.js?v=47"></script>
+<script src="js/db.js?v=47"></script>
+<script src="js/utils.js?v=47"></script>
+<script src="js/settings.js?v=47"></script>
+<script src="js/stores.js?v=47"></script>
+<script src="js/schedule.js?v=47"></script>
+<script src="js/casting.js?v=47"></script>
+<script src="js/check.js?v=47"></script>
+<script src="js/accounting.js?v=47"></script>
+<script src="js/plans.js?v=47"></script>
+<script src="js/creators.js?v=47"></script>
+<script src="js/corps.js?v=47"></script>
+<script src="js/faqs.js?v=47"></script>
+<script src="js/orders.js?v=47"></script>
+<script src="js/hearing.js?v=47"></script>
+<script src="js/dashboard.js?v=47"></script>
+<script src="js/app.js?v=47"></script>
 <!-- GENRE MODAL -->
 <!-- 追加費用モーダル -->
 <div class="modal-overlay" id="addFeeModal">
