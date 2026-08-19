@@ -1,21 +1,19 @@
-﻿/* 案件進捗ステップ（初期設定を統合）
-   初回（立ち上げ）と2回目以降でフローを切替（s.progressMode） */
+﻿/* 案件進捗ステップ
+   「初回/2回目以降」という切り替えは廃止。①新規契約時に1回だけ行う初期セットアップ
+   （ヒアリング〜アカウント連携）と、②企画提出・撮影・投稿の繰り返し履歴、の2つに分けて
+   常に両方表示する（同じキーをモードによって使い回さない） */
 var ACCOUNT_PLATFORMS=['Instagram','Facebook','TikTok'];
-var PROGRESS_STEPS_FIRST=[
+var PROGRESS_STEPS=[
   {key:'hearing',  label:'ヒアリング',          hasNa:false},
   {key:'creator',  label:'クリエイター',        hasNa:false},
   {key:'kickoff',  label:'キックオフ',          hasNa:true},
-  {key:'shoot',    label:'撮影',                hasNa:false},
   {key:'accounts', label:'アカウント作成・連携', hasNa:false, accounts:ACCOUNT_PLATFORMS},
+  {key:'plan',     label:'企画提出',            hasNa:false},
+  {key:'shoot',    label:'撮影',                hasNa:false},
   {key:'post',     label:'投稿',                hasNa:false}
 ];
-var PROGRESS_STEPS_REPEAT=[
-  {key:'plan',  label:'企画提出', hasNa:false},
-  {key:'shoot', label:'撮影',     hasNa:false},
-  {key:'post',  label:'投稿',     hasNa:false}
-];
-function progressStepsFor(s){return(s&&s.progressMode==='repeat')?PROGRESS_STEPS_REPEAT:PROGRESS_STEPS_FIRST;}
-/* 6ヶ月契約などで毎月発生するステップ。単発の完了/取り消しではなく履歴を積み上げる */
+function progressStepsFor(s){return PROGRESS_STEPS;}
+/* 毎月発生しうるステップ。単発の完了/取り消しではなく履歴を積み上げる */
 var RECURRING_STEP_KEYS=['plan','shoot','post'];
 function isAccountsDone(p){p=p||{};var ac=p.accountChecks||{};return ACCOUNT_PLATFORMS.every(function(n){return ac[n];});}
 function progressPct(s){
@@ -56,14 +54,9 @@ function renderProgressTab(){
   if(!el)return;
   var s=DB.stores.find(function(x){return x.id===editingStoreId;});
   if(!s){el.innerHTML='<div style="color:var(--text3);font-size:13px;padding:12px">店舗を選択してください</div>';return;}
-  if(!s.progressMode)s.progressMode='first';
-  var mode=s.progressMode;
   var steps=progressStepsFor(s);
   var prog=s.progress||{};
   var bs='font-size:13px;padding:5px 12px;border-radius:6px;cursor:pointer;border:1px solid;white-space:nowrap;';
-  /* 初回 / 2回目以降 切替トグル */
-  var tBtn=function(m,label){return'<button onclick="toggleProgressMode(\''+m+'\')" style="flex:1;'+bs+(mode===m?'background:var(--accent);color:#fff;border-color:var(--accent)':'background:var(--bg3);color:var(--text2);border-color:var(--border)')+'">'+label+'</button>';};
-  var toggle='<div style="display:flex;gap:6px;margin-bottom:14px">'+tBtn('first','初回（立ち上げ）')+tBtn('repeat','2回目以降')+'</div>';
   var rows=steps.map(function(step,i){
     var p=prog[step.key]||{status:'pending',date:''};
     /* アカウント作成・連携：媒体サブチェックで完了判定 */
@@ -146,17 +139,9 @@ function renderProgressTab(){
       +'<div style="display:flex;gap:6px;flex-shrink:0">'+btns+'</div>'
     +'</div>';
   }).join('');
-  el.innerHTML=toggle+'<div style="padding-bottom:8px">'+rows+'</div>';
+  el.innerHTML='<div style="padding-bottom:8px">'+rows+'</div>';
 }
 
-function toggleProgressMode(mode){
-  var s=DB.stores.find(function(x){return x.id===editingStoreId;});
-  if(!s)return;
-  s.progressMode=mode;
-  saveItem('stores',s);
-  renderProgressTab();
-  renderTodoList();
-}
 function toggleAccountCheck(name){
   var s=DB.stores.find(function(x){return x.id===editingStoreId;});
   if(!s)return;
@@ -420,7 +405,7 @@ function formatHoursSummary(hoursVal){
 }
 
 function clearStoreForm(){
-  ['sName','sPref','sArea','sSeats','sTabelog','sHp','sMemo','sCaution','sIg','sIgFollowers','sFb','sTw','sTt','sYt','sMetaId','sCreator','sContractStart','sMonthlyFee','sContactName','sContactRole','sContactTel','sContactEmail','sContactLine','sSetupMemo','sNextAction','sNegotiatingMemo'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+  ['sName','sPref','sArea','sSeats','sTabelog','sHp','sMemo','sCaution','sIg','sIgFollowers','sFb','sTw','sTt','sYt','sMetaId','sCreator','sContractStart','sMonthlyFee','sDiscountPercent','sDiscountNote','sContactName','sContactRole','sContactTel','sContactEmail','sContactLine','sSetupMemo','sNextAction','sNegotiatingMemo'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('sGenre').value='';
   var scorp=document.getElementById('sCorpId');if(scorp)scorp.value='';
   document.getElementById('sHours').value='';
@@ -461,7 +446,7 @@ function openStoreModal(id){
   if(id){
     var s=DB.stores.find(function(x){return x.id===id;});
     if(s){
-      var map={sName:'name',sCorpId:'corpId',sGenre:'genre',sPref:'pref',sArea:'area',sZip:'zip',sSeats:'seats',sTabelog:'tabelog',sHp:'hp',sMemo:'memo',sCaution:'caution',sIg:'ig',sIgFollowers:'igFollowers',sFb:'fb',sTw:'tw',sTt:'tt',sYt:'yt',sMetaId:'metaId',sMetaExp:'metaExp',sCreator:'creator',sContractStart:'contractStart',sContractTerm:'contractTerm',sMonthlyFee:'monthlyFee',sStatus:'status',sContactName:'contactName',sContactRole:'contactRole',sContactTel:'contactTel',sContactEmail:'contactEmail',sContactLine:'contactLine',sOurManager:'ourManager',sReviewCycle:'reviewCycle',sVideos:'videos',sAdDelivery:'adDelivery',sSetupMemo:'setupMemo',sPlanId:'planId'};
+      var map={sName:'name',sCorpId:'corpId',sGenre:'genre',sPref:'pref',sArea:'area',sZip:'zip',sSeats:'seats',sTabelog:'tabelog',sHp:'hp',sMemo:'memo',sCaution:'caution',sIg:'ig',sIgFollowers:'igFollowers',sFb:'fb',sTw:'tw',sTt:'tt',sYt:'yt',sMetaId:'metaId',sMetaExp:'metaExp',sCreator:'creator',sContractStart:'contractStart',sContractTerm:'contractTerm',sMonthlyFee:'monthlyFee',sDiscountPercent:'discountPercent',sDiscountNote:'discountNote',sStatus:'status',sContactName:'contactName',sContactRole:'contactRole',sContactTel:'contactTel',sContactEmail:'contactEmail',sContactLine:'contactLine',sOurManager:'ourManager',sReviewCycle:'reviewCycle',sVideos:'videos',sAdDelivery:'adDelivery',sSetupMemo:'setupMemo',sPlanId:'planId'};
       Object.keys(map).forEach(function(elId){var el=document.getElementById(elId);if(el&&s[map[elId]]!==undefined)el.value=s[map[elId]];});
       if(document.getElementById('sOurManager')&&!document.getElementById('sOurManager').value&&s.salesBy){
         document.getElementById('sOurManager').value=s.salesBy;
@@ -548,6 +533,8 @@ function saveStore(){
     contractStart:document.getElementById('sContractStart').value,
     contractTerm:document.getElementById('sContractTerm').value,
     monthlyFee:document.getElementById('sMonthlyFee').value,
+    discountPercent:document.getElementById('sDiscountPercent').value,
+    discountNote:document.getElementById('sDiscountNote').value,
     status:document.getElementById('sStatus').value,
     contactName:document.getElementById('sContactName').value,
     contactRole:document.getElementById('sContactRole').value,
@@ -567,7 +554,6 @@ function saveStore(){
     planLog:planLog,
     prevManagers:existing?existing.prevManagers||[]:[],
     progress:existing?existing.progress||{}:{},
-    progressMode:existing?existing.progressMode||'first':'first',
     nextAction:document.getElementById('sNextAction').value,
     negotiatingMemo:document.getElementById('sNegotiatingMemo').value,
     adBilling:existing?existing.adBilling||{}:{},
@@ -631,9 +617,18 @@ function renderStoreTable(){
     salesSel.innerHTML='<option value="">担当営業：全員</option>'+mgrs.map(function(n){return'<option value="'+esc(n)+'"'+(n===filterSales?' selected':'')+'>'+esc(n)+'</option>';}).join('');
   }
   var matchSales=function(s){return!filterSales||s.ourManager===filterSales;};
+  /* 法人（チェーン）フィルタ：傘下店舗をまとめて見られるように */
+  var corpSel=document.getElementById('filterCorp');
+  var filterCorp=corpSel?corpSel.value:'';
+  if(corpSel){
+    var prevCorp=corpSel.value;
+    corpSel.innerHTML='<option value="">法人：全て</option>'+(DB.corporations||[]).slice().sort(function(a,b){return(a.name||'').localeCompare(b.name||'');}).map(function(c){return'<option value="'+c.id+'"'+(c.id===prevCorp?' selected':'')+'>'+esc(c.name)+'</option>';}).join('');
+    if(prevCorp)corpSel.value=prevCorp;
+  }
+  var matchCorp=function(s){return!filterCorp||s.corpId===filterCorp;};
   /* 商談中セクション */
   var negBox=document.getElementById('negotiatingBox');
-  var negList=DB.stores.filter(function(s){return s.status==='negotiating'&&matchSales(s)&&(!search||(s.name||'').toLowerCase().includes(search));});
+  var negList=DB.stores.filter(function(s){return s.status==='negotiating'&&matchSales(s)&&matchCorp(s)&&(!search||(s.name||'').toLowerCase().includes(search));});
   if(negBox){
     if(negList.length&&(!filter||filter==='negotiating')){
       var bs2='font-size:12px;padding:3px 9px;border-radius:6px;cursor:pointer;border:1px solid;white-space:nowrap;';
@@ -659,7 +654,7 @@ function renderStoreTable(){
       negBox.style.display='none';
     }
   }
-  var list=DB.stores.filter(function(s){if(s.status==='negotiating')return false;if(filter&&s.status!==filter)return false;if(!matchSales(s))return false;if(search&&!(s.name||'').toLowerCase().includes(search)&&!(s.genre||'').toLowerCase().includes(search))return false;return true;});
+  var list=DB.stores.filter(function(s){if(s.status==='negotiating')return false;if(filter&&s.status!==filter)return false;if(!matchSales(s))return false;if(!matchCorp(s))return false;if(search&&!(s.name||'').toLowerCase().includes(search)&&!(s.genre||'').toLowerCase().includes(search))return false;return true;});
   var tb=document.getElementById('storeTableBody');
   if(!list.length&&!negList.length){tb.innerHTML='<tr><td colspan="13" class="empty-state">店舗がありません</td></tr>';return;}
   if(!list.length){tb.innerHTML='';return;}
@@ -785,7 +780,9 @@ function showDetail(id){
     +'<div class="grid3" style="margin-bottom:16px">'
       +'<div class="card-sm"><div style="font-size:11px;color:var(--text3);margin-bottom:4px">ステータス</div>'+statusBadge(s.status)+'</div>'
       +'<div class="card-sm"><div style="font-size:11px;color:var(--text3);margin-bottom:4px">プラン</div><div style="font-size:13px;font-weight:500">'+(plan?esc(plan.name):'—')+'</div></div>'
-      +'<div class="card-sm"><div style="font-size:11px;color:var(--text3);margin-bottom:4px">月額</div><div style="font-size:14px;font-weight:500;color:var(--accent)">'+fmtMoney(s.monthlyFee)+'</div></div>'
+      +'<div class="card-sm"><div style="font-size:11px;color:var(--text3);margin-bottom:4px">月額</div><div style="font-size:14px;font-weight:500;color:var(--accent)">'+fmtMoney(s.monthlyFee)+'</div>'
+        +(s.discountPercent?'<div style="font-size:10px;color:var(--green);margin-top:2px">'+esc(s.discountPercent)+'%引き'+(s.discountNote?'：'+esc(s.discountNote):'')+'</div>':'')
+      +'</div>'
     +'</div>'
 
     /* 店舗基本情報 */
@@ -875,11 +872,9 @@ function showDetail(id){
     /* 案件進捗 */
     +(function(){
       var steps=progressStepsFor(s);var prog=s.progress||{};
-      var modeLabel=(s.progressMode==='repeat')?'2回目以降':'初回（立ち上げ）';
       return'<div style="margin-bottom:14px">'
         +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'
           +'<span style="font-size:12px;font-weight:500;color:var(--text2)">案件進捗</span>'
-          +'<span class="badge b-gray" style="font-size:11px">'+modeLabel+'</span>'
           +'<div class="pbar-wrap" style="flex:1"><div class="pbar" style="background:'+(pct===100?'var(--green)':'var(--accent)')+';width:'+pct+'%"></div></div>'
           +'<span style="font-size:12px;color:var(--text3)">'+pct+'%</span>'
         +'</div>'

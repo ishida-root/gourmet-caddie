@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=48">
+<link rel="stylesheet" href="css/app.css?v=50">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -206,6 +206,9 @@
       <div class="card">
         <div class="card-header"><span class="card-title">全店舗</span>
           <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+            <select id="filterCorp" onchange="renderStoreTable()" style="font-size:12px;padding:4px 8px;width:auto">
+              <option value="">法人：全て</option>
+            </select>
             <select id="filterSales" onchange="renderStoreTable()" style="font-size:12px;padding:4px 8px;width:auto">
               <option value="">担当営業：全員</option>
             </select>
@@ -621,8 +624,9 @@
     </div>
     <div class="tab-pane" id="stab2">
       <div class="fr"><div class="field"><label>契約開始日</label><div style="display:flex;gap:4px;align-items:center" id="sContractStartWrap"></div><input type="hidden" id="sContractStart"></div><div class="field"><label>契約期間</label><select id="sContractTerm"><option value="1">1ヶ月</option><option value="3">3ヶ月</option><option value="6">6ヶ月</option><option value="12">12ヶ月</option></select></div></div>
-      <div class="fr1 field"><label>契約プラン</label><select id="sPlanId"><option value="">プランを選択（任意）</option></select><div style="font-size:12px;color:var(--text3);margin-top:4px" id="sPlanPreview"></div></div>
-      <div class="fr"><div class="field"><label>月額費用（円）<span style="color:var(--text3);font-weight:400"> ※プラン選択で自動入力</span></label><input id="sMonthlyFee" type="number" placeholder="150000"></div><div class="field"><label>ステータス</label><select id="sStatus" onchange="onStoreStatusChange()"><option value="negotiating">商談中</option><option value="pending">準備中</option><option value="active">稼働中</option><option value="ended">終了</option></select></div></div>
+      <div class="fr1 field"><label>契約プラン</label><select id="sPlanId" onchange="onPlanSelect()"><option value="">プランを選択（任意）</option></select><div style="font-size:12px;color:var(--text3);margin-top:4px" id="sPlanPreview"></div></div>
+      <div class="fr"><div class="field"><label>割引率（%）<span style="color:var(--text3);font-weight:400"> 系列複数店舗一括契約など</span></label><input id="sDiscountPercent" type="number" min="0" max="100" placeholder="例: 10" oninput="onPlanSelect()"></div><div class="field"><label>割引理由（任意）</label><input id="sDiscountNote" type="text" placeholder="例: 系列3店舗同時契約"></div></div>
+      <div class="fr"><div class="field"><label>月額費用（円）<span style="color:var(--text3);font-weight:400"> ※プラン選択で自動入力（割引適用後）</span></label><input id="sMonthlyFee" type="number" placeholder="150000"></div><div class="field"><label>ステータス</label><select id="sStatus" onchange="onStoreStatusChange()"><option value="negotiating">商談中</option><option value="pending">準備中</option><option value="active">稼働中</option><option value="ended">終了</option></select></div></div>
       <div id="sNegotiatingRow" style="display:none"><div class="fr"><div class="field"><label>次回アクション日</label><input id="sNextAction" type="date"></div><div class="fr1 field"><label>商談メモ</label><input id="sNegotiatingMemo" type="text" placeholder="例：来週再商談、見積送付済み"></div></div></div>
       <div style="border-top:1px solid var(--border);padding-top:14px;margin:4px 0">
         <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:10px">店舗担当者</div>
@@ -1038,25 +1042,25 @@
 </div>
 </div>
 
-<script src="js/vendor/pizzip.min.js?v=48"></script>
-<script src="js/vendor/docxtemplater.min.js?v=48"></script>
-<script src="js/config.js?v=48"></script>
-<script src="js/db.js?v=48"></script>
-<script src="js/utils.js?v=48"></script>
-<script src="js/settings.js?v=48"></script>
-<script src="js/stores.js?v=48"></script>
-<script src="js/schedule.js?v=48"></script>
-<script src="js/casting.js?v=48"></script>
-<script src="js/check.js?v=48"></script>
-<script src="js/accounting.js?v=48"></script>
-<script src="js/plans.js?v=48"></script>
-<script src="js/creators.js?v=48"></script>
-<script src="js/corps.js?v=48"></script>
-<script src="js/faqs.js?v=48"></script>
-<script src="js/orders.js?v=48"></script>
-<script src="js/hearing.js?v=48"></script>
-<script src="js/dashboard.js?v=48"></script>
-<script src="js/app.js?v=48"></script>
+<script src="js/vendor/pizzip.min.js?v=50"></script>
+<script src="js/vendor/docxtemplater.min.js?v=50"></script>
+<script src="js/config.js?v=50"></script>
+<script src="js/db.js?v=50"></script>
+<script src="js/utils.js?v=50"></script>
+<script src="js/settings.js?v=50"></script>
+<script src="js/stores.js?v=50"></script>
+<script src="js/schedule.js?v=50"></script>
+<script src="js/casting.js?v=50"></script>
+<script src="js/check.js?v=50"></script>
+<script src="js/accounting.js?v=50"></script>
+<script src="js/plans.js?v=50"></script>
+<script src="js/creators.js?v=50"></script>
+<script src="js/corps.js?v=50"></script>
+<script src="js/faqs.js?v=50"></script>
+<script src="js/orders.js?v=50"></script>
+<script src="js/hearing.js?v=50"></script>
+<script src="js/dashboard.js?v=50"></script>
+<script src="js/app.js?v=50"></script>
 <!-- GENRE MODAL -->
 <!-- 追加費用モーダル -->
 <div class="modal-overlay" id="addFeeModal">

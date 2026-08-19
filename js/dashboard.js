@@ -98,7 +98,6 @@ function submitSalesForm(){
     status:negotiating?'negotiating':'pending',
     color:COLORS[DB.stores.length%COLORS.length],
     progress:{},
-    progressMode:'first',
     salesBy:sales,
     salesAt:new Date().toISOString()
   };

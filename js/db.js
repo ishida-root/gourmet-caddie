@@ -335,6 +335,28 @@ function migrateSetupChecks(){
     }
   });
 }
+/* 案件進捗の「初回/2回目以降」モード廃止に伴う移行（冪等）
+   旧「2回目以降」モードだった店舗は、ヒアリング・クリエイター・キックオフ・
+   アカウント連携のUIがそもそも表示されていなかったため、統合後にいきなり
+   「未完了」として出てしまわないよう、既に完了扱いにしておく。 */
+function migrateProgressMode(){
+  if(!DB.stores)return;
+  DB.stores.forEach(function(s){
+    if(s.progressMode!=='repeat')return;
+    if(!s.progress)s.progress={};
+    ['hearing','creator','kickoff'].forEach(function(key){
+      if(!s.progress[key]||s.progress[key].status==null||s.progress[key].status==='pending'){
+        s.progress[key]=Object.assign({status:'done',date:''},s.progress[key]||{});
+      }
+    });
+    var acc=s.progress.accounts||{};
+    if(!isAccountsDone(acc)){
+      var checks={};
+      ACCOUNT_PLATFORMS.forEach(function(n){checks[n]=true;});
+      s.progress.accounts=Object.assign({status:'done',date:'',accountChecks:checks},acc,{accountChecks:checks});
+    }
+  });
+}
 /* 請求書ステータスの移行（冪等）
    支払いフロー（インフル/クリエイター）は旧キーを維持
      [pending→sns_received→accounting_submitted→done]（doneの表示のみ「支払い済み」に変更）
@@ -362,7 +384,7 @@ async function loadDB(){
     });
     if(!DB.plans)DB.plans=[];
     if(!DB.salesNotifs)DB.salesNotifs=[];if(!DB.orders)DB.orders=[];if(!DB.faqs)DB.faqs=[];
-    migrateSetupChecks();migrateInvoiceStatus();
+    migrateSetupChecks();migrateInvoiceStatus();migrateProgressMode();
     try{localStorage.setItem('adcore3',JSON.stringify(DB));}catch(e){}
     setSyncStatus('ok','同期済み');
   }catch(e){
@@ -376,13 +398,13 @@ async function loadDB(){
       });
       if(!DB.plans)DB.plans=[];
       if(!DB.salesNotifs)DB.salesNotifs=[];if(!DB.orders)DB.orders=[];if(!DB.faqs)DB.faqs=[];
-      migrateSetupChecks();migrateInvoiceStatus();
+      migrateSetupChecks();migrateInvoiceStatus();migrateProgressMode();
       try{localStorage.setItem('adcore3',JSON.stringify(DB));}catch(e2){}
       setSyncStatus('ok','同期済み');
     }catch(e2){
       var cached=localStorage.getItem('adcore3');
       if(cached){try{var d=JSON.parse(cached);Object.assign(DB,d);if(!DB.plans)DB.plans=[];if(!DB.salesNotifs)DB.salesNotifs=[];if(!DB.orders)DB.orders=[];if(!DB.faqs)DB.faqs=[];}catch(e3){}}
-      migrateSetupChecks();migrateInvoiceStatus();
+      migrateSetupChecks();migrateInvoiceStatus();migrateProgressMode();
       setSyncStatus('error','オフライン（キャッシュ表示中）');
     }
   }

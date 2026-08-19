@@ -277,12 +277,10 @@ function renderCheckPage(){
           var pct=progressPct(s);
           var steps=progressStepsFor(s);var prog=s.progress||{};
           var missing=steps.filter(function(step){var p=prog[step.key]||{};return step.accounts?!isAccountsDone(p):!(p.status==='done'||p.status==='na');});
-          var modeLabel=(s.progressMode==='repeat')?'2回目以降':'初回';
           return'<div style="padding:10px 14px;border-bottom:1px solid var(--border)">'
             +'<div style="display:flex;align-items:center;gap:10px;margin-bottom:6px">'
               +'<span style="width:5px;height:5px;border-radius:50%;background:'+storeColor(s.id)+';display:inline-block"></span>'
               +'<span style="font-size:13px;font-weight:500;cursor:pointer;color:var(--accent)" onclick="navigate(\'stores\');setTimeout(function(){showDetail(\''+s.id+'\');},100)">'+esc(s.name)+'</span>'
-              +'<span class="badge b-gray" style="font-size:10px">'+modeLabel+'</span>'
               +'<div class="pbar-wrap" style="width:80px"><div class="pbar" style="width:'+pct+'%;background:'+(pct>=80?'var(--green)':pct>=50?'var(--amber)':'var(--red)')+'"></div></div>'
               +'<span style="font-size:12px;color:var(--text3)">'+pct+'%</span>'
               +'<button class="btn btn-sm" onclick="openStoreModal(\''+s.id+'\')">進捗</button>'

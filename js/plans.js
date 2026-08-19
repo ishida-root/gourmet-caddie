@@ -3,14 +3,23 @@
   var pid=document.getElementById('sPlanId').value;
   if(!pid)return;
   var p=DB.plans.find(function(x){return x.id===pid;});
-  if(p&&p.price){document.getElementById('sMonthlyFee').value=p.price;}
+  if(p&&p.price){
+    var discEl=document.getElementById('sDiscountPercent');
+    var pct=discEl?Number(discEl.value)||0:0;
+    document.getElementById('sMonthlyFee').value=pct?Math.round(p.price*(1-pct/100)):p.price;
+  }
 }
 function showPlanPreview(){
   var pid=document.getElementById('sPlanId').value;
   var el=document.getElementById('sPlanPreview');
   if(!pid){el.textContent='';return;}
   var p=DB.plans.find(function(x){return x.id===pid;});
-  if(p){el.innerHTML='月額 <strong>'+fmtMoney(p.price)+'</strong>'+(p.setup?' / 初期 '+fmtMoney(p.setup):'')+(p.adBudget?' / 広告費 '+fmtMoney(p.adBudget)+'含む':'')+(p.desc?' — '+esc(p.desc.slice(0,40)):'');}
+  if(p){
+    var discEl=document.getElementById('sDiscountPercent');
+    var pct=discEl?Number(discEl.value)||0:0;
+    var priceStr=pct?'<s style="color:var(--text3)">'+fmtMoney(p.price)+'</s> '+fmtMoney(Math.round(p.price*(1-pct/100)))+'（'+pct+'%引き）':fmtMoney(p.price);
+    el.innerHTML='月額 <strong>'+priceStr+'</strong>'+(p.setup?' / 初期 '+fmtMoney(p.setup):'')+(p.adBudget?' / 広告費 '+fmtMoney(p.adBudget)+'含む':'')+(p.desc?' — '+esc(p.desc.slice(0,40)):'');
+  }
 }
 function toggleOpenPrice(){
   var chk=document.getElementById('plOpenPrice');
