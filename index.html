@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=50">
+<link rel="stylesheet" href="css/app.css?v=51">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -312,8 +312,21 @@
     <!-- INFLUENCERS -->
     <div class="page" id="page-influencers">
       <div class="card">
-        <div class="card-header"><span class="card-title">インフルエンサー管理</span><button class="btn btn-primary btn-sm" onclick="openInfluencerModal()">＋ 追加</button></div>
-        <div class="table-wrap"><table><thead><tr><th>名前 / ID</th><th>媒体</th><th>フォロワー</th><th>PR単価</th><th>ジャンル</th><th>連絡先</th><th>直近起用</th><th></th></tr></thead><tbody id="infBody"></tbody></table></div>
+        <div class="card-header"><span class="card-title">インフルエンサー管理</span>
+          <div style="display:flex;gap:6px;align-items:center">
+            <select id="filterInfStatus" onchange="renderInfluencers()" style="font-size:12px;padding:4px 8px;width:auto">
+              <option value="">ステータス：全て</option>
+              <option value="未声掛け">未声掛け</option>
+              <option value="声掛け済み">声掛け済み</option>
+              <option value="返信待ち">返信待ち</option>
+              <option value="交渉中">交渉中</option>
+              <option value="契約済み">契約済み</option>
+              <option value="NG">NG</option>
+            </select>
+            <button class="btn btn-primary btn-sm" onclick="openInfluencerModal()">＋ 追加</button>
+          </div>
+        </div>
+        <div class="table-wrap"><table><thead><tr><th>名前 / ID</th><th>媒体</th><th>フォロワー</th><th>PR単価</th><th>ジャンル</th><th>ステータス</th><th>連絡先</th><th>直近起用</th><th></th></tr></thead><tbody id="infBody"></tbody></table></div>
       </div>
     </div>
 
@@ -800,6 +813,11 @@
     <div class="fr"><div class="field"><label>主な媒体</label><select id="iPlatform"><option>Instagram</option><option>TikTok</option><option>YouTube</option><option>X</option><option>その他</option></select></div><div class="field"><label>フォロワー数</label><input id="iFollowers" type="number" placeholder="50000"></div></div>
     <div class="fr1 field"><label>アカウント URL <span style="font-size:11px;color:var(--text3);font-weight:400">（名前クリックで開くリンク）</span></label><input id="iUrl" type="url" placeholder="https://www.instagram.com/tanakami_food"></div>
     <div class="fr"><div class="field"><label>ジャンル</label><input id="iGenre" type="text" placeholder="グルメ・飲食"></div><div class="field"><label>連絡先</label><input id="iContact" type="text" placeholder="mail@example.com / LINE ID"></div></div>
+
+    <!-- 声かけ状況 -->
+    <div style="font-size:13px;font-weight:500;color:var(--text2);margin:14px 0 8px;padding-top:10px;border-top:1px solid var(--border)">📨 声かけ状況</div>
+    <div class="fr"><div class="field"><label>ステータス</label><select id="iOutreachStatus"><option value="未声掛け">未声掛け</option><option value="声掛け済み">声掛け済み</option><option value="返信待ち">返信待ち</option><option value="交渉中">交渉中</option><option value="契約済み">契約済み</option><option value="NG">NG</option></select></div><div class="field"><label>声かけ日</label><input id="iOutreachDate" type="date"></div></div>
+    <div class="fr"><div class="field"><label>対応エリア</label><input id="iArea" type="text" placeholder="例: 大阪・兵庫中心"></div><div class="field"><label>傾向タグ</label><input id="iTendency" type="text" placeholder="例: 女性一人飲み系、ファミリー系"></div></div>
     <div style="margin-bottom:10px">
       <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:6px">PR 費用（円） <span style="font-size:11px;color:var(--text3);font-weight:400">幅がある場合は下限・上限両方入力</span></label>
       <div style="display:flex;align-items:center;gap:8px">
@@ -1042,25 +1060,25 @@
 </div>
 </div>
 
-<script src="js/vendor/pizzip.min.js?v=50"></script>
-<script src="js/vendor/docxtemplater.min.js?v=50"></script>
-<script src="js/config.js?v=50"></script>
-<script src="js/db.js?v=50"></script>
-<script src="js/utils.js?v=50"></script>
-<script src="js/settings.js?v=50"></script>
-<script src="js/stores.js?v=50"></script>
-<script src="js/schedule.js?v=50"></script>
-<script src="js/casting.js?v=50"></script>
-<script src="js/check.js?v=50"></script>
-<script src="js/accounting.js?v=50"></script>
-<script src="js/plans.js?v=50"></script>
-<script src="js/creators.js?v=50"></script>
-<script src="js/corps.js?v=50"></script>
-<script src="js/faqs.js?v=50"></script>
-<script src="js/orders.js?v=50"></script>
-<script src="js/hearing.js?v=50"></script>
-<script src="js/dashboard.js?v=50"></script>
-<script src="js/app.js?v=50"></script>
+<script src="js/vendor/pizzip.min.js?v=51"></script>
+<script src="js/vendor/docxtemplater.min.js?v=51"></script>
+<script src="js/config.js?v=51"></script>
+<script src="js/db.js?v=51"></script>
+<script src="js/utils.js?v=51"></script>
+<script src="js/settings.js?v=51"></script>
+<script src="js/stores.js?v=51"></script>
+<script src="js/schedule.js?v=51"></script>
+<script src="js/casting.js?v=51"></script>
+<script src="js/check.js?v=51"></script>
+<script src="js/accounting.js?v=51"></script>
+<script src="js/plans.js?v=51"></script>
+<script src="js/creators.js?v=51"></script>
+<script src="js/corps.js?v=51"></script>
+<script src="js/faqs.js?v=51"></script>
+<script src="js/orders.js?v=51"></script>
+<script src="js/hearing.js?v=51"></script>
+<script src="js/dashboard.js?v=51"></script>
+<script src="js/app.js?v=51"></script>
 <!-- GENRE MODAL -->
 <!-- 追加費用モーダル -->
 <div class="modal-overlay" id="addFeeModal">

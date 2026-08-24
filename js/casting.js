@@ -260,15 +260,18 @@ function openInfluencerModal(id){
   editingInfId=id||null;
   var titleEl=document.getElementById('infModalTitle');
   if(titleEl)titleEl.textContent=id?'インフルエンサーを編集':'インフルエンサーを追加';
-  ['iName','iHandle','iUrl','iGenre','iContact','iAgency','iMemo','iFeeLow','iFeeHigh'].forEach(function(fid){var el=document.getElementById(fid);if(el)el.value='';});
+  ['iName','iHandle','iUrl','iGenre','iContact','iAgency','iMemo','iFeeLow','iFeeHigh','iOutreachDate','iArea','iTendency'].forEach(function(fid){var el=document.getElementById(fid);if(el)el.value='';});
   document.getElementById('iPlatform').value='Instagram';
   document.getElementById('iFollowers').value='';
   document.getElementById('iRating').value='';
+  /* 新規追加は「未声掛け」から開始。既存（声かけ状況が未設定＝声かけ導入前からの登録）は「契約済み」扱いにする */
+  document.getElementById('iOutreachStatus').value=id?'契約済み':'未声掛け';
   if(id){
     var inf=DB.influencers.find(function(x){return x.id===id;});
     if(inf){
-      var map={iName:'name',iHandle:'handle',iUrl:'url',iPlatform:'platform',iFollowers:'followers',iGenre:'genre',iContact:'contact',iAgency:'agency',iMemo:'memo',iRating:'rating'};
+      var map={iName:'name',iHandle:'handle',iUrl:'url',iPlatform:'platform',iFollowers:'followers',iGenre:'genre',iContact:'contact',iAgency:'agency',iMemo:'memo',iRating:'rating',iArea:'area',iTendency:'tendency',iOutreachDate:'outreachDate'};
       Object.keys(map).forEach(function(fid){var el=document.getElementById(fid);if(el&&inf[map[fid]]!==undefined)el.value=inf[map[fid]]||'';});
+      if(inf.outreachStatus)document.getElementById('iOutreachStatus').value=inf.outreachStatus;
       /* fee range */
       if(inf.feeLow!==undefined){document.getElementById('iFeeLow').value=inf.feeLow||'';}
       else if(inf.fee){document.getElementById('iFeeLow').value=inf.fee;}
@@ -303,6 +306,10 @@ function saveInfluencer(){
     agency:document.getElementById('iAgency').value,
     rating:document.getElementById('iRating').value,
     memo:document.getElementById('iMemo').value,
+    outreachStatus:document.getElementById('iOutreachStatus').value,
+    outreachDate:document.getElementById('iOutreachDate').value,
+    area:document.getElementById('iArea').value,
+    tendency:document.getElementById('iTendency').value,
     platformDetails:getPlatformData()
   };
   if(isEdit){
@@ -589,10 +596,16 @@ function openInfluencerDetail(id){
           +ratingStars(inf.rating)
         +'</div>'
         +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">'
+          +'<span class="badge" style="font-size:11px;border:1px solid;'+(INF_OUTREACH_BADGE[infOutreachStatus(inf)]||'')+'">'+esc(infOutreachStatus(inf))+'</span>'
           +(inf.platform?'<span class="badge b-blue">'+esc(inf.platform)+'</span>':'')
           +(inf.genre?'<span class="badge b-gray">'+esc(inf.genre)+'</span>':'')
           +(inf.agency&&inf.agency!=='なし'?'<span class="badge b-gray">'+esc(inf.agency)+'</span>':'')
         +'</div>'
+        +((inf.area||inf.tendency||inf.outreachDate)?'<div style="font-size:12px;color:var(--text3);margin-top:6px">'
+          +(inf.outreachDate?'声かけ日：'+esc(inf.outreachDate)+'　':'')
+          +(inf.area?'エリア：'+esc(inf.area)+'　':'')
+          +(inf.tendency?'傾向：'+esc(inf.tendency):'')
+        +'</div>':'')
       +'</div>'
     +'</div>'
     /* 数値サマリー */
@@ -981,11 +994,25 @@ function deleteCasting(id){
    撮影予定管理
    ============================================================ */
 
+/* 声かけ状況が未設定（声かけ管理の導入前からの登録）は契約済み扱いにする */
+function infOutreachStatus(i){return i.outreachStatus||'契約済み';}
+var INF_OUTREACH_BADGE={
+  '未声掛け':'background:var(--bg3);color:var(--text3);border-color:var(--border)',
+  '声掛け済み':'background:var(--accent-bg);color:var(--accent);border-color:var(--accent-border)',
+  '返信待ち':'background:var(--amber-bg);color:var(--amber);border-color:var(--amber-border)',
+  '交渉中':'background:var(--purple-bg);color:var(--purple);border-color:var(--purple-border)',
+  '契約済み':'background:var(--green-bg);color:var(--green);border-color:var(--green-border)',
+  'NG':'background:var(--red-bg);color:var(--red);border-color:var(--red-border)'
+};
 function renderInfluencers(){
   var search=(document.getElementById('globalSearch').value||'').toLowerCase();
-  var list=DB.influencers.filter(function(i){return!search||(i.name||'').toLowerCase().includes(search)||(i.handle||'').toLowerCase().includes(search)||(i.genre||'').toLowerCase().includes(search);});
+  var statusFilter=(document.getElementById('filterInfStatus')||{}).value||'';
+  var list=DB.influencers.filter(function(i){
+    if(statusFilter&&infOutreachStatus(i)!==statusFilter)return false;
+    return!search||(i.name||'').toLowerCase().includes(search)||(i.handle||'').toLowerCase().includes(search)||(i.genre||'').toLowerCase().includes(search);
+  });
   var tb=document.getElementById('infBody');
-  if(!list.length){tb.innerHTML='<tr><td colspan="8" class="empty-state">インフルエンサーが登録されていません</td></tr>';return;}
+  if(!list.length){tb.innerHTML='<tr><td colspan="9" class="empty-state">インフルエンサーが登録されていません</td></tr>';return;}
   var platColor={Instagram:'#e1306c',TikTok:'#010101',YouTube:'#ff0000',X:'#1da1f2'};
   var platUrl={Instagram:'https://www.instagram.com/',TikTok:'https://www.tiktok.com/@',YouTube:'',X:'https://x.com/'};
   tb.innerHTML=list.map(function(i){
@@ -1002,6 +1029,7 @@ function renderInfluencers(){
       +'<td class="td-mono">'+(i.followers?Number(i.followers).toLocaleString():'—')+'</td>'
       +'<td class="td-mono" style="white-space:nowrap">'+fmtFeeRange(i)+'</td>'
       +'<td>'+esc(i.genre||'—')+'</td>'
+      +'<td><span class="badge" style="font-size:11px;border:1px solid;white-space:nowrap;'+(INF_OUTREACH_BADGE[infOutreachStatus(i)]||'')+'">'+esc(infOutreachStatus(i))+'</span></td>'
       +'<td style="color:var(--text2);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(i.contact||'—')+'</td>'
       +'<td style="color:var(--text3)">'+(last?fmtD(last.date):'—')+'</td>'
       +'<td onclick="event.stopPropagation()"><button class="btn btn-sm" onclick="openInfluencerModal(\''+i.id+'\')">編集</button></td>'
