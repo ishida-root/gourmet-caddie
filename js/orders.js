@@ -5,7 +5,7 @@
    - ライブラリはローカル同梱（js/vendor/pizzip.min.js, docxtemplater.min.js）。
      実行時に外部通信は行わない。
    ============================================================ */
-var ORDER_TEMPLATE_URL='assets/発注書_template.docx?v=3';
+var ORDER_TEMPLATE_URL='assets/発注書_template.docx?v=4';
 
 /* YYYY-MM-DD → YYYY年M月D日（未入力は空） */
 function orderFmtDate(iso){
@@ -21,6 +21,27 @@ function formatOrderFeeInput(){
   if(!el)return;
   var digits=el.value.replace(/[^\d]/g,'');
   el.value=digits?Number(digits).toLocaleString():'';
+}
+
+/* 交通費入力欄：数字のみ抽出してカンマ区切りに整形（カーソルは末尾維持） */
+function formatOrderTransportFeeInput(){
+  var el=document.getElementById('orderTransportFee');
+  if(!el)return;
+  var digits=el.value.replace(/[^\d]/g,'');
+  el.value=digits?Number(digits).toLocaleString():'';
+}
+/* 交通費区分の切替：別途精算のときだけ見込み額欄を表示 */
+function onOrderTransportChange(){
+  var wrap=document.getElementById('orderTransportFeeWrap');
+  var sel=document.getElementById('orderTransport');
+  if(wrap)wrap.style.display=(sel&&sel.value==='別途')?'':'none';
+}
+/* 発注書モーダルの店舗セレクトを変更したら件名を自動入力 */
+function onOrderStoreChange(){
+  var sel=document.getElementById('orderStore');
+  var subjectEl=document.getElementById('orderSubject');
+  if(!sel||!subjectEl)return;
+  if(sel.value)subjectEl.value=storeName(sel.value)+'　PR動画作成';
 }
 
 /* 発注番号の次候補（localStorageの連番。手動上書き可） */
@@ -80,6 +101,15 @@ function openOrderModal(opts){
     }
   }
 
+  /* 店舗セレクトを構築（店舗名の五十音順） */
+  var storeSel=document.getElementById('orderStore');
+  if(storeSel){
+    var stores=(DB.stores||[]).slice().sort(function(a,b){return(a.name||'').localeCompare(b.name||'','ja');});
+    storeSel.innerHTML='<option value="">— 選択（任意） —</option>'
+      +stores.map(function(s){return'<option value="'+s.id+'">'+esc(s.name)+'</option>';}).join('');
+    storeSel.value=opts.storeId||'';
+  }
+
   /* 担当者セレクトを最新のスタッフで再構築（退職者は除外） */
   var staffSel=document.getElementById('orderStaff');
   if(staffSel){
@@ -103,6 +133,9 @@ function openOrderModal(opts){
   var taxSel=document.getElementById('orderTax');if(taxSel)taxSel.value='税込';
   var subSel=document.getElementById('orderSubcontract');if(subSel)subSel.value='不可';
   setVal('orderFee','');
+  var transSel=document.getElementById('orderTransport');if(transSel)transSel.value='込み';
+  setVal('orderTransportFee','');
+  onOrderTransportChange();
   var statusEl=document.getElementById('orderStatus');if(statusEl)statusEl.textContent='';
 
   openModal('orderModal');
@@ -172,6 +205,17 @@ async function generateOrder(){
   if(photoCount>0)workParts.push('静止画'+photoCount+'枚');
   var workContent=workParts.length?workParts.join('、'):'動画・静止画';
 
+  /* 交通費：報酬に含む／別途精算（見込み額があれば併記） */
+  var transportKind=val('orderTransport')||'込み';
+  var transportFeeDigits=val('orderTransportFee').replace(/[^\d]/g,'');
+  var transportText=transportKind==='別途'
+    ?('別途精算'+(transportFeeDigits?'（見込み ￥'+Number(transportFeeDigits).toLocaleString()+'）':'（実費精算）'))
+    :'報酬に含む';
+
+  /* 店舗セレクトの選択を発注記録の紐づけ先に反映 */
+  var storeSel=document.getElementById('orderStore');
+  if(storeSel)_orderCtx.storeId=storeSel.value||'';
+
   var data={
     発注番号:number,
     発注日:orderFmtDate(val('orderDate')),
@@ -186,6 +230,7 @@ async function generateOrder(){
     検収営業日:val('orderInspectDays'),
     報酬金額:feeDisplay,
     税区分:'税込',
+    交通費:transportText,
     再委託:val('orderSubcontract')
   };
 

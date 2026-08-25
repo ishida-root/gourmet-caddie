@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=51">
+<link rel="stylesheet" href="css/app.css?v=52">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -1033,6 +1033,7 @@
       <div class="field"><label>基本契約 締結日 <span style="font-size:11px;color:var(--text3);font-weight:400">冒頭文の日付</span></label><div id="orderContractWrap"></div><input type="hidden" id="orderContract"></div>
       <div class="field"><label>担当者</label><select id="orderStaff"></select></div>
     </div>
+    <div class="fr1 field"><label>店舗 <span style="font-size:11px;color:var(--text3);font-weight:400">選択すると件名を自動入力</span></label><select id="orderStore" onchange="onOrderStoreChange()"><option value="">— 選択（任意） —</option></select></div>
     <div class="fr1 field"><label>件名 <span style="font-size:11px;color:var(--text3);font-weight:400">動画制作業務（　）内</span></label><input id="orderSubject" type="text" placeholder="例: 焼肉ロッヂ 梅田店"></div>
     <div class="fr">
       <div class="field"><label>動画本数</label><input id="orderVideoCount" type="number" min="0" placeholder="1"></div>
@@ -1050,6 +1051,10 @@
       <div class="field"><label>業務報酬 ￥ <span style="font-size:11px;color:var(--text3);font-weight:400">税別入力時はWordには税込金額を記載</span></label><input id="orderFee" type="text" inputmode="numeric" placeholder="例: 150,000" oninput="formatOrderFeeInput()"></div>
       <div class="field"><label>税区分</label><select id="orderTax"><option value="税込">税込</option><option value="税別">税別</option></select></div>
     </div>
+    <div class="fr">
+      <div class="field"><label>交通費</label><select id="orderTransport" onchange="onOrderTransportChange()"><option value="込み">報酬に含む</option><option value="別途">別途精算</option></select></div>
+      <div class="field" id="orderTransportFeeWrap" style="display:none"><label>交通費見込み額 ￥</label><input id="orderTransportFee" type="text" inputmode="numeric" placeholder="例: 5,000" oninput="formatOrderTransportFeeInput()"></div>
+    </div>
     <div class="fr1 field"><label>再委託の可否</label><select id="orderSubcontract"><option value="不可">不可</option><option value="可（要事前承諾）">可（要事前承諾）</option></select></div>
     <div id="orderStatus" style="font-size:13px;min-height:18px;margin-top:4px"></div>
     <div class="form-actions" style="border-top:1px solid var(--border);margin-top:12px;padding-top:14px">
@@ -1060,25 +1065,25 @@
 </div>
 </div>
 
-<script src="js/vendor/pizzip.min.js?v=51"></script>
-<script src="js/vendor/docxtemplater.min.js?v=51"></script>
-<script src="js/config.js?v=51"></script>
-<script src="js/db.js?v=51"></script>
-<script src="js/utils.js?v=51"></script>
-<script src="js/settings.js?v=51"></script>
-<script src="js/stores.js?v=51"></script>
-<script src="js/schedule.js?v=51"></script>
-<script src="js/casting.js?v=51"></script>
-<script src="js/check.js?v=51"></script>
-<script src="js/accounting.js?v=51"></script>
-<script src="js/plans.js?v=51"></script>
-<script src="js/creators.js?v=51"></script>
-<script src="js/corps.js?v=51"></script>
-<script src="js/faqs.js?v=51"></script>
-<script src="js/orders.js?v=51"></script>
-<script src="js/hearing.js?v=51"></script>
-<script src="js/dashboard.js?v=51"></script>
-<script src="js/app.js?v=51"></script>
+<script src="js/vendor/pizzip.min.js?v=52"></script>
+<script src="js/vendor/docxtemplater.min.js?v=52"></script>
+<script src="js/config.js?v=52"></script>
+<script src="js/db.js?v=52"></script>
+<script src="js/utils.js?v=52"></script>
+<script src="js/settings.js?v=52"></script>
+<script src="js/stores.js?v=52"></script>
+<script src="js/schedule.js?v=52"></script>
+<script src="js/casting.js?v=52"></script>
+<script src="js/check.js?v=52"></script>
+<script src="js/accounting.js?v=52"></script>
+<script src="js/plans.js?v=52"></script>
+<script src="js/creators.js?v=52"></script>
+<script src="js/corps.js?v=52"></script>
+<script src="js/faqs.js?v=52"></script>
+<script src="js/orders.js?v=52"></script>
+<script src="js/hearing.js?v=52"></script>
+<script src="js/dashboard.js?v=52"></script>
+<script src="js/app.js?v=52"></script>
 <!-- GENRE MODAL -->
 <!-- 追加費用モーダル -->
 <div class="modal-overlay" id="addFeeModal">
