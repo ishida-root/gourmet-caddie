@@ -94,7 +94,20 @@ function renderPlatformDetails(saved){
     if(shown[pid])return'';
     var d=saved[pid]||{};
     var bid=d.bundleId;
-    if(!bid||!bundles[bid])return'';
+    if(!bid||!bundles[bid]){
+      /* セット未設定の単独媒体：チェックした時点で個別の料金入力欄を出す（従来はここが空欄でセット作成しないと入力できなかった） */
+      shown[pid]=true;
+      var pl=INF_PLATFORM_LIST.find(function(x){return x.id===pid;});
+      return'<div style="padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);margin-bottom:6px">'
+        +'<div style="font-size:13px;font-weight:500;color:var(--text2);margin-bottom:6px">'+esc(pl?pl.label:pid)+'</div>'
+        +'<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">'
+          +'<div style="display:flex;align-items:center;gap:6px"><input type="number" id="plfee_'+pid+'" value="'+(d.fee||'')+'" placeholder="例: 50000" style="width:130px;font-size:13px;padding:4px 8px"><span style="font-size:13px;color:var(--text3)">円</span></div>'
+          +platTaxToggleHtml('setPlatformTax',pid,!!d.taxIncl)
+          +platTransToggleHtml('setPlatformTrans',pid,!!d.transIncl)
+        +'</div>'
+        +'<div style="font-size:12px;color:var(--text3);margin-top:4px">→ '+feeRangeStr(d.fee,0,d.taxIncl)+'</div>'
+      +'</div>';
+    }
     var members=enabledIds.filter(function(x){return(saved[x]||{}).bundleId===bid;});
     members.forEach(function(m){shown[m]=true;});
     var b=bundles[bid];
@@ -703,7 +716,7 @@ function openCastingModal(opts){
   updateCastSelects();
   editingCastId=null;
   _curCastPostUrls={};
-  ['cFee','cReach','cResult','cVisitDate','cDraftDate','cDate'].forEach(function(fid){
+  ['cFee','cReach','cVisitCount','cResult','cVisitDate','cDraftDate','cDate'].forEach(function(fid){
     var el=document.getElementById(fid);if(el)el.value='';
   });
   var ccb=document.getElementById('cContractSent');if(ccb)ccb.checked=false;
@@ -746,7 +759,7 @@ function openCastingModal(opts){
           onCastPlatformChange();
           if(savedFee)document.getElementById('cFee').value=savedFee;
         },50);
-        set('cReach',ec.reach);set('cResult',ec.result);
+        set('cReach',ec.reach);set('cVisitCount',ec.visitCount);set('cResult',ec.result);
         set('cVisitDate',ec.visitDate);set('cDraftDate',ec.draftDate);set('cDate',ec.date);
         var ccbEdit=document.getElementById('cContractSent');if(ccbEdit)ccbEdit.checked=!!ec.contractSent;
       }
@@ -893,15 +906,18 @@ function saveCasting(){
     if(existing){castId=existing.id;isEdit=true;}
   }
   var oldCastId=isEdit?castId:null;
-  var prevVisitDate=isEdit?((DB.castings.find(function(x){return x.id===castId;})||{}).visitDate||''):'';
+  var prevRecord=isEdit?(DB.castings.find(function(x){return x.id===castId;})||{}):{};
+  var prevVisitDate=prevRecord.visitDate||'';
   var c={
     id:castId,storeId:sid,infId:iid,date:dt,
     visitDate:visitDate,draftDate:draftDate,
     platform:platform,platforms:platforms,fee:fee,
     reach:document.getElementById('cReach').value,
+    visitCount:document.getElementById('cVisitCount').value,
     result:document.getElementById('cResult').value,
     postUrls:(function(){var o={};Object.keys(_curCastPostUrls).forEach(function(k){if(_curCastPostUrls[k])o[k]=_curCastPostUrls[k];});return o;})(),
-    contractSent:!!(document.getElementById('cContractSent')&&document.getElementById('cContractSent').checked)
+    contractSent:!!(document.getElementById('cContractSent')&&document.getElementById('cContractSent').checked),
+    liaisonNeeded:!!prevRecord.liaisonNeeded
   };
   if(isEdit){
     var eidx=DB.castings.findIndex(function(x){return x.id===c.id;});

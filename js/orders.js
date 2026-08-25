@@ -165,7 +165,7 @@ async function buildAndDownloadOrderDocx(data,creator,number){
     mimeType:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
   });
   var safe=function(s){return String(s||'').replace(/[\\\/:*?"<>|]/g,'_');};
-  var fname='発注書_'+safe(creator)+'_'+safe(number)+'.docx';
+  var fname='発注書_'+safe(creator)+'様_'+safe(number)+'.docx';
   var url=URL.createObjectURL(out);
   var a=document.createElement('a');
   a.href=url;a.download=fname;
@@ -297,7 +297,7 @@ function renderOrderHistoryHtml(list){
     +sorted.map(function(o){
       return'<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--bg3);border-radius:var(--r);margin-bottom:4px">'
         +'<span style="font-size:12px;color:var(--text3);white-space:nowrap">'+esc(o.number||'')+'</span>'
-        +'<span style="font-size:13px;color:var(--text2);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(o.subject||o.creatorName||'')+'</span>'
+        +'<span style="font-size:13px;color:var(--text2);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(o.subject||(o.creatorName?o.creatorName+'様':''))+'</span>'
         +(o.feeAmount?'<span style="font-size:12px;color:var(--accent);white-space:nowrap">¥'+Number(o.feeAmount).toLocaleString()+'</span>':'')
         +'<span style="font-size:11px;color:var(--text3);white-space:nowrap">'+fmtD((o.createdAt||'').split('T')[0])+'</span>'
         +'<button class="btn btn-sm" style="white-space:nowrap" onclick="event.stopPropagation();redownloadOrder(\''+o.id+'\')">再DL</button>'

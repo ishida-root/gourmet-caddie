@@ -2,20 +2,54 @@
 
 var CR_STATUS_LABELS={none:'未依頼',requesting:'依頼中',scheduling:'日程調整中',confirmed:'来店確定',editing:'編集中',delivered:'納品済み',cancelled:'キャンセル'};
 var CR_STATUS_BADGE={none:'b-gray',requesting:'b-blue',scheduling:'b-amber',confirmed:'b-green',editing:'b-purple',delivered:'b-green',cancelled:'b-red'};
-function crStatusBadge(status,visitDate){
-  if(!status)return'';
-  var label=CR_STATUS_LABELS[status]||status;
-  if(status==='confirmed'&&visitDate){label+=' '+fmtD(visitDate);}
-  return'<span class="badge '+(CR_STATUS_BADGE[status]||'b-gray')+'">'+label+'</span>';
+/* クリエイター編集モーダル：複数店舗の同時依頼状況を管理する行リスト */
+var _crRequestRows=[];
+
+function crStoreOptionsHtml(selectedId){
+  var stores=(DB.stores||[]).slice().sort(function(a,b){return(a.name||'').localeCompare(b.name||'','ja');});
+  return'<option value="">— 店舗未指定 —</option>'
+    +stores.map(function(s){return'<option value="'+s.id+'"'+(s.id===selectedId?' selected':'')+'>'+esc(s.name)+'</option>';}).join('');
 }
-function onCreatorStatusChange(){
-  var sel=document.getElementById('crStatus');
-  var field=document.getElementById('crVisitDateField');
-  if(!sel||!field)return;
-  field.style.display=sel.value==='confirmed'?'':'none';
-  if(sel.value==='confirmed'){
-    makeDatePicker('crVisitDateWrap','crVisitDate',{yearFrom:2024,yearTo:new Date().getFullYear()+2,yearLabel:'年'});
-  }
+
+function renderCreatorRequestRows(){
+  var wrap=document.getElementById('crRequestList');
+  if(!wrap)return;
+  if(!_crRequestRows.length){wrap.innerHTML='<div style="font-size:12px;color:var(--text3);margin-bottom:8px">依頼中の店舗はありません</div>';return;}
+  wrap.innerHTML=_crRequestRows.map(function(r,i){
+    return'<div class="fr" style="align-items:flex-end;margin-bottom:8px">'
+      +'<div class="field"><label>店舗</label><select onchange="updateCreatorRequestField('+i+',\'storeId\',this.value)">'+crStoreOptionsHtml(r.storeId)+'</select></div>'
+      +'<div class="field"><label>ステータス</label><select onchange="updateCreatorRequestField('+i+',\'status\',this.value)">'
+        +Object.keys(CR_STATUS_LABELS).map(function(k){return'<option value="'+k+'"'+(k===r.status?' selected':'')+'>'+CR_STATUS_LABELS[k]+'</option>';}).join('')
+      +'</select></div>'
+      +(r.status==='confirmed'?'<div class="field"><label>来店確定日</label><input type="date" value="'+esc(r.visitDate||'')+'" onchange="updateCreatorRequestField('+i+',\'visitDate\',this.value)"></div>':'')
+      +'<button type="button" class="btn-ghost-danger btn-sm" onclick="removeCreatorRequestRow('+i+')">削除</button>'
+    +'</div>';
+  }).join('');
+}
+
+function addCreatorRequestRow(){
+  _crRequestRows.push({id:uid(),storeId:'',status:'requesting',visitDate:''});
+  renderCreatorRequestRows();
+}
+function removeCreatorRequestRow(idx){
+  _crRequestRows.splice(idx,1);
+  renderCreatorRequestRows();
+}
+function updateCreatorRequestField(idx,field,value){
+  if(!_crRequestRows[idx])return;
+  _crRequestRows[idx][field]=value;
+  if(field==='status')renderCreatorRequestRows();
+}
+
+/* 依頼中の店舗をまとめてバッジ表示（一覧・詳細で共用） */
+function crRequestsBadgesHtml(cr){
+  var reqs=(cr.crRequests||[]).filter(function(r){return r.status;});
+  if(!reqs.length)return'';
+  return reqs.map(function(r){
+    var label=(r.storeId?storeName(r.storeId)+'：':'')+(CR_STATUS_LABELS[r.status]||r.status);
+    if(r.status==='confirmed'&&r.visitDate)label+=' '+fmtD(r.visitDate);
+    return'<span class="badge '+(CR_STATUS_BADGE[r.status]||'b-gray')+'">'+esc(label)+'</span>';
+  }).join(' ');
 }
 var CREATOR_SKILL_LABELS={crSkillPlan:'企画',crSkillShoot:'撮影',crSkillEdit:'編集',crSkillAnalyze:'投稿分析',crSkillFood:'外食知見',crSkillCooking:'料理撮影',crSkillStill:'フィード作成',crSkillComm:'コミュニケーション'};
 var CREATOR_SKILL_VALS={'3':'◎','2':'○','1':'△','0':'✗','':''};
@@ -45,9 +79,9 @@ function clearCreatorForm(){
   var fields=['crName','crRealName','crAddress','crArea','crReachTime','crTel','crEmail','crContact',
     'crEquipment','crSoftware','crSns','crPortfolio','crPhoto','crSpecialty',
     'crOrderPoint','crCondition','crDelivery','crImpression',
-    'crGender','crBirthday','crInterviewDate','crInterviewer','crVisitDate'];
-  var crStatusEl=document.getElementById('crStatus');if(crStatusEl)crStatusEl.value='';
-  var crVField=document.getElementById('crVisitDateField');if(crVField)crVField.style.display='none';
+    'crGender','crBirthday','crInterviewDate','crInterviewer'];
+  _crRequestRows=[];
+  renderCreatorRequestRows();
   fields.forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
   Object.keys(CREATOR_SKILL_LABELS).forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
   document.querySelectorAll('input[name="crPromanage"]').forEach(function(r){r.checked=false;});
@@ -68,12 +102,8 @@ function openCreatorModal(id){
         'crOrderPoint','crCondition','crDelivery','crImpression'];
       textFields.forEach(function(fid){var el=document.getElementById(fid);if(el&&cr[fid]!==undefined)el.value=cr[fid]||'';});
       ['crGender'].forEach(function(fid){var el=document.getElementById(fid);if(el&&cr[fid])el.value=cr[fid];});
-  var crSel=document.getElementById('crStatus');if(crSel)crSel.value=cr.crStatus||'';
-  if(cr.crStatus==='confirmed'){
-    var vf=document.getElementById('crVisitDateField');if(vf)vf.style.display='';
-    makeDatePicker('crVisitDateWrap','crVisitDate',{yearFrom:2024,yearTo:new Date().getFullYear()+2,yearLabel:'年'});
-    var vw=document.getElementById('crVisitDateWrap');if(vw&&vw._setDate)vw._setDate(cr.crVisitDate||'');
-  }
+      _crRequestRows=(cr.crRequests||[]).map(function(r){return Object.assign({},r);});
+      renderCreatorRequestRows();
       ['crBirthday','crInterviewDate'].forEach(function(fid){var el=document.getElementById(fid);if(el&&cr[fid])el.value=cr[fid];});
       Object.keys(CREATOR_SKILL_LABELS).forEach(function(fid){var el=document.getElementById(fid);if(el&&cr[fid]!==undefined)el.value=cr[fid];});
       if(cr.crPromanage){var r=document.querySelector('input[name="crPromanage"][value="'+cr.crPromanage+'"]');if(r)r.checked=true;}
@@ -105,14 +135,15 @@ function saveCreator(){
   ['crName','crRealName','crAddress','crArea','crReachTime','crTel','crEmail','crContact',
    'crEquipment','crSoftware','crSns','crPortfolio','crPhoto','crSpecialty',
    'crOrderPoint','crCondition','crDelivery','crImpression',
-   'crGender','crBirthday','crInterviewDate','crVisitDate'].forEach(function(fid){
+   'crGender','crBirthday','crInterviewDate'].forEach(function(fid){
     var el=document.getElementById(fid);cr[fid]=el?el.value:'';
   });
   Object.keys(CREATOR_SKILL_LABELS).forEach(function(fid){
     var el=document.getElementById(fid);cr[fid]=el?el.value:'';
   });
   cr.crPromanage=proEl?proEl.value:'';
-  var crSel=document.getElementById('crStatus');cr.crStatus=crSel?crSel.value:'';
+  /* 依頼中の店舗一覧：店舗未指定かつ未依頼のままの空行は保存しない */
+  cr.crRequests=_crRequestRows.filter(function(r){return r.storeId||(r.status&&r.status!=='requesting');});
   /* 面談担当者：チェックされた人を配列で保存 */
   var interviewerEl=document.getElementById('crInterviewerChecks');
   if(interviewerEl){
@@ -186,7 +217,7 @@ function openCreatorDetail(id){
         +'<div style="display:flex;gap:6px;flex-wrap:wrap">'
           +(cr.crGender?'<span class="badge b-gray">'+esc(cr.crGender)+'</span>':'')
           +(age!==null?'<span class="badge b-gray">'+age+'歳</span>':'')
-          +(cr.crStatus?crStatusBadge(cr.crStatus,cr.crVisitDate):'')
+          +crRequestsBadgesHtml(cr)
           +(cr.crSpecialty?'<span class="badge b-blue">'+esc(cr.crSpecialty)+'</span>':'')
           +(cr.crPromanage?'<span class="badge '+proManageColors[cr.crPromanage]+'">プロマネ提出: '+proManageLabels[cr.crPromanage]+'</span>':'')
         +'</div>'
@@ -279,7 +310,7 @@ function renderCreators(){
     var proLabels={yes:'可',no:'不可',pending:'要相談'};
     return'<tr style="cursor:pointer" onclick="openCreatorDetail(\''+cr.id+'\')">'
       +'<td><div style="font-weight:500;color:var(--accent)">'+esc(cr.crName)+'</div>'+(age?'<div style="font-size:11px;color:var(--text3)">'+age+'歳</div>':'')+'</td>'
-      +'<td>'+(crStatusBadge(cr.crStatus,cr.crVisitDate)||'<span style="color:var(--text3)">—</span>')+'</td>'
+      +'<td style="max-width:260px;white-space:normal">'+(crRequestsBadgesHtml(cr)||'<span style="color:var(--text3)">—</span>')+'</td>'
       +'<td>'+(cr.crGender?'<span class="badge b-gray">'+esc(cr.crGender)+'</span>':'—')+'</td>'
       +'<td style="font-size:13px;color:var(--text2);line-height:1.5;min-width:240px;max-width:440px;white-space:normal">'+esc(cr.crArea||'—')+'</td>'
       +'<td>'+(cr.crPromanage?'<span class="badge '+proColors[cr.crPromanage]+'">'+proLabels[cr.crPromanage]+'</span>':'—')+'</td>'

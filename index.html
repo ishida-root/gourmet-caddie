@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=52">
+<link rel="stylesheet" href="css/app.css?v=56">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -996,7 +996,7 @@
         </div>
       </div>
     </div>
-    <div class="fr"><div class="field"><label>リーチ数</label><input id="cReach" type="number" placeholder="30000"></div><div class="field"></div></div>
+    <div class="fr"><div class="field"><label>リーチ数</label><input id="cReach" type="number" placeholder="30000"></div><div class="field"><label>来店人数</label><input id="cVisitCount" type="number" min="0" placeholder="2"></div></div>
     <div class="fr1 field">
       <label>投稿URL（媒体ごと） <span style="font-size:11px;color:var(--text3);font-weight:400">※媒体を選択すると入力欄が表示されます</span></label>
       <div id="cPostUrlBoxes" style="display:flex;flex-direction:column;gap:8px"></div>
@@ -1065,25 +1065,25 @@
 </div>
 </div>
 
-<script src="js/vendor/pizzip.min.js?v=52"></script>
-<script src="js/vendor/docxtemplater.min.js?v=52"></script>
-<script src="js/config.js?v=52"></script>
-<script src="js/db.js?v=52"></script>
-<script src="js/utils.js?v=52"></script>
-<script src="js/settings.js?v=52"></script>
-<script src="js/stores.js?v=52"></script>
-<script src="js/schedule.js?v=52"></script>
-<script src="js/casting.js?v=52"></script>
-<script src="js/check.js?v=52"></script>
-<script src="js/accounting.js?v=52"></script>
-<script src="js/plans.js?v=52"></script>
-<script src="js/creators.js?v=52"></script>
-<script src="js/corps.js?v=52"></script>
-<script src="js/faqs.js?v=52"></script>
-<script src="js/orders.js?v=52"></script>
-<script src="js/hearing.js?v=52"></script>
-<script src="js/dashboard.js?v=52"></script>
-<script src="js/app.js?v=52"></script>
+<script src="js/vendor/pizzip.min.js?v=56"></script>
+<script src="js/vendor/docxtemplater.min.js?v=56"></script>
+<script src="js/config.js?v=56"></script>
+<script src="js/db.js?v=56"></script>
+<script src="js/utils.js?v=56"></script>
+<script src="js/settings.js?v=56"></script>
+<script src="js/stores.js?v=56"></script>
+<script src="js/schedule.js?v=56"></script>
+<script src="js/casting.js?v=56"></script>
+<script src="js/check.js?v=56"></script>
+<script src="js/accounting.js?v=56"></script>
+<script src="js/plans.js?v=56"></script>
+<script src="js/creators.js?v=56"></script>
+<script src="js/corps.js?v=56"></script>
+<script src="js/faqs.js?v=56"></script>
+<script src="js/orders.js?v=56"></script>
+<script src="js/hearing.js?v=56"></script>
+<script src="js/dashboard.js?v=56"></script>
+<script src="js/app.js?v=56"></script>
 <!-- GENRE MODAL -->
 <!-- 追加費用モーダル -->
 <div class="modal-overlay" id="addFeeModal">
@@ -1338,27 +1338,9 @@
     <!-- Tab 3: 条件・所感 -->
     <div class="tab-pane" id="ctab3">
       <div style="margin-bottom:14px;padding:12px;background:var(--bg3);border-radius:var(--r)">
-        <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:10px">📋 依頼状況</div>
-        <div class="fr">
-          <div class="field">
-            <label>ステータス</label>
-            <select id="crStatus" onchange="onCreatorStatusChange()">
-              <option value="">—</option>
-              <option value="none">未依頼</option>
-              <option value="requesting">依頼中</option>
-              <option value="scheduling">日程調整中</option>
-              <option value="confirmed">来店確定</option>
-              <option value="editing">編集中</option>
-              <option value="delivered">納品済み</option>
-              <option value="cancelled">キャンセル</option>
-            </select>
-          </div>
-          <div class="field" id="crVisitDateField" style="display:none">
-            <label>来店確定日</label>
-            <div id="crVisitDateWrap" style="display:flex;gap:3px"></div>
-            <input type="hidden" id="crVisitDate">
-          </div>
-        </div>
+        <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:10px">📋 依頼状況 <span style="font-size:11px;color:var(--text3);font-weight:400">同時に複数店舗から依頼がある場合は行を追加</span></div>
+        <div id="crRequestList"></div>
+        <button type="button" class="btn btn-sm" onclick="addCreatorRequestRow()">＋ 店舗を追加</button>
       </div>
       <div class="fr1 field"><label>発注ポイント</label><textarea id="crOrderPoint" placeholder="依頼時の注意点・コツなど..." style="min-height:56px"></textarea></div>
       <div class="fr1 field"><label>条件</label><textarea id="crCondition" placeholder="単価・稼働可能日数・NG案件など..." style="min-height:56px"></textarea></div>

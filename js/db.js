@@ -374,6 +374,17 @@ function migrateInvoiceStatus(){
   });
 }
 
+/* クリエイターの依頼状況を単一ステータスから複数店舗対応のリストへ移行（冪等） */
+function migrateCreatorRequests(){
+  if(!DB.creators)return;
+  DB.creators.forEach(function(cr){
+    if(cr.crRequests)return;
+    cr.crRequests=(cr.crStatus&&cr.crStatus!=='none')
+      ?[{id:uid(),storeId:'',status:cr.crStatus,visitDate:cr.crVisitDate||''}]
+      :[];
+  });
+}
+
 async function loadDB(){
   setSyncStatus('saving','読み込み中...');
   try{
@@ -384,7 +395,7 @@ async function loadDB(){
     });
     if(!DB.plans)DB.plans=[];
     if(!DB.salesNotifs)DB.salesNotifs=[];if(!DB.orders)DB.orders=[];if(!DB.faqs)DB.faqs=[];
-    migrateSetupChecks();migrateInvoiceStatus();migrateProgressMode();
+    migrateSetupChecks();migrateInvoiceStatus();migrateProgressMode();migrateCreatorRequests();
     try{localStorage.setItem('adcore3',JSON.stringify(DB));}catch(e){}
     setSyncStatus('ok','同期済み');
   }catch(e){
@@ -398,13 +409,13 @@ async function loadDB(){
       });
       if(!DB.plans)DB.plans=[];
       if(!DB.salesNotifs)DB.salesNotifs=[];if(!DB.orders)DB.orders=[];if(!DB.faqs)DB.faqs=[];
-      migrateSetupChecks();migrateInvoiceStatus();migrateProgressMode();
+      migrateSetupChecks();migrateInvoiceStatus();migrateProgressMode();migrateCreatorRequests();
       try{localStorage.setItem('adcore3',JSON.stringify(DB));}catch(e2){}
       setSyncStatus('ok','同期済み');
     }catch(e2){
       var cached=localStorage.getItem('adcore3');
       if(cached){try{var d=JSON.parse(cached);Object.assign(DB,d);if(!DB.plans)DB.plans=[];if(!DB.salesNotifs)DB.salesNotifs=[];if(!DB.orders)DB.orders=[];if(!DB.faqs)DB.faqs=[];}catch(e3){}}
-      migrateSetupChecks();migrateInvoiceStatus();migrateProgressMode();
+      migrateSetupChecks();migrateInvoiceStatus();migrateProgressMode();migrateCreatorRequests();
       setSyncStatus('error','オフライン（キャッシュ表示中）');
     }
   }
