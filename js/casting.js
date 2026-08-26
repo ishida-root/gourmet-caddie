@@ -710,16 +710,38 @@ function openInfluencerDetail(id){
   openModal('infDetailModal');
 }
 
+/* 来店予定日のリスケ履歴（変更前日付 → 変更後日付・理由）を表として表示 */
+function renderRescheduleHistory(list){
+  var el=document.getElementById('cRescheduleHistory');
+  if(!el)return;
+  if(!list||!list.length){el.innerHTML='';return;}
+  var sorted=list.slice().sort(function(a,b){return new Date(b.at)-new Date(a.at);});
+  el.innerHTML='<div style="margin-top:10px">'
+    +'<div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:6px">🔁 リスケ履歴（'+sorted.length+'件）</div>'
+    +'<div class="table-wrap"><table><thead><tr><th style="font-size:11px">変更前</th><th style="font-size:11px">変更後</th><th style="font-size:11px">理由</th><th style="font-size:11px">記録日</th></tr></thead><tbody>'
+    +sorted.map(function(r){
+      return'<tr>'
+        +'<td class="td-mono" style="font-size:12px">'+(r.from?fmtD(r.from):'—')+'</td>'
+        +'<td class="td-mono" style="font-size:12px">'+(r.to?fmtD(r.to):'—')+'</td>'
+        +'<td style="font-size:12px;color:var(--text2)">'+esc(r.reason||'—')+'</td>'
+        +'<td style="font-size:11px;color:var(--text3)">'+fmtD((r.at||'').split('T')[0])+'</td>'
+      +'</tr>';
+    }).join('')
+    +'</tbody></table></div>'
+  +'</div>';
+}
+
 var editingCastId=null;
 var _curCastPostUrls={};
 function openCastingModal(opts){
   updateCastSelects();
   editingCastId=null;
   _curCastPostUrls={};
-  ['cFee','cReach','cVisitCount','cResult','cVisitDate','cDraftDate','cDate'].forEach(function(fid){
+  ['cFee','cReach','cVisitCount','cResult','cVisitDate','cDraftDate','cDate','cVisitReason'].forEach(function(fid){
     var el=document.getElementById(fid);if(el)el.value='';
   });
   var ccb=document.getElementById('cContractSent');if(ccb)ccb.checked=false;
+  renderRescheduleHistory([]);
   /* 媒体選択は updateCastPlatformSelect() で初期化するためここでは不要 */
   var titleEl=document.getElementById('castModalTitle');
   if(titleEl)titleEl.textContent='キャスティング記録';
@@ -762,6 +784,7 @@ function openCastingModal(opts){
         set('cReach',ec.reach);set('cVisitCount',ec.visitCount);set('cResult',ec.result);
         set('cVisitDate',ec.visitDate);set('cDraftDate',ec.draftDate);set('cDate',ec.date);
         var ccbEdit=document.getElementById('cContractSent');if(ccbEdit)ccbEdit.checked=!!ec.contractSent;
+        renderRescheduleHistory(ec.reschedules||[]);
       }
     }
     /* プリセット */
@@ -908,6 +931,15 @@ function saveCasting(){
   var oldCastId=isEdit?castId:null;
   var prevRecord=isEdit?(DB.castings.find(function(x){return x.id===castId;})||{}):{};
   var prevVisitDate=prevRecord.visitDate||'';
+  /* 来店予定日を変更して保存した場合はリスケ履歴に記録（理由は任意） */
+  var reschedules=(prevRecord.reschedules||[]).slice();
+  if(prevVisitDate&&visitDate&&prevVisitDate!==visitDate){
+    reschedules.push({
+      from:prevVisitDate,to:visitDate,
+      reason:document.getElementById('cVisitReason').value.trim(),
+      at:new Date().toISOString()
+    });
+  }
   var c={
     id:castId,storeId:sid,infId:iid,date:dt,
     visitDate:visitDate,draftDate:draftDate,
@@ -917,7 +949,8 @@ function saveCasting(){
     result:document.getElementById('cResult').value,
     postUrls:(function(){var o={};Object.keys(_curCastPostUrls).forEach(function(k){if(_curCastPostUrls[k])o[k]=_curCastPostUrls[k];});return o;})(),
     contractSent:!!(document.getElementById('cContractSent')&&document.getElementById('cContractSent').checked),
-    liaisonNeeded:!!prevRecord.liaisonNeeded
+    liaisonNeeded:!!prevRecord.liaisonNeeded,
+    reschedules:reschedules
   };
   if(isEdit){
     var eidx=DB.castings.findIndex(function(x){return x.id===c.id;});
