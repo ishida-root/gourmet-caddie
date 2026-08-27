@@ -245,7 +245,7 @@ function toggleSchedFilter(el){
   else{el.style.background='';el.style.borderColor='';el.style.color='';}
   renderSchedule();
 }
-var schedView='list';
+var schedView='cal';
 function setSchedView(v){
   schedView=v;
   var listBtn=document.getElementById('viewTabList');
@@ -265,6 +265,19 @@ var TYPE_BADGE={video:'b-gray',image:'b-gray',reel:'b-blue',story:'b-gray',inf_v
 
 var schedTypeFilter='';
 var schedShowPast=false;
+
+/* 日付見出し用ラベル（今日／明日／昨日は特別表記、それ以外は月/日(曜)） */
+function schedDateLabel(dateStr){
+  var d=new Date(dateStr+'T00:00:00');
+  var today=new Date();today.setHours(0,0,0,0);
+  var diffDays=Math.round((d-today)/86400000);
+  var days=['日','月','火','水','木','金','土'];
+  var base=(d.getMonth()+1)+'/'+d.getDate()+'('+days[d.getDay()]+')';
+  if(diffDays===0)return'今日 '+base;
+  if(diffDays===1)return'明日 '+base;
+  if(diffDays===-1)return'昨日 '+base;
+  return base;
+}
 
 function toggleSchedPast(){
   schedShowPast=!schedShowPast;
@@ -311,7 +324,19 @@ function renderSchedule(){
   });
   var tb=document.getElementById('schedBody');
   if(!list.length){tb.innerHTML='<tr><td colspan="6" class="empty-state">スケジュールがありません</td></tr>';return;}
+  var lastDateKey=null;
   tb.innerHTML=list.map(function(p){
+    /* 日付が変わるたびに見出し行を挿入して、全店舗混在でも日単位で追いやすくする */
+    var dateKey=(p.date||'').slice(0,10);
+    var headerHtml='';
+    if(dateKey&&dateKey!==lastDateKey){
+      lastDateKey=dateKey;
+      headerHtml='<tr><td colspan="6" style="background:var(--bg3);font-weight:500;font-size:12px;color:var(--text2);padding:6px 10px">📅 '+schedDateLabel(dateKey)+'</td></tr>';
+    }
+    return headerHtml+schedRowHtml(p);
+  }).join('');
+}
+function schedRowHtml(p){
     var isInf=p.type==='inf_visit'||p.type==='inf_post'||p.type==='inf_draft';
     var infCell;
     if(isInf&&p.infId){
@@ -339,7 +364,6 @@ function renderSchedule(){
         +'<button class="btn-ghost-danger" onclick="deletePost(\''+p.id+'\')">削除</button>'
       +'</td>'
       +'</tr>';
-  }).join('');
 }
 
 function renderCalendar(){
@@ -411,7 +435,7 @@ function renderCalendar(){
         +'style="background:'+chipBg+';color:'+chipCol+';cursor:grab;user-select:none;font-weight:500" '
         +'title="ドラッグで日程移動・クリックで編集">'+label+'</div>';
     }).join('');
-    var more=dayItems.length>4?'<div style="font-size:10px;color:var(--text3)">+'+(dayItems.length-4)+'</div>':'';
+    var more=dayItems.length>4?'<div style="font-size:10px;color:var(--accent);cursor:pointer;text-decoration:underline" onclick="event.stopPropagation();openDayDetail('+calYear+','+calMonth+','+dd+')">+'+(dayItems.length-4)+'件</div>':'';
     cells+='<div class="cal-cell'+(isToday?' today':'')+'" '
       +'data-day="'+dd+'" '
       +'ondragover="calCellDragOver(event)" '
@@ -430,6 +454,36 @@ function calDayClick(d){
   var dateStr=calYear+'-'+pad(calMonth+1)+'-'+pad(d)+'T19:00';
   var el=document.getElementById('pDate');
   if(el)el.value=dateStr;
+}
+
+/* カレンダーの「+N件」から、その日の全予定を一覧表示 */
+function openDayDetail(y,m,d){
+  var items=DB.posts.filter(function(p){
+    var dt=new Date(p.date);
+    if(!(dt.getDate()===d&&dt.getMonth()===m&&dt.getFullYear()===y&&!calActiveStores[p.storeId]))return false;
+    if(schedTypeFilter==='influencer')return p.type==='inf_visit'||p.type==='inf_post'||p.type==='inf_draft';
+    if(schedTypeFilter==='creator')return p.type==='shooting'||(p.creatorId&&(p.type==='video'||p.type==='image'||p.type==='reel'||p.type==='story'));
+    if(schedTypeFilter==='normal')return p.type==='video'||p.type==='image'||p.type==='reel'||p.type==='story';
+    return true;
+  }).sort(function(a,b){return new Date(a.date)-new Date(b.date);});
+  var pad=function(n){return String(n).padStart(2,'0');};
+  var dateStr=y+'-'+pad(m+1)+'-'+pad(d);
+  var titleEl=document.getElementById('dayDetailTitle');
+  if(titleEl)titleEl.textContent=schedDateLabel(dateStr)+'の予定（'+items.length+'件）';
+  var bodyEl=document.getElementById('dayDetailBody');
+  if(bodyEl){
+    bodyEl.innerHTML=items.length?items.map(function(p){
+      var isInf=p.type==='inf_visit'||p.type==='inf_post'||p.type==='inf_draft';
+      var who=isInf&&p.infId?infName(p.infId).split(' ')[0]
+        :(p.creatorId&&DB.creators?((DB.creators.find(function(x){return x.id===p.creatorId;})||{}).crName||'クリエイター'):'—');
+      return'<div style="display:flex;align-items:center;gap:8px;padding:8px 10px;border-bottom:1px solid var(--border);cursor:pointer" onclick="closeModal(\'dayDetailModal\');openPostModal(\''+p.id+'\')">'
+        +'<span class="badge '+TYPE_BADGE[p.type]+'" style="white-space:nowrap">'+(TYPE_ICON[p.type]||'')+' '+(TYPE_LABEL[p.type]||p.type)+'</span>'
+        +'<span style="font-size:13px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(storeName(p.storeId))+' — '+esc(who)+'</span>'
+        +postStatusBadge(p.status)
+      +'</div>';
+    }).join(''):'<div class="empty-state">予定はありません</div>';
+  }
+  openModal('dayDetailModal');
 }
 
 function toggleCalStore(id){calActiveStores[id]=!calActiveStores[id];renderCalendar();}

@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=61">
+<link rel="stylesheet" href="css/app.css?v=62">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -230,8 +230,8 @@
           <div style="display:flex;gap:6px;align-items:center">
             <button id="schedPastBtn" onclick="toggleSchedPast()" style="padding:4px 10px;font-size:12px;border-radius:20px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer">過去を表示</button>
             <div style="display:flex;border:1px solid var(--border);border-radius:var(--r);overflow:hidden">
-              <button id="viewTabList" onclick="setSchedView('list')" style="padding:4px 12px;font-size:12px;background:var(--accent);color:#fff;border:none;cursor:pointer">リスト</button>
-              <button id="viewTabCal" onclick="setSchedView('cal')" style="padding:4px 12px;font-size:12px;background:var(--bg3);color:var(--text2);border:none;cursor:pointer">カレンダー</button>
+              <button id="viewTabList" onclick="setSchedView('list')" style="padding:4px 12px;font-size:12px;background:var(--bg3);color:var(--text2);border:none;cursor:pointer">リスト</button>
+              <button id="viewTabCal" onclick="setSchedView('cal')" style="padding:4px 12px;font-size:12px;background:var(--accent);color:#fff;border:none;cursor:pointer">カレンダー</button>
             </div>
             <button class="btn btn-primary btn-sm" onclick="openPostModal()">＋ 追加</button>
           </div>
@@ -246,14 +246,14 @@
         <!-- 店舗フィルタ -->
         <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px" id="schedFilter"></div>
         <!-- リストビュー -->
-        <div id="schedListView">
+        <div id="schedListView" style="display:none">
           <div class="table-wrap"><table>
             <thead><tr><th>種別</th><th>店舗</th><th>日時</th><th>担当（INF / クリエイター）</th><th>ステータス</th><th></th></tr></thead>
             <tbody id="schedBody"></tbody>
           </table></div>
         </div>
         <!-- カレンダービュー -->
-        <div id="schedCalView" style="display:none">
+        <div id="schedCalView">
           <div class="cal-nav" style="margin-bottom:10px">
             <button class="btn btn-sm" onclick="calMove(-1)">← 前月</button>
             <span id="calTitle" style="font-size:14px;font-weight:500"></span>
@@ -800,6 +800,17 @@
 </div>
 </div>
 
+<!-- DAY DETAIL MODAL（カレンダーの「+N件」から開く、その日の全予定） -->
+<div class="modal-overlay" id="dayDetailModal">
+<div class="modal" style="width:520px">
+  <div class="modal-header"><span class="modal-title" id="dayDetailTitle">この日の予定</span><button class="modal-close" onclick="closeModal('dayDetailModal')">✕</button></div>
+  <div class="modal-body">
+    <div id="dayDetailBody"></div>
+    <div class="form-actions"><button class="btn" onclick="closeModal('dayDetailModal')">閉じる</button></div>
+  </div>
+</div>
+</div>
+
 <!-- INFLUENCER MODAL -->
 <!-- INFLUENCER EDIT MODAL -->
 <div class="modal-overlay" id="infModal">
@@ -1067,25 +1078,25 @@
 </div>
 </div>
 
-<script src="js/vendor/pizzip.min.js?v=61"></script>
-<script src="js/vendor/docxtemplater.min.js?v=61"></script>
-<script src="js/config.js?v=61"></script>
-<script src="js/db.js?v=61"></script>
-<script src="js/utils.js?v=61"></script>
-<script src="js/settings.js?v=61"></script>
-<script src="js/stores.js?v=61"></script>
-<script src="js/schedule.js?v=61"></script>
-<script src="js/casting.js?v=61"></script>
-<script src="js/check.js?v=61"></script>
-<script src="js/accounting.js?v=61"></script>
-<script src="js/plans.js?v=61"></script>
-<script src="js/creators.js?v=61"></script>
-<script src="js/corps.js?v=61"></script>
-<script src="js/faqs.js?v=61"></script>
-<script src="js/orders.js?v=61"></script>
-<script src="js/hearing.js?v=61"></script>
-<script src="js/dashboard.js?v=61"></script>
-<script src="js/app.js?v=61"></script>
+<script src="js/vendor/pizzip.min.js?v=62"></script>
+<script src="js/vendor/docxtemplater.min.js?v=62"></script>
+<script src="js/config.js?v=62"></script>
+<script src="js/db.js?v=62"></script>
+<script src="js/utils.js?v=62"></script>
+<script src="js/settings.js?v=62"></script>
+<script src="js/stores.js?v=62"></script>
+<script src="js/schedule.js?v=62"></script>
+<script src="js/casting.js?v=62"></script>
+<script src="js/check.js?v=62"></script>
+<script src="js/accounting.js?v=62"></script>
+<script src="js/plans.js?v=62"></script>
+<script src="js/creators.js?v=62"></script>
+<script src="js/corps.js?v=62"></script>
+<script src="js/faqs.js?v=62"></script>
+<script src="js/orders.js?v=62"></script>
+<script src="js/hearing.js?v=62"></script>
+<script src="js/dashboard.js?v=62"></script>
+<script src="js/app.js?v=62"></script>
 <!-- GENRE MODAL -->
 <!-- 追加費用モーダル -->
 <div class="modal-overlay" id="addFeeModal">
