@@ -86,6 +86,7 @@ function openInvoiceModal(id,opts){
     if(opts.infId)infSel.value=opts.infId;
     if(opts.storeId)storeSel.value=opts.storeId;
     if(opts.castingId)document.getElementById('invCastingId').value=opts.castingId;
+    if(opts.isEstimate&&!id){document.getElementById('invIsEstimate').checked=true;onInvoiceEstimateChange();}
     /* PR費用をキャスティングの fee から自動入力 */
     if(opts.castingId){
       var casting=DB.castings.find(function(x){return x.id===opts.castingId;});

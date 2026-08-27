@@ -1026,7 +1026,7 @@ function toggleCastLiaison(id){
 function openInvoiceFromCasting(castingId){
   var c=DB.castings.find(function(x){return x.id===castingId;});
   if(!c)return;
-  openInvoiceModal(null,{castingId:castingId,infId:c.infId,storeId:c.storeId});
+  openInvoiceModal(null,{castingId:castingId,infId:c.infId,storeId:c.storeId,isEstimate:true});
 }
 
 function deleteCasting(id){
@@ -1100,7 +1100,7 @@ function renderCasting(){
     var inv=(DB.invoices||[]).find(function(x){return x.castingId===c.id;});
     var invCell=inv
       ?'<span style="font-size:12px;padding:2px 7px;border-radius:4px;background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-border);white-space:nowrap">'+(INV_STATUS_LABEL[inv.status]||inv.status)+'</span>'
-      :'<span style="font-size:12px;color:var(--text3)">未登録</span>';
+      :'<button class="btn btn-sm" onclick="event.stopPropagation();openInvoiceFromCasting(\''+c.id+'\')" style="font-size:11px;padding:2px 8px;white-space:nowrap">🔖 仮登録</button>';
     var pp=c.platforms&&c.platforms.length?c.platforms:(c.platform?[c.platform]:[]);
     var abbrs=[...new Set(pp.map(platformAbbr).filter(Boolean))];
     var platCell=abbrs.length?abbrs.map(function(a){return'<span style="display:inline-block;font-size:11px;padding:1px 6px;background:var(--accent-bg);color:var(--accent);border-radius:3px;margin:1px;white-space:nowrap">'+esc(a)+'</span>';}).join(''):'—';
