@@ -5,6 +5,8 @@ function fmtD(d){if(!d)return'—';var dt=new Date(d);return dt.getFullYear()+'/
 function pad(n){return String(n).padStart(2,'0');}
 function fmtMoney(v){if(v===''||v===null||v===undefined)return'—';return Number(v).toLocaleString()+'円';}
 function storeName(id){var s=DB.stores.find(function(x){return x.id===id;});return s?s.name:'不明';}
+/* 契約終了（status='ended'）の店舗かどうか。ダッシュボード/事前チェックのアラートから除外するために使用 */
+function isStoreEnded(id){var s=DB.stores.find(function(x){return x.id===id;});return!!(s&&s.status==='ended');}
 function storeColor(id){var s=DB.stores.find(function(x){return x.id===id;});return s?s.color:'#888';}
 function infName(id){var i=DB.influencers.find(function(x){return x.id===id;});return i?(i.name+' '+(i.handle||'')):'不明';}
 /* インフルエンサーのアカウントURL（登録URL優先、無ければ媒体+ハンドルから生成） */

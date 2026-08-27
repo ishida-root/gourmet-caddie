@@ -599,6 +599,9 @@ function deleteStore(id){
   var relatedPosts=DB.posts.filter(function(p){return p.storeId===id;});
   relatedPosts.forEach(function(p){deleteItem('posts',p.id);});
   DB.posts=DB.posts.filter(function(p){return p.storeId!==id;});
+  var relatedCastings=DB.castings?DB.castings.filter(function(c){return c.storeId===id;}):[];
+  relatedCastings.forEach(function(c){deleteItem('castings',c.id);});
+  if(DB.castings)DB.castings=DB.castings.filter(function(c){return c.storeId!==id;});
   /* 店舗本体を削除 */
   DB.stores=DB.stores.filter(function(s){return s.id!==id;});
   refreshAll();

@@ -128,20 +128,22 @@ function renderPlatformDetails(saved){
     +'</div>';
   }).join('');
 
-  var ungrouped=enabledIds.filter(function(id){return!(saved[id]&&saved[id].bundleId);});
-  var bundleBtnHtml=ungrouped.length>=1?'<button type="button" class="btn btn-sm" onclick="toggleBundleCreatePanel()">＋ セット料金を作る</button>':'';
+  /* セット作成候補は「対応中の全媒体」から選べるようにする（既にセット済みの媒体も対象に含める。
+     含めないと一度セットに入れた媒体が二度と選べなくなってしまうため） */
+  var bundleBtnHtml=enabledIds.length>=1?'<button type="button" class="btn btn-sm" onclick="toggleBundleCreatePanel()">＋ セット料金を作る</button>':'';
   var bundlePanelHtml='';
   if(_bundleCreateOpen){
-    if(ungrouped.length<1){
-      bundlePanelHtml='<div style="margin-top:8px;padding:10px;background:var(--bg3);border-radius:var(--r);font-size:12px;color:var(--text3)">料金未設定の対応媒体がありません</div>';
+    if(enabledIds.length<1){
+      bundlePanelHtml='<div style="margin-top:8px;padding:10px;background:var(--bg3);border-radius:var(--r);font-size:12px;color:var(--text3)">上で対応媒体を選択してください</div>';
     }else{
       bundlePanelHtml='<div style="margin-top:8px;padding:10px;background:var(--bg3);border-radius:var(--r)">'
-        +'<div style="font-size:12px;color:var(--text2);margin-bottom:6px">料金を設定する媒体を選択（1つでも可・複数選ぶとセット料金に・例：料理写真セットで5万円）</div>'
+        +'<div style="font-size:12px;color:var(--text2);margin-bottom:6px">料金を設定する媒体を選択（1つでも可・複数選ぶとセット料金に・例：料理写真セットで5万円）<br>※既に別のセットに入っている媒体を選ぶと、そちらから外れて新しいセットに移動します</div>'
         +'<div style="display:flex;flex-wrap:wrap;gap:6px 14px;margin-bottom:8px">'
-        +ungrouped.map(function(id){
+        +enabledIds.map(function(id){
           var pl=INF_PLATFORM_LIST.find(function(x){return x.id===id;});
+          var already=(saved[id]&&saved[id].bundleId)?'<span style="font-size:11px;color:var(--text3)">（セット済み）</span>':'';
           return'<label style="display:inline-flex;align-items:center;gap:5px;font-size:12px;cursor:pointer">'
-            +'<input type="checkbox" class="bundle-create-chk" value="'+id+'" style="width:14px;height:14px;cursor:pointer;accent-color:var(--accent)"> '+esc(pl?pl.label:id)
+            +'<input type="checkbox" class="bundle-create-chk" value="'+id+'" style="width:14px;height:14px;cursor:pointer;accent-color:var(--accent)"> '+esc(pl?pl.label:id)+already
           +'</label>';
         }).join('')
         +'</div>'
@@ -209,9 +211,16 @@ function createPlatformBundle(){
   var bid=uid();
   if(!data._bundles)data._bundles={};
   data._bundles[bid]={feeLow:0,feeHigh:0,taxIncl:false,transIncl:false};
+  /* 既に別セットに入っている媒体を選んだ場合、そちらから外す（元のセットが空になれば削除） */
+  var oldBundleIds={};
   checked.forEach(function(id){
     if(!data[id])data[id]={enabled:true};
+    if(data[id].bundleId&&data[id].bundleId!==bid)oldBundleIds[data[id].bundleId]=true;
     data[id].bundleId=bid;
+  });
+  Object.keys(oldBundleIds).forEach(function(oldBid){
+    var stillHasMembers=Object.keys(data).some(function(k){return k!=='_bundles'&&data[k]&&data[k].bundleId===oldBid;});
+    if(!stillHasMembers&&data._bundles)delete data._bundles[oldBid];
   });
   _bundleCreateOpen=false;
   renderPlatformDetails(data);
@@ -923,9 +932,11 @@ function saveCasting(){
   var fee=document.getElementById('cFee').value;
   /* 編集時は既存IDを使う、新規時のみuid()生成 */
   var castId=isEdit?editingCastId:uid();
-  /* 新規の場合：同じINFが既にあれば上書き扱いにする */
+  /* 新規の場合：同じ店舗×同じINFの組み合わせが既にあれば上書き扱いにする
+     （店舗を跨いでinfIdだけで一致判定すると、別店舗の既存キャスティングを
+       誤って現在の店舗に付け替えてしまうため、storeIdも一致条件に含める） */
   if(!isEdit){
-    var existing=DB.castings.find(function(x){return x.infId===iid;});
+    var existing=DB.castings.find(function(x){return x.infId===iid&&x.storeId===sid;});
     if(existing){castId=existing.id;isEdit=true;}
   }
   var oldCastId=isEdit?castId:null;

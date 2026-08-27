@@ -308,7 +308,14 @@ function renderAccounting(){
   var list=summaryList.filter(function(inv){
     if(!accShowSettled&&invSettled(inv))return false;
     return true;
-  }).sort(function(a,b){return invMonthOf(b).localeCompare(invMonthOf(a))||(b.receivedDate||'').localeCompare(a.receivedDate||'');});
+  }).sort(function(a,b){
+    /* 受領日未登録を最上部に、それ以外は受領日が新しい順（古いものが下）に並べる */
+    var ar=a.receivedDate||'',br=b.receivedDate||'';
+    if(!ar&&br)return-1;
+    if(ar&&!br)return 1;
+    if(!ar&&!br)return 0;
+    return br.localeCompare(ar);
+  });
 
   /* サマリー集計（すべて表示トグル無視・税込ベース） */
   var totalAll=0,totalInf=0,totalCr=0,totalAd=0;

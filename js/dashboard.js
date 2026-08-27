@@ -354,9 +354,10 @@ function generateAlerts(){
     alerts.push({level:'info',msg:'📬 新規契約【'+n.storeName+'】営業: '+n.salesBy+' / プラン: '+n.plan,storeId:n.storeId,isNotif:true,notifId:n.id});
   });
 
-  /* 投稿日が3日以内 */
+  /* 投稿日が3日以内（契約終了店舗は除外） */
   var in3days=new Date(today.getTime()+3*86400000);
   DB.posts.filter(function(p){
+    if(isStoreEnded(p.storeId))return false;
     var d=new Date(p.date);
     return p.status!=='done'&&d>=today&&d<=in3days;
   }).forEach(function(p){
@@ -364,15 +365,16 @@ function generateAlerts(){
     alerts.push({level:'warn',msg:'📅 投稿まで'+diff+'日【'+storeName(p.storeId)+'】'+fmtDT(p.date)+(p.caption?' — '+(p.caption||'').slice(0,20):'')});
   });
 
-  /* 予約済みなのに過去 */
+  /* 予約済みなのに過去（契約終了店舗は除外） */
   DB.posts.forEach(function(p){
+    if(isStoreEnded(p.storeId))return;
     if(p.status==='scheduled'&&new Date(p.date)<today)alerts.push({level:'danger',msg:'⚠ 投稿日が過去【'+storeName(p.storeId)+'】'+fmtDT(p.date),postId:p.id,action:'done'});
     if(!p.creative&&p.type==='video')alerts.push({level:'warn',msg:'🎬 クリエイティブ未設定【'+storeName(p.storeId)+'】'+fmtDT(p.date),postId:p.id,action:'edit'});
   });
 
-  /* 同日重複 */
+  /* 同日重複（契約終了店舗は除外） */
   var dateMap={};
-  DB.posts.forEach(function(p){var k=p.storeId+'_'+(p.date||'').slice(0,10);if(!dateMap[k])dateMap[k]=[];dateMap[k].push(p);});
+  DB.posts.filter(function(p){return!isStoreEnded(p.storeId);}).forEach(function(p){var k=p.storeId+'_'+(p.date||'').slice(0,10);if(!dateMap[k])dateMap[k]=[];dateMap[k].push(p);});
   Object.values(dateMap).forEach(function(ps){if(ps.length>1)alerts.push({level:'danger',msg:'⚠ 同日重複【'+storeName(ps[0].storeId)+'】'+(ps[0].date||'').slice(0,10)+' '+ps.length+'件'});});
 
   /* 契約終了・投稿本数 */

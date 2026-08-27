@@ -180,8 +180,9 @@ function renderCheckPage(){
 
   var DONE_ST=['done','visited','approved','cancelled'];
 
-  /* ① 今週の投稿（未完了／完了で分ける） */
+  /* ① 今週の投稿（未完了／完了で分ける・契約終了店舗は除外） */
   var weekAll=DB.posts.filter(function(p){
+    if(isStoreEnded(p.storeId))return false;
     var d=new Date(p.date);return d>=weekStart&&d<=weekEnd;
   }).sort(function(a,b){return new Date(a.date)-new Date(b.date);});
   var weekActive=weekAll.filter(function(p){return DONE_ST.indexOf(p.status)<0;});
@@ -217,8 +218,9 @@ function renderCheckPage(){
     }
   }
 
-  /* ② 今月の投稿（未完了／完了で分ける） */
+  /* ② 今月の投稿（未完了／完了で分ける・契約終了店舗は除外） */
   var monthAll=DB.posts.filter(function(p){
+    if(isStoreEnded(p.storeId))return false;
     var d=new Date(p.date);return d>=monthStart&&d<=monthEnd;
   }).sort(function(a,b){return new Date(a.date)-new Date(b.date);});
   var monthActive=monthAll.filter(function(p){return DONE_ST.indexOf(p.status)<0;});
@@ -254,8 +256,9 @@ function renderCheckPage(){
     }
   }
 
-  /* ③ クリエイティブ未設定（動画・画像・リール・ストーリー系のみ。INF系は除外） */
+  /* ③ クリエイティブ未設定（動画・画像・リール・ストーリー系のみ。INF系・契約終了店舗は除外） */
   var noCreative=DB.posts.filter(function(p){
+    if(isStoreEnded(p.storeId))return false;
     var isCreative=p.type==='video'||p.type==='image'||p.type==='reel'||p.type==='story'||p.type==='shooting';
     return isCreative&&!p.creative&&p.status!=='done';
   }).sort(function(a,b){return new Date(a.date)-new Date(b.date);});
@@ -317,8 +320,8 @@ function renderCheckPage(){
 
   var rows=[];
 
-  /* ① 契約書未送付（castingが登録されているのに contractSent=false の案件） */
-  DB.castings.filter(function(c){return !c.contractSent;}).forEach(function(c){
+  /* ① 契約書未送付（castingが登録されているのに contractSent=false の案件・契約終了店舗は除外） */
+  DB.castings.filter(function(c){return !c.contractSent&&!isStoreEnded(c.storeId);}).forEach(function(c){
     var inf=DB.influencers.find(function(x){return x.id===c.infId;});
     if(!inf)return;
     rows.push(infAlertRow('red','📄',
@@ -328,9 +331,9 @@ function renderCheckPage(){
     ));
   });
 
-  /* ② 予約が取れていない来店予定（unbooked） */
+  /* ② 予約が取れていない来店予定（unbooked・契約終了店舗は除外） */
   DB.posts.filter(function(p){
-    return p.type==='inf_visit'&&p.status==='unbooked'&&new Date(p.date)>=today;
+    return p.type==='inf_visit'&&p.status==='unbooked'&&new Date(p.date)>=today&&!isStoreEnded(p.storeId);
   }).sort(function(a,b){return new Date(a.date)-new Date(b.date);}).forEach(function(p){
     var inf=DB.influencers.find(function(x){return x.id===p.infId;})||{};
     var daysLeft=Math.ceil((new Date(p.date)-today)/86400000);
@@ -341,9 +344,9 @@ function renderCheckPage(){
     ));
   });
 
-  /* ③ 来店日が近い（14日以内・booked） */
+  /* ③ 来店日が近い（14日以内・booked・契約終了店舗は除外） */
   DB.posts.filter(function(p){
-    if(p.type!=='inf_visit'||p.status!=='booked')return false;
+    if(p.type!=='inf_visit'||p.status!=='booked'||isStoreEnded(p.storeId))return false;
     var d=new Date(p.date);return d>=today&&d<=in14;
   }).sort(function(a,b){return new Date(a.date)-new Date(b.date);}).forEach(function(p){
     var inf=DB.influencers.find(function(x){return x.id===p.infId;})||{};
@@ -356,9 +359,9 @@ function renderCheckPage(){
     ));
   });
 
-  /* ④ 投稿日が近い（14日以内の inf_post） */
+  /* ④ 投稿日が近い（14日以内の inf_post・契約終了店舗は除外） */
   DB.posts.filter(function(p){
-    if(p.type!=='inf_post'||p.status==='done')return false;
+    if(p.type!=='inf_post'||p.status==='done'||isStoreEnded(p.storeId))return false;
     var d=new Date(p.date);return d>=today&&d<=in14;
   }).sort(function(a,b){return new Date(a.date)-new Date(b.date);}).forEach(function(p){
     var inf=DB.influencers.find(function(x){return x.id===p.infId;})||{};
