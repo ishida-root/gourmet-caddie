@@ -564,6 +564,13 @@ function ratingStars(r){
   var colors={5:'var(--green)',4:'var(--green)',3:'var(--amber)',2:'var(--amber)',1:'var(--red)'};
   return '<span style="color:'+colors[n]+';font-size:13px">'+stars+'</span>';
 }
+/* 評価が「要注意」「NG」のインフルエンサーを一覧・詳細で一目でわかるようにするバッジ */
+function ratingWarningBadge(r){
+  var n=parseInt(r);
+  if(n===2)return'<span class="badge" style="background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border);white-space:nowrap">⚠️ 要注意</span>';
+  if(n===1)return'<span class="badge" style="background:var(--red-bg);color:var(--red);border:1px solid var(--red-border);white-space:nowrap">🚫 NG</span>';
+  return'';
+}
 
 function platformAbbr(label){
   if(!label)return'';
@@ -616,6 +623,7 @@ function openInfluencerDetail(id){
           )
           +(inf.handle?'<span style="font-size:13px;color:'+(platColor[inf.platform]||'var(--text3)')+'">'+esc(inf.handle)+'</span>':'')
           +ratingStars(inf.rating)
+          +ratingWarningBadge(inf.rating)
         +'</div>'
         +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">'
           +'<span class="badge" style="font-size:11px;border:1px solid;'+(INF_OUTREACH_BADGE[infOutreachStatus(inf)]||'')+'">'+esc(infOutreachStatus(inf))+'</span>'
@@ -1041,6 +1049,7 @@ function openInvoiceFromCasting(castingId){
 }
 
 function deleteCasting(id){
+  if(!confirm('このキャスティング記録を削除しますか？\n紐づく来店予定・初稿確認・投稿予定も全て削除されます。'))return;
   /* 紐づくpostsもSupabase＆メモリから削除 */
   var toDelete=DB.posts.filter(function(p){return p.castingId===id;});
   toDelete.forEach(function(p){deleteItem('posts',p.id);});
@@ -1083,8 +1092,10 @@ function renderInfluencers(){
         ?'<a href="'+esc(accountUrl)+'" target="_blank" rel="noopener" style="font-size:11px;color:'+(platColor[i.platform]||'var(--accent)')+';text-decoration:none">'+esc(i.handle)+'&nbsp;↗</a>'
         :'<span style="font-size:11px;color:'+(platColor[i.platform]||'var(--text3)')+'">'+esc(i.handle)+'</span>'
       ):'';
-    return'<tr style="cursor:pointer" onclick="openInfluencerDetail(\''+i.id+'\')">'
-      +'<td><div style="font-weight:500;color:var(--accent)">'+esc(i.name)+'</div>'+handleHtml+'</td>'
+    var warnBadge=ratingWarningBadge(i.rating);
+    var rowBg=parseInt(i.rating)===1?'background:var(--red-bg)':parseInt(i.rating)===2?'background:var(--amber-bg)':'';
+    return'<tr style="cursor:pointer;'+rowBg+'" onclick="openInfluencerDetail(\''+i.id+'\')">'
+      +'<td><div style="display:flex;align-items:center;gap:6px"><div style="font-weight:500;color:var(--accent)">'+esc(i.name)+'</div>'+warnBadge+'</div>'+handleHtml+'</td>'
       +'<td>'+esc(i.platform||'')+'</td>'
       +'<td class="td-mono">'+(i.followers?Number(i.followers).toLocaleString():'—')+'</td>'
       +'<td class="td-mono" style="white-space:nowrap">'+fmtFeeRange(i)+'</td>'

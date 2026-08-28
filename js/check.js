@@ -374,6 +374,31 @@ function renderCheckPage(){
     ));
   });
 
+  /* ⑤ 重複キャスティングの疑い（同じ店舗×同じインフルエンサーで複数登録されている場合。
+     過去の不具合で、同じ組み合わせのキャスティングが別レコードとして重複登録され、
+     投稿スケジュールにも重複した予定が残ってしまうことがあったため検出する） */
+  var castGroups={};
+  DB.castings.forEach(function(c){
+    if(isStoreEnded(c.storeId))return;
+    var key=c.storeId+'_'+c.infId;
+    if(!castGroups[key])castGroups[key]=[];
+    castGroups[key].push(c);
+  });
+  Object.keys(castGroups).forEach(function(key){
+    var group=castGroups[key];
+    if(group.length<2)return;
+    var inf=DB.influencers.find(function(x){return x.id===group[0].infId;});
+    var detail=group.map(function(c){
+      return(c.visitDate?fmtD(c.visitDate):'来店日未設定')+'／PR費用 '+(c.fee?Number(c.fee).toLocaleString()+'円':'未設定')
+        +' <button class="btn-ghost-danger" style="font-size:11px;padding:2px 6px;margin-left:4px" onclick="event.stopPropagation();deleteCasting(\''+c.id+'\')">この記録を削除</button>';
+    }).join('　|　');
+    rows.push(infAlertRow('red','⚠️',
+      '重複キャスティングの疑い：'+esc(inf?inf.name:'不明')+'（'+esc(storeName(group[0].storeId))+'）を'+group.length+'件登録',
+      detail,
+      '<button class="btn btn-sm" onclick="navigate(\'casting\')" style="white-space:nowrap;flex-shrink:0">履歴で確認</button>'
+    ));
+  });
+
   if(infCntEl)infCntEl.textContent=rows.length+'件';
   if(infEl){
     infEl.innerHTML=rows.length

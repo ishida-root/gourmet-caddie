@@ -568,8 +568,21 @@ function saveStore(){
   closeModal('storeModal');
   refreshAll();
   saveItem('stores',s);
-  /* 新規登録時はChatwork通知 */
-  if(!isEdit){
+  /* ステータスが「商談中」に新たに変わった（新規登録時に商談中で作成、または既存店舗の編集で商談中へ変更）
+     場合は、商談中専用のChatwork通知（提案資料の準備依頼）を送る。
+     既に商談中のまま変わっていない場合は保存のたびに再送しない。 */
+  var wasNegotiating=existing?existing.status==='negotiating':false;
+  var isNegotiatingNow=s.status==='negotiating';
+  if(isNegotiatingNow&&!wasNegotiating){
+    notifyChatworkNegotiating(s.name,s.ourManager||'').then(function(results){
+      if(results.length){
+        var allOk=results.every(function(r){return r.ok;});
+        setSyncStatus(allOk?'ok':'error',allOk?'✓ Chatwork通知送信完了':'Chatwork通知失敗');
+        if(allOk)setTimeout(function(){setSyncStatus('ok','同期済み');},3000);
+      }
+    });
+  }else if(!isEdit){
+    /* 新規登録（商談中以外）時はこれまで通りの通知 */
     var plan=DB.plans.find(function(p){return p.id===s.planId;});
     var planName=plan?plan.name:'未設定';
     notifyChatwork(
