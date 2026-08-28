@@ -738,14 +738,23 @@ function renderRescheduleHistory(list){
     +'<div class="table-wrap"><table><thead><tr><th style="font-size:11px">変更前</th><th style="font-size:11px">変更後</th><th style="font-size:11px">理由</th><th style="font-size:11px">記録日</th></tr></thead><tbody>'
     +sorted.map(function(r){
       return'<tr>'
-        +'<td class="td-mono" style="font-size:12px">'+(r.from?fmtD(r.from):'—')+'</td>'
-        +'<td class="td-mono" style="font-size:12px">'+(r.to?fmtD(r.to):'—')+'</td>'
+        +'<td class="td-mono" style="font-size:12px">'+(r.from?(/^\d{4}-\d{2}-\d{2}/.test(r.from)?fmtD(r.from):esc(r.from)):'—')+'</td>'
+        +'<td class="td-mono" style="font-size:12px">'+(r.to?(/^\d{4}-\d{2}-\d{2}/.test(r.to)?fmtD(r.to):esc(r.to)):'—')+'</td>'
         +'<td style="font-size:12px;color:var(--text2)">'+esc(r.reason||'—')+'</td>'
         +'<td style="font-size:11px;color:var(--text3)">'+fmtD((r.at||'').split('T')[0])+'</td>'
       +'</tr>';
     }).join('')
     +'</tbody></table></div>'
   +'</div>';
+}
+
+/* 「リスケ中（日程未定）」チェック時は来店予定日欄をクリアして矛盾した状態にならないようにする */
+function onVisitTbdChange(){
+  var cb=document.getElementById('cVisitTbd');
+  if(!cb||!cb.checked)return;
+  var dw=document.getElementById('cVisitDateWrap');
+  if(dw&&dw._setDate)dw._setDate('');
+  var dateEl=document.getElementById('cVisitDate');if(dateEl)dateEl.value='';
 }
 
 var editingCastId=null;
@@ -759,6 +768,7 @@ function openCastingModal(opts){
   });
   var ccb=document.getElementById('cContractSent');if(ccb)ccb.checked=false;
   var cStatusEl=document.getElementById('cStatus');if(cStatusEl)cStatusEl.value='active';
+  var cTbdEl=document.getElementById('cVisitTbd');if(cTbdEl)cTbdEl.checked=false;
   renderRescheduleHistory([]);
   /* 媒体選択は updateCastPlatformSelect() で初期化するためここでは不要 */
   var titleEl=document.getElementById('castModalTitle');
@@ -803,6 +813,8 @@ function openCastingModal(opts){
         set('cVisitDate',ec.visitDate);set('cDraftDate',ec.draftDate);set('cDate',ec.date);
         var ccbEdit=document.getElementById('cContractSent');if(ccbEdit)ccbEdit.checked=!!ec.contractSent;
         var cStatusEdit=document.getElementById('cStatus');if(cStatusEdit)cStatusEdit.value=ec.status||'active';
+        var linkedVisitPost=DB.posts.find(function(p){return p.castingId===ec.id&&p.type==='inf_visit';});
+        var cTbdEdit=document.getElementById('cVisitTbd');if(cTbdEdit)cTbdEdit.checked=!!(linkedVisitPost&&linkedVisitPost.status==='date_tbd');
         renderRescheduleHistory(ec.reschedules||[]);
       }
     }
@@ -952,11 +964,19 @@ function saveCasting(){
   var oldCastId=isEdit?castId:null;
   var prevRecord=isEdit?(DB.castings.find(function(x){return x.id===castId;})||{}):{};
   var prevVisitDate=prevRecord.visitDate||'';
-  /* 来店予定日を変更して保存した場合はリスケ履歴に記録（理由は任意） */
+  var visitTbd=!!(document.getElementById('cVisitTbd')&&document.getElementById('cVisitTbd').checked);
+  /* 来店予定日を変更して保存した場合はリスケ履歴に記録（理由は任意）。
+     日程未定（リスケ中）へ切り替えた場合も、日程が決まっていた状態からの変化として記録する。 */
   var reschedules=(prevRecord.reschedules||[]).slice();
   if(prevVisitDate&&visitDate&&prevVisitDate!==visitDate){
     reschedules.push({
       from:prevVisitDate,to:visitDate,
+      reason:document.getElementById('cVisitReason').value.trim(),
+      at:new Date().toISOString()
+    });
+  }else if(prevVisitDate&&!visitDate&&visitTbd){
+    reschedules.push({
+      from:prevVisitDate,to:'（日程未定）',
       reason:document.getElementById('cVisitReason').value.trim(),
       at:new Date().toISOString()
     });
@@ -985,16 +1005,16 @@ function saveCasting(){
      日付が実際に変更された場合のみ「リスケ」としてステータスをリセットする。
      日付欄が空になった場合はそのステップの予定を削除する。 */
   var existingPosts=oldCastId?DB.posts.filter(function(p){return p.castingId===oldCastId;}):[];
-  function upsertSchedulePost(type,dateVal,defaultStatus,noteText,extra){
+  function upsertSchedulePost(type,dateVal,defaultStatus,noteText,extra,keepIfEmpty){
     var existing=existingPosts.find(function(p){return p.type===type;});
-    if(!dateVal){
+    if(!dateVal&&!keepIfEmpty){
       if(existing){DB.posts=DB.posts.filter(function(p){return p.id!==existing.id;});deleteItem('posts',existing.id);}
       return;
     }
     if(existing){
-      var rescheduled=existing.date!==dateVal;
+      var rescheduled=dateVal&&existing.date&&existing.date!==dateVal;
       existing.date=dateVal;
-      if(rescheduled)existing.status=defaultStatus;
+      if(rescheduled||(!dateVal&&keepIfEmpty))existing.status=defaultStatus;
       Object.assign(existing,extra);
       existing.note=noteText;
       saveItem('posts',existing);
@@ -1005,7 +1025,8 @@ function saveCasting(){
     }
   }
   var visitTime=document.getElementById('cVisitTime')?document.getElementById('cVisitTime').value:'12:00';
-  upsertSchedulePost('inf_visit',visitDate?visitDate+'T'+visitTime:'','unbooked','キャスティングID:'+c.id,{platform:platform,infFee:fee});
+  var visitIsTbd=!visitDate&&visitTbd;
+  upsertSchedulePost('inf_visit',visitDate?visitDate+'T'+visitTime:'',visitIsTbd?'date_tbd':'unbooked','キャスティングID:'+c.id,{platform:platform,infFee:fee},visitIsTbd);
   upsertSchedulePost('inf_draft',draftDate?draftDate+'T12:00':'','draft','初稿確認 キャスティングID:'+c.id,{platform:platform});
   upsertSchedulePost('inf_post',dt?dt+'T12:00':'','scheduled','投稿予定 キャスティングID:'+c.id,{platform:platform,infFee:fee});
   /* キャスティング自体をキャンセルにした場合、紐づく来店予定・初稿確認・投稿予定も
@@ -1147,10 +1168,13 @@ function renderCasting(){
     var infObj=DB.influencers.find(function(x){return x.id===c.infId;});
     var isCancelled=c.status==='cancelled';
     var cancelBadge=isCancelled?'<span class="badge" style="background:var(--red-bg);color:var(--red);border:1px solid var(--red-border);font-size:11px;margin-left:5px">🚫 キャンセル</span>':'';
+    var linkedVisitPost=(DB.posts||[]).find(function(p){return p.castingId===c.id&&p.type==='inf_visit';});
+    var isVisitTbd=linkedVisitPost&&linkedVisitPost.status==='date_tbd';
+    var visitCell=c.visitDate?fmtD(c.visitDate):(isVisitTbd?'<span style="color:var(--amber)">🔁 リスケ中</span>':'—');
     return'<tr'+(isCancelled?' style="opacity:0.55"':'')+'>'
       +'<td>'+esc(storeName(c.storeId))+cancelBadge+'</td>'
       +'<td style="color:var(--purple);font-weight:500;cursor:pointer;text-decoration:underline" onclick="openInfluencerDetail(\''+c.infId+'\')">'+esc(infObj?infObj.name:'不明')+'</td>'
-      +'<td class="td-mono" style="color:var(--amber)">'+(c.visitDate?fmtD(c.visitDate):'—')+'</td>'
+      +'<td class="td-mono" style="color:var(--amber)">'+visitCell+'</td>'
       +'<td class="td-mono">'+fmtD(c.date)+'</td>'
       +'<td>'+platCell+'</td>'
       +'<td onclick="event.stopPropagation()" style="white-space:nowrap">'

@@ -146,6 +146,7 @@ function onPostTypeChange(){
       '<option value="unbooked">予約未</option>'
       +'<option value="booked">予約済み</option>'
       +'<option value="visited">来店済み</option>'
+      +'<option value="date_tbd">🔁 リスケ中（日程未定）</option>'
       +'<option value="cancelled">キャンセル</option>';
   }else if(val==='inf_draft'){
     statusSel.innerHTML=

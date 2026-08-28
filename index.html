@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=67">
+<link rel="stylesheet" href="css/app.css?v=68">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -994,6 +994,7 @@
           <input type="hidden" id="cVisitDate">
           <div id="cVisitTimeWrap" style="margin-top:4px;display:flex;align-items:center;gap:2px"></div>
           <input type="hidden" id="cVisitTime" value="12:00">
+          <label style="display:flex;align-items:center;gap:4px;margin-top:6px;font-size:11px;color:var(--text2);cursor:pointer"><input type="checkbox" id="cVisitTbd" onchange="onVisitTbdChange()" style="width:13px;height:13px;cursor:pointer"> 🔁 リスケ中（日程未定）</label>
         </div>
         <div class="field">
           <label style="font-size:12px">📝 初稿確認日</label>
@@ -1079,25 +1080,25 @@
 </div>
 </div>
 
-<script src="js/vendor/pizzip.min.js?v=67"></script>
-<script src="js/vendor/docxtemplater.min.js?v=67"></script>
-<script src="js/config.js?v=67"></script>
-<script src="js/db.js?v=67"></script>
-<script src="js/utils.js?v=67"></script>
-<script src="js/settings.js?v=67"></script>
-<script src="js/stores.js?v=67"></script>
-<script src="js/schedule.js?v=67"></script>
-<script src="js/casting.js?v=67"></script>
-<script src="js/check.js?v=67"></script>
-<script src="js/accounting.js?v=67"></script>
-<script src="js/plans.js?v=67"></script>
-<script src="js/creators.js?v=67"></script>
-<script src="js/corps.js?v=67"></script>
-<script src="js/faqs.js?v=67"></script>
-<script src="js/orders.js?v=67"></script>
-<script src="js/hearing.js?v=67"></script>
-<script src="js/dashboard.js?v=67"></script>
-<script src="js/app.js?v=67"></script>
+<script src="js/vendor/pizzip.min.js?v=68"></script>
+<script src="js/vendor/docxtemplater.min.js?v=68"></script>
+<script src="js/config.js?v=68"></script>
+<script src="js/db.js?v=68"></script>
+<script src="js/utils.js?v=68"></script>
+<script src="js/settings.js?v=68"></script>
+<script src="js/stores.js?v=68"></script>
+<script src="js/schedule.js?v=68"></script>
+<script src="js/casting.js?v=68"></script>
+<script src="js/check.js?v=68"></script>
+<script src="js/accounting.js?v=68"></script>
+<script src="js/plans.js?v=68"></script>
+<script src="js/creators.js?v=68"></script>
+<script src="js/corps.js?v=68"></script>
+<script src="js/faqs.js?v=68"></script>
+<script src="js/orders.js?v=68"></script>
+<script src="js/hearing.js?v=68"></script>
+<script src="js/dashboard.js?v=68"></script>
+<script src="js/app.js?v=68"></script>
 <!-- GENRE MODAL -->
 <!-- 追加費用モーダル -->
 <div class="modal-overlay" id="addFeeModal">
