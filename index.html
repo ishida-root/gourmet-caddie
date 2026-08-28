@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=68">
+<link rel="stylesheet" href="css/app.css?v=69">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -315,13 +315,18 @@
         <div class="card-header"><span class="card-title">インフルエンサー管理</span>
           <div style="display:flex;gap:6px;align-items:center">
             <select id="filterInfStatus" onchange="renderInfluencers()" style="font-size:12px;padding:4px 8px;width:auto">
-              <option value="">ステータス：全て</option>
+              <option value="">声掛け：全て</option>
               <option value="未声掛け">未声掛け</option>
               <option value="声掛け済み">声掛け済み</option>
               <option value="返信待ち">返信待ち</option>
               <option value="交渉中">交渉中</option>
-              <option value="契約済み">契約済み</option>
               <option value="NG">NG</option>
+            </select>
+            <select id="filterInfEngagement" onchange="renderInfluencers()" style="font-size:12px;padding:4px 8px;width:auto">
+              <option value="">起用：全て</option>
+              <option value="起用中">起用中</option>
+              <option value="起用歴あり">起用歴あり</option>
+              <option value="起用歴なし">起用歴なし</option>
             </select>
             <button class="btn btn-primary btn-sm" onclick="openInfluencerModal()">＋ 追加</button>
           </div>
@@ -827,7 +832,7 @@
 
     <!-- 声かけ状況 -->
     <div style="font-size:13px;font-weight:500;color:var(--text2);margin:14px 0 8px;padding-top:10px;border-top:1px solid var(--border)">📨 声かけ状況</div>
-    <div class="fr"><div class="field"><label>ステータス</label><select id="iOutreachStatus"><option value="未声掛け">未声掛け</option><option value="声掛け済み">声掛け済み</option><option value="返信待ち">返信待ち</option><option value="交渉中">交渉中</option><option value="契約済み">契約済み</option><option value="NG">NG</option></select></div><div class="field"><label>声かけ日</label><input id="iOutreachDate" type="date"></div></div>
+    <div class="fr"><div class="field"><label>ステータス <span style="font-size:11px;color:var(--text3);font-weight:400">※起用実績は自動判定（キャスティング履歴から）</span></label><select id="iOutreachStatus"><option value="">—（未設定）</option><option value="未声掛け">未声掛け</option><option value="声掛け済み">声掛け済み</option><option value="返信待ち">返信待ち</option><option value="交渉中">交渉中</option><option value="NG">NG</option></select></div><div class="field"><label>声かけ日</label><input id="iOutreachDate" type="date"></div></div>
     <div class="fr"><div class="field"><label>対応エリア</label><input id="iArea" type="text" placeholder="例: 大阪・兵庫中心"></div><div class="field"><label>傾向タグ</label><input id="iTendency" type="text" placeholder="例: 女性一人飲み系、ファミリー系"></div></div>
     <div style="margin-bottom:10px">
       <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:6px">PR 費用（円） <span style="font-size:11px;color:var(--text3);font-weight:400">幅がある場合は下限・上限両方入力</span></label>
@@ -1080,25 +1085,25 @@
 </div>
 </div>
 
-<script src="js/vendor/pizzip.min.js?v=68"></script>
-<script src="js/vendor/docxtemplater.min.js?v=68"></script>
-<script src="js/config.js?v=68"></script>
-<script src="js/db.js?v=68"></script>
-<script src="js/utils.js?v=68"></script>
-<script src="js/settings.js?v=68"></script>
-<script src="js/stores.js?v=68"></script>
-<script src="js/schedule.js?v=68"></script>
-<script src="js/casting.js?v=68"></script>
-<script src="js/check.js?v=68"></script>
-<script src="js/accounting.js?v=68"></script>
-<script src="js/plans.js?v=68"></script>
-<script src="js/creators.js?v=68"></script>
-<script src="js/corps.js?v=68"></script>
-<script src="js/faqs.js?v=68"></script>
-<script src="js/orders.js?v=68"></script>
-<script src="js/hearing.js?v=68"></script>
-<script src="js/dashboard.js?v=68"></script>
-<script src="js/app.js?v=68"></script>
+<script src="js/vendor/pizzip.min.js?v=69"></script>
+<script src="js/vendor/docxtemplater.min.js?v=69"></script>
+<script src="js/config.js?v=69"></script>
+<script src="js/db.js?v=69"></script>
+<script src="js/utils.js?v=69"></script>
+<script src="js/settings.js?v=69"></script>
+<script src="js/stores.js?v=69"></script>
+<script src="js/schedule.js?v=69"></script>
+<script src="js/casting.js?v=69"></script>
+<script src="js/check.js?v=69"></script>
+<script src="js/accounting.js?v=69"></script>
+<script src="js/plans.js?v=69"></script>
+<script src="js/creators.js?v=69"></script>
+<script src="js/corps.js?v=69"></script>
+<script src="js/faqs.js?v=69"></script>
+<script src="js/orders.js?v=69"></script>
+<script src="js/hearing.js?v=69"></script>
+<script src="js/dashboard.js?v=69"></script>
+<script src="js/app.js?v=69"></script>
 <!-- GENRE MODAL -->
 <!-- 追加費用モーダル -->
 <div class="modal-overlay" id="addFeeModal">

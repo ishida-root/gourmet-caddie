@@ -286,8 +286,9 @@ function openInfluencerModal(id){
   document.getElementById('iPlatform').value='Instagram';
   document.getElementById('iFollowers').value='';
   document.getElementById('iRating').value='';
-  /* 新規追加は「未声掛け」から開始。既存（声かけ状況が未設定＝声かけ導入前からの登録）は「契約済み」扱いにする */
-  document.getElementById('iOutreachStatus').value=id?'契約済み':'未声掛け';
+  /* 新規追加は「未声掛け」から開始。起用実績はキャスティング履歴から自動判定するため、
+     声かけ状況が未設定の既存登録はここでは強制せず「—（未設定）」のままにする */
+  document.getElementById('iOutreachStatus').value=id?'':'未声掛け';
   if(id){
     var inf=DB.influencers.find(function(x){return x.id===id;});
     if(inf){
@@ -626,7 +627,8 @@ function openInfluencerDetail(id){
           +ratingWarningBadge(inf.rating)
         +'</div>'
         +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">'
-          +'<span class="badge" style="font-size:11px;border:1px solid;'+(INF_OUTREACH_BADGE[infOutreachStatus(inf)]||'')+'">'+esc(infOutreachStatus(inf))+'</span>'
+          +(infOutreachStatus(inf)?'<span class="badge" style="font-size:11px;border:1px solid;'+(INF_OUTREACH_BADGE[infOutreachStatus(inf)]||'')+'">'+esc(infOutreachStatus(inf))+'</span>':'')
+          +'<span class="badge" style="font-size:11px;border:1px solid;'+(INF_ENGAGEMENT_BADGE[infEngagementStatus(inf)]||'')+'">'+esc(infEngagementStatus(inf))+'</span>'
           +(inf.platform?'<span class="badge b-blue">'+esc(inf.platform)+'</span>':'')
           +(inf.genre?'<span class="badge b-gray">'+esc(inf.genre)+'</span>':'')
           +(inf.agency&&inf.agency!=='なし'?'<span class="badge b-gray">'+esc(inf.agency)+'</span>':'')
@@ -1094,21 +1096,34 @@ function deleteCasting(id){
    撮影予定管理
    ============================================================ */
 
-/* 声かけ状況が未設定（声かけ管理の導入前からの登録）は契約済み扱いにする */
-function infOutreachStatus(i){return i.outreachStatus||'契約済み';}
+/* 声かけ状況（アプローチの進捗）。起用実績とは別軸で管理する（infEngagementStatusを参照） */
+function infOutreachStatus(i){return i.outreachStatus||'';}
 var INF_OUTREACH_BADGE={
   '未声掛け':'background:var(--bg3);color:var(--text3);border-color:var(--border)',
   '声掛け済み':'background:var(--accent-bg);color:var(--accent);border-color:var(--accent-border)',
   '返信待ち':'background:var(--amber-bg);color:var(--amber);border-color:var(--amber-border)',
   '交渉中':'background:var(--purple-bg);color:var(--purple);border-color:var(--purple-border)',
-  '契約済み':'background:var(--green-bg);color:var(--green);border-color:var(--green-border)',
   'NG':'background:var(--red-bg);color:var(--red);border-color:var(--red-border)'
+};
+/* 起用実績（声掛け状況とは独立に、実際のキャスティング履歴から自動判定する）
+   起用中＝キャンセル以外の有効なキャスティングがある／起用歴あり＝過去にキャスティングはあったが現在は無い／起用歴なし＝一度も無い */
+function infEngagementStatus(i){
+  var castings=(DB.castings||[]).filter(function(c){return c.infId===i.id;});
+  if(!castings.length)return'起用歴なし';
+  return castings.some(function(c){return c.status!=='cancelled';})?'起用中':'起用歴あり';
+}
+var INF_ENGAGEMENT_BADGE={
+  '起用中':'background:var(--green-bg);color:var(--green);border-color:var(--green-border)',
+  '起用歴あり':'background:var(--accent-bg);color:var(--accent);border-color:var(--accent-border)',
+  '起用歴なし':'background:var(--bg3);color:var(--text3);border-color:var(--border)'
 };
 function renderInfluencers(){
   var search=(document.getElementById('globalSearch').value||'').toLowerCase();
   var statusFilter=(document.getElementById('filterInfStatus')||{}).value||'';
+  var engagementFilter=(document.getElementById('filterInfEngagement')||{}).value||'';
   var list=DB.influencers.filter(function(i){
     if(statusFilter&&infOutreachStatus(i)!==statusFilter)return false;
+    if(engagementFilter&&infEngagementStatus(i)!==engagementFilter)return false;
     return!search||(i.name||'').toLowerCase().includes(search)||(i.handle||'').toLowerCase().includes(search)||(i.genre||'').toLowerCase().includes(search);
   });
   var tb=document.getElementById('infBody');
@@ -1131,7 +1146,10 @@ function renderInfluencers(){
       +'<td class="td-mono">'+(i.followers?Number(i.followers).toLocaleString():'—')+'</td>'
       +'<td class="td-mono" style="white-space:nowrap">'+fmtFeeRange(i)+'</td>'
       +'<td>'+esc(i.genre||'—')+'</td>'
-      +'<td><span class="badge" style="font-size:11px;border:1px solid;white-space:nowrap;'+(INF_OUTREACH_BADGE[infOutreachStatus(i)]||'')+'">'+esc(infOutreachStatus(i))+'</span></td>'
+      +'<td style="white-space:nowrap">'
+        +(infOutreachStatus(i)?'<span class="badge" style="font-size:11px;border:1px solid;white-space:nowrap;'+(INF_OUTREACH_BADGE[infOutreachStatus(i)]||'')+'">'+esc(infOutreachStatus(i))+'</span>':'<span style="color:var(--text3)">—</span>')
+        +' <span class="badge" style="font-size:11px;border:1px solid;white-space:nowrap;'+(INF_ENGAGEMENT_BADGE[infEngagementStatus(i)]||'')+'">'+esc(infEngagementStatus(i))+'</span>'
+      +'</td>'
       +'<td style="color:var(--text2);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(i.contact||'—')+'</td>'
       +'<td style="color:var(--text3)">'+(last?fmtD(last.date):'—')+'</td>'
       +'<td onclick="event.stopPropagation()"><button class="btn btn-sm" onclick="openInfluencerModal(\''+i.id+'\')">編集</button></td>'

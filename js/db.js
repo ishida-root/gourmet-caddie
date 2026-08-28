@@ -385,6 +385,16 @@ function migrateCreatorRequests(){
   });
 }
 
+/* インフルエンサーの声かけ状況から「契約済み」を廃止（冪等）。
+   起用実績は声かけ状況とは別軸でキャスティング履歴から自動判定するように変更したため、
+   旧「契約済み」値は空欄（未設定）に戻す。それ以外の声かけ状況（未声掛け/声掛け済み/返信待ち/交渉中/NG）はそのまま維持する。 */
+function migrateInfluencerOutreach(){
+  if(!DB.influencers)return;
+  DB.influencers.forEach(function(i){
+    if(i.outreachStatus==='契約済み')i.outreachStatus='';
+  });
+}
+
 async function loadDB(){
   setSyncStatus('saving','読み込み中...');
   try{
@@ -395,7 +405,7 @@ async function loadDB(){
     });
     if(!DB.plans)DB.plans=[];
     if(!DB.salesNotifs)DB.salesNotifs=[];if(!DB.orders)DB.orders=[];if(!DB.faqs)DB.faqs=[];
-    migrateSetupChecks();migrateInvoiceStatus();migrateProgressMode();migrateCreatorRequests();
+    migrateSetupChecks();migrateInvoiceStatus();migrateProgressMode();migrateCreatorRequests();migrateInfluencerOutreach();
     try{localStorage.setItem('adcore3',JSON.stringify(DB));}catch(e){}
     setSyncStatus('ok','同期済み');
   }catch(e){
@@ -409,13 +419,13 @@ async function loadDB(){
       });
       if(!DB.plans)DB.plans=[];
       if(!DB.salesNotifs)DB.salesNotifs=[];if(!DB.orders)DB.orders=[];if(!DB.faqs)DB.faqs=[];
-      migrateSetupChecks();migrateInvoiceStatus();migrateProgressMode();migrateCreatorRequests();
+      migrateSetupChecks();migrateInvoiceStatus();migrateProgressMode();migrateCreatorRequests();migrateInfluencerOutreach();
       try{localStorage.setItem('adcore3',JSON.stringify(DB));}catch(e2){}
       setSyncStatus('ok','同期済み');
     }catch(e2){
       var cached=localStorage.getItem('adcore3');
       if(cached){try{var d=JSON.parse(cached);Object.assign(DB,d);if(!DB.plans)DB.plans=[];if(!DB.salesNotifs)DB.salesNotifs=[];if(!DB.orders)DB.orders=[];if(!DB.faqs)DB.faqs=[];}catch(e3){}}
-      migrateSetupChecks();migrateInvoiceStatus();migrateProgressMode();migrateCreatorRequests();
+      migrateSetupChecks();migrateInvoiceStatus();migrateProgressMode();migrateCreatorRequests();migrateInfluencerOutreach();
       setSyncStatus('error','オフライン（キャッシュ表示中）');
     }
   }
