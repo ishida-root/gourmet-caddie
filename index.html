@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=65">
+<link rel="stylesheet" href="css/app.css?v=67">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -1015,11 +1015,12 @@
       <div id="cPostUrlBoxes" style="display:flex;flex-direction:column;gap:8px"></div>
     </div>
     <div class="fr1 field"><label>成果メモ</label><textarea id="cResult" placeholder="反応・コメント・効果など..."></textarea></div>
+    <div class="fr1 field"><label>ステータス</label><select id="cStatus"><option value="active">進行中</option><option value="cancelled">キャンセル</option></select></div>
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;padding:10px 12px;background:var(--bg3);border-radius:var(--r)">
       <input type="checkbox" id="cContractSent" style="width:16px;height:16px;cursor:pointer;accent-color:var(--green)">
       <span style="font-size:14px">📄 契約書送付済み</span>
     </div>
-    <div class="form-actions"><button class="btn" onclick="closeModal('castModal')">キャンセル</button><button class="btn btn-primary" onclick="saveCasting()">保存</button></div>
+    <div class="form-actions"><button class="btn" onclick="closeModal('castModal')">閉じる</button><button class="btn btn-primary" onclick="saveCasting()">保存</button></div>
   </div>
 </div>
 </div>
@@ -1078,25 +1079,25 @@
 </div>
 </div>
 
-<script src="js/vendor/pizzip.min.js?v=65"></script>
-<script src="js/vendor/docxtemplater.min.js?v=65"></script>
-<script src="js/config.js?v=65"></script>
-<script src="js/db.js?v=65"></script>
-<script src="js/utils.js?v=65"></script>
-<script src="js/settings.js?v=65"></script>
-<script src="js/stores.js?v=65"></script>
-<script src="js/schedule.js?v=65"></script>
-<script src="js/casting.js?v=65"></script>
-<script src="js/check.js?v=65"></script>
-<script src="js/accounting.js?v=65"></script>
-<script src="js/plans.js?v=65"></script>
-<script src="js/creators.js?v=65"></script>
-<script src="js/corps.js?v=65"></script>
-<script src="js/faqs.js?v=65"></script>
-<script src="js/orders.js?v=65"></script>
-<script src="js/hearing.js?v=65"></script>
-<script src="js/dashboard.js?v=65"></script>
-<script src="js/app.js?v=65"></script>
+<script src="js/vendor/pizzip.min.js?v=67"></script>
+<script src="js/vendor/docxtemplater.min.js?v=67"></script>
+<script src="js/config.js?v=67"></script>
+<script src="js/db.js?v=67"></script>
+<script src="js/utils.js?v=67"></script>
+<script src="js/settings.js?v=67"></script>
+<script src="js/stores.js?v=67"></script>
+<script src="js/schedule.js?v=67"></script>
+<script src="js/casting.js?v=67"></script>
+<script src="js/check.js?v=67"></script>
+<script src="js/accounting.js?v=67"></script>
+<script src="js/plans.js?v=67"></script>
+<script src="js/creators.js?v=67"></script>
+<script src="js/corps.js?v=67"></script>
+<script src="js/faqs.js?v=67"></script>
+<script src="js/orders.js?v=67"></script>
+<script src="js/hearing.js?v=67"></script>
+<script src="js/dashboard.js?v=67"></script>
+<script src="js/app.js?v=67"></script>
 <!-- GENRE MODAL -->
 <!-- 追加費用モーダル -->
 <div class="modal-overlay" id="addFeeModal">

@@ -320,8 +320,8 @@ function renderCheckPage(){
 
   var rows=[];
 
-  /* ① 契約書未送付（castingが登録されているのに contractSent=false の案件・契約終了店舗は除外） */
-  DB.castings.filter(function(c){return !c.contractSent&&!isStoreEnded(c.storeId);}).forEach(function(c){
+  /* ① 契約書未送付（castingが登録されているのに contractSent=false の案件・契約終了店舗・キャンセル済みは除外） */
+  DB.castings.filter(function(c){return !c.contractSent&&c.status!=='cancelled'&&!isStoreEnded(c.storeId);}).forEach(function(c){
     var inf=DB.influencers.find(function(x){return x.id===c.infId;});
     if(!inf)return;
     rows.push(infAlertRow('red','📄',
@@ -379,7 +379,7 @@ function renderCheckPage(){
      投稿スケジュールにも重複した予定が残ってしまうことがあったため検出する） */
   var castGroups={};
   DB.castings.forEach(function(c){
-    if(isStoreEnded(c.storeId))return;
+    if(isStoreEnded(c.storeId)||c.status==='cancelled')return;
     var key=c.storeId+'_'+c.infId;
     if(!castGroups[key])castGroups[key]=[];
     castGroups[key].push(c);

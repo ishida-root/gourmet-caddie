@@ -359,7 +359,7 @@ function generateAlerts(){
   DB.posts.filter(function(p){
     if(isStoreEnded(p.storeId))return false;
     var d=new Date(p.date);
-    return p.status!=='done'&&d>=today&&d<=in3days;
+    return p.status!=='done'&&p.status!=='cancelled'&&d>=today&&d<=in3days;
   }).forEach(function(p){
     var diff=Math.ceil((new Date(p.date)-today)/86400000);
     alerts.push({level:'warn',msg:'📅 投稿まで'+diff+'日【'+storeName(p.storeId)+'】'+fmtDT(p.date)+(p.caption?' — '+(p.caption||'').slice(0,20):'')});

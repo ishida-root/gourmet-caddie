@@ -758,6 +758,7 @@ function openCastingModal(opts){
     var el=document.getElementById(fid);if(el)el.value='';
   });
   var ccb=document.getElementById('cContractSent');if(ccb)ccb.checked=false;
+  var cStatusEl=document.getElementById('cStatus');if(cStatusEl)cStatusEl.value='active';
   renderRescheduleHistory([]);
   /* 媒体選択は updateCastPlatformSelect() で初期化するためここでは不要 */
   var titleEl=document.getElementById('castModalTitle');
@@ -801,6 +802,7 @@ function openCastingModal(opts){
         set('cReach',ec.reach);set('cVisitCount',ec.visitCount);set('cResult',ec.result);
         set('cVisitDate',ec.visitDate);set('cDraftDate',ec.draftDate);set('cDate',ec.date);
         var ccbEdit=document.getElementById('cContractSent');if(ccbEdit)ccbEdit.checked=!!ec.contractSent;
+        var cStatusEdit=document.getElementById('cStatus');if(cStatusEdit)cStatusEdit.value=ec.status||'active';
         renderRescheduleHistory(ec.reschedules||[]);
       }
     }
@@ -968,6 +970,7 @@ function saveCasting(){
     result:document.getElementById('cResult').value,
     postUrls:(function(){var o={};Object.keys(_curCastPostUrls).forEach(function(k){if(_curCastPostUrls[k])o[k]=_curCastPostUrls[k];});return o;})(),
     contractSent:!!(document.getElementById('cContractSent')&&document.getElementById('cContractSent').checked),
+    status:document.getElementById('cStatus')?document.getElementById('cStatus').value:'active',
     liaisonNeeded:!!prevRecord.liaisonNeeded,
     reschedules:reschedules
   };
@@ -1005,6 +1008,13 @@ function saveCasting(){
   upsertSchedulePost('inf_visit',visitDate?visitDate+'T'+visitTime:'','unbooked','キャスティングID:'+c.id,{platform:platform,infFee:fee});
   upsertSchedulePost('inf_draft',draftDate?draftDate+'T12:00':'','draft','初稿確認 キャスティングID:'+c.id,{platform:platform});
   upsertSchedulePost('inf_post',dt?dt+'T12:00':'','scheduled','投稿予定 キャスティングID:'+c.id,{platform:platform,infFee:fee});
+  /* キャスティング自体をキャンセルにした場合、紐づく来店予定・初稿確認・投稿予定も
+     まとめてキャンセル扱いにする（スケジュール側にキャンセル済み案件のアラートが残らないように） */
+  if(c.status==='cancelled'){
+    DB.posts.filter(function(p){return p.castingId===c.id;}).forEach(function(p){
+      if(p.status!=='cancelled'){p.status='cancelled';saveItem('posts',p);}
+    });
+  }
 
   closeModal('castModal');
   ['cFee','cReach','cResult','cVisitDate','cDraftDate','cDate'].forEach(function(id){
@@ -1108,9 +1118,17 @@ function renderInfluencers(){
   }).join('');
 }
 
+/* キャスティング履歴の並び替えキー：来店日・投稿日のうち新しい方を採用（片方しか無い場合はそちらを使用）。
+   どちらも未設定の場合は最下部に沈むよう扱う（新しい順で並べたときにNaN比較でおかしな順序にならないように） */
+function castSortKey(c){
+  var d1=c.visitDate?new Date(c.visitDate).getTime():NaN;
+  var d2=c.date?new Date(c.date).getTime():NaN;
+  var candidates=[d1,d2].filter(function(x){return!isNaN(x);});
+  return candidates.length?Math.max.apply(null,candidates):-Infinity;
+}
 function renderCasting(){
   var search=(document.getElementById('globalSearch').value||'').toLowerCase();
-  var list=DB.castings.slice().sort(function(a,b){return new Date(b.date)-new Date(a.date);});
+  var list=DB.castings.slice().sort(function(a,b){return castSortKey(b)-castSortKey(a);});
   if(search)list=list.filter(function(c){
     return storeName(c.storeId).toLowerCase().includes(search)
       ||infName(c.infId).toLowerCase().includes(search);
@@ -1127,8 +1145,10 @@ function renderCasting(){
     var abbrs=[...new Set(pp.map(platformAbbr).filter(Boolean))];
     var platCell=abbrs.length?abbrs.map(function(a){return'<span style="display:inline-block;font-size:11px;padding:1px 6px;background:var(--accent-bg);color:var(--accent);border-radius:3px;margin:1px;white-space:nowrap">'+esc(a)+'</span>';}).join(''):'—';
     var infObj=DB.influencers.find(function(x){return x.id===c.infId;});
-    return'<tr>'
-      +'<td>'+esc(storeName(c.storeId))+'</td>'
+    var isCancelled=c.status==='cancelled';
+    var cancelBadge=isCancelled?'<span class="badge" style="background:var(--red-bg);color:var(--red);border:1px solid var(--red-border);font-size:11px;margin-left:5px">🚫 キャンセル</span>':'';
+    return'<tr'+(isCancelled?' style="opacity:0.55"':'')+'>'
+      +'<td>'+esc(storeName(c.storeId))+cancelBadge+'</td>'
       +'<td style="color:var(--purple);font-weight:500;cursor:pointer;text-decoration:underline" onclick="openInfluencerDetail(\''+c.infId+'\')">'+esc(infObj?infObj.name:'不明')+'</td>'
       +'<td class="td-mono" style="color:var(--amber)">'+(c.visitDate?fmtD(c.visitDate):'—')+'</td>'
       +'<td class="td-mono">'+fmtD(c.date)+'</td>'
