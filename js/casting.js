@@ -1181,7 +1181,7 @@ function renderCasting(){
     var inv=(DB.invoices||[]).find(function(x){return x.castingId===c.id;});
     var invCell=inv
       ?'<span style="font-size:12px;padding:2px 7px;border-radius:4px;background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-border);white-space:nowrap">'+(INV_STATUS_LABEL[inv.status]||inv.status)+'</span>'
-      :'<button class="btn btn-sm" onclick="event.stopPropagation();openInvoiceFromCasting(\''+c.id+'\')" style="font-size:11px;padding:2px 8px;white-space:nowrap">📄 未受領</button>';
+      :'<button onclick="event.stopPropagation();openInvoiceFromCasting(\''+c.id+'\')" style="font-size:11px;padding:2px 8px;white-space:nowrap;border:1px dashed var(--text3);border-radius:4px;background:transparent;color:var(--text3);cursor:pointer">＋ 未登録（登録する）</button>';
     var pp=c.platforms&&c.platforms.length?c.platforms:(c.platform?[c.platform]:[]);
     var abbrs=[...new Set(pp.map(platformAbbr).filter(Boolean))];
     var platCell=abbrs.length?abbrs.map(function(a){return'<span style="display:inline-block;font-size:11px;padding:1px 6px;background:var(--accent-bg);color:var(--accent);border-radius:3px;margin:1px;white-space:nowrap">'+esc(a)+'</span>';}).join(''):'—';
