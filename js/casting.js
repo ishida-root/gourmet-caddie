@@ -1506,19 +1506,56 @@ function infSortValue(i,key){
   return Number(fee)||0;
 }
 /* エリア・ジャンルの絞り込みselectの選択肢を、既存データから重複なく作る */
+/* ジャンルの表記ゆれ統合（例：「おでかけ」「お出かけ」を1つに統一する） */
+function refreshInfGenreMergeOptions(){
+  var sel=document.getElementById('mergeFromGenre');
+  var genres=[...new Set(DB.influencers.map(function(i){return(i.genre||'').trim();}).filter(Boolean))].sort();
+  if(sel)sel.innerHTML=genres.map(function(g){
+    var count=DB.influencers.filter(function(i){return(i.genre||'').trim()===g;}).length;
+    return'<option value="'+esc(g)+'">'+esc(g)+'（'+count+'件）</option>';
+  }).join('');
+}
+function openInfGenreMerge(){
+  refreshInfGenreMergeOptions();
+  var toEl=document.getElementById('mergeToGenre');if(toEl)toEl.value='';
+  var res=document.getElementById('infGenreMergeResult');if(res)res.innerHTML='';
+  openModal('infGenreMergeModal');
+}
+function runInfGenreMerge(){
+  var from=document.getElementById('mergeFromGenre').value;
+  var to=document.getElementById('mergeToGenre').value.trim();
+  var resultEl=document.getElementById('infGenreMergeResult');
+  if(!from){resultEl.innerHTML='<div style="color:var(--red)">統合元のジャンルを選択してください</div>';return;}
+  if(!to){resultEl.innerHTML='<div style="color:var(--red)">統合先の表記を入力してください</div>';return;}
+  if(from===to){resultEl.innerHTML='<div style="color:var(--text3)">統合元と統合先が同じです</div>';return;}
+  var count=0;
+  DB.influencers.forEach(function(i){
+    if((i.genre||'').trim()===from){i.genre=to;saveItem('influencers',i);count++;}
+  });
+  resultEl.innerHTML='<div style="color:var(--green);font-weight:500">✓ '+count+'件のジャンルを「'+esc(to)+'」に統一しました</div>';
+  refreshInfGenreMergeOptions();
+  renderInfluencers();
+}
+/* 複数選択select（フィルタ用）の選択肢を、現在の選択状態を保ったまま再構築するヘルパー */
+function rebuildMultiSelectOptions(sel,values){
+  var cur=Array.from(sel.selectedOptions||[]).map(function(o){return o.value;});
+  sel.innerHTML=values.map(function(v){return'<option value="'+esc(v)+'"'+(cur.indexOf(v)>=0?' selected':'')+'>'+esc(v)+'</option>';}).join('');
+}
 function updateInfFilterOptions(){
   var areaSel=document.getElementById('filterInfArea');
   if(areaSel){
-    var curArea=areaSel.value;
     var areas=[...new Set(DB.influencers.map(function(i){return(i.area||'').trim();}).filter(Boolean))].sort();
-    areaSel.innerHTML='<option value="">エリア：全て</option>'+areas.map(function(a){return'<option value="'+esc(a)+'"'+(a===curArea?' selected':'')+'>'+esc(a)+'</option>';}).join('');
+    rebuildMultiSelectOptions(areaSel,areas);
   }
   var genreSel=document.getElementById('filterInfGenre');
   if(genreSel){
-    var curGenre=genreSel.value;
     var genres=[...new Set(DB.influencers.map(function(i){return(i.genre||'').trim();}).filter(Boolean))].sort();
-    genreSel.innerHTML='<option value="">ジャンル：全て</option>'+genres.map(function(g){return'<option value="'+esc(g)+'"'+(g===curGenre?' selected':'')+'>'+esc(g)+'</option>';}).join('');
+    rebuildMultiSelectOptions(genreSel,genres);
   }
+}
+function getMultiSelectValues(id){
+  var el=document.getElementById(id);
+  return el?Array.from(el.selectedOptions||[]).map(function(o){return o.value;}):[];
 }
 /* 現在の検索・絞り込み・並び替え条件を反映したインフルエンサー一覧を返す（画面表示・出力で共用） */
 function getFilteredSortedInfluencers(){
@@ -1526,14 +1563,14 @@ function getFilteredSortedInfluencers(){
   var statusFilter=(document.getElementById('filterInfStatus')||{}).value||'';
   var engagementFilter=(document.getElementById('filterInfEngagement')||{}).value||'';
   var tierFilter=(document.getElementById('filterInfTier')||{}).value||'';
-  var areaFilter=(document.getElementById('filterInfArea')||{}).value||'';
-  var genreFilter=(document.getElementById('filterInfGenre')||{}).value||'';
+  var areaFilters=getMultiSelectValues('filterInfArea');
+  var genreFilters=getMultiSelectValues('filterInfGenre');
   var list=DB.influencers.filter(function(i){
     if(statusFilter&&infOutreachStatus(i)!==statusFilter)return false;
     if(engagementFilter&&infEngagementStatus(i)!==engagementFilter)return false;
     if(tierFilter&&infTierOf(i)!==tierFilter)return false;
-    if(areaFilter&&(i.area||'').trim()!==areaFilter)return false;
-    if(genreFilter&&(i.genre||'').trim()!==genreFilter)return false;
+    if(areaFilters.length&&areaFilters.indexOf((i.area||'').trim())<0)return false;
+    if(genreFilters.length&&genreFilters.indexOf((i.genre||'').trim())<0)return false;
     return!search||(i.name||'').toLowerCase().includes(search)||(i.handle||'').toLowerCase().includes(search)||(i.genre||'').toLowerCase().includes(search);
   });
   if(infSortKey){
