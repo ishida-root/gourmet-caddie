@@ -422,7 +422,40 @@ function clearStoreForm(){
   document.getElementById('sVideos').value='2';
   document.getElementById('sPlanId').value='';
   document.getElementById('sPlanPreview').textContent='';
+  _storeContractRows=[];
+  renderStoreContractRows();
   ['hIssue','hTargetWant','hTargetNow','hTiming','hIdealCustomer','hStrength','hArea','hIgPurpose','hMenu','hKpi','hTargetAge','hTargetGender','hTargetRegion','hTargetInterest','hRefAccount','hNg','hPastAd','hAccMgr','hLoginShare','hFbPage','hInPost','hDmMgr','hPostContent','hPostFlow','hApprovalDays','hPhotoAsset','hVideoAsset','hNewShoot','hLogo','hPastAsset','hTonmana','hAdIg','hAdStart','hAdBudget','hLpUrl','hInfStart','hInfEnd','hInfCount','hInfGenre','hInfFollowers','hInfMust','hHashtag','hOpStart','hShootDate','hPostStart','hAdStart2','hInfPostDate','hOther'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';}); 
+}
+
+/* 追加契約（並行契約）：主契約プラン（sPlanId）と並行して契約している別プランを複数登録できるようにする
+   例：パタープラン契約中の店舗が、別途インフルエンサーキャスティングのスポット契約も結んでいる場合 */
+var _storeContractRows=[];
+function storeContractPlanOptionsHtml(selectedId){
+  return '<option value="">プラン未選択</option>'+DB.plans.map(function(p){return'<option value="'+p.id+'"'+(p.id===selectedId?' selected':'')+'>'+esc(p.name)+'</option>';}).join('');
+}
+function renderStoreContractRows(){
+  var wrap=document.getElementById('sContractList');
+  if(!wrap)return;
+  if(!_storeContractRows.length){wrap.innerHTML='<div style="font-size:12px;color:var(--text3);margin-bottom:8px">追加契約はありません</div>';return;}
+  wrap.innerHTML=_storeContractRows.map(function(r,i){
+    return'<div class="fr" style="align-items:flex-end;margin-bottom:8px">'
+      +'<div class="field"><label style="font-size:12px">プラン</label><select onchange="updateStoreContractField('+i+',\'planId\',this.value)">'+storeContractPlanOptionsHtml(r.planId)+'</select></div>'
+      +'<div class="field"><label style="font-size:12px">金額（円）</label><input type="number" value="'+esc(r.monthlyFee||'')+'" oninput="updateStoreContractField('+i+',\'monthlyFee\',this.value)"></div>'
+      +'<div class="field"><label style="font-size:12px">契約開始日</label><input type="date" value="'+esc(r.contractStart||'')+'" onchange="updateStoreContractField('+i+',\'contractStart\',this.value)"></div>'
+      +'<div class="field"><label style="font-size:12px">ステータス</label><select onchange="updateStoreContractField('+i+',\'status\',this.value)"><option value="active"'+(r.status==='active'?' selected':'')+'>契約中</option><option value="ended"'+(r.status==='ended'?' selected':'')+'>終了</option></select></div>'
+      +'<button type="button" class="btn-ghost-danger btn-sm" onclick="removeStoreContractRow('+i+')">削除</button>'
+    +'</div>';
+  }).join('');
+}
+function addStoreContractRow(){
+  _storeContractRows.push({id:uid(),planId:'',monthlyFee:'',contractStart:'',status:'active'});
+  renderStoreContractRows();
+}
+function removeStoreContractRow(idx){_storeContractRows.splice(idx,1);renderStoreContractRows();}
+function updateStoreContractField(idx,field,value){
+  if(!_storeContractRows[idx])return;
+  _storeContractRows[idx][field]=value;
+  if(field==='planId')renderStoreContractRows();
 }
 
 function openStoreModal(id){
@@ -459,6 +492,8 @@ function openStoreModal(id){
       if(s.hearing){Object.keys(s.hearing).forEach(function(k){var el=document.getElementById(k);if(el)el.value=s.hearing[k]||'';});}
       var naEl=document.getElementById('sNextAction');if(naEl)naEl.value=s.nextAction||'';
       var nmEl=document.getElementById('sNegotiatingMemo');if(nmEl)nmEl.value=s.negotiatingMemo||'';
+      _storeContractRows=(s.additionalContracts||[]).map(function(r){return Object.assign({},r);});
+      renderStoreContractRows();
       onStoreStatusChange();
     }
   }
@@ -557,7 +592,9 @@ function saveStore(){
     nextAction:document.getElementById('sNextAction').value,
     negotiatingMemo:document.getElementById('sNegotiatingMemo').value,
     adBilling:existing?existing.adBilling||{}:{},
-    monthlyReview:existing?existing.monthlyReview||{}:{}
+    monthlyReview:existing?existing.monthlyReview||{}:{},
+    /* 主契約プラン（sPlanId）と並行して契約している追加契約。プラン未選択の空行は保存しない */
+    additionalContracts:_storeContractRows.filter(function(r){return r.planId;})
   };
   if(isEdit){
     var idx=DB.stores.findIndex(function(x){return x.id===id;});
@@ -789,6 +826,24 @@ function showDetail(id){
         +(ci.creative
           ?'<div style="font-size:13px;color:var(--text2);padding:3px 0">クリエイティブ費用　<span style="color:var(--text3)">'+esc(ci.creative.creatorName)+(ci.creative.date?'　'+fmtD(ci.creative.date):'')+'</span>　'+fmtMoney(ci.creative.amount)+'</div>'
           :'<div style="font-size:12px;color:var(--text3);padding:3px 0">クリエイティブ費用　案件なし</div>')
+      +'</div>';
+    })()
+
+    /* 追加契約（主契約プランと並行して契約している別プラン） */
+    +(function(){
+      var list=s.additionalContracts||[];
+      if(!list.length)return'';
+      return'<div style="margin-bottom:14px;padding:10px 12px;background:var(--bg3);border-radius:var(--r)">'
+        +'<div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:6px">📑 追加契約（並行契約）</div>'
+        +list.map(function(r){
+          var p=DB.plans.find(function(x){return x.id===r.planId;});
+          return'<div style="display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text2);padding:3px 0">'
+            +'<span class="badge '+(r.status==='active'?'b-green':'b-gray')+'" style="font-size:11px">'+(r.status==='active'?'契約中':'終了')+'</span>'
+            +'<span>'+esc(p?p.name:'（プラン未設定）')+'</span>'
+            +(r.monthlyFee?'<span style="color:var(--text3)">'+fmtMoney(r.monthlyFee)+'</span>':'')
+            +(r.contractStart?'<span style="color:var(--text3)">'+fmtD(r.contractStart)+'〜</span>':'')
+          +'</div>';
+        }).join('')
       +'</div>';
     })()
 

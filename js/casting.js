@@ -629,6 +629,7 @@ function openInfluencerDetail(id){
         +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">'
           +(infOutreachStatus(inf)?'<span class="badge" style="font-size:11px;border:1px solid;'+(INF_OUTREACH_BADGE[infOutreachStatus(inf)]||'')+'">'+esc(infOutreachStatus(inf))+'</span>':'')
           +'<span class="badge" style="font-size:11px;border:1px solid;'+(INF_ENGAGEMENT_BADGE[infEngagementStatus(inf)]||'')+'">'+esc(infEngagementStatus(inf))+'</span>'
+          +(infTierOf(inf)?'<span class="badge" style="font-size:11px;border:1px solid;'+(INF_TIER_BADGE[infTierOf(inf)]||'')+'">'+infTierOf(inf)+'インフルエンサー</span>':'')
           +(inf.platform?'<span class="badge b-blue">'+esc(inf.platform)+'</span>':'')
           +(inf.genre?'<span class="badge b-gray">'+esc(inf.genre)+'</span>':'')
           +(inf.agency&&inf.agency!=='なし'?'<span class="badge b-gray">'+esc(inf.agency)+'</span>':'')
@@ -1298,13 +1299,31 @@ var INF_ENGAGEMENT_BADGE={
   '起用歴あり':'background:var(--accent-bg);color:var(--accent);border-color:var(--accent-border)',
   '起用歴なし':'background:var(--bg3);color:var(--text3);border-color:var(--border)'
 };
+/* インフルエンサーの規模区分（フォロワー数から自動判定）
+   ナノ：1万人以下／マイクロ：1万〜10万人／ミドル：10万〜100万人／メガ：100万人以上 */
+function infTierOf(i){
+  var f=Number(i.followers)||0;
+  if(!f)return'';
+  if(f<=10000)return'ナノ';
+  if(f<=100000)return'マイクロ';
+  if(f<=1000000)return'ミドル';
+  return'メガ';
+}
+var INF_TIER_BADGE={
+  'ナノ':'background:var(--bg3);color:var(--text3);border-color:var(--border)',
+  'マイクロ':'background:var(--accent-bg);color:var(--accent);border-color:var(--accent-border)',
+  'ミドル':'background:var(--purple-bg);color:var(--purple);border-color:var(--purple-border)',
+  'メガ':'background:var(--amber-bg);color:var(--amber);border-color:var(--amber-border)'
+};
 function renderInfluencers(){
   var search=(document.getElementById('globalSearch').value||'').toLowerCase();
   var statusFilter=(document.getElementById('filterInfStatus')||{}).value||'';
   var engagementFilter=(document.getElementById('filterInfEngagement')||{}).value||'';
+  var tierFilter=(document.getElementById('filterInfTier')||{}).value||'';
   var list=DB.influencers.filter(function(i){
     if(statusFilter&&infOutreachStatus(i)!==statusFilter)return false;
     if(engagementFilter&&infEngagementStatus(i)!==engagementFilter)return false;
+    if(tierFilter&&infTierOf(i)!==tierFilter)return false;
     return!search||(i.name||'').toLowerCase().includes(search)||(i.handle||'').toLowerCase().includes(search)||(i.genre||'').toLowerCase().includes(search);
   });
   var tb=document.getElementById('infBody');
@@ -1324,7 +1343,7 @@ function renderInfluencers(){
     return'<tr style="cursor:pointer;'+rowBg+'" onclick="openInfluencerDetail(\''+i.id+'\')">'
       +'<td><div style="display:flex;align-items:center;gap:6px"><div style="font-weight:500;color:var(--accent)">'+esc(i.name)+'</div>'+warnBadge+'</div>'+handleHtml+'</td>'
       +'<td>'+esc(i.platform||'')+'</td>'
-      +'<td class="td-mono">'+(i.followers?Number(i.followers).toLocaleString():'—')+'</td>'
+      +'<td class="td-mono">'+(i.followers?Number(i.followers).toLocaleString():'—')+(infTierOf(i)?'　<span class="badge" style="font-size:11px;border:1px solid;white-space:nowrap;'+(INF_TIER_BADGE[infTierOf(i)]||'')+'">'+infTierOf(i)+'</span>':'')+'</td>'
       +'<td class="td-mono" style="white-space:nowrap">'+fmtFeeRange(i)+'</td>'
       +'<td>'+esc(i.genre||'—')+'</td>'
       +'<td style="white-space:nowrap">'

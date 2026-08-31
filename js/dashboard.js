@@ -457,6 +457,10 @@ function renderDashboard(){
 
     goalEl.innerHTML=
       '<div style="margin-bottom:12px">'
+        +'<div style="display:flex;gap:16px;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border)">'
+          +'<div><div style="font-size:11px;color:var(--text3);margin-bottom:2px">現在の月額契約金額</div><div style="font-size:18px;font-weight:500;color:var(--text)">'+fmtMoney(monthlyTotal)+'</div></div>'
+          +'<div><div style="font-size:11px;color:var(--text3);margin-bottom:2px">契約件数</div><div style="font-size:18px;font-weight:500;color:var(--text)">'+active.length+'件</div></div>'
+        +'</div>'
         +'<div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:6px">'
           +'<div>'
             +'<div style="font-size:12px;color:var(--text3);margin-bottom:2px">'+thisYear+'年 売上見込み</div>'

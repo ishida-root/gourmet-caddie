@@ -44,7 +44,8 @@ function navigate(page){
   document.getElementById('page-title').textContent=titles[page]||page;
   var btnLabels={dashboard:'＋ 店舗追加',sales:'＋ 店舗入力',stores:'＋ 店舗追加',schedule:'＋ 追加',check:'＋ 店舗追加',plans:'＋ プラン追加',influencers:'＋ インフルエンサー追加',casting:'＋ キャスティング記録',creators:'＋ クリエイター追加',corporations:'＋ 法人追加',faq:'＋ Q&A追加',settings:''};
   document.getElementById('addBtn').textContent=btnLabels[page]||'＋ 新規追加';
-  document.getElementById('addBtn').style.display=page==='settings'?'none':'';
+  /* プラン管理はフォームが常時ページ内に表示されているため、スクロールするだけの追加ボタンは不要 */
+  document.getElementById('addBtn').style.display=(page==='settings'||page==='plans')?'none':'';
   if(page==='settings'){
     loadChatworkSettings();renderCwPreview();loadUserList();
     var ghCard=document.getElementById('ghPatCard');

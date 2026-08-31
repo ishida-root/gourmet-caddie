@@ -28,19 +28,36 @@ function toggleOpenPrice(){
     priceEl.placeholder=chk.checked?'304000（下限）':'100000';
   }
 }
+/* 契約種別（月額／スポット）切り替え：スポット案件は月額の概念がないため表示ラベル・広告費欄を切り替える */
+function onPlanTypeChange(){
+  var type=document.getElementById('plType').value;
+  var isSpot=type==='spot';
+  var labelEl=document.getElementById('plPriceLabel');
+  if(labelEl)labelEl.textContent=isSpot?'売価（税抜・一括、円）':'月額料金（円）';
+  var adRow=document.getElementById('plAdBudgetRow');
+  if(adRow)adRow.style.display=isSpot?'none':'';
+}
+/* 既存プラン名候補（datalist）を更新 */
+function updatePlanNameDatalist(){
+  var dl=document.getElementById('planNameList');
+  if(!dl)return;
+  var names=[...new Set(['パター','ウェッジ','アイアン','ドライバー'].concat(DB.plans.map(function(p){return p.name;})))];
+  dl.innerHTML=names.map(function(n){return'<option value="'+esc(n)+'">';}).join('');
+}
 
+/* 標準プランの初期値（新規作成時の自動入力・編集時の欠損値サジェストの両方で使用） */
+var PLAN_DEFAULTS={
+  'パター':{price:100000,setup:100000,adBudget:40000},
+  'ウェッジ':{price:200000,setup:100000,adBudget:100000},
+  'アイアン':{price:304000,setup:120000,adBudget:120000},
+  'ドライバー':{price:304000,setup:120000,adBudget:120000}
+};
 /* プラン名から初期値を自動入力 */
 document.addEventListener('DOMContentLoaded',function(){
   var plNameEl=document.getElementById('plName');
   if(plNameEl){
     plNameEl.addEventListener('change',function(){
-      var defaults={
-        'パター':{price:100000,setup:100000,adBudget:40000},
-        'ウェッジ':{price:200000,setup:100000,adBudget:100000},
-        'アイアン':{price:304000,setup:120000,adBudget:120000},
-        'ドライバー':{price:304000,setup:120000,adBudget:120000}
-      };
-      var d=defaults[this.value];
+      var d=PLAN_DEFAULTS[this.value];
       if(d){
         var pe=document.getElementById('plPrice');var se=document.getElementById('plSetup');var ae=document.getElementById('plAdBudget');
         if(pe&&!pe.value)pe.value=d.price;
@@ -58,31 +75,64 @@ document.addEventListener('DOMContentLoaded',function(){
 var PLAN_ORDER={'パター':1,'ウェッジ':2,'アイアン':3,'ドライバー':4};
 var PLAN_BADGE={'パター':'b-gray','ウェッジ':'b-blue','アイアン':'b-purple','ドライバー':'b-green'};
 
-function savePlan(){
-  var nameEl=document.getElementById('plName');
-  var name=nameEl?nameEl.value.trim():'';
-  if(!name){alert('プランを選択してください');return;}
-  var price=document.getElementById('plPrice').value;
-  var setup=document.getElementById('plSetup').value;
-  var adBudget=document.getElementById('plAdBudget').value;
-  var openPrice=document.getElementById('plOpenPrice').checked;
-  var desc=document.getElementById('plDesc').value;
-  var p={
-    id:uid(),
-    name:name,
-    price:price,
-    setup:setup,
-    adBudget:adBudget,
-    openPrice:openPrice,
-    desc:desc
-  };
-  DB.plans.push(p);
-  nameEl.value='';
+var editingPlanId=null;
+function clearPlanForm(){
+  editingPlanId=null;
+  document.getElementById('plName').value='';
+  document.getElementById('plType').value='monthly';
+  onPlanTypeChange();
   document.getElementById('plPrice').value='';
   document.getElementById('plSetup').value='';
   document.getElementById('plAdBudget').value='';
   document.getElementById('plOpenPrice').checked=false;
   document.getElementById('plDesc').value='';
+  var saveBtn=document.getElementById('plSaveBtn');if(saveBtn)saveBtn.textContent='登録';
+  var cancelBtn=document.getElementById('plCancelEditBtn');if(cancelBtn)cancelBtn.style.display='none';
+}
+function openPlanEdit(id){
+  var p=DB.plans.find(function(x){return x.id===id;});
+  if(!p)return;
+  editingPlanId=id;
+  document.getElementById('plName').value=p.name||'';
+  document.getElementById('plType').value=p.type||'monthly';
+  onPlanTypeChange();
+  document.getElementById('plPrice').value=p.price||'';
+  document.getElementById('plSetup').value=p.setup||'';
+  /* 広告費が未入力の標準プランは、既定値をサジェストしておく（内容は保存前に確認・修正可能） */
+  var suggested=PLAN_DEFAULTS[p.name];
+  document.getElementById('plAdBudget').value=p.adBudget||(suggested?suggested.adBudget:'');
+  document.getElementById('plOpenPrice').checked=!!p.openPrice;
+  document.getElementById('plDesc').value=p.desc||'';
+  var saveBtn=document.getElementById('plSaveBtn');if(saveBtn)saveBtn.textContent='更新';
+  var cancelBtn=document.getElementById('plCancelEditBtn');if(cancelBtn)cancelBtn.style.display='';
+  document.getElementById('plName').scrollIntoView({behavior:'smooth',block:'center'});
+}
+function cancelPlanEdit(){
+  clearPlanForm();
+}
+
+function savePlan(){
+  var nameEl=document.getElementById('plName');
+  var name=nameEl?nameEl.value.trim():'';
+  if(!name){alert('プラン名を入力してください');return;}
+  var isEdit=!!editingPlanId;
+  var p={
+    id:isEdit?editingPlanId:uid(),
+    name:name,
+    type:document.getElementById('plType').value,
+    price:document.getElementById('plPrice').value,
+    setup:document.getElementById('plSetup').value,
+    adBudget:document.getElementById('plAdBudget').value,
+    openPrice:document.getElementById('plOpenPrice').checked,
+    desc:document.getElementById('plDesc').value
+  };
+  if(isEdit){
+    var idx=DB.plans.findIndex(function(x){return x.id===editingPlanId;});
+    if(idx>=0){DB.plans[idx]=p;}else{DB.plans.push(p);}
+  }else{
+    DB.plans.push(p);
+  }
+  clearPlanForm();
   renderPlans();
   renderRevSummary();
   var nb=document.getElementById('nb-plans');if(nb)nb.textContent=DB.plans.length;
@@ -93,6 +143,7 @@ function deletePlan(id){
   if(!confirm('このプランを削除しますか？（店舗への紐づけは解除されます）'))return;
   DB.stores.forEach(function(s){if(s.planId===id){s.planId='';saveItem('stores',s);}});
   DB.plans=DB.plans.filter(function(p){return p.id!==id;});
+  if(editingPlanId===id)clearPlanForm();
   renderPlans();renderRevSummary();
   var nb=document.getElementById('nb-plans');if(nb)nb.textContent=DB.plans.length;
   deleteItem('plans',id);
@@ -102,7 +153,7 @@ function renderPlans(){
   var tb=document.getElementById('planTableBody');
   if(!tb)return;
   if(!DB.plans.length){
-    tb.innerHTML='<tr><td colspan="8" class="empty-state">プランがありません<br><span style="font-size:12px;color:var(--text3)">パター・ウェッジ・アイアン・ドライバーの順に登録してください</span></td></tr>';
+    tb.innerHTML='<tr><td colspan="9" class="empty-state">プランがありません<br><span style="font-size:12px;color:var(--text3)">パター・ウェッジ・アイアン・ドライバーの順に登録してください</span></td></tr>';
     return;
   }
   var sorted=DB.plans.slice().sort(function(a,b){
@@ -110,22 +161,25 @@ function renderPlans(){
   });
   tb.innerHTML=sorted.map(function(p){
     var count=DB.stores.filter(function(s){return s.planId===p.id;}).length;
+    var isSpot=p.type==='spot';
     var priceStr=p.openPrice
       ?fmtMoney(p.price)+'〜（応相談）'
       :fmtMoney(p.price);
     return'<tr>'
       +'<td><span class="badge '+(PLAN_BADGE[p.name]||'b-gray')+'">'+esc(p.name)+'</span></td>'
+      +'<td>'+(isSpot?'<span class="badge b-purple">スポット</span>':'<span class="badge b-gray">月額</span>')+'</td>'
       +'<td class="td-mono" style="font-size:14px;font-weight:500;color:var(--text)">'+priceStr+'</td>'
-      +'<td class="td-mono" style="color:var(--text2)">'+(p.adBudget?fmtMoney(p.adBudget):'—')+'</td>'
+      +'<td class="td-mono" style="color:var(--text2)">'+(!isSpot&&p.adBudget?fmtMoney(p.adBudget):'—')+'</td>'
       +'<td class="td-mono">'+fmtMoney(p.setup)+'</td>'
       +'<td style="text-align:center">'+(p.openPrice?'<span class="badge b-amber">応相談</span>':'—')+'</td>'
       +'<td style="text-align:center"><span style="font-size:14px;font-weight:500;color:var(--accent)">'+count+'</span></td>'
       +'<td style="color:var(--text3);max-width:160px">'+esc((p.desc||'').slice(0,50))+'</td>'
-      +'<td><button class="btn-ghost-danger" onclick="deletePlan(\''+p.id+'\')">削除</button></td>'
+      +'<td style="white-space:nowrap"><button class="btn btn-sm" style="margin-right:4px" onclick="openPlanEdit(\''+p.id+'\')">編集</button><button class="btn-ghost-danger" onclick="deletePlan(\''+p.id+'\')">削除</button></td>'
       +'</tr>';
   }).join('');
   /* 店舗登録のプランselectも更新 */
   updatePlanSelect();
+  updatePlanNameDatalist();
 }
 
 function updatePlanSelect(){
@@ -142,7 +196,9 @@ function updatePlanSelect(){
 function renderRevSummary(){
   var el=document.getElementById('revSummary');
   if(!el)return;
-  var active=DB.stores.filter(function(s){return s.status==='active';});
+  /* スポット（単発）契約は月次継続収益ではないため集計から除外する */
+  var isSpotPlan=function(pid){var p=DB.plans.find(function(x){return x.id===pid;});return p&&p.type==='spot';};
+  var active=DB.stores.filter(function(s){return s.status==='active'&&!isSpotPlan(s.planId);});
   var totalMonthly=active.reduce(function(sum,s){return sum+(Number(s.monthlyFee)||0);},0);
   var byPlan={};
   active.forEach(function(s){

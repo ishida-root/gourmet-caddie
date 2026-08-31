@@ -399,6 +399,32 @@ function renderCheckPage(){
     ));
   });
 
+  /* ⑥ 重複請求書の疑い（同じキャスティングに複数の請求書が登録されている場合。
+     「🔖仮登録」で先に見込み額を登録した後、経理管理の「＋費用追加」から
+     castingIdと紐づけずに実額の請求書を別途新規登録してしまうと重複が発生するため検出する） */
+  var invGroups={};
+  (DB.invoices||[]).forEach(function(inv){
+    if(!inv.castingId)return;
+    if(!invGroups[inv.castingId])invGroups[inv.castingId]=[];
+    invGroups[inv.castingId].push(inv);
+  });
+  Object.keys(invGroups).forEach(function(castingId){
+    var group=invGroups[castingId];
+    if(group.length<2)return;
+    var casting=DB.castings.find(function(c){return c.id===castingId;});
+    var inf=casting?DB.influencers.find(function(x){return x.id===casting.infId;}):null;
+    var storeNm=casting?storeName(casting.storeId):'—';
+    var detail=group.map(function(inv){
+      return(inv.isEstimate?'🔖仮　':'')+fmtMoney(invExclTotal(inv))+'（税抜）'
+        +' <button class="btn-ghost-danger" style="font-size:11px;padding:2px 6px;margin-left:4px" onclick="event.stopPropagation();deleteInvoice(\''+inv.id+'\')">この請求書を削除</button>';
+    }).join('　|　');
+    rows.push(infAlertRow('red','⚠️',
+      '重複請求書の疑い：'+esc(inf?inf.name:'不明')+'（'+esc(storeNm)+'）に'+group.length+'件登録',
+      detail,
+      '<button class="btn btn-sm" onclick="navigate(\'accounting\')" style="white-space:nowrap;flex-shrink:0">経理管理で確認</button>'
+    ));
+  });
+
   if(infCntEl)infCntEl.textContent=rows.length+'件';
   if(infEl){
     infEl.innerHTML=rows.length

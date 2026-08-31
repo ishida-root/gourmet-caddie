@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=72">
+<link rel="stylesheet" href="css/app.css?v=75">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -328,6 +328,13 @@
               <option value="起用歴あり">起用歴あり</option>
               <option value="起用歴なし">起用歴なし</option>
             </select>
+            <select id="filterInfTier" onchange="renderInfluencers()" style="font-size:12px;padding:4px 8px;width:auto">
+              <option value="">規模：全て</option>
+              <option value="ナノ">ナノ（1万人以下）</option>
+              <option value="マイクロ">マイクロ（1万〜10万人）</option>
+              <option value="ミドル">ミドル（10万〜100万人）</option>
+              <option value="メガ">メガ（100万人以上）</option>
+            </select>
             <button class="btn btn-primary btn-sm" onclick="openInfluencerModal()">＋ 追加</button>
           </div>
         </div>
@@ -341,20 +348,16 @@
         <div class="card">
           <div class="card-header"><span class="card-title">プランを登録</span></div>
           <div class="fr1 field">
-            <label>プラン名 *</label>
-            <select id="plName">
-              <option value="">選択してください</option>
-              <option value="パター">パター</option>
-              <option value="ウェッジ">ウェッジ</option>
-              <option value="アイアン">アイアン</option>
-              <option value="ドライバー">ドライバー</option>
-            </select>
+            <label>プラン名 * <span style="font-size:11px;color:var(--text3);font-weight:400">既存の候補から選ぶか、自由に入力できます</span></label>
+            <input id="plName" type="text" list="planNameList" placeholder="例: パター、インフルエンサーキャスティング（スポット）">
+            <datalist id="planNameList"></datalist>
           </div>
+          <div class="fr1 field"><label>契約種別</label><select id="plType" onchange="onPlanTypeChange()"><option value="monthly">月額（継続契約）</option><option value="spot">スポット（一括・単発契約）</option></select></div>
           <div class="fr">
-            <div class="field"><label>月額料金（円）</label><input id="plPrice" type="number" placeholder="100000"></div>
+            <div class="field"><label id="plPriceLabel">月額料金（円）</label><input id="plPrice" type="number" placeholder="100000"></div>
             <div class="field"><label>初期費用（円）</label><input id="plSetup" type="number" placeholder="100000"></div>
           </div>
-          <div class="fr1 field"><label>月額に含む広告費（円）<span style="font-size:11px;color:var(--text3);font-weight:400"> ※超過分は別途+20%手数料で運用可能</span></label><input id="plAdBudget" type="number" placeholder="40000"></div>
+          <div class="fr1 field" id="plAdBudgetRow"><label>月額に含む広告費（円）<span style="font-size:11px;color:var(--text3);font-weight:400"> ※超過分は別途+20%手数料で運用可能</span></label><input id="plAdBudget" type="number" placeholder="40000"></div>
           <div class="field" style="margin-bottom:10px">
             <label style="display:flex;align-items:center;gap:8px">
               <input type="checkbox" id="plOpenPrice" style="width:auto;margin:0" onchange="toggleOpenPrice()">
@@ -362,7 +365,10 @@
             </label>
           </div>
           <div class="fr1 field"><label>備考</label><textarea id="plDesc" placeholder="特記事項など..." style="min-height:44px"></textarea></div>
-          <div style="display:flex;justify-content:flex-end"><button class="btn btn-primary" onclick="savePlan()">登録</button></div>
+          <div style="display:flex;justify-content:flex-end;gap:8px">
+            <button class="btn" id="plCancelEditBtn" style="display:none" onclick="cancelPlanEdit()">キャンセル</button>
+            <button class="btn btn-primary" id="plSaveBtn" onclick="savePlan()">登録</button>
+          </div>
         </div>
         <div class="card">
           <div class="card-header"><span class="card-title">月次収益サマリー</span></div>
@@ -371,7 +377,7 @@
       </div>
       <div class="card">
         <div class="card-header"><span class="card-title">登録済みプラン</span></div>
-        <div class="table-wrap"><table><thead><tr><th>プラン名</th><th>月額</th><th>含む広告費</th><th>初期費用</th><th>応相談</th><th>契約店舗数</th><th>備考</th><th></th></tr></thead><tbody id="planTableBody"></tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>プラン名</th><th>種別</th><th>金額</th><th>含む広告費</th><th>初期費用</th><th>応相談</th><th>契約店舗数</th><th>備考</th><th></th></tr></thead><tbody id="planTableBody"></tbody></table></div>
       </div>
     </div>
 
@@ -645,6 +651,11 @@
       <div class="fr1 field"><label>契約プラン</label><select id="sPlanId" onchange="onPlanSelect()"><option value="">プランを選択（任意）</option></select><div style="font-size:12px;color:var(--text3);margin-top:4px" id="sPlanPreview"></div></div>
       <div class="fr"><div class="field"><label>割引率（%）<span style="color:var(--text3);font-weight:400"> 系列複数店舗一括契約など</span></label><input id="sDiscountPercent" type="number" min="0" max="100" placeholder="例: 10" oninput="onPlanSelect()"></div><div class="field"><label>割引理由（任意）</label><input id="sDiscountNote" type="text" placeholder="例: 系列3店舗同時契約"></div></div>
       <div class="fr"><div class="field"><label>月額費用（円）<span style="color:var(--text3);font-weight:400"> ※プラン選択で自動入力（割引適用後）</span></label><input id="sMonthlyFee" type="number" placeholder="150000"></div><div class="field"><label>ステータス</label><select id="sStatus" onchange="onStoreStatusChange()"><option value="negotiating">商談中</option><option value="pending">準備中</option><option value="active">稼働中</option><option value="ended">終了</option></select></div></div>
+      <div style="margin:14px 0;padding:12px;background:var(--bg3);border-radius:var(--r)">
+        <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:10px">📑 追加契約（並行契約） <span style="font-size:11px;color:var(--text3);font-weight:400">上記の主契約プランと並行して契約している別プラン（例：インフルエンサーキャスティングのスポット契約）</span></div>
+        <div id="sContractList"></div>
+        <button type="button" class="btn btn-sm" onclick="addStoreContractRow()">＋ 追加契約を登録</button>
+      </div>
       <div id="sNegotiatingRow" style="display:none"><div class="fr"><div class="field"><label>次回アクション日</label><input id="sNextAction" type="date"></div><div class="fr1 field"><label>商談メモ</label><input id="sNegotiatingMemo" type="text" placeholder="例：来週再商談、見積送付済み"></div></div></div>
       <div style="border-top:1px solid var(--border);padding-top:14px;margin:4px 0">
         <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:10px">店舗担当者</div>
@@ -1114,25 +1125,25 @@
 </div>
 </div>
 
-<script src="js/vendor/pizzip.min.js?v=72"></script>
-<script src="js/vendor/docxtemplater.min.js?v=72"></script>
-<script src="js/config.js?v=72"></script>
-<script src="js/db.js?v=72"></script>
-<script src="js/utils.js?v=72"></script>
-<script src="js/settings.js?v=72"></script>
-<script src="js/stores.js?v=72"></script>
-<script src="js/schedule.js?v=72"></script>
-<script src="js/casting.js?v=72"></script>
-<script src="js/check.js?v=72"></script>
-<script src="js/accounting.js?v=72"></script>
-<script src="js/plans.js?v=72"></script>
-<script src="js/creators.js?v=72"></script>
-<script src="js/corps.js?v=72"></script>
-<script src="js/faqs.js?v=72"></script>
-<script src="js/orders.js?v=72"></script>
-<script src="js/hearing.js?v=72"></script>
-<script src="js/dashboard.js?v=72"></script>
-<script src="js/app.js?v=72"></script>
+<script src="js/vendor/pizzip.min.js?v=75"></script>
+<script src="js/vendor/docxtemplater.min.js?v=75"></script>
+<script src="js/config.js?v=75"></script>
+<script src="js/db.js?v=75"></script>
+<script src="js/utils.js?v=75"></script>
+<script src="js/settings.js?v=75"></script>
+<script src="js/stores.js?v=75"></script>
+<script src="js/schedule.js?v=75"></script>
+<script src="js/casting.js?v=75"></script>
+<script src="js/check.js?v=75"></script>
+<script src="js/accounting.js?v=75"></script>
+<script src="js/plans.js?v=75"></script>
+<script src="js/creators.js?v=75"></script>
+<script src="js/corps.js?v=75"></script>
+<script src="js/faqs.js?v=75"></script>
+<script src="js/orders.js?v=75"></script>
+<script src="js/hearing.js?v=75"></script>
+<script src="js/dashboard.js?v=75"></script>
+<script src="js/app.js?v=75"></script>
 <!-- GENRE MODAL -->
 <!-- 追加費用モーダル -->
 <div class="modal-overlay" id="addFeeModal">
