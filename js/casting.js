@@ -896,7 +896,9 @@ function buildPackageCostTaskBody(pkg,store,totalCost){
   return '原価入力をお願いします。'
     +'\n・法人名・店舗名：'+corpName+(corp?'（'+store.name+'）':'')
     +'\n・グルメキャディ インフルエンサーキャスティング'
-    +'\n・原価情報：'+fmtMoney(totalCost);
+    +'\n・原価情報（税抜）：'+fmtMoney(totalCost)
+    +'\n\n＞共有'
+    +'\nto石田';
 }
 async function sendPackageCostNotification(pkgId){
   var found=findCastPackage(pkgId);

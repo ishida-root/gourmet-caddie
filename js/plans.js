@@ -1,4 +1,11 @@
-﻿function onPlanSelect(){
+﻿/* スポット（単発）契約・テスト運用プランは実際の月次継続収益ではないため、
+   売上集計（プラン管理・ダッシュボードの売上目標トラッカー）から共通で除外する */
+function isExcludedFromRevenue(planId){
+  if(!planId)return false;
+  var p=DB.plans.find(function(x){return x.id===planId;});
+  return!!(p&&(p.type==='spot'||p.type==='test'));
+}
+function onPlanSelect(){
   showPlanPreview();
   var pid=document.getElementById('sPlanId').value;
   if(!pid)return;
@@ -32,10 +39,11 @@ function toggleOpenPrice(){
 function onPlanTypeChange(){
   var type=document.getElementById('plType').value;
   var isSpot=type==='spot';
+  var isTest=type==='test';
   var labelEl=document.getElementById('plPriceLabel');
-  if(labelEl)labelEl.textContent=isSpot?'売価（税抜・一括、円）':'月額料金（円）';
+  if(labelEl)labelEl.textContent=isSpot?'売価（税抜・一括、円）':isTest?'金額（円、任意）':'月額料金（円）';
   var adRow=document.getElementById('plAdBudgetRow');
-  if(adRow)adRow.style.display=isSpot?'none':'';
+  if(adRow)adRow.style.display=(isSpot||isTest)?'none':'';
 }
 /* 既存プラン名候補（datalist）を更新 */
 function updatePlanNameDatalist(){
@@ -162,12 +170,13 @@ function renderPlans(){
   tb.innerHTML=sorted.map(function(p){
     var count=DB.stores.filter(function(s){return s.planId===p.id;}).length;
     var isSpot=p.type==='spot';
+    var isTest=p.type==='test';
     var priceStr=p.openPrice
       ?fmtMoney(p.price)+'〜（応相談）'
       :fmtMoney(p.price);
     return'<tr>'
       +'<td><span class="badge '+(PLAN_BADGE[p.name]||'b-gray')+'">'+esc(p.name)+'</span></td>'
-      +'<td>'+(isSpot?'<span class="badge b-purple">スポット</span>':'<span class="badge b-gray">月額</span>')+'</td>'
+      +'<td>'+(isTest?'<span class="badge b-amber">テスト</span>':isSpot?'<span class="badge b-purple">スポット</span>':'<span class="badge b-gray">月額</span>')+'</td>'
       +'<td class="td-mono" style="font-size:14px;font-weight:500;color:var(--text)">'+priceStr+'</td>'
       +'<td class="td-mono" style="color:var(--text2)">'+(!isSpot&&p.adBudget?fmtMoney(p.adBudget):'—')+'</td>'
       +'<td class="td-mono">'+fmtMoney(p.setup)+'</td>'
@@ -196,9 +205,8 @@ function updatePlanSelect(){
 function renderRevSummary(){
   var el=document.getElementById('revSummary');
   if(!el)return;
-  /* スポット（単発）契約は月次継続収益ではないため集計から除外する */
-  var isSpotPlan=function(pid){var p=DB.plans.find(function(x){return x.id===pid;});return p&&p.type==='spot';};
-  var active=DB.stores.filter(function(s){return s.status==='active'&&!isSpotPlan(s.planId);});
+  /* スポット（単発）契約・テスト運用プランは月次継続収益ではないため集計から除外する */
+  var active=DB.stores.filter(function(s){return s.status==='active'&&!isExcludedFromRevenue(s.planId);});
   var totalMonthly=active.reduce(function(sum,s){return sum+(Number(s.monthlyFee)||0);},0);
   var byPlan={};
   active.forEach(function(s){

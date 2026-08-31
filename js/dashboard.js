@@ -410,7 +410,8 @@ function renderDashboard(){
   var goalEl=document.getElementById('dash-goal');
   if(goalEl){
     var GOAL=Number(localStorage.getItem('gc_sales_goal')||100000000);
-    var active=DB.stores.filter(function(s){return s.status==='active';});
+    /* テスト運用・スポット契約のプランは実際の売上ではないため集計から除外する */
+    var active=DB.stores.filter(function(s){return s.status==='active'&&!(typeof isExcludedFromRevenue==='function'&&isExcludedFromRevenue(s.planId));});
     var now=new Date();
     var thisYear=now.getFullYear();
     var remainMonths=12-now.getMonth(); /* 今月〜12月 */
@@ -421,7 +422,7 @@ function renderDashboard(){
     var barCol=pct>=100?'var(--green)':pct>=60?'var(--accent)':'var(--amber)';
 
     /* プラン別テーブル */
-    var planPlans=DB.plans.filter(function(p){return Number(p.price)>0;});
+    var planPlans=DB.plans.filter(function(p){return Number(p.price)>0&&p.type!=='spot'&&p.type!=='test';});
     var planTable=planPlans.length
       ?'<div style="font-size:12px;font-weight:500;color:var(--text2);margin:12px 0 6px">📋 プラン別 必要件数</div>'
         +'<div style="border:1px solid var(--border);border-radius:var(--r);overflow:hidden">'

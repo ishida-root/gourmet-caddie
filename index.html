@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=75">
+<link rel="stylesheet" href="css/app.css?v=77">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -352,7 +352,7 @@
             <input id="plName" type="text" list="planNameList" placeholder="例: パター、インフルエンサーキャスティング（スポット）">
             <datalist id="planNameList"></datalist>
           </div>
-          <div class="fr1 field"><label>契約種別</label><select id="plType" onchange="onPlanTypeChange()"><option value="monthly">月額（継続契約）</option><option value="spot">スポット（一括・単発契約）</option></select></div>
+          <div class="fr1 field"><label>契約種別</label><select id="plType" onchange="onPlanTypeChange()"><option value="monthly">月額（継続契約）</option><option value="spot">スポット（一括・単発契約）</option><option value="test">テスト運用（売上集計から除外）</option></select></div>
           <div class="fr">
             <div class="field"><label id="plPriceLabel">月額料金（円）</label><input id="plPrice" type="number" placeholder="100000"></div>
             <div class="field"><label>初期費用（円）</label><input id="plSetup" type="number" placeholder="100000"></div>
@@ -1125,25 +1125,25 @@
 </div>
 </div>
 
-<script src="js/vendor/pizzip.min.js?v=75"></script>
-<script src="js/vendor/docxtemplater.min.js?v=75"></script>
-<script src="js/config.js?v=75"></script>
-<script src="js/db.js?v=75"></script>
-<script src="js/utils.js?v=75"></script>
-<script src="js/settings.js?v=75"></script>
-<script src="js/stores.js?v=75"></script>
-<script src="js/schedule.js?v=75"></script>
-<script src="js/casting.js?v=75"></script>
-<script src="js/check.js?v=75"></script>
-<script src="js/accounting.js?v=75"></script>
-<script src="js/plans.js?v=75"></script>
-<script src="js/creators.js?v=75"></script>
-<script src="js/corps.js?v=75"></script>
-<script src="js/faqs.js?v=75"></script>
-<script src="js/orders.js?v=75"></script>
-<script src="js/hearing.js?v=75"></script>
-<script src="js/dashboard.js?v=75"></script>
-<script src="js/app.js?v=75"></script>
+<script src="js/vendor/pizzip.min.js?v=77"></script>
+<script src="js/vendor/docxtemplater.min.js?v=77"></script>
+<script src="js/config.js?v=77"></script>
+<script src="js/db.js?v=77"></script>
+<script src="js/utils.js?v=77"></script>
+<script src="js/settings.js?v=77"></script>
+<script src="js/stores.js?v=77"></script>
+<script src="js/schedule.js?v=77"></script>
+<script src="js/casting.js?v=77"></script>
+<script src="js/check.js?v=77"></script>
+<script src="js/accounting.js?v=77"></script>
+<script src="js/plans.js?v=77"></script>
+<script src="js/creators.js?v=77"></script>
+<script src="js/corps.js?v=77"></script>
+<script src="js/faqs.js?v=77"></script>
+<script src="js/orders.js?v=77"></script>
+<script src="js/hearing.js?v=77"></script>
+<script src="js/dashboard.js?v=77"></script>
+<script src="js/app.js?v=77"></script>
 <!-- GENRE MODAL -->
 <!-- 追加費用モーダル -->
 <div class="modal-overlay" id="addFeeModal">
