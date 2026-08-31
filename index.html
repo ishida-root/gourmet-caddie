@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=71">
+<link rel="stylesheet" href="css/app.css?v=72">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -972,7 +972,27 @@
 <div class="modal" style="width:560px">
   <div class="modal-header"><span class="modal-title" id="castModalTitle">キャスティング記録</span><button class="modal-close" onclick="closeModal('castModal')">✕</button></div>
   <div class="modal-body">
-    <div class="fr"><div class="field"><label>店舗 *</label><select id="cStore"><option value="">選択...</option></select></div><div class="field"><label>インフルエンサー *</label><select id="cInf"><option value="">選択...</option></select></div></div>
+    <div class="fr"><div class="field"><label>店舗 *</label><select id="cStore" onchange="updateCastPackageSelect()"><option value="">選択...</option></select></div><div class="field"><label>インフルエンサー *</label><select id="cInf"><option value="">選択...</option></select></div></div>
+    <div class="fr1 field" style="margin-bottom:8px">
+      <label>案件（パッケージ） <span style="font-size:11px;color:var(--text3);font-weight:400">複数インフルエンサーをまとめて予算・原価管理する場合に使用（任意）</span></label>
+      <select id="cPackage" onchange="onCastPackageChange()">
+        <option value="">（なし）</option>
+        <option value="__new__">＋ 新規案件を作成...</option>
+      </select>
+    </div>
+    <div id="cPackageNewForm" style="display:none;padding:10px;background:var(--bg3);border-radius:var(--r);margin-bottom:10px">
+      <div class="fr">
+        <div class="field"><label style="font-size:12px">案件名</label><input id="cPkgName" type="text" placeholder="例: 8月スポットキャスティング"></div>
+        <div class="field"><label style="font-size:12px">売価（税抜）</label><input id="cPkgSalePrice" type="number" placeholder="240000"></div>
+      </div>
+      <div class="fr">
+        <div class="field"><label style="font-size:12px">予算上限（原価）</label><input id="cPkgBudget" type="number" placeholder="120000"></div>
+        <div class="field"><label style="font-size:12px">目標フォロワー数合計</label><input id="cPkgTargetFollowers" type="number" placeholder="100000"></div>
+      </div>
+      <button type="button" class="btn btn-sm btn-primary" onclick="createCastPackage()">作成して選択</button>
+      <button type="button" class="btn btn-sm" onclick="cancelCastPackageNew()">キャンセル</button>
+    </div>
+    <div id="castPackageSummary"></div>
     <!-- 媒体（複数選択チェックボックス） -->
     <div style="margin-bottom:10px">
       <label style="font-size:13px;color:var(--text2);display:block;margin-bottom:6px">媒体 <span style="font-size:12px;color:var(--text3);font-weight:400">（複数選択可）</span></label>
@@ -982,7 +1002,7 @@
       <div class="field">
         <label>PR 費用（円）</label>
         <div style="display:flex;gap:6px;align-items:center">
-          <input id="cFee" type="number" placeholder="50000" style="flex:1">
+          <input id="cFee" type="number" placeholder="50000" style="flex:1" oninput="renderCastCostInfo()">
           <span id="cFeeTaxLabel" style="font-size:12px;color:var(--text3);white-space:nowrap"></span>
         </div>
         <div id="cFeeTransLabel" style="font-size:12px;color:var(--text3);margin-top:3px"></div>
@@ -1021,10 +1041,19 @@
       <div id="cPostUrlBoxes" style="display:flex;flex-direction:column;gap:8px"></div>
     </div>
     <div class="fr1 field"><label>成果メモ</label><textarea id="cResult" placeholder="反応・コメント・効果など..."></textarea></div>
+    <div style="padding:12px;background:var(--bg3);border-radius:var(--r);margin-bottom:14px">
+      <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:8px">💴 原価情報（楽々販売入力用）</div>
+      <div class="fr1 field"><label style="font-size:12px">売価（税抜・スポット案件のみ入力） <span style="font-size:11px;color:var(--text3);font-weight:400">例：インフルエンサーキャスティング スポット ¥240,000</span></label><input id="cSalePrice" type="number" placeholder="240000" oninput="renderCastCostInfo()"></div>
+      <div id="castCostInfo"></div>
+    </div>
     <div class="fr1 field"><label>ステータス</label><select id="cStatus"><option value="active">進行中</option><option value="cancelled">キャンセル</option></select></div>
     <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;padding:10px 12px;background:var(--bg3);border-radius:var(--r)">
       <input type="checkbox" id="cContractSent" style="width:16px;height:16px;cursor:pointer;accent-color:var(--green)">
       <span style="font-size:14px">📄 契約書送付済み</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;padding:10px 12px;background:var(--bg3);border-radius:var(--r)">
+      <input type="checkbox" id="cConfirmed" onchange="renderCastPackageSummary()" style="width:16px;height:16px;cursor:pointer;accent-color:var(--green)">
+      <span style="font-size:14px">✅ 確定（原価が確定した）</span>
     </div>
     <div class="form-actions"><button class="btn" onclick="closeModal('castModal')">閉じる</button><button class="btn btn-primary" onclick="saveCasting()">保存</button></div>
   </div>
@@ -1085,25 +1114,25 @@
 </div>
 </div>
 
-<script src="js/vendor/pizzip.min.js?v=71"></script>
-<script src="js/vendor/docxtemplater.min.js?v=71"></script>
-<script src="js/config.js?v=71"></script>
-<script src="js/db.js?v=71"></script>
-<script src="js/utils.js?v=71"></script>
-<script src="js/settings.js?v=71"></script>
-<script src="js/stores.js?v=71"></script>
-<script src="js/schedule.js?v=71"></script>
-<script src="js/casting.js?v=71"></script>
-<script src="js/check.js?v=71"></script>
-<script src="js/accounting.js?v=71"></script>
-<script src="js/plans.js?v=71"></script>
-<script src="js/creators.js?v=71"></script>
-<script src="js/corps.js?v=71"></script>
-<script src="js/faqs.js?v=71"></script>
-<script src="js/orders.js?v=71"></script>
-<script src="js/hearing.js?v=71"></script>
-<script src="js/dashboard.js?v=71"></script>
-<script src="js/app.js?v=71"></script>
+<script src="js/vendor/pizzip.min.js?v=72"></script>
+<script src="js/vendor/docxtemplater.min.js?v=72"></script>
+<script src="js/config.js?v=72"></script>
+<script src="js/db.js?v=72"></script>
+<script src="js/utils.js?v=72"></script>
+<script src="js/settings.js?v=72"></script>
+<script src="js/stores.js?v=72"></script>
+<script src="js/schedule.js?v=72"></script>
+<script src="js/casting.js?v=72"></script>
+<script src="js/check.js?v=72"></script>
+<script src="js/accounting.js?v=72"></script>
+<script src="js/plans.js?v=72"></script>
+<script src="js/creators.js?v=72"></script>
+<script src="js/corps.js?v=72"></script>
+<script src="js/faqs.js?v=72"></script>
+<script src="js/orders.js?v=72"></script>
+<script src="js/hearing.js?v=72"></script>
+<script src="js/dashboard.js?v=72"></script>
+<script src="js/app.js?v=72"></script>
 <!-- GENRE MODAL -->
 <!-- 追加費用モーダル -->
 <div class="modal-overlay" id="addFeeModal">

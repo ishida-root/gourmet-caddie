@@ -750,6 +750,171 @@ function renderRescheduleHistory(list){
   +'</div>';
 }
 
+/* キャスティングの原価情報（楽々販売入力用）
+   請求書が登録済みなら、そこに入力された実額（PR費・交通費・飲食費の税抜合計）を正確な原価として使う。
+   未登録の場合はキャスティングのPR費用欄を見込み原価として使う（実費用は請求書登録後の方が正確）。 */
+function castingCostInfo(castingId){
+  var inv=(DB.invoices||[]).find(function(x){return x.castingId===castingId&&x.payeeType!=='ad';});
+  if(inv&&typeof invExclTotal==='function'){
+    return{cost:invExclTotal(inv),isActual:true};
+  }
+  /* 未登録の場合：今まさに編集中のキャスティングなら入力中のPR費用欄（ライブ値）を、
+     それ以外（案件内の他のキャスティング）は保存済みのfeeを見込み原価として使う */
+  var fee;
+  if(castingId===editingCastId&&document.getElementById('cFee')){
+    fee=Number(document.getElementById('cFee').value)||0;
+  }else{
+    var c=(DB.castings||[]).find(function(x){return x.id===castingId;});
+    fee=c?Number(c.fee)||0:0;
+  }
+  return{cost:fee,isActual:false};
+}
+function renderCastCostInfo(){
+  var el=document.getElementById('castCostInfo');
+  if(!el)return;
+  var salePrice=Number(document.getElementById('cSalePrice')?document.getElementById('cSalePrice').value:0)||0;
+  if(!salePrice){el.innerHTML='';return;}
+  var info=castingCostInfo(editingCastId);
+  var profit=salePrice-info.cost;
+  el.innerHTML='<div style="font-size:13px;color:var(--text2);padding:3px 0">原価　<span style="font-size:11px;color:var(--text3)">'+(info.isActual?'（請求書登録済み・実額）':'（請求書未登録・PR費用からの見込み額）')+'</span>　'+fmtMoney(info.cost)+'</div>'
+    +'<div style="font-size:13px;color:var(--text2);padding:3px 0">売価（税抜）　'+fmtMoney(salePrice)+'</div>'
+    +'<div style="font-size:14px;font-weight:500;color:'+(profit>=0?'var(--green)':'var(--red)')+';padding:3px 0">粗利　'+fmtMoney(profit)+'</div>';
+}
+
+/* ============================================================
+   キャスティング案件（パッケージ）
+   1つのスポット案件（例：¥240,000のキャスティング枠）に複数インフルエンサーの
+   キャスティングを紐づけ、合計原価・予算消化率をまとめて管理する。
+   店舗ごとに store.castingPackages 配列として保持する。
+   ============================================================ */
+function updateCastPackageSelect(){
+  var sel=document.getElementById('cPackage');
+  if(!sel)return;
+  var sid=document.getElementById('cStore').value;
+  var store=DB.stores.find(function(s){return s.id===sid;});
+  var pkgs=store&&store.castingPackages||[];
+  var cur=sel.value&&sel.value!=='__new__'?sel.value:'';
+  sel.innerHTML='<option value="">（なし）</option>'
+    +pkgs.map(function(p){return'<option value="'+p.id+'"'+(p.id===cur?' selected':'')+'>'+esc(p.name)+'</option>';}).join('')
+    +'<option value="__new__">＋ 新規案件を作成...</option>';
+  renderCastPackageSummary();
+}
+function onCastPackageChange(){
+  var sel=document.getElementById('cPackage');
+  var formEl=document.getElementById('cPackageNewForm');
+  if(sel&&sel.value==='__new__'){
+    if(formEl)formEl.style.display='';
+    sel.value='';
+  }else{
+    if(formEl)formEl.style.display='none';
+  }
+  renderCastPackageSummary();
+}
+function cancelCastPackageNew(){
+  var formEl=document.getElementById('cPackageNewForm');if(formEl)formEl.style.display='none';
+  ['cPkgName','cPkgSalePrice','cPkgBudget','cPkgTargetFollowers'].forEach(function(fid){var el=document.getElementById(fid);if(el)el.value='';});
+}
+function createCastPackage(){
+  var sid=document.getElementById('cStore').value;
+  var store=DB.stores.find(function(s){return s.id===sid;});
+  if(!store){alert('先に店舗を選択してください');return;}
+  var name=document.getElementById('cPkgName').value.trim();
+  if(!name){alert('案件名を入力してください');return;}
+  var pkg={
+    id:uid(),name:name,
+    salePrice:document.getElementById('cPkgSalePrice').value,
+    budgetCap:document.getElementById('cPkgBudget').value,
+    targetFollowers:document.getElementById('cPkgTargetFollowers').value,
+    createdAt:new Date().toISOString(),notifiedAt:''
+  };
+  if(!store.castingPackages)store.castingPackages=[];
+  store.castingPackages.push(pkg);
+  saveItem('stores',store);
+  cancelCastPackageNew();
+  updateCastPackageSelect();
+  var sel=document.getElementById('cPackage');if(sel)sel.value=pkg.id;
+  /* 案件の売価をそのままこのキャスティングの売価欄にも反映（変更可） */
+  if(pkg.salePrice){var spEl=document.getElementById('cSalePrice');if(spEl&&!spEl.value){spEl.value=pkg.salePrice;renderCastCostInfo();}}
+  renderCastPackageSummary();
+}
+function findCastPackage(pkgId){
+  if(!pkgId)return null;
+  for(var i=0;i<DB.stores.length;i++){
+    var p=(DB.stores[i].castingPackages||[]).find(function(x){return x.id===pkgId;});
+    if(p)return{pkg:p,store:DB.stores[i]};
+  }
+  return null;
+}
+function renderCastPackageSummary(){
+  var el=document.getElementById('castPackageSummary');
+  if(!el)return;
+  var pkgId=document.getElementById('cPackage')?document.getElementById('cPackage').value:'';
+  if(!pkgId||pkgId==='__new__'){el.innerHTML='';return;}
+  var found=findCastPackage(pkgId);
+  if(!found){el.innerHTML='';return;}
+  var pkg=found.pkg;
+  /* 案件に紐づく有効なキャスティング（今まさに編集中のものも、まだ未保存でも含める） */
+  var memberIds={};
+  DB.castings.forEach(function(c){if(c.packageId===pkgId&&c.status!=='cancelled')memberIds[c.id]=c;});
+  if(editingCastId)memberIds[editingCastId]=Object.assign({},memberIds[editingCastId]||{},{id:editingCastId,infId:document.getElementById('cInf').value,confirmed:document.getElementById('cConfirmed').checked});
+  else{
+    /* 新規未保存のキャスティングもこの案件を選んでいれば仮に一員として数える */
+    memberIds['__new__']={id:null,infId:document.getElementById('cInf').value,confirmed:document.getElementById('cConfirmed').checked};
+  }
+  var members=Object.values(memberIds);
+  var totalCost=0,allConfirmed=true,rows='';
+  members.forEach(function(c){
+    var info=c.id?castingCostInfo(c.id):{cost:Number(document.getElementById('cFee').value)||0,isActual:false};
+    totalCost+=info.cost;
+    var confirmed=c.id===editingCastId||!c.id?document.getElementById('cConfirmed').checked:!!c.confirmed;
+    if(!confirmed)allConfirmed=false;
+    var infObj=DB.influencers.find(function(x){return x.id===c.infId;});
+    rows+='<div style="font-size:12px;color:var(--text2);padding:2px 0;display:flex;justify-content:space-between"><span>'+(confirmed?'✅':'⏳')+' '+esc(infObj?infObj.name:'（未選択）')+'</span><span>'+fmtMoney(info.cost)+'</span></div>';
+  });
+  var budgetCap=Number(pkg.budgetCap)||0;
+  var remaining=budgetCap-totalCost;
+  var pct=budgetCap?Math.min(100,Math.round(totalCost/budgetCap*100)):0;
+  var alreadyNotified=!!pkg.notifiedAt;
+  var canSend=allConfirmed&&members.length>0&&!alreadyNotified;
+  el.innerHTML='<div style="margin-top:8px;padding:10px 12px;background:var(--bg3);border-radius:var(--r)">'
+    +'<div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:6px">📦 '+esc(pkg.name)+'（'+members.length+'名）</div>'
+    +rows
+    +'<div class="pbar-wrap" style="margin-top:6px"><div class="pbar" style="width:'+pct+'%;background:'+(pct>=100?'var(--red)':pct>=80?'var(--amber)':'var(--green)')+'"></div></div>'
+    +'<div style="font-size:12px;color:var(--text2);margin-top:4px">合計原価　'+fmtMoney(totalCost)+'　／　予算上限　'+fmtMoney(budgetCap)+'　／　残り　<span style="color:'+(remaining>=0?'var(--green)':'var(--red)')+'">'+fmtMoney(remaining)+'</span></div>'
+    +(alreadyNotified
+      ?'<div style="font-size:12px;color:var(--text3);margin-top:6px">✓ '+fmtD(pkg.notifiedAt.split('T')[0])+' に楽々販売へ通知済み</div>'
+      :'<button type="button" class="btn btn-sm btn-primary" style="margin-top:8px" '+(canSend?'':'disabled')+' onclick="sendPackageCostNotification(\''+pkgId+'\')">📤 岩佐さんに原価入力タスクを送る</button>'
+      +(!canSend?'<div style="font-size:11px;color:var(--text3);margin-top:4px">全員「確定」チェックが入ると送信できます</div>':''))
+  +'</div>';
+}
+/* 楽々販売への原価入力タスク（岩佐さん宛）。既存の楽々販売登録依頼タスクと同じ
+   ルーム・宛先（担当者ID 8306474）を流用し、原価確定分だけを依頼する内容にする */
+function buildPackageCostTaskBody(pkg,store,totalCost){
+  var corp=DB.corporations&&store.corpId?DB.corporations.find(function(c){return c.id===store.corpId;}):null;
+  var corpName=corp?corp.name:store.name;
+  return '原価入力をお願いします。'
+    +'\n・法人名・店舗名：'+corpName+(corp?'（'+store.name+'）':'')
+    +'\n・グルメキャディ インフルエンサーキャスティング'
+    +'\n・原価情報：'+fmtMoney(totalCost);
+}
+async function sendPackageCostNotification(pkgId){
+  var found=findCastPackage(pkgId);
+  if(!found)return;
+  var pkg=found.pkg,store=found.store;
+  var members=DB.castings.filter(function(c){return c.packageId===pkgId&&c.status!=='cancelled';});
+  if(!members.length)return;
+  var totalCost=members.reduce(function(s,c){return s+castingCostInfo(c.id).cost;},0);
+  var taskBody=buildPackageCostTaskBody(pkg,store,totalCost);
+  var ok=await ghDispatch(CW_CS_ROOM,taskBody,'task','8306474');
+  if(ok){
+    pkg.notifiedAt=new Date().toISOString();
+    saveItem('stores',store);
+    renderCastPackageSummary();
+  }else{
+    alert('Chatworkタスクの送信に失敗しました');
+  }
+}
+
 /* 「リスケ中（日程未定）」チェック時は来店予定日欄をクリアして矛盾した状態にならないようにする */
 function onVisitTbdChange(){
   var cb=document.getElementById('cVisitTbd');
@@ -765,12 +930,16 @@ function openCastingModal(opts){
   updateCastSelects();
   editingCastId=null;
   _curCastPostUrls={};
-  ['cFee','cReach','cVisitCount','cResult','cVisitDate','cDraftDate','cDate','cVisitReason'].forEach(function(fid){
+  ['cFee','cReach','cVisitCount','cResult','cVisitDate','cDraftDate','cDate','cVisitReason','cSalePrice'].forEach(function(fid){
     var el=document.getElementById(fid);if(el)el.value='';
   });
+  renderCastCostInfo();
   var ccb=document.getElementById('cContractSent');if(ccb)ccb.checked=false;
+  var cConfirmedEl=document.getElementById('cConfirmed');if(cConfirmedEl)cConfirmedEl.checked=false;
   var cStatusEl=document.getElementById('cStatus');if(cStatusEl)cStatusEl.value='active';
   var cTbdEl=document.getElementById('cVisitTbd');if(cTbdEl)cTbdEl.checked=false;
+  cancelCastPackageNew();
+  var cPkgSel=document.getElementById('cPackage');if(cPkgSel)cPkgSel.value='';
   renderRescheduleHistory([]);
   /* 媒体選択は updateCastPlatformSelect() で初期化するためここでは不要 */
   var titleEl=document.getElementById('castModalTitle');
@@ -784,6 +953,9 @@ function openCastingModal(opts){
         if(titleEl)titleEl.textContent='キャスティングを編集';
         var set=function(fid,v){var el=document.getElementById(fid);if(el&&v)el.value=v;};
         set('cStore',ec.storeId);set('cInf',ec.infId);
+        updateCastPackageSelect();
+        var cPkgEl=document.getElementById('cPackage');if(cPkgEl&&ec.packageId)cPkgEl.value=ec.packageId;
+        var cConfEl=document.getElementById('cConfirmed');if(cConfEl)cConfEl.checked=!!ec.confirmed;
         /* 経理管理に紐づく請求書があれば、そちらの確定PR費用を優先する */
         var linkedInv=(DB.invoices||[]).find(function(x){return x.castingId===ec.id&&x.payeeType!=='ad';});
         var savedFee=(linkedInv&&linkedInv.prFee)?linkedInv.prFee:ec.fee;
@@ -810,6 +982,7 @@ function openCastingModal(opts){
              編集時は保存済み（または請求書確定済み）の実額を再度優先する */
           onCastPlatformChange();
           if(savedFee)document.getElementById('cFee').value=savedFee;
+          renderCastCostInfo();
         },50);
         set('cReach',ec.reach);set('cVisitCount',ec.visitCount);set('cResult',ec.result);
         set('cVisitDate',ec.visitDate);set('cDraftDate',ec.draftDate);set('cDate',ec.date);
@@ -818,10 +991,13 @@ function openCastingModal(opts){
         var linkedVisitPost=DB.posts.find(function(p){return p.castingId===ec.id&&p.type==='inf_visit';});
         var cTbdEdit=document.getElementById('cVisitTbd');if(cTbdEdit)cTbdEdit.checked=!!(linkedVisitPost&&linkedVisitPost.status==='date_tbd');
         renderRescheduleHistory(ec.reschedules||[]);
+        set('cSalePrice',ec.salePrice);
+        renderCastCostInfo();
+        renderCastPackageSummary();
       }
     }
     /* プリセット */
-    if(opts.storeId){var s=document.getElementById('cStore');if(s)s.value=opts.storeId;}
+    if(opts.storeId){var s=document.getElementById('cStore');if(s)s.value=opts.storeId;updateCastPackageSelect();}
     if(opts.infId){var i=document.getElementById('cInf');if(i)i.value=opts.infId;}
   }
   /* 日付ピッカー初期化 */
@@ -989,6 +1165,9 @@ function saveCasting(){
     platform:platform,platforms:platforms,fee:fee,
     reach:document.getElementById('cReach').value,
     visitCount:document.getElementById('cVisitCount').value,
+    salePrice:document.getElementById('cSalePrice')?document.getElementById('cSalePrice').value:'',
+    packageId:document.getElementById('cPackage')?document.getElementById('cPackage').value:'',
+    confirmed:!!(document.getElementById('cConfirmed')&&document.getElementById('cConfirmed').checked),
     result:document.getElementById('cResult').value,
     postUrls:(function(){var o={};Object.keys(_curCastPostUrls).forEach(function(k){if(_curCastPostUrls[k])o[k]=_curCastPostUrls[k];});return o;})(),
     contractSent:!!(document.getElementById('cContractSent')&&document.getElementById('cContractSent').checked),
