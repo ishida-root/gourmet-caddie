@@ -285,6 +285,7 @@ function openInfluencerModal(id){
   ['iName','iHandle','iUrl','iGenre','iContact','iAgency','iMemo','iFeeLow','iFeeHigh','iOutreachDate','iArea','iTendency'].forEach(function(fid){var el=document.getElementById(fid);if(el)el.value='';});
   document.getElementById('iPlatform').value='Instagram';
   document.getElementById('iFollowers').value='';
+  document.getElementById('iFollowing').value='';
   document.getElementById('iRating').value='';
   /* 新規追加は「未声掛け」から開始。起用実績はキャスティング履歴から自動判定するため、
      声かけ状況が未設定の既存登録はここでは強制せず「—（未設定）」のままにする */
@@ -292,7 +293,7 @@ function openInfluencerModal(id){
   if(id){
     var inf=DB.influencers.find(function(x){return x.id===id;});
     if(inf){
-      var map={iName:'name',iHandle:'handle',iUrl:'url',iPlatform:'platform',iFollowers:'followers',iGenre:'genre',iContact:'contact',iAgency:'agency',iMemo:'memo',iRating:'rating',iArea:'area',iTendency:'tendency',iOutreachDate:'outreachDate'};
+      var map={iName:'name',iHandle:'handle',iUrl:'url',iPlatform:'platform',iFollowers:'followers',iFollowing:'following',iGenre:'genre',iContact:'contact',iAgency:'agency',iMemo:'memo',iRating:'rating',iArea:'area',iTendency:'tendency',iOutreachDate:'outreachDate'};
       Object.keys(map).forEach(function(fid){var el=document.getElementById(fid);if(el&&inf[map[fid]]!==undefined)el.value=inf[map[fid]]||'';});
       if(inf.outreachStatus)document.getElementById('iOutreachStatus').value=inf.outreachStatus;
       /* fee range */
@@ -340,6 +341,7 @@ function parseInfluencerImportText(text){
       url:get(row,'アカウント'),
       area:get(row,'エリア'),
       followers:get(row,'フォロワー'),
+      following:get(row,'フォロー'),
       genre:get(row,'傾向'),
       outreachRaw:get(row,'声かけ'),
       replyRaw:get(row,'返事'),
@@ -391,6 +393,7 @@ function importedRowToInfluencer(row){
     url:row.url,
     platform:'Instagram',
     followers:row.followers.replace(/[^\d]/g,''),
+    following:row.following.replace(/[^\d]/g,''),
     genre:row.genre,
     feeLow:fee.low,
     feeHigh:fee.high,
@@ -451,6 +454,7 @@ function saveInfluencer(){
     url:document.getElementById('iUrl').value,
     platform:document.getElementById('iPlatform').value,
     followers:document.getElementById('iFollowers').value,
+    following:document.getElementById('iFollowing').value,
     genre:document.getElementById('iGenre').value,
     feeLow:feeLow,
     feeHigh:feeHigh,
@@ -1488,7 +1492,21 @@ var INF_TIER_BADGE={
   'ミドル':'background:var(--purple-bg);color:var(--purple);border-color:var(--purple-border)',
   'メガ':'background:var(--amber-bg);color:var(--amber);border-color:var(--amber-border)'
 };
-function renderInfluencers(){
+/* インフルエンサー一覧の並び替え（フォロワー数／PR単価）。列見出しクリックで切り替え */
+var infSortKey='';
+var infSortDir='desc';
+function setInfSort(key){
+  if(infSortKey===key){infSortDir=infSortDir==='desc'?'asc':'desc';}
+  else{infSortKey=key;infSortDir='desc';}
+  renderInfluencers();
+}
+function infSortValue(i,key){
+  if(key==='followers')return Number(i.followers)||0;
+  var fee=(i.feeLow!==undefined&&i.feeLow!=='')?i.feeLow:i.fee;
+  return Number(fee)||0;
+}
+/* 現在の検索・絞り込み・並び替え条件を反映したインフルエンサー一覧を返す（画面表示・出力で共用） */
+function getFilteredSortedInfluencers(){
   var search=(document.getElementById('globalSearch').value||'').toLowerCase();
   var statusFilter=(document.getElementById('filterInfStatus')||{}).value||'';
   var engagementFilter=(document.getElementById('filterInfEngagement')||{}).value||'';
@@ -1499,6 +1517,44 @@ function renderInfluencers(){
     if(tierFilter&&infTierOf(i)!==tierFilter)return false;
     return!search||(i.name||'').toLowerCase().includes(search)||(i.handle||'').toLowerCase().includes(search)||(i.genre||'').toLowerCase().includes(search);
   });
+  if(infSortKey){
+    list=list.slice().sort(function(a,b){
+      var va=infSortValue(a,infSortKey),vb=infSortValue(b,infSortKey);
+      return infSortDir==='asc'?va-vb:vb-va;
+    });
+  }
+  return list;
+}
+/* 名前・アカウントURL・エリア・フォロワー・フォロー・傾向のみをCSV出力する（お客様向けリストアップ用）。
+   PR単価や社内メモなど非公開情報は含めない。 */
+function exportInfluencerListForClient(){
+  var list=getFilteredSortedInfluencers();
+  if(!list.length){alert('出力対象のインフルエンサーがありません（絞り込み条件をご確認ください）');return;}
+  var platUrl={Instagram:'https://www.instagram.com/',TikTok:'https://www.tiktok.com/@',YouTube:'',X:'https://x.com/'};
+  var csvEscape=function(v){
+    var s=String(v===null||v===undefined?'':v);
+    if(/[",\n]/.test(s))s='"'+s.replace(/"/g,'""')+'"';
+    return s;
+  };
+  var rows=[['名前','アカウント','エリア','フォロワー','フォロー','傾向']];
+  list.forEach(function(i){
+    var accountUrl=i.url||(i.handle?(platUrl[i.platform]||'')+(i.handle.replace('@','')):'');
+    rows.push([i.name||'',accountUrl,i.area||'',i.followers||'',i.following||'',i.genre||'']);
+  });
+  var csv=rows.map(function(r){return r.map(csvEscape).join(',');}).join('\r\n');
+  var blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  var pad=function(n){return String(n).padStart(2,'0');};
+  var now=new Date();
+  a.href=url;a.download='インフルエンサーリスト_'+now.getFullYear()+pad(now.getMonth()+1)+pad(now.getDate())+'.csv';
+  document.body.appendChild(a);a.click();a.remove();
+  setTimeout(function(){URL.revokeObjectURL(url);},1000);
+}
+function renderInfluencers(){
+  var list=getFilteredSortedInfluencers();
+  var fIcon=document.getElementById('infSortFollowersIcon');if(fIcon)fIcon.textContent=infSortKey==='followers'?(infSortDir==='asc'?'▲':'▼'):'';
+  var pIcon=document.getElementById('infSortFeeIcon');if(pIcon)pIcon.textContent=infSortKey==='fee'?(infSortDir==='asc'?'▲':'▼'):'';
   var tb=document.getElementById('infBody');
   if(!list.length){tb.innerHTML='<tr><td colspan="9" class="empty-state">インフルエンサーが登録されていません</td></tr>';return;}
   var platColor={Instagram:'#e1306c',TikTok:'#010101',YouTube:'#ff0000',X:'#1da1f2'};

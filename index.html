@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=81">
+<link rel="stylesheet" href="css/app.css?v=82">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -336,10 +336,11 @@
               <option value="メガ">メガ（100万人以上）</option>
             </select>
             <button class="btn btn-sm" onclick="openInfluencerBulkImport()">📋 一括インポート</button>
+            <button class="btn btn-sm" onclick="exportInfluencerListForClient()">📤 リストを出力</button>
             <button class="btn btn-primary btn-sm" onclick="openInfluencerModal()">＋ 追加</button>
           </div>
         </div>
-        <div class="table-wrap"><table><thead><tr><th>名前 / ID</th><th>媒体</th><th>フォロワー</th><th>PR単価</th><th>ジャンル</th><th>ステータス</th><th>連絡先</th><th>直近起用</th><th></th></tr></thead><tbody id="infBody"></tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>名前 / ID</th><th>媒体</th><th id="infSortFollowers" onclick="setInfSort('followers')" style="cursor:pointer;white-space:nowrap">フォロワー <span id="infSortFollowersIcon"></span></th><th id="infSortFee" onclick="setInfSort('fee')" style="cursor:pointer;white-space:nowrap">PR単価 <span id="infSortFeeIcon"></span></th><th>ジャンル</th><th>ステータス</th><th>連絡先</th><th>直近起用</th><th></th></tr></thead><tbody id="infBody"></tbody></table></div>
       </div>
     </div>
 
@@ -858,6 +859,7 @@
   <div class="modal-body">
     <div class="fr"><div class="field"><label>名前 *</label><input id="iName" type="text" placeholder="田中 みな"></div><div class="field"><label>ID</label><input id="iHandle" type="text" placeholder="@tanakami_food"></div></div>
     <div class="fr"><div class="field"><label>主な媒体</label><select id="iPlatform"><option>Instagram</option><option>TikTok</option><option>YouTube</option><option>X</option><option>その他</option></select></div><div class="field"><label>フォロワー数</label><input id="iFollowers" type="number" placeholder="50000"></div></div>
+    <div class="fr"><div class="field"><label>フォロー数</label><input id="iFollowing" type="number" placeholder="500"></div><div class="field"></div></div>
     <div class="fr1 field"><label>アカウント URL <span style="font-size:11px;color:var(--text3);font-weight:400">（名前クリックで開くリンク）</span></label><input id="iUrl" type="url" placeholder="https://www.instagram.com/tanakami_food"></div>
     <div class="fr"><div class="field"><label>ジャンル</label><input id="iGenre" type="text" placeholder="グルメ・飲食"></div><div class="field"><label>連絡先</label><input id="iContact" type="text" placeholder="mail@example.com / LINE ID"></div></div>
 
@@ -1145,25 +1147,25 @@
 </div>
 </div>
 
-<script src="js/vendor/pizzip.min.js?v=81"></script>
-<script src="js/vendor/docxtemplater.min.js?v=81"></script>
-<script src="js/config.js?v=81"></script>
-<script src="js/db.js?v=81"></script>
-<script src="js/utils.js?v=81"></script>
-<script src="js/settings.js?v=81"></script>
-<script src="js/stores.js?v=81"></script>
-<script src="js/schedule.js?v=81"></script>
-<script src="js/casting.js?v=81"></script>
-<script src="js/check.js?v=81"></script>
-<script src="js/accounting.js?v=81"></script>
-<script src="js/plans.js?v=81"></script>
-<script src="js/creators.js?v=81"></script>
-<script src="js/corps.js?v=81"></script>
-<script src="js/faqs.js?v=81"></script>
-<script src="js/orders.js?v=81"></script>
-<script src="js/hearing.js?v=81"></script>
-<script src="js/dashboard.js?v=81"></script>
-<script src="js/app.js?v=81"></script>
+<script src="js/vendor/pizzip.min.js?v=82"></script>
+<script src="js/vendor/docxtemplater.min.js?v=82"></script>
+<script src="js/config.js?v=82"></script>
+<script src="js/db.js?v=82"></script>
+<script src="js/utils.js?v=82"></script>
+<script src="js/settings.js?v=82"></script>
+<script src="js/stores.js?v=82"></script>
+<script src="js/schedule.js?v=82"></script>
+<script src="js/casting.js?v=82"></script>
+<script src="js/check.js?v=82"></script>
+<script src="js/accounting.js?v=82"></script>
+<script src="js/plans.js?v=82"></script>
+<script src="js/creators.js?v=82"></script>
+<script src="js/corps.js?v=82"></script>
+<script src="js/faqs.js?v=82"></script>
+<script src="js/orders.js?v=82"></script>
+<script src="js/hearing.js?v=82"></script>
+<script src="js/dashboard.js?v=82"></script>
+<script src="js/app.js?v=82"></script>
 <!-- GENRE MODAL -->
 <!-- 追加費用モーダル -->
 <div class="modal-overlay" id="addFeeModal">
