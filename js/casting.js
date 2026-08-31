@@ -599,6 +599,32 @@ function castPostUrlEntries(c){
   return entries;
 }
 
+/* 声かけメール文テンプレート（未声掛けインフルエンサー向け・名前を代入） */
+function infOutreachEmailTemplate(inf){
+  var name=(inf.name||'')+' 様';
+  return name+'\n\n'
+    +'突然のご連絡失礼いたします。\n'
+    +'ルート株式会社 SNSマーケティング局の石田と申します。\n\n'
+    +'弊社では関西エリア（大阪・兵庫中心）の飲食店様の集客支援として、SNSアカウント様へのキャスティングを行っております。\n'
+    +'その一環として、グルメ領域でご活躍されている貴アカウントに、ご来店いただく際の条件について事前にお伺いできればと思いご連絡いたしました。\n\n'
+    +'恐れ入りますが、下記についてご教示いただけますと幸いです。\n\n'
+    +'・関西（大阪・兵庫中心）の飲食店様にご来店いただく場合の、1案件あたりのご料金\n'
+    +'・交通費およびお食事代のご条件\n'
+    +'・ご投稿いただいたクリエイティブのタイアップ二次利用の可否\n'
+    +'・ご来店から投稿までのおおよその日数\n\n'
+    +'現時点は条件確認の段階であり、確定のご依頼ではございませんが、内容が合いましたら改めて具体的なご相談をさせていただければと存じます。\n\n'
+    +'ご多忙のところ恐れ入りますが、ご確認のほどよろしくお願いいたします。';
+}
+function copyOutreachEmail(){
+  var ta=document.getElementById('infOutreachEmailText');
+  if(!ta)return;
+  ta.select();
+  navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(ta.value).then(function(){
+    var btn=document.getElementById('infOutreachCopyBtn');
+    if(btn){var orig=btn.textContent;btn.textContent='✓ コピーしました';setTimeout(function(){btn.textContent=orig;},2000);}
+  }):document.execCommand('copy');
+}
+
 function openInfluencerDetail(id){
   var inf=DB.influencers.find(function(x){return x.id===id;});
   if(!inf)return;
@@ -651,6 +677,16 @@ function openInfluencerDetail(id){
     +(inf.contact?'<div style="margin-bottom:12px;padding:10px 12px;background:var(--bg3);border-radius:var(--r);font-size:13px"><span style="color:var(--text3)">連絡先：</span><span style="color:var(--accent)">'+esc(inf.contact)+'</span></div>':'')
     /* メモ */
     +(inf.memo?'<div style="margin-bottom:16px;padding:10px 12px;background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:var(--r);font-size:13px;color:var(--text);line-height:1.7;white-space:pre-wrap">'+esc(inf.memo)+'</div>':'')
+    /* 声かけメール文（未声掛けの場合のみ表示・コピー用） */
+    +((!infOutreachStatus(inf)||infOutreachStatus(inf)==='未声掛け')
+      ?'<div style="margin-bottom:16px;padding:10px 12px;background:var(--bg3);border-radius:var(--r)">'
+        +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">'
+          +'<span style="font-size:12px;font-weight:500;color:var(--text2)">✉️ 声かけメール文（コピー用）</span>'
+          +'<button type="button" id="infOutreachCopyBtn" class="btn btn-sm" onclick="copyOutreachEmail()">📋 コピー</button>'
+        +'</div>'
+        +'<textarea id="infOutreachEmailText" readonly style="width:100%;min-height:180px;font-size:12px;line-height:1.7;padding:10px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg2);color:var(--text);resize:vertical" onclick="this.select()">'+esc(infOutreachEmailTemplate(inf))+'</textarea>'
+      +'</div>'
+      :'')
     /* キャスティング履歴 */
     +'<div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:8px">キャスティング履歴</div>'
     +(castings.length===0
@@ -756,6 +792,11 @@ function renderRescheduleHistory(list){
    未登録の場合はキャスティングのPR費用欄を見込み原価として使う（実費用は請求書登録後の方が正確）。 */
 function castingCostInfo(castingId){
   var inv=(DB.invoices||[]).find(function(x){return x.castingId===castingId&&x.payeeType!=='ad';});
+  if(!inv){
+    /* castingIdの直接紐づけが無くても、同じ店舗×同じインフルエンサーの請求書があればそちらを実額として使う */
+    var c=(DB.castings||[]).find(function(x){return x.id===castingId;});
+    if(c)inv=(DB.invoices||[]).find(function(x){return x.payeeType!=='ad'&&x.storeId===c.storeId&&x.infId===c.infId;});
+  }
   if(inv&&typeof invExclTotal==='function'){
     return{cost:invExclTotal(inv),isActual:true};
   }
@@ -896,9 +937,9 @@ function buildPackageCostTaskBody(pkg,store,totalCost){
   return '原価入力をお願いします。'
     +'\n・法人名・店舗名：'+corpName+(corp?'（'+store.name+'）':'')
     +'\n・グルメキャディ インフルエンサーキャスティング'
-    +'\n・原価情報（税抜）：'+fmtMoney(totalCost)
+    +'\n・原価情報：'+fmtMoney(totalCost)+'（税抜き）'
     +'\n\n＞共有'
-    +'\nto石田';
+    +'\n[To:11138491]石田 温子さん';
 }
 async function sendPackageCostNotification(pkgId){
   var found=findCastPackage(pkgId);
@@ -1378,7 +1419,10 @@ function renderCasting(){
   if(!list.length){tb.innerHTML='<tr><td colspan="9" class="empty-state">キャスティング履歴がありません</td></tr>';return;}
   var INV_STATUS_LABEL={pending:'📄 未受領',sns_received:'📥 請求書受領',accounting_submitted:'📊 経理申請',done:'💸 支払い済み',invoiced:'📤 請求書送付済み',received:'✅ 入金確認済み'};
   tb.innerHTML=list.map(function(c){
-    var inv=(DB.invoices||[]).find(function(x){return x.castingId===c.id;});
+    /* castingIdで直接紐づく請求書がなくても、同じ店舗×同じインフルエンサーの請求書が既にあれば
+       それを表示する（重複キャスティング等でcastingIdがずれているケースで、二重登録を防ぐため） */
+    var inv=(DB.invoices||[]).find(function(x){return x.castingId===c.id&&x.payeeType!=='ad';})
+      ||(DB.invoices||[]).find(function(x){return x.payeeType!=='ad'&&x.storeId===c.storeId&&x.infId===c.infId;});
     var invCell=inv
       ?'<span style="font-size:12px;padding:2px 7px;border-radius:4px;background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-border);white-space:nowrap">'+(INV_STATUS_LABEL[inv.status]||inv.status)+'</span>'
       :'<button onclick="event.stopPropagation();openInvoiceFromCasting(\''+c.id+'\')" style="font-size:11px;padding:2px 8px;white-space:nowrap;border:1px dashed var(--text3);border-radius:4px;background:transparent;color:var(--text3);cursor:pointer">＋ 未登録（登録する）</button>';
