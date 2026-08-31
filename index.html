@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=82">
+<link rel="stylesheet" href="css/app.css?v=83">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -334,6 +334,12 @@
               <option value="マイクロ">マイクロ（1万〜10万人）</option>
               <option value="ミドル">ミドル（10万〜100万人）</option>
               <option value="メガ">メガ（100万人以上）</option>
+            </select>
+            <select id="filterInfArea" onchange="renderInfluencers()" style="font-size:12px;padding:4px 8px;width:auto">
+              <option value="">エリア：全て</option>
+            </select>
+            <select id="filterInfGenre" onchange="renderInfluencers()" style="font-size:12px;padding:4px 8px;width:auto">
+              <option value="">ジャンル：全て</option>
             </select>
             <button class="btn btn-sm" onclick="openInfluencerBulkImport()">📋 一括インポート</button>
             <button class="btn btn-sm" onclick="exportInfluencerListForClient()">📤 リストを出力</button>
@@ -1147,25 +1153,25 @@
 </div>
 </div>
 
-<script src="js/vendor/pizzip.min.js?v=82"></script>
-<script src="js/vendor/docxtemplater.min.js?v=82"></script>
-<script src="js/config.js?v=82"></script>
-<script src="js/db.js?v=82"></script>
-<script src="js/utils.js?v=82"></script>
-<script src="js/settings.js?v=82"></script>
-<script src="js/stores.js?v=82"></script>
-<script src="js/schedule.js?v=82"></script>
-<script src="js/casting.js?v=82"></script>
-<script src="js/check.js?v=82"></script>
-<script src="js/accounting.js?v=82"></script>
-<script src="js/plans.js?v=82"></script>
-<script src="js/creators.js?v=82"></script>
-<script src="js/corps.js?v=82"></script>
-<script src="js/faqs.js?v=82"></script>
-<script src="js/orders.js?v=82"></script>
-<script src="js/hearing.js?v=82"></script>
-<script src="js/dashboard.js?v=82"></script>
-<script src="js/app.js?v=82"></script>
+<script src="js/vendor/pizzip.min.js?v=83"></script>
+<script src="js/vendor/docxtemplater.min.js?v=83"></script>
+<script src="js/config.js?v=83"></script>
+<script src="js/db.js?v=83"></script>
+<script src="js/utils.js?v=83"></script>
+<script src="js/settings.js?v=83"></script>
+<script src="js/stores.js?v=83"></script>
+<script src="js/schedule.js?v=83"></script>
+<script src="js/casting.js?v=83"></script>
+<script src="js/check.js?v=83"></script>
+<script src="js/accounting.js?v=83"></script>
+<script src="js/plans.js?v=83"></script>
+<script src="js/creators.js?v=83"></script>
+<script src="js/corps.js?v=83"></script>
+<script src="js/faqs.js?v=83"></script>
+<script src="js/orders.js?v=83"></script>
+<script src="js/hearing.js?v=83"></script>
+<script src="js/dashboard.js?v=83"></script>
+<script src="js/app.js?v=83"></script>
 <!-- GENRE MODAL -->
 <!-- 追加費用モーダル -->
 <div class="modal-overlay" id="addFeeModal">

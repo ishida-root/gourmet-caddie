@@ -1505,16 +1505,35 @@ function infSortValue(i,key){
   var fee=(i.feeLow!==undefined&&i.feeLow!=='')?i.feeLow:i.fee;
   return Number(fee)||0;
 }
+/* エリア・ジャンルの絞り込みselectの選択肢を、既存データから重複なく作る */
+function updateInfFilterOptions(){
+  var areaSel=document.getElementById('filterInfArea');
+  if(areaSel){
+    var curArea=areaSel.value;
+    var areas=[...new Set(DB.influencers.map(function(i){return(i.area||'').trim();}).filter(Boolean))].sort();
+    areaSel.innerHTML='<option value="">エリア：全て</option>'+areas.map(function(a){return'<option value="'+esc(a)+'"'+(a===curArea?' selected':'')+'>'+esc(a)+'</option>';}).join('');
+  }
+  var genreSel=document.getElementById('filterInfGenre');
+  if(genreSel){
+    var curGenre=genreSel.value;
+    var genres=[...new Set(DB.influencers.map(function(i){return(i.genre||'').trim();}).filter(Boolean))].sort();
+    genreSel.innerHTML='<option value="">ジャンル：全て</option>'+genres.map(function(g){return'<option value="'+esc(g)+'"'+(g===curGenre?' selected':'')+'>'+esc(g)+'</option>';}).join('');
+  }
+}
 /* 現在の検索・絞り込み・並び替え条件を反映したインフルエンサー一覧を返す（画面表示・出力で共用） */
 function getFilteredSortedInfluencers(){
   var search=(document.getElementById('globalSearch').value||'').toLowerCase();
   var statusFilter=(document.getElementById('filterInfStatus')||{}).value||'';
   var engagementFilter=(document.getElementById('filterInfEngagement')||{}).value||'';
   var tierFilter=(document.getElementById('filterInfTier')||{}).value||'';
+  var areaFilter=(document.getElementById('filterInfArea')||{}).value||'';
+  var genreFilter=(document.getElementById('filterInfGenre')||{}).value||'';
   var list=DB.influencers.filter(function(i){
     if(statusFilter&&infOutreachStatus(i)!==statusFilter)return false;
     if(engagementFilter&&infEngagementStatus(i)!==engagementFilter)return false;
     if(tierFilter&&infTierOf(i)!==tierFilter)return false;
+    if(areaFilter&&(i.area||'').trim()!==areaFilter)return false;
+    if(genreFilter&&(i.genre||'').trim()!==genreFilter)return false;
     return!search||(i.name||'').toLowerCase().includes(search)||(i.handle||'').toLowerCase().includes(search)||(i.genre||'').toLowerCase().includes(search);
   });
   if(infSortKey){
@@ -1552,6 +1571,7 @@ function exportInfluencerListForClient(){
   setTimeout(function(){URL.revokeObjectURL(url);},1000);
 }
 function renderInfluencers(){
+  updateInfFilterOptions();
   var list=getFilteredSortedInfluencers();
   var fIcon=document.getElementById('infSortFollowersIcon');if(fIcon)fIcon.textContent=infSortKey==='followers'?(infSortDir==='asc'?'▲':'▼'):'';
   var pIcon=document.getElementById('infSortFeeIcon');if(pIcon)pIcon.textContent=infSortKey==='fee'?(infSortDir==='asc'?'▲':'▼'):'';
