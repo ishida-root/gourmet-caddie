@@ -307,6 +307,129 @@ function openInfluencerModal(id){
   openModal('infModal');
 }
 
+/* ============================================================
+   インフルエンサー一括インポート（声かけリストのスプレッドシート貼り付け対応）
+   ヘッダー行（「名前」「アカウント」を含む行）を自動検出し、列名でマッピングするため
+   列の並び順や余分な列があっても崩れにくい。
+   ============================================================ */
+function openInfluencerBulkImport(){
+  var ta=document.getElementById('infImportText');if(ta)ta.value='';
+  var res=document.getElementById('infImportResult');if(res)res.innerHTML='';
+  openModal('infImportModal');
+}
+function parseInfluencerImportText(text){
+  var lines=(text||'').split(/\r?\n/).map(function(l){return l.split('\t');});
+  var headerIdx=-1,colMap={};
+  for(var i=0;i<lines.length;i++){
+    var row=lines[i];
+    if(row.indexOf('名前')>=0&&row.indexOf('アカウント')>=0){
+      headerIdx=i;
+      row.forEach(function(cell,ci){var c=cell.trim();if(c&&!(c in colMap))colMap[c]=ci;});
+      break;
+    }
+  }
+  if(headerIdx<0)return{error:'ヘッダー行（「名前」「アカウント」を含む行）が見つかりませんでした。表全体を貼り付けているかご確認ください。'};
+  var get=function(row,col){return colMap[col]!==undefined?(row[colMap[col]]||'').trim():'';};
+  var rows=[];
+  for(var i=headerIdx+1;i<lines.length;i++){
+    var row=lines[i];
+    var name=get(row,'名前');
+    if(!name)continue;
+    rows.push({
+      name:name,
+      url:get(row,'アカウント'),
+      area:get(row,'エリア'),
+      followers:get(row,'フォロワー'),
+      genre:get(row,'傾向'),
+      outreachRaw:get(row,'声かけ'),
+      replyRaw:get(row,'返事'),
+      tabelog:get(row,'食べログ'),
+      secondUse:get(row,'二次利用'),
+      transport:get(row,'交通費'),
+      priceRange:get(row,'価格帯'),
+      invoice:get(row,'インボイス'),
+      turnaround:get(row,'投稿'),
+      contact:get(row,'連絡先'),
+      priceNote:get(row,'料金'),
+      memoRaw:get(row,'メモ')
+    });
+  }
+  return{rows:rows};
+}
+/* 「１～３万」「～１万」「１０万～」のような全角混じりの価格帯表記を円単位の下限・上限に変換 */
+function priceRangeToFeeRange(range){
+  if(!range)return{low:'',high:''};
+  var han=range.replace(/\s/g,'').replace(/[０-９]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0);});
+  var toYen=function(s){var m=s&&s.match(/(\d+)/);return m?Number(m[1])*10000:null;};
+  if(han.indexOf('～')>=0){
+    var parts=han.split('～');
+    return{low:toYen(parts[0])||'',high:toYen(parts[1])||''};
+  }
+  var single=toYen(han);
+  return{low:single||'',high:''};
+}
+function extractHandleFromUrl(url){
+  var m=(url||'').match(/instagram\.com\/([^/?]+)/i);
+  return m?('@'+m[1]):'';
+}
+var INF_IMPORT_OUTREACH_MAP={'済':'声掛け済み','未':'未声掛け','保留':'声掛け済み'};
+function importedRowToInfluencer(row){
+  var fee=priceRangeToFeeRange(row.priceRange);
+  var memoLines=[];
+  if(row.priceNote)memoLines.push('【料金メモ】'+row.priceNote);
+  if(row.tabelog)memoLines.push('食べログ：'+row.tabelog);
+  if(row.secondUse)memoLines.push('二次利用：'+row.secondUse);
+  if(row.transport)memoLines.push('交通費：'+row.transport);
+  if(row.invoice)memoLines.push('インボイス：'+row.invoice);
+  if(row.turnaround)memoLines.push('投稿までの日数：'+row.turnaround);
+  if(row.replyRaw)memoLines.push('返事：'+row.replyRaw);
+  if(row.memoRaw)memoLines.push('メモ：'+row.memoRaw);
+  return{
+    id:uid(),
+    name:row.name,
+    handle:extractHandleFromUrl(row.url),
+    url:row.url,
+    platform:'Instagram',
+    followers:row.followers.replace(/[^\d]/g,''),
+    genre:row.genre,
+    feeLow:fee.low,
+    feeHigh:fee.high,
+    fee:fee.low,
+    contact:row.contact,
+    agency:'',
+    memo:memoLines.join('\n'),
+    rating:'',
+    outreachStatus:INF_IMPORT_OUTREACH_MAP[row.outreachRaw]||'未声掛け',
+    outreachDate:'',
+    area:row.area,
+    tendency:''
+  };
+}
+function runInfluencerBulkImport(){
+  var text=document.getElementById('infImportText').value;
+  var parsed=parseInfluencerImportText(text);
+  var resultEl=document.getElementById('infImportResult');
+  if(parsed.error){resultEl.innerHTML='<div style="color:var(--red)">'+esc(parsed.error)+'</div>';return;}
+  if(!parsed.rows.length){resultEl.innerHTML='<div style="color:var(--text3)">インポート対象の行が見つかりませんでした</div>';return;}
+  var normalize=function(h){return(h||'').trim().toLowerCase().replace(/^@/,'');};
+  var existingHandles={};
+  DB.influencers.forEach(function(i){if(i.handle)existingHandles[normalize(i.handle)]=true;});
+  var created=0,skipped=0,skippedNames=[];
+  parsed.rows.forEach(function(row){
+    var inf=importedRowToInfluencer(row);
+    var nh=normalize(inf.handle);
+    if(nh&&existingHandles[nh]){skipped++;skippedNames.push(row.name);return;}
+    DB.influencers.push(inf);
+    saveItem('influencers',inf);
+    if(nh)existingHandles[nh]=true;
+    created++;
+  });
+  renderInfluencers();
+  if(typeof updateSidebarStats==='function')updateSidebarStats();
+  resultEl.innerHTML='<div style="color:var(--green);font-weight:500">✓ '+created+'件登録しました'+(skipped?'（重複のため'+skipped+'件スキップ）':'')+'</div>'
+    +(skippedNames.length?'<div style="font-size:12px;color:var(--text3);margin-top:6px">スキップ：'+skippedNames.slice(0,20).map(esc).join('、')+(skippedNames.length>20?' 他':'')+'</div>':'');
+}
+
 function saveInfluencer(){
   var name=document.getElementById('iName').value.trim();
   if(!name){alert('名前を入力してください');return;}
