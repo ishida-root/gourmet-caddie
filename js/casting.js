@@ -312,6 +312,13 @@ function saveInfluencer(){
   if(!name){alert('名前を入力してください');return;}
   var isEdit=!!editingInfId;
   var id=isEdit?editingInfId:uid();
+  /* 新規登録時、同じアカウントID（ハンドル）のインフルエンサーが既にいれば重複登録の警告を出す */
+  var handleVal=document.getElementById('iHandle').value.trim();
+  if(!isEdit&&handleVal){
+    var normalize=function(h){return h.trim().toLowerCase().replace(/^@/,'');};
+    var dup=DB.influencers.find(function(x){return x.handle&&normalize(x.handle)===normalize(handleVal);});
+    if(dup&&!confirm('同じアカウントID「'+handleVal+'」のインフルエンサーが既に登録されています（'+dup.name+'）。\nこのまま重複登録しますか？'))return;
+  }
   var feeLow=document.getElementById('iFeeLow').value;
   var feeHigh=document.getElementById('iFeeHigh').value;
   var inf={
