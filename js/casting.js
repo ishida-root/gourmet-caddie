@@ -1583,8 +1583,8 @@ function getFilteredSortedInfluencers(){
 }
 /* 名前・アカウントURL・エリア・フォロワー・フォロー・傾向のみをCSV出力する（お客様向けリストアップ用）。
    PR単価や社内メモなど非公開情報は含めない。 */
-function exportInfluencerListForClient(){
-  var list=getFilteredSortedInfluencers();
+/* 名前・アカウントURL・エリア・フォロワー・フォロー・傾向のみをCSVでダウンロードする（お客様向けリストアップ用） */
+function downloadInfluencerCsv(list){
   if(!list.length){alert('出力対象のインフルエンサーがありません（絞り込み条件をご確認ください）');return;}
   var platUrl={Instagram:'https://www.instagram.com/',TikTok:'https://www.tiktok.com/@',YouTube:'',X:'https://x.com/'};
   var csvEscape=function(v){
@@ -1606,6 +1606,59 @@ function exportInfluencerListForClient(){
   a.href=url;a.download='インフルエンサーリスト_'+now.getFullYear()+pad(now.getMonth()+1)+pad(now.getDate())+'.csv';
   document.body.appendChild(a);a.click();a.remove();
   setTimeout(function(){URL.revokeObjectURL(url);},1000);
+}
+/* ============================================================
+   リスト出力モーダル：エリア・ジャンルをチェックボックスで複数選択して出力する
+   ============================================================ */
+function exportCheckboxesHtml(containerValues,checkedSet,type){
+  return containerValues.map(function(v){
+    var count=DB.influencers.filter(function(i){return(type==='area'?(i.area||'').trim():(i.genre||'').trim())===v;}).length;
+    return'<label style="display:flex;align-items:center;gap:6px;font-size:13px;padding:3px 0;cursor:pointer">'
+      +'<input type="checkbox" class="export-'+type+'-chk" value="'+esc(v)+'" '+(checkedSet.has(v)?'checked':'')+' onchange="updateInfExportCount()">'
+      +esc(v)+'<span style="color:var(--text3);font-size:11px">（'+count+'）</span>'
+    +'</label>';
+  }).join('');
+}
+function openInfluencerExportModal(){
+  var areas=[...new Set(DB.influencers.map(function(i){return(i.area||'').trim();}).filter(Boolean))].sort();
+  var genres=[...new Set(DB.influencers.map(function(i){return(i.genre||'').trim();}).filter(Boolean))].sort();
+  var areaEl=document.getElementById('exportAreaChecks');
+  if(areaEl)areaEl.innerHTML=areas.length?exportCheckboxesHtml(areas,new Set(areas),'area'):'<div style="font-size:12px;color:var(--text3)">エリアが未登録です</div>';
+  var genreEl=document.getElementById('exportGenreChecks');
+  if(genreEl)genreEl.innerHTML=genres.length?exportCheckboxesHtml(genres,new Set(genres),'genre'):'<div style="font-size:12px;color:var(--text3)">ジャンルが未登録です</div>';
+  openModal('infExportModal');
+  updateInfExportCount();
+}
+function toggleExportCheckAll(containerId,checked){
+  document.querySelectorAll('#'+containerId+' input[type=checkbox]').forEach(function(cb){cb.checked=checked;});
+  updateInfExportCount();
+}
+function getExportCheckedValues(cls){
+  return Array.from(document.querySelectorAll('.'+cls+':checked')).map(function(cb){return cb.value;});
+}
+function exportModalFilteredList(){
+  /* チェックボックスは初期状態で全選択済み。外した項目は文字通り対象から除外する
+     （空にした場合は「全員」ではなく「0件」＝そのカテゴリでは何も一致しない、が直感的な挙動） */
+  var areaChecked=getExportCheckedValues('export-area-chk');
+  var genreChecked=getExportCheckedValues('export-genre-chk');
+  return DB.influencers.filter(function(i){
+    if(areaChecked.indexOf((i.area||'').trim())<0)return false;
+    if(genreChecked.indexOf((i.genre||'').trim())<0)return false;
+    return true;
+  });
+}
+function updateInfExportCount(){
+  var el=document.getElementById('infExportCount');
+  if(!el)return;
+  el.textContent=exportModalFilteredList().length+'件が出力対象です';
+}
+function runInfluencerExportFromModal(){
+  downloadInfluencerCsv(exportModalFilteredList());
+  closeModal('infExportModal');
+}
+/* 従来の「今の画面の絞り込み」に基づく出力（他機能から直接呼び出す場合用に残す） */
+function exportInfluencerListForClient(){
+  downloadInfluencerCsv(getFilteredSortedInfluencers());
 }
 function renderInfluencers(){
   updateInfFilterOptions();
