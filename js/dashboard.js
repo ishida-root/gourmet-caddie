@@ -338,7 +338,8 @@ function autoFillAddress(val,prefId,areaId){
 function updatePostStoreSelect(){document.getElementById('pStore').innerHTML='<option value="">選択...</option>'+DB.stores.map(function(s){return'<option value="'+s.id+'">'+esc(s.name)+'</option>';}).join('');}
 function updateCastSelects(){
   document.getElementById('cStore').innerHTML='<option value="">選択...</option>'+DB.stores.map(function(s){return'<option value="'+s.id+'">'+esc(s.name)+'</option>';}).join('');
-  document.getElementById('cInf').innerHTML='<option value="">選択...</option>'+DB.influencers.map(function(i){return'<option value="'+i.id+'">'+esc(i.name)+' '+esc(i.handle||'')+'</option>';}).join('');
+  /* インフルエンサーは検索付きコンボボックス（cInfSearch/cInfDropdown、casting.js）で選ぶため
+     ここでは何もしない。候補は選択時にDB.influencersから都度絞り込んで表示する。 */
 }
 function contractEndDate(s){if(!s.contractStart||!s.contractTerm)return null;var d=new Date(s.contractStart);d.setMonth(d.getMonth()+parseInt(s.contractTerm));return d;}
 function statusBadge(v){var m={negotiating:'<span class="badge b-blue">商談中</span>',active:'<span class="badge b-green">稼働中</span>',pending:'<span class="badge b-amber">準備中</span>',ended:'<span class="badge b-gray">終了</span>'};return m[v]||'—';}

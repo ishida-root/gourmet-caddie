@@ -287,6 +287,7 @@ function openInfluencerModal(id){
   document.getElementById('iFollowers').value='';
   document.getElementById('iFollowing').value='';
   document.getElementById('iRating').value='';
+  document.getElementById('iAccountGone').checked=false;
   /* 新規追加は「未声掛け」から開始。起用実績はキャスティング履歴から自動判定するため、
      声かけ状況が未設定の既存登録はここでは強制せず「—（未設定）」のままにする */
   document.getElementById('iOutreachStatus').value=id?'':'未声掛け';
@@ -296,6 +297,7 @@ function openInfluencerModal(id){
       var map={iName:'name',iHandle:'handle',iUrl:'url',iPlatform:'platform',iFollowers:'followers',iFollowing:'following',iGenre:'genre',iContact:'contact',iAgency:'agency',iMemo:'memo',iRating:'rating',iArea:'area',iTendency:'tendency',iOutreachDate:'outreachDate'};
       Object.keys(map).forEach(function(fid){var el=document.getElementById(fid);if(el&&inf[map[fid]]!==undefined)el.value=inf[map[fid]]||'';});
       if(inf.outreachStatus)document.getElementById('iOutreachStatus').value=inf.outreachStatus;
+      document.getElementById('iAccountGone').checked=!!inf.accountGone;
       /* fee range */
       if(inf.feeLow!==undefined){document.getElementById('iFeeLow').value=inf.feeLow||'';}
       else if(inf.fee){document.getElementById('iFeeLow').value=inf.fee;}
@@ -462,6 +464,7 @@ function saveInfluencer(){
     contact:document.getElementById('iContact').value,
     agency:document.getElementById('iAgency').value,
     rating:document.getElementById('iRating').value,
+    accountGone:document.getElementById('iAccountGone').checked,
     memo:document.getElementById('iMemo').value,
     outreachStatus:document.getElementById('iOutreachStatus').value,
     outreachDate:document.getElementById('iOutreachDate').value,
@@ -785,6 +788,7 @@ function openInfluencerDetail(id){
           +(inf.handle?'<span style="font-size:13px;color:'+(platColor[inf.platform]||'var(--text3)')+'">'+esc(inf.handle)+'</span>':'')
           +ratingStars(inf.rating)
           +ratingWarningBadge(inf.rating)
+          +(inf.accountGone?'<span class="badge" style="background:var(--bg3);color:var(--text3);border:1px solid var(--border)">🚫 アカウント不明（垢消し・逃亡など）</span>':'')
         +'</div>'
         +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">'
           +(infOutreachStatus(inf)?'<span class="badge" style="font-size:11px;border:1px solid;'+(INF_OUTREACH_BADGE[infOutreachStatus(inf)]||'')+'">'+esc(infOutreachStatus(inf))+'</span>':'')
@@ -811,8 +815,8 @@ function openInfluencerDetail(id){
     +(inf.contact?'<div style="margin-bottom:12px;padding:10px 12px;background:var(--bg3);border-radius:var(--r);font-size:13px"><span style="color:var(--text3)">連絡先：</span><span style="color:var(--accent)">'+esc(inf.contact)+'</span></div>':'')
     /* メモ */
     +(inf.memo?'<div style="margin-bottom:16px;padding:10px 12px;background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:var(--r);font-size:13px;color:var(--text);line-height:1.7;white-space:pre-wrap">'+esc(inf.memo)+'</div>':'')
-    /* 声かけメール文（未声掛けの場合のみ表示・コピー用） */
-    +((!infOutreachStatus(inf)||infOutreachStatus(inf)==='未声掛け')
+    /* 声かけメール文（未声掛けの場合のみ表示・コピー用。アカウント不明の場合は送りようがないため出さない） */
+    +(!inf.accountGone&&(!infOutreachStatus(inf)||infOutreachStatus(inf)==='未声掛け')
       ?'<div style="margin-bottom:16px;padding:10px 12px;background:var(--bg3);border-radius:var(--r)">'
         +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">'
           +'<span style="font-size:12px;font-weight:500;color:var(--text2)">✉️ 声かけメール文（コピー用）</span>'
@@ -1108,6 +1112,7 @@ function openCastingModal(opts){
   updateCastSelects();
   editingCastId=null;
   _curCastPostUrls={};
+  setCInfValue('');
   ['cFee','cReach','cVisitCount','cResult','cVisitDate','cDraftDate','cDate','cVisitReason','cSalePrice'].forEach(function(fid){
     var el=document.getElementById(fid);if(el)el.value='';
   });
@@ -1130,7 +1135,7 @@ function openCastingModal(opts){
       if(ec){
         if(titleEl)titleEl.textContent='キャスティングを編集';
         var set=function(fid,v){var el=document.getElementById(fid);if(el&&v)el.value=v;};
-        set('cStore',ec.storeId);set('cInf',ec.infId);
+        set('cStore',ec.storeId);setCInfValue(ec.infId);
         updateCastPackageSelect();
         var cPkgEl=document.getElementById('cPackage');if(cPkgEl&&ec.packageId)cPkgEl.value=ec.packageId;
         var cConfEl=document.getElementById('cConfirmed');if(cConfEl)cConfEl.checked=!!ec.confirmed;
@@ -1176,7 +1181,7 @@ function openCastingModal(opts){
     }
     /* プリセット */
     if(opts.storeId){var s=document.getElementById('cStore');if(s)s.value=opts.storeId;updateCastPackageSelect();}
-    if(opts.infId){var i=document.getElementById('cInf');if(i)i.value=opts.infId;}
+    if(opts.infId)setCInfValue(opts.infId);
   }
   /* 日付ピッカー初期化 */
   var yr=new Date().getFullYear();
@@ -1202,13 +1207,62 @@ function openCastingModal(opts){
       setDp('cDateWrap','cDate',ec2.date);
     }
   }
-  /* INF選択時に媒体を更新 */
-  var cInfEl=document.getElementById('cInf');
-  if(cInfEl)cInfEl.onchange=function(){updateCastPlatformBoxes();};
+  /* INF選択時の媒体更新は selectCInfOption() 側で直接呼び出す */
   updateCastPlatformBoxes();
   openModal('castModal');
 }
 
+/* ============================================================
+   キャスティング記録：インフルエンサーの検索付きプルダウン（cInf）
+   300名を超えるとネイティブselectでは探しにくいため、名前・IDの部分一致検索で
+   絞り込めるコンボボックスにしている。実際の選択値はhidden input(#cInf)に保持し、
+   既存コードの document.getElementById('cInf').value 呼び出し箇所はそのまま使える。
+   ============================================================ */
+function renderCInfDropdown(query){
+  var dd=document.getElementById('cInfDropdown');
+  if(!dd)return;
+  var q=(query||'').trim().toLowerCase();
+  var list=(DB.influencers||[]).filter(function(i){
+    if(!q)return true;
+    return(i.name||'').toLowerCase().includes(q)||(i.handle||'').toLowerCase().includes(q);
+  }).slice(0,50);
+  if(!list.length){
+    dd.innerHTML='<div style="padding:8px 12px;font-size:13px;color:var(--text3)">該当するインフルエンサーがいません</div>';
+  }else{
+    dd.innerHTML=list.map(function(i){
+      return'<div class="cinf-option" data-id="'+i.id+'" data-name="'+esc(i.name)+'" onmousedown="event.preventDefault();selectCInfOption(this)" style="padding:7px 12px;font-size:13px;cursor:pointer;'+(i.accountGone?'opacity:0.5':'')+'">'
+        +'<span style="font-weight:500">'+esc(i.name)+'</span>'
+        +(i.handle?' <span style="color:var(--text3);font-size:12px">'+esc(i.handle)+'</span>':'')
+        +(i.accountGone?' <span style="color:var(--text3);font-size:11px">🚫アカウント不明</span>':'')
+      +'</div>';
+    }).join('');
+  }
+  dd.style.display='';
+}
+function onCInfSearchInput(){
+  document.getElementById('cInf').value='';
+  renderCInfDropdown(document.getElementById('cInfSearch').value);
+}
+function onCInfSearchFocus(){
+  renderCInfDropdown(document.getElementById('cInfSearch').value);
+}
+function onCInfSearchBlur(){
+  setTimeout(function(){var dd=document.getElementById('cInfDropdown');if(dd)dd.style.display='none';},150);
+}
+function selectCInfOption(el){
+  document.getElementById('cInf').value=el.getAttribute('data-id');
+  document.getElementById('cInfSearch').value=el.getAttribute('data-name');
+  var dd=document.getElementById('cInfDropdown');if(dd)dd.style.display='none';
+  updateCastPlatformBoxes();
+}
+/* コードから選択値をセットする場合（編集画面の復元・プリセットなど）に使う。
+   検索欄の表示テキストも合わせて更新する。 */
+function setCInfValue(infId){
+  document.getElementById('cInf').value=infId||'';
+  var inf=infId?DB.influencers.find(function(x){return x.id===infId;}):null;
+  var searchEl=document.getElementById('cInfSearch');
+  if(searchEl)searchEl.value=inf?inf.name:'';
+}
 function updateCastPlatformBoxes(){
   var infId=(document.getElementById('cInf')||{}).value||'';
   var inf=DB.influencers.find(function(x){return x.id===infId;});
@@ -1397,6 +1451,7 @@ function saveCasting(){
   }
 
   closeModal('castModal');
+  setCInfValue('');
   ['cFee','cReach','cResult','cVisitDate','cDraftDate','cDate'].forEach(function(id){
     var el=document.getElementById(id);if(el)el.value='';
   });
@@ -1678,9 +1733,11 @@ function renderInfluencers(){
         :'<span style="font-size:11px;color:'+(platColor[i.platform]||'var(--text3)')+'">'+esc(i.handle)+'</span>'
       ):'';
     var warnBadge=ratingWarningBadge(i.rating);
-    var rowBg=parseInt(i.rating)===1?'background:var(--red-bg)':parseInt(i.rating)===2?'background:var(--amber-bg)':'';
-    return'<tr style="cursor:pointer;'+rowBg+'" onclick="openInfluencerDetail(\''+i.id+'\')">'
-      +'<td><div style="display:flex;align-items:center;gap:6px"><div style="font-weight:500;color:var(--accent)">'+esc(i.name)+'</div>'+warnBadge+'</div>'+handleHtml+'</td>'
+    var goneBadge=i.accountGone?'<span class="badge" style="background:var(--bg3);color:var(--text3);border:1px solid var(--border);white-space:nowrap">🚫 アカウント不明</span>':'';
+    var rowBg=i.accountGone?'':parseInt(i.rating)===1?'background:var(--red-bg)':parseInt(i.rating)===2?'background:var(--amber-bg)':'';
+    var rowStyle=i.accountGone?'cursor:pointer;opacity:0.5;'+rowBg:'cursor:pointer;'+rowBg;
+    return'<tr style="'+rowStyle+'" onclick="openInfluencerDetail(\''+i.id+'\')">'
+      +'<td><div style="display:flex;align-items:center;gap:6px"><div style="font-weight:500;color:var(--accent)">'+esc(i.name)+'</div>'+warnBadge+goneBadge+'</div>'+handleHtml+'</td>'
       +'<td>'+esc(i.platform||'')+'</td>'
       +'<td class="td-mono">'+(i.followers?Number(i.followers).toLocaleString():'—')+(infTierOf(i)?'　<span class="badge" style="font-size:11px;border:1px solid;white-space:nowrap;'+(INF_TIER_BADGE[infTierOf(i)]||'')+'">'+infTierOf(i)+'</span>':'')+'</td>'
       +'<td class="td-mono" style="white-space:nowrap">'+fmtFeeRange(i)+'</td>'

@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=85">
+<link rel="stylesheet" href="css/app.css?v=87">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -933,6 +933,10 @@
       </div>
     </div>
     <div class="fr"><div class="field"><label>所属事務所</label><input id="iAgency" type="text" placeholder="なし"></div><div class="field"><label>評価</label><select id="iRating"><option value="">—</option><option value="5">★★★★★ 最高</option><option value="4">★★★★ 良い</option><option value="3">★★★ 普通</option><option value="2">★★ 要注意</option><option value="1">★ NG</option></select></div></div>
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;padding:10px 12px;background:var(--bg3);border-radius:var(--r)">
+      <input type="checkbox" id="iAccountGone" style="width:16px;height:16px;cursor:pointer;accent-color:var(--red)">
+      <span style="font-size:14px">🚫 アカウント不明（垢消し・逃亡など）</span>
+    </div>
     <div class="fr1 field"><label>備考・注意点</label><textarea id="iMemo" placeholder="得意ジャンル、投稿スタイル、注意点など..."></textarea></div>
 
     <!-- 対応媒体・費用設定 -->
@@ -1062,7 +1066,14 @@
 <div class="modal" style="width:560px">
   <div class="modal-header"><span class="modal-title" id="castModalTitle">キャスティング記録</span><button class="modal-close" onclick="closeModal('castModal')">✕</button></div>
   <div class="modal-body">
-    <div class="fr"><div class="field"><label>店舗 *</label><select id="cStore" onchange="updateCastPackageSelect()"><option value="">選択...</option></select></div><div class="field"><label>インフルエンサー *</label><select id="cInf"><option value="">選択...</option></select></div></div>
+    <div class="fr"><div class="field"><label>店舗 *</label><select id="cStore" onchange="updateCastPackageSelect()"><option value="">選択...</option></select></div>
+      <div class="field" style="position:relative">
+        <label>インフルエンサー * <span style="font-size:11px;color:var(--text3);font-weight:400">名前・IDで検索</span></label>
+        <input type="text" id="cInfSearch" placeholder="名前またはIDで検索..." autocomplete="off" oninput="onCInfSearchInput()" onfocus="onCInfSearchFocus()" onblur="onCInfSearchBlur()">
+        <input type="hidden" id="cInf">
+        <div id="cInfDropdown" style="display:none;position:absolute;z-index:20;top:100%;left:0;right:0;max-height:240px;overflow-y:auto;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);box-shadow:0 4px 14px rgba(0,0,0,.18)"></div>
+      </div>
+    </div>
     <div class="fr1 field" style="margin-bottom:8px">
       <label>案件（パッケージ） <span style="font-size:11px;color:var(--text3);font-weight:400">複数インフルエンサーをまとめて予算・原価管理する場合に使用（任意）</span></label>
       <select id="cPackage" onchange="onCastPackageChange()">
@@ -1204,25 +1215,25 @@
 </div>
 </div>
 
-<script src="js/vendor/pizzip.min.js?v=85"></script>
-<script src="js/vendor/docxtemplater.min.js?v=85"></script>
-<script src="js/config.js?v=85"></script>
-<script src="js/db.js?v=85"></script>
-<script src="js/utils.js?v=85"></script>
-<script src="js/settings.js?v=85"></script>
-<script src="js/stores.js?v=85"></script>
-<script src="js/schedule.js?v=85"></script>
-<script src="js/casting.js?v=85"></script>
-<script src="js/check.js?v=85"></script>
-<script src="js/accounting.js?v=85"></script>
-<script src="js/plans.js?v=85"></script>
-<script src="js/creators.js?v=85"></script>
-<script src="js/corps.js?v=85"></script>
-<script src="js/faqs.js?v=85"></script>
-<script src="js/orders.js?v=85"></script>
-<script src="js/hearing.js?v=85"></script>
-<script src="js/dashboard.js?v=85"></script>
-<script src="js/app.js?v=85"></script>
+<script src="js/vendor/pizzip.min.js?v=87"></script>
+<script src="js/vendor/docxtemplater.min.js?v=87"></script>
+<script src="js/config.js?v=87"></script>
+<script src="js/db.js?v=87"></script>
+<script src="js/utils.js?v=87"></script>
+<script src="js/settings.js?v=87"></script>
+<script src="js/stores.js?v=87"></script>
+<script src="js/schedule.js?v=87"></script>
+<script src="js/casting.js?v=87"></script>
+<script src="js/check.js?v=87"></script>
+<script src="js/accounting.js?v=87"></script>
+<script src="js/plans.js?v=87"></script>
+<script src="js/creators.js?v=87"></script>
+<script src="js/corps.js?v=87"></script>
+<script src="js/faqs.js?v=87"></script>
+<script src="js/orders.js?v=87"></script>
+<script src="js/hearing.js?v=87"></script>
+<script src="js/dashboard.js?v=87"></script>
+<script src="js/app.js?v=87"></script>
 <!-- GENRE MODAL -->
 <!-- 追加費用モーダル -->
 <div class="modal-overlay" id="addFeeModal">
