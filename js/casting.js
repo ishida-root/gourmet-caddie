@@ -761,6 +761,18 @@ function copyOutreachEmail(){
     if(btn){var orig=btn.textContent;btn.textContent='✓ コピーしました';setTimeout(function(){btn.textContent=orig;},2000);}
   }):document.execCommand('copy');
 }
+/* 声かけメール文コピー後、ワンクリックで「声掛け済み」に更新し、押した日を声かけ日として記録する */
+function markInfluencerContacted(id){
+  var inf=DB.influencers.find(function(x){return x.id===id;});
+  if(!inf)return;
+  var pad=function(n){return String(n).padStart(2,'0');};
+  var now=new Date();
+  inf.outreachStatus='声掛け済み';
+  inf.outreachDate=now.getFullYear()+'-'+pad(now.getMonth()+1)+'-'+pad(now.getDate());
+  saveItem('influencers',inf);
+  openInfluencerDetail(id);
+  if(typeof renderInfluencers==='function'&&document.getElementById('infBody'))renderInfluencers();
+}
 
 function openInfluencerDetail(id){
   var inf=DB.influencers.find(function(x){return x.id===id;});
@@ -820,7 +832,10 @@ function openInfluencerDetail(id){
       ?'<div style="margin-bottom:16px;padding:10px 12px;background:var(--bg3);border-radius:var(--r)">'
         +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">'
           +'<span style="font-size:12px;font-weight:500;color:var(--text2)">✉️ 声かけメール文（コピー用）</span>'
-          +'<button type="button" id="infOutreachCopyBtn" class="btn btn-sm" onclick="copyOutreachEmail()">📋 コピー</button>'
+          +'<span style="display:flex;gap:6px">'
+            +'<button type="button" id="infOutreachCopyBtn" class="btn btn-sm" onclick="copyOutreachEmail()">📋 コピー</button>'
+            +'<button type="button" class="btn btn-sm btn-primary" onclick="markInfluencerContacted(\''+inf.id+'\')">✅ 声掛け済みにする</button>'
+          +'</span>'
         +'</div>'
         +'<textarea id="infOutreachEmailText" readonly style="width:100%;min-height:180px;font-size:12px;line-height:1.7;padding:10px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg2);color:var(--text);resize:vertical" onclick="this.select()">'+esc(infOutreachEmailTemplate(inf))+'</textarea>'
       +'</div>'
