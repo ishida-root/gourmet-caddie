@@ -1683,9 +1683,9 @@ function downloadInfluencerCsv(list){
 function exportCheckboxesHtml(containerValues,checkedSet,type){
   return containerValues.map(function(v){
     var count=DB.influencers.filter(function(i){return(type==='area'?(i.area||'').trim():(i.genre||'').trim())===v;}).length;
-    return'<label style="display:flex;align-items:center;gap:6px;font-size:13px;padding:3px 0;cursor:pointer">'
-      +'<input type="checkbox" class="export-'+type+'-chk" value="'+esc(v)+'" '+(checkedSet.has(v)?'checked':'')+' onchange="updateInfExportCount()">'
-      +esc(v)+'<span style="color:var(--text3);font-size:11px">（'+count+'）</span>'
+    return'<label style="display:block;font-size:13px;padding:3px 0;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'
+      +'<input type="checkbox" class="export-'+type+'-chk" value="'+esc(v)+'" '+(checkedSet.has(v)?'checked':'')+' onchange="updateInfExportCount()" style="vertical-align:middle;margin-right:6px">'
+      +esc(v)+' <span style="color:var(--text3);font-size:11px">（'+count+'）</span>'
     +'</label>';
   }).join('');
 }
