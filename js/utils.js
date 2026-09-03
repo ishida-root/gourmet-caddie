@@ -1,5 +1,7 @@
 ﻿function uid(){return '_'+Math.random().toString(36).slice(2,9);}
-function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+/* HTML属性値としても安全にするため引用符もエスケープする（例: エリア名に " を含むデータを
+   value="..." 属性に差し込むとタグが壊れ、チェック状態やラベル文字が消えて見える不具合があったため） */
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
 function fmtDT(d){if(!d)return'—';var dt=new Date(d);return(dt.getMonth()+1)+'/'+(dt.getDate())+' '+pad(dt.getHours())+':'+pad(dt.getMinutes());}
 function fmtD(d){if(!d)return'—';var dt=new Date(d);return dt.getFullYear()+'/'+(dt.getMonth()+1)+'/'+dt.getDate();}
 function pad(n){return String(n).padStart(2,'0');}

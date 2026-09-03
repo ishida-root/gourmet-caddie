@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=91">
+<link rel="stylesheet" href="css/app.css?v=93">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -335,14 +335,17 @@
               <option value="ミドル">ミドル（10万〜100万人）</option>
               <option value="メガ">メガ（100万人以上）</option>
             </select>
-            <div style="display:flex;flex-direction:column;align-items:flex-start">
-              <span style="font-size:10px;color:var(--text3)">エリア（複数選択可）</span>
-              <select id="filterInfArea" onchange="renderInfluencers()" multiple size="3" style="font-size:12px;padding:2px 4px;width:120px"></select>
-            </div>
-            <div style="display:flex;flex-direction:column;align-items:flex-start">
-              <span style="font-size:10px;color:var(--text3)">ジャンル（複数選択可）</span>
-              <select id="filterInfGenre" onchange="renderInfluencers()" multiple size="3" style="font-size:12px;padding:2px 4px;width:120px"></select>
-            </div>
+            <select id="filterInfArea" multiple style="display:none"></select>
+            <details id="filterInfAreaDetails" style="position:relative">
+              <summary style="cursor:pointer;font-size:12px;padding:4px 8px;border:1px solid var(--border);border-radius:var(--r);list-style:none;display:inline-flex;align-items:center;gap:4px;background:var(--bg2);white-space:nowrap">エリア<span id="filterInfAreaCount" style="color:var(--accent);font-weight:500"></span> ▾</summary>
+              <div id="filterInfAreaPanel" style="position:absolute;z-index:20;top:100%;left:0;margin-top:4px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:8px;min-width:160px;max-height:220px;overflow:auto;box-shadow:0 4px 12px rgba(0,0,0,.15)"></div>
+            </details>
+            <select id="filterInfGenre" multiple style="display:none"></select>
+            <details id="filterInfGenreDetails" style="position:relative">
+              <summary style="cursor:pointer;font-size:12px;padding:4px 8px;border:1px solid var(--border);border-radius:var(--r);list-style:none;display:inline-flex;align-items:center;gap:4px;background:var(--bg2);white-space:nowrap">ジャンル<span id="filterInfGenreCount" style="color:var(--accent);font-weight:500"></span> ▾</summary>
+              <div id="filterInfGenrePanel" style="position:absolute;z-index:20;top:100%;left:0;margin-top:4px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:8px;min-width:160px;max-height:220px;overflow:auto;box-shadow:0 4px 12px rgba(0,0,0,.15)"></div>
+            </details>
+            <button class="btn btn-sm" onclick="resetInfFilters()">↺ 絞り込みをリセット</button>
             <button class="btn btn-sm" onclick="openInfGenreMerge()">🏷️ ジャンル整理</button>
             <button class="btn btn-sm" onclick="openInfluencerBulkImport()">📋 一括インポート</button>
             <button class="btn btn-sm" onclick="openInfluencerExportModal()">📤 リストを出力</button>
@@ -1227,25 +1230,25 @@
 </div>
 </div>
 
-<script src="js/vendor/pizzip.min.js?v=91"></script>
-<script src="js/vendor/docxtemplater.min.js?v=91"></script>
-<script src="js/config.js?v=91"></script>
-<script src="js/db.js?v=91"></script>
-<script src="js/utils.js?v=91"></script>
-<script src="js/settings.js?v=91"></script>
-<script src="js/stores.js?v=91"></script>
-<script src="js/schedule.js?v=91"></script>
-<script src="js/casting.js?v=91"></script>
-<script src="js/check.js?v=91"></script>
-<script src="js/accounting.js?v=91"></script>
-<script src="js/plans.js?v=91"></script>
-<script src="js/creators.js?v=91"></script>
-<script src="js/corps.js?v=91"></script>
-<script src="js/faqs.js?v=91"></script>
-<script src="js/orders.js?v=91"></script>
-<script src="js/hearing.js?v=91"></script>
-<script src="js/dashboard.js?v=91"></script>
-<script src="js/app.js?v=91"></script>
+<script src="js/vendor/pizzip.min.js?v=93"></script>
+<script src="js/vendor/docxtemplater.min.js?v=93"></script>
+<script src="js/config.js?v=93"></script>
+<script src="js/db.js?v=93"></script>
+<script src="js/utils.js?v=93"></script>
+<script src="js/settings.js?v=93"></script>
+<script src="js/stores.js?v=93"></script>
+<script src="js/schedule.js?v=93"></script>
+<script src="js/casting.js?v=93"></script>
+<script src="js/check.js?v=93"></script>
+<script src="js/accounting.js?v=93"></script>
+<script src="js/plans.js?v=93"></script>
+<script src="js/creators.js?v=93"></script>
+<script src="js/corps.js?v=93"></script>
+<script src="js/faqs.js?v=93"></script>
+<script src="js/orders.js?v=93"></script>
+<script src="js/hearing.js?v=93"></script>
+<script src="js/dashboard.js?v=93"></script>
+<script src="js/app.js?v=93"></script>
 <!-- GENRE MODAL -->
 <!-- 追加費用モーダル -->
 <div class="modal-overlay" id="addFeeModal">

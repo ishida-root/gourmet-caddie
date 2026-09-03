@@ -1680,21 +1680,68 @@ function rebuildMultiSelectOptions(sel,values){
   var cur=Array.from(sel.selectedOptions||[]).map(function(o){return o.value;});
   sel.innerHTML=values.map(function(v){return'<option value="'+esc(v)+'"'+(cur.indexOf(v)>=0?' selected':'')+'>'+esc(v)+'</option>';}).join('');
 }
+/* エリア／ジャンルの複数選択フィルターは、実データはhidden化した<select multiple>に保持したまま
+   （既存のgetMultiSelectValues/絞り込みロジックをそのまま使うため）、
+   見た目はチェックボックス付きのドロップダウンパネル（<details>）で操作できるようにする。
+   ネイティブのmultiple selectはCtrl/Cmdクリックが必要で分かりにくく、
+   常時表示だとその欄だけ縦に大きくなって見づらいという指摘があったため。 */
+function renderInfFilterCheckPanel(selId,panelId,countId){
+  var sel=document.getElementById(selId);
+  var panel=document.getElementById(panelId);
+  var countEl=document.getElementById(countId);
+  if(!sel||!panel)return;
+  var opts=Array.from(sel.options);
+  if(countEl)countEl.textContent=opts.filter(function(o){return o.selected;}).length?'（'+opts.filter(function(o){return o.selected;}).length+'）':'：全て';
+  if(!opts.length){panel.innerHTML='<div style="font-size:12px;color:var(--text3)">選択肢がありません</div>';return;}
+  panel.innerHTML=opts.map(function(o,i){
+    return'<label style="display:block;font-size:12px;padding:3px 4px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'
+      +'<input type="checkbox" '+(o.selected?'checked':'')+' onchange="toggleInfFilterCheck(\''+selId+'\',\''+panelId+'\',\''+countId+'\','+i+')" style="vertical-align:middle;margin-right:5px">'
+      +esc(o.value)
+    +'</label>';
+  }).join('');
+}
+function toggleInfFilterCheck(selId,panelId,countId,idx){
+  var sel=document.getElementById(selId);
+  if(!sel||!sel.options[idx])return;
+  sel.options[idx].selected=!sel.options[idx].selected;
+  renderInfFilterCheckPanel(selId,panelId,countId);
+  renderInfluencers();
+}
+/* エリア／ジャンルの絞り込みパネル外をクリックしたら閉じる */
+document.addEventListener('click',function(e){
+  ['filterInfAreaDetails','filterInfGenreDetails'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el&&el.open&&!el.contains(e.target))el.open=false;
+  });
+});
 function updateInfFilterOptions(){
   var areaSel=document.getElementById('filterInfArea');
   if(areaSel){
     var areas=[...new Set(DB.influencers.map(function(i){return(i.area||'').trim();}).filter(Boolean))].sort();
     rebuildMultiSelectOptions(areaSel,areas);
+    renderInfFilterCheckPanel('filterInfArea','filterInfAreaPanel','filterInfAreaCount');
   }
   var genreSel=document.getElementById('filterInfGenre');
   if(genreSel){
     var genres=[...new Set(DB.influencers.map(function(i){return(i.genre||'').trim();}).filter(Boolean))].sort();
     rebuildMultiSelectOptions(genreSel,genres);
+    renderInfFilterCheckPanel('filterInfGenre','filterInfGenrePanel','filterInfGenreCount');
   }
 }
 function getMultiSelectValues(id){
   var el=document.getElementById(id);
   return el?Array.from(el.selectedOptions||[]).map(function(o){return o.value;}):[];
+}
+/* インフルエンサー一覧の絞り込み条件をすべて初期状態（＝全件表示）に戻す */
+function resetInfFilters(){
+  ['filterInfStatus','filterInfEngagement','filterInfTier'].forEach(function(id){
+    var el=document.getElementById(id);if(el)el.value='';
+  });
+  ['filterInfArea','filterInfGenre'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el)Array.from(el.options).forEach(function(o){o.selected=false;});
+  });
+  renderInfluencers();
 }
 /* 現在の検索・絞り込み・並び替え条件を反映したインフルエンサー一覧を返す（画面表示・出力で共用） */
 function getFilteredSortedInfluencers(){
