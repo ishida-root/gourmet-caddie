@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=96">
+<link rel="stylesheet" href="css/app.css?v=98">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -313,7 +313,7 @@
     <div class="page" id="page-influencers">
       <div class="card">
         <div class="card-header"><span class="card-title">インフルエンサー管理</span>
-          <div style="display:flex;gap:6px;align-items:center">
+          <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;row-gap:8px">
             <select id="filterInfStatus" onchange="renderInfluencers()" style="font-size:12px;padding:4px 8px;width:auto">
               <option value="">声掛け：全て</option>
               <option value="未声掛け">未声掛け</option>
@@ -354,7 +354,7 @@
             <button class="btn btn-sm" onclick="resetInfFilters()">↺ 絞り込みをリセット</button>
             <button class="btn btn-sm" onclick="openInfGenreMerge()">🏷️ ジャンル整理</button>
             <button class="btn btn-sm" onclick="openInfluencerBulkImport()">📋 一括インポート</button>
-            <button class="btn btn-sm" onclick="openInfOutreachFix()">🩹 声掛け状況を一括修正</button>
+            <button class="btn btn-sm" onclick="openInfOutreachFix()" style="white-space:nowrap">🩹 声掛け状況を一括修正</button>
             <button class="btn btn-sm" onclick="openInfluencerExportModal()">📤 リストを出力</button>
             <button class="btn btn-primary btn-sm" onclick="openInfluencerModal()">＋ 追加</button>
           </div>
@@ -1256,25 +1256,25 @@
 </div>
 </div>
 
-<script src="js/vendor/pizzip.min.js?v=96"></script>
-<script src="js/vendor/docxtemplater.min.js?v=96"></script>
-<script src="js/config.js?v=96"></script>
-<script src="js/db.js?v=96"></script>
-<script src="js/utils.js?v=96"></script>
-<script src="js/settings.js?v=96"></script>
-<script src="js/stores.js?v=96"></script>
-<script src="js/schedule.js?v=96"></script>
-<script src="js/casting.js?v=96"></script>
-<script src="js/check.js?v=96"></script>
-<script src="js/accounting.js?v=96"></script>
-<script src="js/plans.js?v=96"></script>
-<script src="js/creators.js?v=96"></script>
-<script src="js/corps.js?v=96"></script>
-<script src="js/faqs.js?v=96"></script>
-<script src="js/orders.js?v=96"></script>
-<script src="js/hearing.js?v=96"></script>
-<script src="js/dashboard.js?v=96"></script>
-<script src="js/app.js?v=96"></script>
+<script src="js/vendor/pizzip.min.js?v=98"></script>
+<script src="js/vendor/docxtemplater.min.js?v=98"></script>
+<script src="js/config.js?v=98"></script>
+<script src="js/db.js?v=98"></script>
+<script src="js/utils.js?v=98"></script>
+<script src="js/settings.js?v=98"></script>
+<script src="js/stores.js?v=98"></script>
+<script src="js/schedule.js?v=98"></script>
+<script src="js/casting.js?v=98"></script>
+<script src="js/check.js?v=98"></script>
+<script src="js/accounting.js?v=98"></script>
+<script src="js/plans.js?v=98"></script>
+<script src="js/creators.js?v=98"></script>
+<script src="js/corps.js?v=98"></script>
+<script src="js/faqs.js?v=98"></script>
+<script src="js/orders.js?v=98"></script>
+<script src="js/hearing.js?v=98"></script>
+<script src="js/dashboard.js?v=98"></script>
+<script src="js/app.js?v=98"></script>
 <!-- GENRE MODAL -->
 <!-- 追加費用モーダル -->
 <div class="modal-overlay" id="addFeeModal">
