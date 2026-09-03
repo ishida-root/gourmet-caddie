@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=89">
+<link rel="stylesheet" href="css/app.css?v=90">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -945,6 +945,15 @@
       <div id="iPlatformDetails" style="border:1px solid var(--border);border-radius:var(--r);overflow:hidden"></div>
     </div>
 
+    <!-- 料金プラン一覧（同一媒体の重なる複数の価格帯をまとめて登録。1行ずつ保存せず、インフルエンサーの保存時に一括保存） -->
+    <div style="margin-bottom:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div style="font-size:13px;font-weight:500;color:var(--text2)">料金プラン一覧 <span style="font-size:11px;color:var(--text3);font-weight:400">（例: ストーリー単体／ストーリー＋フィード等、重なる価格帯をまとめて登録）</span></div>
+        <button type="button" class="btn btn-sm" onclick="addInfPricePlanRow()">＋ プランを追加</button>
+      </div>
+      <div id="iPricePlansList"></div>
+    </div>
+
     <div class="form-actions">
       <button class="btn" onclick="closeModal('infModal')">キャンセル</button>
       <button class="btn btn-primary" onclick="saveInfluencer()">保存</button>
@@ -1215,25 +1224,25 @@
 </div>
 </div>
 
-<script src="js/vendor/pizzip.min.js?v=89"></script>
-<script src="js/vendor/docxtemplater.min.js?v=89"></script>
-<script src="js/config.js?v=89"></script>
-<script src="js/db.js?v=89"></script>
-<script src="js/utils.js?v=89"></script>
-<script src="js/settings.js?v=89"></script>
-<script src="js/stores.js?v=89"></script>
-<script src="js/schedule.js?v=89"></script>
-<script src="js/casting.js?v=89"></script>
-<script src="js/check.js?v=89"></script>
-<script src="js/accounting.js?v=89"></script>
-<script src="js/plans.js?v=89"></script>
-<script src="js/creators.js?v=89"></script>
-<script src="js/corps.js?v=89"></script>
-<script src="js/faqs.js?v=89"></script>
-<script src="js/orders.js?v=89"></script>
-<script src="js/hearing.js?v=89"></script>
-<script src="js/dashboard.js?v=89"></script>
-<script src="js/app.js?v=89"></script>
+<script src="js/vendor/pizzip.min.js?v=90"></script>
+<script src="js/vendor/docxtemplater.min.js?v=90"></script>
+<script src="js/config.js?v=90"></script>
+<script src="js/db.js?v=90"></script>
+<script src="js/utils.js?v=90"></script>
+<script src="js/settings.js?v=90"></script>
+<script src="js/stores.js?v=90"></script>
+<script src="js/schedule.js?v=90"></script>
+<script src="js/casting.js?v=90"></script>
+<script src="js/check.js?v=90"></script>
+<script src="js/accounting.js?v=90"></script>
+<script src="js/plans.js?v=90"></script>
+<script src="js/creators.js?v=90"></script>
+<script src="js/corps.js?v=90"></script>
+<script src="js/faqs.js?v=90"></script>
+<script src="js/orders.js?v=90"></script>
+<script src="js/hearing.js?v=90"></script>
+<script src="js/dashboard.js?v=90"></script>
+<script src="js/app.js?v=90"></script>
 <!-- GENRE MODAL -->
 <!-- 追加費用モーダル -->
 <div class="modal-overlay" id="addFeeModal">

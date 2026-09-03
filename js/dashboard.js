@@ -411,19 +411,35 @@ function renderDashboard(){
   var goalEl=document.getElementById('dash-goal');
   if(goalEl){
     var GOAL=Number(localStorage.getItem('gc_sales_goal')||100000000);
-    /* テスト運用・スポット契約のプランは実際の売上ではないため集計から除外する */
-    var active=DB.stores.filter(function(s){return s.status==='active'&&!(typeof isExcludedFromRevenue==='function'&&isExcludedFromRevenue(s.planId));});
+    /* 主契約（sPlanId/monthlyFee）に加え、店舗の並行契約（additionalContracts）も
+       それぞれ1件の契約として集計する（テスト運用・スポット契約は実売上ではないため除外）。
+       「現在N件」の表示だけはスポット等も含めた全契約から数える（allContracts）。 */
+    var allContracts=[],contracts=[];
+    DB.stores.filter(function(s){return s.status==='active';}).forEach(function(s){
+      if(s.planId){
+        var row={planId:s.planId,monthlyFee:Number(s.monthlyFee)||0};
+        allContracts.push(row);
+        if(!(typeof isExcludedFromRevenue==='function'&&isExcludedFromRevenue(s.planId)))contracts.push(row);
+      }
+      (s.additionalContracts||[]).forEach(function(r){
+        if(r.status!=='active'||!r.planId)return;
+        var row={planId:r.planId,monthlyFee:Number(r.monthlyFee)||0};
+        allContracts.push(row);
+        if(!(typeof isExcludedFromRevenue==='function'&&isExcludedFromRevenue(r.planId)))contracts.push(row);
+      });
+    });
     var now=new Date();
     var thisYear=now.getFullYear();
     var remainMonths=12-now.getMonth(); /* 今月〜12月 */
-    var monthlyTotal=active.reduce(function(sum,s){return sum+(Number(s.monthlyFee)||0);},0);
+    var monthlyTotal=contracts.reduce(function(sum,c){return sum+c.monthlyFee;},0);
     var proj=monthlyTotal*remainMonths;
     var rem=Math.max(0,GOAL-proj);
     var pct=Math.min(100,Math.round(proj/GOAL*100));
     var barCol=pct>=100?'var(--green)':pct>=60?'var(--accent)':'var(--amber)';
 
-    /* プラン別テーブル */
-    var planPlans=DB.plans.filter(function(p){return Number(p.price)>0&&p.type!=='spot'&&p.type!=='test';});
+    /* プラン別テーブル（インフルエンサーキャスティング等のスポットプランも表示するが、一番下に配置） */
+    var planPlans=DB.plans.filter(function(p){return Number(p.price)>0&&p.type!=='test';})
+      .sort(function(a,b){return(a.type==='spot'?1:0)-(b.type==='spot'?1:0);});
     var planTable=planPlans.length
       ?'<div style="font-size:12px;font-weight:500;color:var(--text2);margin:12px 0 6px">📋 プラン別 必要件数</div>'
         +'<div style="border:1px solid var(--border);border-radius:var(--r);overflow:hidden">'
@@ -436,7 +452,7 @@ function renderDashboard(){
         +'</tr></thead><tbody>'
         +planPlans.map(function(p,i){
           var monthly=Number(p.price);
-          var cur=active.filter(function(s){return s.planId===p.id;}).length;
+          var cur=allContracts.filter(function(c){return c.planId===p.id;}).length;
           var needed=rem>0&&monthly>0?Math.ceil(rem/(monthly*remainMonths)):0;
           var perMonth=remainMonths>0&&needed>0?Math.ceil(needed/remainMonths):0;
           var bg=i%2===1?'background:var(--bg3)':'';
@@ -461,7 +477,7 @@ function renderDashboard(){
       '<div style="margin-bottom:12px">'
         +'<div style="display:flex;gap:16px;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--border)">'
           +'<div><div style="font-size:11px;color:var(--text3);margin-bottom:2px">現在の月額契約金額</div><div style="font-size:18px;font-weight:500;color:var(--text)">'+fmtMoney(monthlyTotal)+'</div></div>'
-          +'<div><div style="font-size:11px;color:var(--text3);margin-bottom:2px">契約件数</div><div style="font-size:18px;font-weight:500;color:var(--text)">'+active.length+'件</div></div>'
+          +'<div><div style="font-size:11px;color:var(--text3);margin-bottom:2px">契約件数</div><div style="font-size:18px;font-weight:500;color:var(--text)">'+contracts.length+'件</div></div>'
         +'</div>'
         +'<div style="display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:6px">'
           +'<div>'

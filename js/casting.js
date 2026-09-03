@@ -19,6 +19,8 @@
    セット料金は _bundles[bundleId]={fee,taxIncl,transIncl} に保持し、
    各媒体エントリは {enabled, bundleId} のみを持つ（個別のfeeは持たない）。 */
 var _curPlatformData={};
+var _expandedIndividualPlats={};
+function toggleIndividualPlatformInput(pid){_expandedIndividualPlats[pid]=!_expandedIndividualPlats[pid];renderPlatformDetails(getPlatformData());}
 var _bundleCreateOpen=false;
 
 function platformFeeInfo(pd,plId){
@@ -95,11 +97,21 @@ function renderPlatformDetails(saved){
     var d=saved[pid]||{};
     var bid=d.bundleId;
     if(!bid||!bundles[bid]){
-      /* セット未設定の単独媒体：チェックした時点で個別の料金入力欄を出す（従来はここが空欄でセット作成しないと入力できなかった） */
+      /* セット未設定の単独媒体：デフォルトは折りたたみ（1行表示）にして、
+         「＋ 入力」を押したときだけ料金入力欄を展開する（縦スクロールを減らすため） */
       shown[pid]=true;
       var pl=INF_PLATFORM_LIST.find(function(x){return x.id===pid;});
+      if(!_expandedIndividualPlats[pid]&&!d.fee){
+        return'<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);margin-bottom:6px">'
+          +'<span style="font-size:13px;color:var(--text2)">'+esc(pl?pl.label:pid)+' <span style="font-size:12px;color:var(--text3)">→ 料金未設定</span></span>'
+          +'<button type="button" class="btn btn-sm" onclick="toggleIndividualPlatformInput(\''+pid+'\')">＋ 入力</button>'
+        +'</div>';
+      }
       return'<div style="padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);margin-bottom:6px">'
-        +'<div style="font-size:13px;font-weight:500;color:var(--text2);margin-bottom:6px">'+esc(pl?pl.label:pid)+'</div>'
+        +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">'
+          +'<div style="font-size:13px;font-weight:500;color:var(--text2)">'+esc(pl?pl.label:pid)+'</div>'
+          +'<button type="button" class="btn-ghost-danger" style="font-size:11px;padding:2px 8px" onclick="toggleIndividualPlatformInput(\''+pid+'\')">閉じる</button>'
+        +'</div>'
         +'<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">'
           +'<div style="display:flex;align-items:center;gap:6px"><input type="number" id="plfee_'+pid+'" value="'+(d.fee||'')+'" placeholder="例: 50000" style="width:130px;font-size:13px;padding:4px 8px"><span style="font-size:13px;color:var(--text3)">円</span></div>'
           +platTaxToggleHtml('setPlatformTax',pid,!!d.taxIncl)
@@ -276,10 +288,43 @@ function getPlatformData(){
   return result;
 }
 
+/* 料金プラン一覧：セット（排他的な媒体グルーピング）では表現できない「同一媒体が複数の
+   価格帯に重なって存在する」パターン（例: ストーリー単体5万〜／ストーリー＋フィード8万〜）を
+   自由記述の行として何個でも一気に登録できるようにするための機能。1行ずつの保存は行わず、
+   インフルエンサー本体の保存（saveInfluencer）時にまとめて保存する。 */
+var _pricePlanRows=[];
+function renderInfPricePlanRows(){
+  var wrap=document.getElementById('iPricePlansList');
+  if(!wrap)return;
+  if(!_pricePlanRows.length){
+    wrap.innerHTML='<div style="font-size:12px;color:var(--text3)">「＋ プランを追加」から登録してください</div>';
+    return;
+  }
+  wrap.innerHTML=_pricePlanRows.map(function(r,i){
+    return'<div class="fr" style="align-items:flex-end;margin-bottom:8px">'
+      +'<div class="field"><label style="font-size:12px">プラン名</label><input type="text" value="'+esc(r.label||'')+'" placeholder="例: ストーリーのみ" oninput="updateInfPricePlanField('+i+',\'label\',this.value)"></div>'
+      +'<div class="field"><label style="font-size:12px">金額（円）</label><input type="number" value="'+esc(r.amount||'')+'" placeholder="例: 50000" oninput="updateInfPricePlanField('+i+',\'amount\',this.value)"></div>'
+      +'<div class="field"><label style="font-size:12px">交通費</label><select onchange="updateInfPricePlanField('+i+',\'transport\',this.value)"><option value="込み"'+(r.transport==='込み'?' selected':'')+'>込み</option><option value="別"'+(r.transport==='別'?' selected':'')+'>別</option></select></div>'
+      +'<button type="button" class="btn-ghost-danger btn-sm" onclick="removeInfPricePlanRow('+i+')">削除</button>'
+    +'</div>'
+    +'<div class="fr1 field" style="margin-top:-4px;margin-bottom:8px"><input type="text" value="'+esc(r.includes||'')+'" placeholder="含む内容（例: Instagramストーリー1本＋フィード投稿1本）" oninput="updateInfPricePlanField('+i+',\'includes\',this.value)"></div>';
+  }).join('');
+}
+function addInfPricePlanRow(){
+  _pricePlanRows.push({id:uid(),label:'',amount:'',includes:'',transport:'込み'});
+  renderInfPricePlanRows();
+}
+function removeInfPricePlanRow(idx){_pricePlanRows.splice(idx,1);renderInfPricePlanRows();}
+function updateInfPricePlanField(idx,field,value){
+  if(!_pricePlanRows[idx])return;
+  _pricePlanRows[idx][field]=value;
+}
+
 var editingInfId=null;
 
 function openInfluencerModal(id){
   editingInfId=id||null;
+  _expandedIndividualPlats={};
   var titleEl=document.getElementById('infModalTitle');
   if(titleEl)titleEl.textContent=id?'インフルエンサーを編集':'インフルエンサーを追加';
   ['iName','iHandle','iUrl','iGenre','iContact','iAgency','iMemo','iFeeLow','iFeeHigh','iOutreachDate','iArea','iTendency'].forEach(function(fid){var el=document.getElementById(fid);if(el)el.value='';});
@@ -303,10 +348,16 @@ function openInfluencerModal(id){
       else if(inf.fee){document.getElementById('iFeeLow').value=inf.fee;}
       document.getElementById('iFeeHigh').value=inf.feeHigh||'';
       renderPlatformDetails(inf.platformDetails||{});
+      _pricePlanRows=(inf.pricePlans||[]).map(function(r){return Object.assign({},r);});
     }else{
       renderPlatformDetails({});
+      _pricePlanRows=[];
     }
+  }else{
+    renderPlatformDetails({});
+    _pricePlanRows=[];
   }
+  renderInfPricePlanRows();
   openModal('infModal');
 }
 
@@ -470,7 +521,8 @@ function saveInfluencer(){
     outreachDate:document.getElementById('iOutreachDate').value,
     area:document.getElementById('iArea').value,
     tendency:document.getElementById('iTendency').value,
-    platformDetails:getPlatformData()
+    platformDetails:getPlatformData(),
+    pricePlans:_pricePlanRows.filter(function(r){return r.label||r.amount;})
   };
   if(isEdit){
     var idx=DB.influencers.findIndex(function(x){return x.id===id;});
@@ -907,6 +959,23 @@ function openInfluencerDetail(id){
       return'<div style="margin-bottom:14px">'
         +'<div style="font-size:13px;font-weight:500;color:var(--text2);margin-bottom:6px">📱 対応媒体・費用</div>'
         +lines
+      +'</div>';
+    })()
+    /* 料金プラン一覧（重なる価格帯の自由記述プラン） */
+    +(function(){
+      var plans=inf.pricePlans||[];
+      if(!plans.length)return'';
+      return'<div style="margin-bottom:14px">'
+        +'<div style="font-size:13px;font-weight:500;color:var(--text2);margin-bottom:6px">💴 料金プラン一覧</div>'
+        +plans.map(function(p){
+          return'<div style="padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);margin-bottom:6px">'
+            +'<div style="display:flex;justify-content:space-between;align-items:center">'
+              +'<span style="font-size:13px;font-weight:500;color:var(--text)">'+esc(p.label||'（プラン名未設定）')+'</span>'
+              +'<span style="font-size:13px;color:var(--accent);font-weight:500">'+(p.amount?fmtMoney(p.amount):'—')+(p.transport?'　<span style="font-size:11px;color:var(--text3);font-weight:400">交通費'+esc(p.transport)+'</span>':'')+'</span>'
+            +'</div>'
+            +(p.includes?'<div style="font-size:12px;color:var(--text3);margin-top:2px">'+esc(p.includes)+'</div>':'')
+          +'</div>';
+        }).join('')
       +'</div>';
     })()
 
