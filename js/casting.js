@@ -1945,13 +1945,11 @@ function renderInfluencers(){
   }).join('');
 }
 
-/* キャスティング履歴の並び替えキー：来店日・投稿日のうち新しい方を採用（片方しか無い場合はそちらを使用）。
-   どちらも未設定の場合は最下部に沈むよう扱う（新しい順で並べたときにNaN比較でおかしな順序にならないように） */
+/* キャスティング履歴の並び替えキー：来店日を優先して並べる。来店日が未設定の場合のみ投稿日を使い、
+   どちらも未設定なら最下部に沈める（新しい順で並べたときにNaN比較でおかしな順序にならないように） */
 function castSortKey(c){
-  var d1=c.visitDate?new Date(c.visitDate).getTime():NaN;
-  var d2=c.date?new Date(c.date).getTime():NaN;
-  var candidates=[d1,d2].filter(function(x){return!isNaN(x);});
-  return candidates.length?Math.max.apply(null,candidates):-Infinity;
+  var d=c.visitDate?new Date(c.visitDate).getTime():(c.date?new Date(c.date).getTime():NaN);
+  return isNaN(d)?-Infinity:d;
 }
 function renderCasting(){
   var search=(document.getElementById('globalSearch').value||'').toLowerCase();
