@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=90">
+<link rel="stylesheet" href="css/app.css?v=91">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -218,7 +218,7 @@
           </div>
         </div>
         <div id="negotiatingBox" style="display:none;margin-bottom:16px;padding:12px 14px;background:var(--accent-bg);border:1px solid var(--accent-border);border-radius:var(--r)"></div>
-        <div class="table-wrap"><table><thead><tr><th>店舗名</th><th>業種</th><th>契約プラン</th><th>原価</th><th>契約期間</th><th>店舗担当</th><th>弊社担当</th><th>INF</th><th>今月請求</th><th>今月振返</th><th>案件進捗</th><th>ステータス</th><th></th></tr></thead><tbody id="storeTableBody"></tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>店舗名</th><th>業種</th><th>契約プラン</th><th>原価</th><th>契約期間</th><th>店舗担当</th><th>弊社担当</th><th>INF</th><th>今月請求</th><th>前月振返</th><th>案件進捗</th><th>ステータス</th><th></th></tr></thead><tbody id="storeTableBody"></tbody></table></div>
       </div>
     </div>
 
@@ -619,10 +619,13 @@
       <div style="margin-bottom:12px;border:1px solid var(--border);border-radius:var(--r);overflow:hidden">
         <!-- 共通時間行 -->
         <div style="padding:10px 12px;background:var(--bg3);display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-          <span style="font-size:12px;font-weight:500;color:var(--text2);min-width:60px">共通時間</span>
-          <div id="sHoursFromWrap" style="display:inline-flex"></div><input type="hidden" id="sHoursFrom">
-          <span style="font-size:13px;color:var(--text3)">〜</span>
-          <div id="sHoursToWrap" style="display:inline-flex"></div><input type="hidden" id="sHoursTo">
+          <span id="sHoursCommonLabel" style="font-size:12px;font-weight:500;color:var(--text2);min-width:60px">共通時間</span>
+          <div id="sHoursCommonPickers" style="display:inline-flex;align-items:center;gap:10px">
+            <div id="sHoursFromWrap" style="display:inline-flex"></div><input type="hidden" id="sHoursFrom">
+            <span style="font-size:13px;color:var(--text3)">〜</span>
+            <div id="sHoursToWrap" style="display:inline-flex"></div><input type="hidden" id="sHoursTo">
+          </div>
+          <span id="sHoursCommonUnused" style="display:none;font-size:12px;color:var(--text3)">（曜日ごとの設定を使用中のため未使用）</span>
           <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;margin-left:auto">
             <input type="checkbox" id="sPerDay" onchange="togglePerDay()" style="width:auto;margin:0">
             曜日ごとに設定
@@ -1224,25 +1227,25 @@
 </div>
 </div>
 
-<script src="js/vendor/pizzip.min.js?v=90"></script>
-<script src="js/vendor/docxtemplater.min.js?v=90"></script>
-<script src="js/config.js?v=90"></script>
-<script src="js/db.js?v=90"></script>
-<script src="js/utils.js?v=90"></script>
-<script src="js/settings.js?v=90"></script>
-<script src="js/stores.js?v=90"></script>
-<script src="js/schedule.js?v=90"></script>
-<script src="js/casting.js?v=90"></script>
-<script src="js/check.js?v=90"></script>
-<script src="js/accounting.js?v=90"></script>
-<script src="js/plans.js?v=90"></script>
-<script src="js/creators.js?v=90"></script>
-<script src="js/corps.js?v=90"></script>
-<script src="js/faqs.js?v=90"></script>
-<script src="js/orders.js?v=90"></script>
-<script src="js/hearing.js?v=90"></script>
-<script src="js/dashboard.js?v=90"></script>
-<script src="js/app.js?v=90"></script>
+<script src="js/vendor/pizzip.min.js?v=91"></script>
+<script src="js/vendor/docxtemplater.min.js?v=91"></script>
+<script src="js/config.js?v=91"></script>
+<script src="js/db.js?v=91"></script>
+<script src="js/utils.js?v=91"></script>
+<script src="js/settings.js?v=91"></script>
+<script src="js/stores.js?v=91"></script>
+<script src="js/schedule.js?v=91"></script>
+<script src="js/casting.js?v=91"></script>
+<script src="js/check.js?v=91"></script>
+<script src="js/accounting.js?v=91"></script>
+<script src="js/plans.js?v=91"></script>
+<script src="js/creators.js?v=91"></script>
+<script src="js/corps.js?v=91"></script>
+<script src="js/faqs.js?v=91"></script>
+<script src="js/orders.js?v=91"></script>
+<script src="js/hearing.js?v=91"></script>
+<script src="js/dashboard.js?v=91"></script>
+<script src="js/app.js?v=91"></script>
 <!-- GENRE MODAL -->
 <!-- 追加費用モーダル -->
 <div class="modal-overlay" id="addFeeModal">

@@ -306,10 +306,20 @@ function getPerDayData(){
   return days;
 }
 
+/* 曜日ごとの設定がONの間、共通時間は使われない（各曜日の値が優先される）ため、
+   紛らわしい共通時間ピッカーを薄く・操作不可にして「未使用」であることを明示する */
+function updateHoursCommonUsable(){
+  var on=document.getElementById('sPerDay').checked;
+  var pickers=document.getElementById('sHoursCommonPickers');
+  var note=document.getElementById('sHoursCommonUnused');
+  if(pickers)pickers.style.cssText='display:inline-flex;align-items:center;gap:10px;'+(on?'opacity:0.4;pointer-events:none':'');
+  if(note)note.style.display=on?'':'none';
+}
 function togglePerDay(){
   ensurePerDayDatalist();
   var on=document.getElementById('sPerDay').checked;
   document.getElementById('perDayTable').style.display=on?'':'none';
+  updateHoursCommonUsable();
   if(on){
     var cur=parseHoursData(document.getElementById('sHours').value);
     /* 共通時間を引き継いで各曜日の初期値にセット */
@@ -385,6 +395,7 @@ function restoreHoursUI(hoursVal){
     if(_stwrap2&&_stwrap2._setTime)_stwrap2._setTime(parts2[1]||'');else{var _st2=document.getElementById('sHoursTo');if(_st2)_st2.value=parts2[1]||'';}
   }
   document.getElementById('sHours').value=hoursVal||'';
+  updateHoursCommonUsable();
 }
 
 /* ---- 人間が読める営業時間サマリー（表示用） ---- */
@@ -414,6 +425,7 @@ function clearStoreForm(){
   document.getElementById('sHoursTo').value='';
   document.getElementById('sPerDay').checked=false;
   document.getElementById('perDayTable').style.display='none';
+  updateHoursCommonUsable();
   document.getElementById('sMetaExp').value='none';
   document.getElementById('sContractTerm').value='3';
   document.getElementById('sStatus').value='pending';
@@ -739,7 +751,7 @@ function renderStoreTable(){
       +'<td>'+mgrCell+'</td>'
       +'<td><button class="btn btn-sm" style="font-size:11px;padding:2px 8px;'+(s.infContract?'background:var(--purple-bg);color:var(--purple);border-color:var(--purple-border)':'background:var(--bg3);color:var(--text2)')+'" onclick="event.stopPropagation();toggleInfContract(\''+s.id+'\')">'+(s.infContract?'👤 あり':'なし')+'</button></td>'
       +(function(){var done=isMonthlyDone(s,'adBilling');return'<td><button class="btn btn-sm" style="font-size:11px;padding:2px 8px;'+(done?'background:var(--green-bg);color:var(--green);border-color:var(--green-border)':'background:var(--bg3);color:var(--text2)')+'" onclick="event.stopPropagation();toggleMonthlyDone(\''+s.id+'\',\'adBilling\')">'+(done?'✓ 済':'未')+'</button></td>';})()
-      +(function(){var done=isMonthlyDone(s,'monthlyReview');return'<td><button class="btn btn-sm" style="font-size:11px;padding:2px 8px;'+(done?'background:var(--green-bg);color:var(--green);border-color:var(--green-border)':'background:var(--bg3);color:var(--text2)')+'" onclick="event.stopPropagation();toggleMonthlyDone(\''+s.id+'\',\'monthlyReview\')">'+(done?'✓ 済':'未')+'</button></td>';})()
+      +(function(){var pmk=prevMonthKey();var done=isMonthlyDone(s,'monthlyReview',pmk);return'<td><button class="btn btn-sm" title="'+pmk+'分の振り返り" style="font-size:11px;padding:2px 8px;'+(done?'background:var(--green-bg);color:var(--green);border-color:var(--green-border)':'background:var(--bg3);color:var(--text2)')+'" onclick="event.stopPropagation();toggleMonthlyDone(\''+s.id+'\',\'monthlyReview\',\''+pmk+'\')">'+(done?'✓ 済':'未')+'</button></td>';})()
       +'<td><div style="display:flex;align-items:center;gap:6px"><div class="pbar-wrap" style="width:52px"><div class="pbar" style="background:'+(pct===100?'var(--green)':'var(--accent)')+';width:'+pct+'%"></div></div><span style="font-size:11px;color:var(--text3)">'+pct+'%</span></div></td>'
       +'<td>'+statusBadge(s.status)+'</td>'
       +'<td style="white-space:nowrap"><button class="btn btn-sm" onclick="openStoreModal(\''+s.id+'\')" style="margin-right:4px">編集</button><button class="btn-ghost-danger" onclick="deleteStore(\''+s.id+'\')">削除</button></td>'

@@ -84,7 +84,7 @@ function makeTimePicker24(wrapperId, hiddenId, onChange){
   var list=document.createElement('div');
   list.style.cssText='position:absolute;top:0;left:0;right:0;padding-top:'+(ITEM_H*CENTER)+'px;padding-bottom:'+(ITEM_H*CENTER)+'px';
 
-  function renderList(){
+  function renderList(silent){
     list.innerHTML='';
     for(var i=-CENTER;i<=CENTER;i++){
       var idx=curIdx+i;
@@ -94,7 +94,8 @@ function makeTimePicker24(wrapperId, hiddenId, onChange){
       div.style.cssText='height:'+ITEM_H+'px;line-height:'+ITEM_H+'px;text-align:center;font-size:'+(dist===0?'12px':'10px')+';font-weight:'+(dist===0?'600':'400')+';color:var(--text);opacity:'+(dist===0?'1':dist===1?'0.55':'0.25');
       list.appendChild(div);
     }
-    syncHid();
+    if(hid)hid.value=times[curIdx]||'';
+    if(!silent&&onChange)onChange();
   }
   renderList();
 
@@ -121,12 +122,14 @@ function makeTimePicker24(wrapperId, hiddenId, onChange){
   el.appendChild(list);el.appendChild(overlay);el.appendChild(line);
   wrap.innerHTML='';
   wrap.appendChild(el);
-  syncHid();
 
+  /* 既存データの復元用：表示・hidden値だけ更新し、onChange（他フィールドの再計算）は発火させない。
+     復元中にfrom/toが1つずつ順番にセットされる間、片方がまだ古い値のままの状態で
+     updateHoursData()が呼ばれて誤った組み合わせが書き込まれてしまうのを防ぐため。 */
   wrap._setTime=function(val){
     var idx=times.indexOf(val);
     if(idx>=0){curIdx=idx;}else{curIdx=times.indexOf('17:00');}
-    renderList();
+    renderList(true);
   };
 }
 

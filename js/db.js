@@ -445,12 +445,16 @@ async function saveItem(table,item){
 }
 
 function monthKey(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}
-function isMonthlyDone(s,key){return!!(s[key]&&s[key][monthKey()]);}
-function toggleMonthlyDone(storeId,key){
+/* 振り返りは「先月分の実績を振り返る」作業のため、月初〜月末を通じて常に前月をキーにする
+   （当月のキーだと月初にまだ何も溜まっていない当月分を指してしまい、実際の作業内容とずれるため） */
+function prevMonthKey(){var d=new Date();d.setDate(1);d.setMonth(d.getMonth()-1);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');}
+function isMonthlyDone(s,key,mk){mk=mk||monthKey();return!!(s[key]&&s[key][mk]);}
+function toggleMonthlyDone(storeId,key,mk){
+  mk=mk||monthKey();
   var s=DB.stores.find(function(x){return x.id===storeId;});
   if(!s)return;
   if(!s[key])s[key]={};
-  s[key][monthKey()]=!s[key][monthKey()];
+  s[key][mk]=!s[key][mk];
   saveItem('stores',s);
   renderStoreTable();
 }
