@@ -301,13 +301,15 @@ function renderInfPricePlanRows(){
     return;
   }
   wrap.innerHTML=_pricePlanRows.map(function(r,i){
-    return'<div class="fr" style="align-items:flex-end;margin-bottom:8px">'
-      +'<div class="field"><label style="font-size:12px">プラン名</label><input type="text" value="'+esc(r.label||'')+'" placeholder="例: ストーリーのみ" oninput="updateInfPricePlanField('+i+',\'label\',this.value)"></div>'
-      +'<div class="field"><label style="font-size:12px">金額（円）</label><input type="number" value="'+esc(r.amount||'')+'" placeholder="例: 50000" oninput="updateInfPricePlanField('+i+',\'amount\',this.value)"></div>'
-      +'<div class="field"><label style="font-size:12px">交通費</label><select onchange="updateInfPricePlanField('+i+',\'transport\',this.value)"><option value="込み"'+(r.transport==='込み'?' selected':'')+'>込み</option><option value="別"'+(r.transport==='別'?' selected':'')+'>別</option></select></div>'
-      +'<button type="button" class="btn-ghost-danger btn-sm" onclick="removeInfPricePlanRow('+i+')">削除</button>'
-    +'</div>'
-    +'<div class="fr1 field" style="margin-top:-4px;margin-bottom:8px"><input type="text" value="'+esc(r.includes||'')+'" placeholder="含む内容（例: Instagramストーリー1本＋フィード投稿1本）" oninput="updateInfPricePlanField('+i+',\'includes\',this.value)"></div>';
+    return'<div style="padding:10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);margin-bottom:8px">'
+      +'<div style="display:flex;gap:10px;align-items:flex-end;margin-bottom:8px">'
+        +'<div class="field" style="flex:1"><label style="font-size:12px">プラン名</label><input type="text" value="'+esc(r.label||'')+'" placeholder="例: ストーリーのみ" oninput="updateInfPricePlanField('+i+',\'label\',this.value)"></div>'
+        +'<div class="field" style="flex:1"><label style="font-size:12px">金額（円）</label><input type="number" value="'+esc(r.amount||'')+'" placeholder="例: 50000" oninput="updateInfPricePlanField('+i+',\'amount\',this.value)"></div>'
+        +'<div class="field" style="flex:0 0 100px"><label style="font-size:12px">交通費</label><select onchange="updateInfPricePlanField('+i+',\'transport\',this.value)"><option value="込み"'+(r.transport==='込み'?' selected':'')+'>込み</option><option value="別"'+(r.transport==='別'?' selected':'')+'>別</option></select></div>'
+        +'<button type="button" class="btn-ghost-danger btn-sm" style="flex:0 0 auto" onclick="removeInfPricePlanRow('+i+')">削除</button>'
+      +'</div>'
+      +'<input type="text" value="'+esc(r.includes||'')+'" placeholder="含む内容（例: Instagramストーリー1本＋フィード投稿1本）" oninput="updateInfPricePlanField('+i+',\'includes\',this.value)" style="width:100%">'
+    +'</div>';
   }).join('');
 }
 function addInfPricePlanRow(){
@@ -427,10 +429,14 @@ function extractHandleFromUrl(url){
   var m=(url||'').match(/instagram\.com\/([^/?]+)/i);
   return m?('@'+m[1]):'';
 }
-var INF_IMPORT_OUTREACH_MAP={'済':'声掛け済み','未':'未声掛け','保留':'声掛け済み'};
+/* 「保留」は実際には声をかけていない（影響量が低そうなど何らかの理由で見送っている）状態のため、
+   「声掛け済み」ではなく「未声掛け」に対応づける（以前は誤って声掛け済み扱いにしていた）。
+   元の表記はメモに残し、後から見返せるようにする。 */
+var INF_IMPORT_OUTREACH_MAP={'済':'声掛け済み','未':'未声掛け','保留':'未声掛け'};
 function importedRowToInfluencer(row){
   var fee=priceRangeToFeeRange(row.priceRange);
   var memoLines=[];
+  if(row.outreachRaw==='保留')memoLines.push('【インポート時メモ】声かけ欄が「保留」でした（影響量が低いなどの理由で見送り中の可能性）');
   if(row.priceNote)memoLines.push('【料金メモ】'+row.priceNote);
   if(row.tabelog)memoLines.push('食べログ：'+row.tabelog);
   if(row.secondUse)memoLines.push('二次利用：'+row.secondUse);
@@ -484,6 +490,47 @@ function runInfluencerBulkImport(){
   if(typeof updateSidebarStats==='function')updateSidebarStats();
   resultEl.innerHTML='<div style="color:var(--green);font-weight:500">✓ '+created+'件登録しました'+(skipped?'（重複のため'+skipped+'件スキップ）':'')+'</div>'
     +(skippedNames.length?'<div style="font-size:12px;color:var(--text3);margin-top:6px">スキップ：'+skippedNames.slice(0,20).map(esc).join('、')+(skippedNames.length>20?' 他':'')+'</div>':'');
+}
+
+/* ============================================================
+   声掛け状況 一括修正ツール（過去のインポート不具合の是正用）
+   以前は声かけ欄「保留」を誤って「声掛け済み」に変換していた。
+   同じ元データを再度貼り付けてもらい、「保留」行に対応する既存インフルエンサーのうち
+   現在「声掛け済み」になっている人だけを「未声掛け」に戻す。他の項目には触れない。
+   ============================================================ */
+function openInfOutreachFix(){
+  var ta=document.getElementById('infOutreachFixText');if(ta)ta.value='';
+  var res=document.getElementById('infOutreachFixResult');if(res)res.innerHTML='';
+  openModal('infOutreachFixModal');
+}
+function runInfOutreachFix(){
+  var text=document.getElementById('infOutreachFixText').value;
+  var parsed=parseInfluencerImportText(text);
+  var resultEl=document.getElementById('infOutreachFixResult');
+  if(parsed.error){resultEl.innerHTML='<div style="color:var(--red)">'+esc(parsed.error)+'</div>';return;}
+  var hold=parsed.rows.filter(function(row){return row.outreachRaw==='保留';});
+  if(!hold.length){resultEl.innerHTML='<div style="color:var(--text3)">「保留」の行が見つかりませんでした</div>';return;}
+  var normalize=function(h){return(h||'').trim().toLowerCase().replace(/^@/,'');};
+  var byHandle={},byName={};
+  DB.influencers.forEach(function(i){
+    if(i.handle)byHandle[normalize(i.handle)]=i;
+    if(i.name)byName[i.name.trim()]=i;
+  });
+  var fixed=0,alreadyOk=0,notFound=0,notFoundNames=[];
+  hold.forEach(function(row){
+    var handle=extractHandleFromUrl(row.url);
+    var inf=(handle&&byHandle[normalize(handle)])||byName[(row.name||'').trim()];
+    if(!inf){notFound++;notFoundNames.push(row.name);return;}
+    if(inf.outreachStatus!=='声掛け済み'){alreadyOk++;return;}
+    inf.outreachStatus='未声掛け';
+    if(!/インポート時メモ.*保留/.test(inf.memo||''))inf.memo=(inf.memo?inf.memo+'\n':'')+'【インポート時メモ】声かけ欄が「保留」でした（影響量が低いなどの理由で見送り中の可能性）';
+    saveItem('influencers',inf);
+    fixed++;
+  });
+  renderInfluencers();
+  resultEl.innerHTML='<div style="color:var(--green);font-weight:500">✓ '+fixed+'件を未声掛けに修正しました</div>'
+    +'<div style="font-size:12px;color:var(--text3);margin-top:4px">保留行：'+hold.length+'件中　既に正しい状態：'+alreadyOk+'件　該当者が見つからず：'+notFound+'件</div>'
+    +(notFoundNames.length?'<div style="font-size:12px;color:var(--text3);margin-top:6px">見つからなかった名前：'+notFoundNames.slice(0,20).map(esc).join('、')+(notFoundNames.length>20?' 他':'')+'</div>':'');
 }
 
 function saveInfluencer(){
@@ -1741,6 +1788,9 @@ function resetInfFilters(){
     var el=document.getElementById(id);
     if(el)Array.from(el.options).forEach(function(o){o.selected=false;});
   });
+  ['filterInfFeeMin','filterInfFeeMax'].forEach(function(id){
+    var el=document.getElementById(id);if(el)el.value='';
+  });
   renderInfluencers();
 }
 /* 現在の検索・絞り込み・並び替え条件を反映したインフルエンサー一覧を返す（画面表示・出力で共用） */
@@ -1751,12 +1801,23 @@ function getFilteredSortedInfluencers(){
   var tierFilter=(document.getElementById('filterInfTier')||{}).value||'';
   var areaFilters=getMultiSelectValues('filterInfArea');
   var genreFilters=getMultiSelectValues('filterInfGenre');
+  var feeMinEl=document.getElementById('filterInfFeeMin'),feeMaxEl=document.getElementById('filterInfFeeMax');
+  var feeMin=feeMinEl&&feeMinEl.value!==''?Number(feeMinEl.value):null;
+  var feeMax=feeMaxEl&&feeMaxEl.value!==''?Number(feeMaxEl.value):null;
   var list=DB.influencers.filter(function(i){
     if(statusFilter&&infOutreachStatus(i)!==statusFilter)return false;
     if(engagementFilter&&infEngagementStatus(i)!==engagementFilter)return false;
     if(tierFilter&&infTierOf(i)!==tierFilter)return false;
     if(areaFilters.length&&areaFilters.indexOf((i.area||'').trim())<0)return false;
     if(genreFilters.length&&genreFilters.indexOf((i.genre||'').trim())<0)return false;
+    if(feeMin!==null||feeMax!==null){
+      /* 料金は下限〜上限の幅で持っているため、指定した範囲と少しでも重なれば対象とする */
+      var lo=(i.feeLow!==undefined&&i.feeLow!=='')?Number(i.feeLow):Number(i.fee)||0;
+      var hi=i.feeHigh?Number(i.feeHigh):lo;
+      if(!lo&&!hi)return false;
+      if(feeMin!==null&&hi<feeMin)return false;
+      if(feeMax!==null&&lo>feeMax)return false;
+    }
     return!search||(i.name||'').toLowerCase().includes(search)||(i.handle||'').toLowerCase().includes(search)||(i.genre||'').toLowerCase().includes(search);
   });
   if(infSortKey){
