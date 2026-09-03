@@ -1694,9 +1694,9 @@ function renderInfFilterCheckPanel(selId,panelId,countId){
   if(countEl)countEl.textContent=opts.filter(function(o){return o.selected;}).length?'（'+opts.filter(function(o){return o.selected;}).length+'）':'：全て';
   if(!opts.length){panel.innerHTML='<div style="font-size:12px;color:var(--text3)">選択肢がありません</div>';return;}
   panel.innerHTML=opts.map(function(o,i){
-    return'<label style="display:block;font-size:12px;padding:3px 4px;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'
+    return'<label style="display:block;font-size:12px;padding:3px 4px;cursor:pointer;color:var(--text);max-width:220px;overflow-wrap:break-word">'
       +'<input type="checkbox" '+(o.selected?'checked':'')+' onchange="toggleInfFilterCheck(\''+selId+'\',\''+panelId+'\',\''+countId+'\','+i+')" style="vertical-align:middle;margin-right:5px">'
-      +esc(o.value)
+      +'<span style="color:var(--text)">'+esc(o.value)+'</span>'
     +'</label>';
   }).join('');
 }
