@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=99">
+<link rel="stylesheet" href="css/app.css?v=100">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -354,7 +354,6 @@
             <button class="btn btn-sm" onclick="resetInfFilters()">↺ 絞り込みをリセット</button>
             <button class="btn btn-sm" onclick="openInfGenreMerge()">🏷️ ジャンル整理</button>
             <button class="btn btn-sm" onclick="openInfluencerBulkImport()">📋 一括インポート</button>
-            <button class="btn btn-sm" onclick="openInfOutreachFix()" style="white-space:nowrap">🩹 声掛け状況を一括修正</button>
             <button class="btn btn-sm" onclick="openInfluencerExportModal()">📤 リストを出力</button>
             <button class="btn btn-primary btn-sm" onclick="openInfluencerModal()">＋ 追加</button>
           </div>
@@ -916,25 +915,6 @@
     </div>
   </div>
 </div>
-
-<!-- INFLUENCER 声掛け状況 一括修正モーダル -->
-<div class="modal-overlay" id="infOutreachFixModal">
-<div class="modal" style="width:640px">
-  <div class="modal-header"><span class="modal-title">声掛け状況を一括修正</span><button class="modal-close" onclick="closeModal('infOutreachFixModal')">✕</button></div>
-  <div class="modal-body">
-    <div style="font-size:12px;color:var(--text3);margin-bottom:8px">
-      以前の一括インポートで「声かけ：保留」の行が誤って「声掛け済み」として登録されていた不具合の修正用です。<br>
-      同じスプレッドシートをもう一度貼り付けて実行すると、「声かけ」欄が「保留」の行に対応する登録済みインフルエンサー（アカウントIDまたは名前で一致）のうち、現在「声掛け済み」になっている人だけを「未声掛け」に戻します。他の項目（料金・エリアなど）は一切変更しません。
-    </div>
-    <textarea id="infOutreachFixText" placeholder="ここにスプレッドシートの表をそのまま貼り付け（タブ区切り）" style="width:100%;min-height:220px;font-size:12px;font-family:monospace;padding:10px;border:1px solid var(--border);border-radius:var(--r)"></textarea>
-    <div id="infOutreachFixResult" style="margin-top:10px"></div>
-    <div class="form-actions">
-      <button class="btn" onclick="closeModal('infOutreachFixModal')">閉じる</button>
-      <button class="btn btn-primary" onclick="runInfOutreachFix()">修正を実行</button>
-    </div>
-  </div>
-</div>
-</div>
 </div>
 
 <!-- INFLUENCER MODAL -->
@@ -1256,25 +1236,25 @@
 </div>
 </div>
 
-<script src="js/vendor/pizzip.min.js?v=99"></script>
-<script src="js/vendor/docxtemplater.min.js?v=99"></script>
-<script src="js/config.js?v=99"></script>
-<script src="js/db.js?v=99"></script>
-<script src="js/utils.js?v=99"></script>
-<script src="js/settings.js?v=99"></script>
-<script src="js/stores.js?v=99"></script>
-<script src="js/schedule.js?v=99"></script>
-<script src="js/casting.js?v=99"></script>
-<script src="js/check.js?v=99"></script>
-<script src="js/accounting.js?v=99"></script>
-<script src="js/plans.js?v=99"></script>
-<script src="js/creators.js?v=99"></script>
-<script src="js/corps.js?v=99"></script>
-<script src="js/faqs.js?v=99"></script>
-<script src="js/orders.js?v=99"></script>
-<script src="js/hearing.js?v=99"></script>
-<script src="js/dashboard.js?v=99"></script>
-<script src="js/app.js?v=99"></script>
+<script src="js/vendor/pizzip.min.js?v=100"></script>
+<script src="js/vendor/docxtemplater.min.js?v=100"></script>
+<script src="js/config.js?v=100"></script>
+<script src="js/db.js?v=100"></script>
+<script src="js/utils.js?v=100"></script>
+<script src="js/settings.js?v=100"></script>
+<script src="js/stores.js?v=100"></script>
+<script src="js/schedule.js?v=100"></script>
+<script src="js/casting.js?v=100"></script>
+<script src="js/check.js?v=100"></script>
+<script src="js/accounting.js?v=100"></script>
+<script src="js/plans.js?v=100"></script>
+<script src="js/creators.js?v=100"></script>
+<script src="js/corps.js?v=100"></script>
+<script src="js/faqs.js?v=100"></script>
+<script src="js/orders.js?v=100"></script>
+<script src="js/hearing.js?v=100"></script>
+<script src="js/dashboard.js?v=100"></script>
+<script src="js/app.js?v=100"></script>
 <!-- GENRE MODAL -->
 <!-- 追加費用モーダル -->
 <div class="modal-overlay" id="addFeeModal">

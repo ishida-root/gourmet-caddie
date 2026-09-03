@@ -492,47 +492,6 @@ function runInfluencerBulkImport(){
     +(skippedNames.length?'<div style="font-size:12px;color:var(--text3);margin-top:6px">スキップ：'+skippedNames.slice(0,20).map(esc).join('、')+(skippedNames.length>20?' 他':'')+'</div>':'');
 }
 
-/* ============================================================
-   声掛け状況 一括修正ツール（過去のインポート不具合の是正用）
-   以前は声かけ欄「保留」を誤って「声掛け済み」に変換していた。
-   同じ元データを再度貼り付けてもらい、「保留」行に対応する既存インフルエンサーのうち
-   現在「声掛け済み」になっている人だけを「未声掛け」に戻す。他の項目には触れない。
-   ============================================================ */
-function openInfOutreachFix(){
-  var ta=document.getElementById('infOutreachFixText');if(ta)ta.value='';
-  var res=document.getElementById('infOutreachFixResult');if(res)res.innerHTML='';
-  openModal('infOutreachFixModal');
-}
-function runInfOutreachFix(){
-  var text=document.getElementById('infOutreachFixText').value;
-  var parsed=parseInfluencerImportText(text);
-  var resultEl=document.getElementById('infOutreachFixResult');
-  if(parsed.error){resultEl.innerHTML='<div style="color:var(--red)">'+esc(parsed.error)+'</div>';return;}
-  var hold=parsed.rows.filter(function(row){return row.outreachRaw==='保留';});
-  if(!hold.length){resultEl.innerHTML='<div style="color:var(--text3)">「保留」の行が見つかりませんでした</div>';return;}
-  var normalize=function(h){return(h||'').trim().toLowerCase().replace(/^@/,'');};
-  var byHandle={},byName={};
-  DB.influencers.forEach(function(i){
-    if(i.handle)byHandle[normalize(i.handle)]=i;
-    if(i.name)byName[i.name.trim()]=i;
-  });
-  var fixed=0,alreadyOk=0,notFound=0,notFoundNames=[];
-  hold.forEach(function(row){
-    var handle=extractHandleFromUrl(row.url);
-    var inf=(handle&&byHandle[normalize(handle)])||byName[(row.name||'').trim()];
-    if(!inf){notFound++;notFoundNames.push(row.name);return;}
-    if(inf.outreachStatus!=='声掛け済み'){alreadyOk++;return;}
-    inf.outreachStatus='未声掛け';
-    if(!/インポート時メモ.*保留/.test(inf.memo||''))inf.memo=(inf.memo?inf.memo+'\n':'')+'【インポート時メモ】声かけ欄が「保留」でした（影響量が低いなどの理由で見送り中の可能性）';
-    saveItem('influencers',inf);
-    fixed++;
-  });
-  renderInfluencers();
-  resultEl.innerHTML='<div style="color:var(--green);font-weight:500">✓ '+fixed+'件を未声掛けに修正しました</div>'
-    +'<div style="font-size:12px;color:var(--text3);margin-top:4px">保留行：'+hold.length+'件中　既に正しい状態：'+alreadyOk+'件　該当者が見つからず：'+notFound+'件</div>'
-    +(notFoundNames.length?'<div style="font-size:12px;color:var(--text3);margin-top:6px">見つからなかった名前：'+notFoundNames.slice(0,20).map(esc).join('、')+(notFoundNames.length>20?' 他':'')+'</div>':'');
-}
-
 function saveInfluencer(){
   var name=document.getElementById('iName').value.trim();
   if(!name){alert('名前を入力してください');return;}
