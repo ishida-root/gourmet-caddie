@@ -430,13 +430,11 @@ function extractHandleFromUrl(url){
   return m?('@'+m[1]):'';
 }
 /* 「保留」は実際には声をかけていない（影響量が低そうなど何らかの理由で見送っている）状態のため、
-   「声掛け済み」ではなく「未声掛け」に対応づける（以前は誤って声掛け済み扱いにしていた）。
-   元の表記はメモに残し、後から見返せるようにする。 */
-var INF_IMPORT_OUTREACH_MAP={'済':'声掛け済み','未':'未声掛け','保留':'未声掛け'};
+   声掛け状況の選択肢に「保留」を追加し、そのまま対応づける（以前は誤って声掛け済み扱いにしていた）。 */
+var INF_IMPORT_OUTREACH_MAP={'済':'声掛け済み','未':'未声掛け','保留':'保留'};
 function importedRowToInfluencer(row){
   var fee=priceRangeToFeeRange(row.priceRange);
   var memoLines=[];
-  if(row.outreachRaw==='保留')memoLines.push('【インポート時メモ】声かけ欄が「保留」でした（影響量が低いなどの理由で見送り中の可能性）');
   if(row.priceNote)memoLines.push('【料金メモ】'+row.priceNote);
   if(row.tabelog)memoLines.push('食べログ：'+row.tabelog);
   if(row.secondUse)memoLines.push('二次利用：'+row.secondUse);
@@ -474,21 +472,34 @@ function runInfluencerBulkImport(){
   if(parsed.error){resultEl.innerHTML='<div style="color:var(--red)">'+esc(parsed.error)+'</div>';return;}
   if(!parsed.rows.length){resultEl.innerHTML='<div style="color:var(--text3)">インポート対象の行が見つかりませんでした</div>';return;}
   var normalize=function(h){return(h||'').trim().toLowerCase().replace(/^@/,'');};
-  var existingHandles={};
-  DB.influencers.forEach(function(i){if(i.handle)existingHandles[normalize(i.handle)]=true;});
-  var created=0,skipped=0,skippedNames=[];
+  var byHandle={};
+  DB.influencers.forEach(function(i){if(i.handle)byHandle[normalize(i.handle)]=i;});
+  var created=0,skipped=0,skippedNames=[],statusFixed=0;
   parsed.rows.forEach(function(row){
     var inf=importedRowToInfluencer(row);
     var nh=normalize(inf.handle);
-    if(nh&&existingHandles[nh]){skipped++;skippedNames.push(row.name);return;}
+    var existing=nh?byHandle[nh]:null;
+    if(existing){
+      skipped++;skippedNames.push(row.name);
+      /* 既に登録済みでも、以前の取り込みバグで「保留」が誤って「声掛け済み」のまま
+         残っているケースだけは自動で「保留」に是正する（それ以外のステータスは
+         手動で進めた可能性があるため上書きしない） */
+      if(row.outreachRaw==='保留'&&existing.outreachStatus==='声掛け済み'){
+        existing.outreachStatus='保留';
+        saveItem('influencers',existing);
+        statusFixed++;
+      }
+      return;
+    }
     DB.influencers.push(inf);
     saveItem('influencers',inf);
-    if(nh)existingHandles[nh]=true;
+    if(nh)byHandle[nh]=inf;
     created++;
   });
   renderInfluencers();
   if(typeof updateSidebarStats==='function')updateSidebarStats();
   resultEl.innerHTML='<div style="color:var(--green);font-weight:500">✓ '+created+'件登録しました'+(skipped?'（重複のため'+skipped+'件スキップ）':'')+'</div>'
+    +(statusFixed?'<div style="font-size:12px;color:var(--accent);margin-top:4px">🩹 既存'+statusFixed+'件の声掛け状況を最新のデータに合わせて修正しました</div>':'')
     +(skippedNames.length?'<div style="font-size:12px;color:var(--text3);margin-top:6px">スキップ：'+skippedNames.slice(0,20).map(esc).join('、')+(skippedNames.length>20?' 他':'')+'</div>':'');
 }
 
@@ -1604,6 +1615,7 @@ function deleteCasting(id){
 function infOutreachStatus(i){return i.outreachStatus||'';}
 var INF_OUTREACH_BADGE={
   '未声掛け':'background:var(--bg3);color:var(--text3);border-color:var(--border)',
+  '保留':'background:var(--bg3);color:var(--text2);border-color:var(--border2)',
   '声掛け済み':'background:var(--accent-bg);color:var(--accent);border-color:var(--accent-border)',
   '返信待ち':'background:var(--amber-bg);color:var(--amber);border-color:var(--amber-border)',
   '交渉中':'background:var(--purple-bg);color:var(--purple);border-color:var(--purple-border)',
@@ -1681,6 +1693,79 @@ function runInfGenreMerge(){
   refreshInfGenreMergeOptions();
   renderInfluencers();
 }
+
+/* ============================================================
+   重複インフルエンサーの検出・統合
+   アカウントID（正規化した表記）が一致する登録、ハンドルが無い場合は
+   名前の完全一致をグループ化キーとする。1件を残して他を削除し、
+   キャスティング履歴・請求書のinfIdは残す1件へ付け替える（データを失わないため）。
+   ============================================================ */
+var _infDupGroups=[];
+function normalizeHandleForDup(h){return(h||'').trim().toLowerCase().replace(/^@/,'');}
+function findInfDuplicateGroups(){
+  var groups={};
+  DB.influencers.forEach(function(i){
+    var key=normalizeHandleForDup(i.handle)||('__name__:'+(i.name||'').trim());
+    if(!key||key==='__name__:')return;
+    if(!groups[key])groups[key]=[];
+    groups[key].push(i);
+  });
+  return Object.keys(groups).map(function(k){return groups[k];}).filter(function(g){return g.length>1;});
+}
+function openInfDuplicateMerge(){
+  _infDupGroups=findInfDuplicateGroups();
+  var listEl=document.getElementById('infDuplicateMergeList');
+  var resEl=document.getElementById('infDuplicateMergeResult');
+  if(resEl)resEl.innerHTML='';
+  if(!_infDupGroups.length){
+    listEl.innerHTML='<div style="font-size:13px;color:var(--text3)">重複候補は見つかりませんでした</div>';
+  }else{
+    listEl.innerHTML=_infDupGroups.map(function(group,gi){
+      /* デフォルトはキャスティング履歴が最も多い（＝実データが紐づいている）ものを残す候補にする */
+      var counts=group.map(function(i){return DB.castings.filter(function(c){return c.infId===i.id;}).length;});
+      var defaultIdx=counts.indexOf(Math.max.apply(null,counts));
+      return'<div style="border:1px solid var(--border);border-radius:var(--r);padding:10px;margin-bottom:10px">'
+        +'<div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:6px">'+esc(group[0].name||'(名前未設定)')+'（'+group.length+'件重複）</div>'
+        +group.map(function(i,ii){
+          var cnt=counts[ii];
+          return'<label style="display:flex;align-items:center;gap:8px;padding:5px 6px;border-radius:var(--r);cursor:pointer;'+(ii===defaultIdx?'background:var(--accent-bg)':'')+'">'
+            +'<input type="radio" name="infDupKeep_'+gi+'" value="'+ii+'" '+(ii===defaultIdx?'checked':'')+'>'
+            +'<span style="font-size:13px;flex:1">'+esc(i.name)+' <span style="color:var(--text3)">'+esc(i.handle||'')+'</span></span>'
+            +'<span style="font-size:12px;color:var(--text3)">キャスティング'+cnt+'件</span>'
+            +'<span style="font-size:12px;color:var(--text3)">'+esc(infOutreachStatus(i)||'—')+'</span>'
+          +'</label>';
+        }).join('')
+      +'</div>';
+    }).join('');
+  }
+  openModal('infDuplicateMergeModal');
+}
+function runInfDuplicateMerge(){
+  var resEl=document.getElementById('infDuplicateMergeResult');
+  if(!_infDupGroups.length){resEl.innerHTML='<div style="color:var(--text3)">統合対象がありません</div>';return;}
+  var mergedGroups=0,deletedCount=0;
+  _infDupGroups.forEach(function(group,gi){
+    var sel=document.querySelector('input[name="infDupKeep_'+gi+'"]:checked');
+    var keepIdx=sel?Number(sel.value):0;
+    var keep=group[keepIdx];
+    group.forEach(function(i,ii){
+      if(ii===keepIdx)return;
+      /* キャスティング履歴・請求書は残す側のIDに付け替えてから削除する（データを失わないため） */
+      DB.castings.forEach(function(c){if(c.infId===i.id){c.infId=keep.id;saveItem('castings',c);}});
+      (DB.invoices||[]).forEach(function(inv){if(inv.infId===i.id){inv.infId=keep.id;saveItem('invoices',inv);}});
+      DB.influencers=DB.influencers.filter(function(x){return x.id!==i.id;});
+      deleteItem('influencers',i.id);
+      deletedCount++;
+    });
+    mergedGroups++;
+  });
+  _infDupGroups=[];
+  renderInfluencers();
+  if(typeof updateSidebarStats==='function')updateSidebarStats();
+  resEl.innerHTML='<div style="color:var(--green);font-weight:500">✓ '+mergedGroups+'グループを統合し、重複'+deletedCount+'件を削除しました</div>';
+  document.getElementById('infDuplicateMergeList').innerHTML='';
+}
+
 /* 複数選択select（フィルタ用）の選択肢を、現在の選択状態を保ったまま再構築するヘルパー */
 function rebuildMultiSelectOptions(sel,values){
   var cur=Array.from(sel.selectedOptions||[]).map(function(o){return o.value;});

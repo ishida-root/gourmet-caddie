@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=100">
+<link rel="stylesheet" href="css/app.css?v=102">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -317,6 +317,7 @@
             <select id="filterInfStatus" onchange="renderInfluencers()" style="font-size:12px;padding:4px 8px;width:auto">
               <option value="">声掛け：全て</option>
               <option value="未声掛け">未声掛け</option>
+              <option value="保留">保留</option>
               <option value="声掛け済み">声掛け済み</option>
               <option value="返信待ち">返信待ち</option>
               <option value="交渉中">交渉中</option>
@@ -353,6 +354,7 @@
             </div>
             <button class="btn btn-sm" onclick="resetInfFilters()">↺ 絞り込みをリセット</button>
             <button class="btn btn-sm" onclick="openInfGenreMerge()">🏷️ ジャンル整理</button>
+            <button class="btn btn-sm" onclick="openInfDuplicateMerge()">🧩 重複を統合</button>
             <button class="btn btn-sm" onclick="openInfluencerBulkImport()">📋 一括インポート</button>
             <button class="btn btn-sm" onclick="openInfluencerExportModal()">📤 リストを出力</button>
             <button class="btn btn-primary btn-sm" onclick="openInfluencerModal()">＋ 追加</button>
@@ -896,6 +898,22 @@
     </div>
   </div>
 </div>
+
+<!-- INFLUENCER 重複統合モーダル -->
+<div class="modal-overlay" id="infDuplicateMergeModal">
+<div class="modal" style="width:640px">
+  <div class="modal-header"><span class="modal-title">重複インフルエンサーの統合</span><button class="modal-close" onclick="closeModal('infDuplicateMergeModal')">✕</button></div>
+  <div class="modal-body">
+    <div style="font-size:12px;color:var(--text3);margin-bottom:12px">アカウントID（同一表記）が一致する登録を重複候補として表示します。残す1件を選び、他はキャスティング履歴・請求書を残す1件に付け替えたうえで削除します。</div>
+    <div id="infDuplicateMergeList" style="max-height:420px;overflow:auto"></div>
+    <div id="infDuplicateMergeResult" style="margin-top:8px"></div>
+    <div class="form-actions">
+      <button class="btn" onclick="closeModal('infDuplicateMergeModal')">閉じる</button>
+      <button class="btn btn-primary" onclick="runInfDuplicateMerge()">選択した内容で統合する</button>
+    </div>
+  </div>
+</div>
+</div>
 </div>
 
 <!-- INFLUENCER BULK IMPORT MODAL -->
@@ -934,7 +952,7 @@
 
     <!-- 声かけ状況 -->
     <div style="font-size:13px;font-weight:500;color:var(--text2);margin:14px 0 8px;padding-top:10px;border-top:1px solid var(--border)">📨 声かけ状況</div>
-    <div class="fr"><div class="field"><label>ステータス <span style="font-size:11px;color:var(--text3);font-weight:400">※起用実績は自動判定（キャスティング履歴から）</span></label><select id="iOutreachStatus"><option value="">—（未設定）</option><option value="未声掛け">未声掛け</option><option value="声掛け済み">声掛け済み</option><option value="返信待ち">返信待ち</option><option value="交渉中">交渉中</option><option value="NG">NG</option></select></div><div class="field"><label>声かけ日</label><input id="iOutreachDate" type="date"></div></div>
+    <div class="fr"><div class="field"><label>ステータス <span style="font-size:11px;color:var(--text3);font-weight:400">※起用実績は自動判定（キャスティング履歴から）</span></label><select id="iOutreachStatus"><option value="">—（未設定）</option><option value="未声掛け">未声掛け</option><option value="保留">保留</option><option value="声掛け済み">声掛け済み</option><option value="返信待ち">返信待ち</option><option value="交渉中">交渉中</option><option value="NG">NG</option></select></div><div class="field"><label>声かけ日</label><input id="iOutreachDate" type="date"></div></div>
     <div class="fr"><div class="field"><label>対応エリア</label><input id="iArea" type="text" placeholder="例: 大阪・兵庫中心"></div><div class="field"><label>傾向タグ</label><input id="iTendency" type="text" placeholder="例: 女性一人飲み系、ファミリー系"></div></div>
     <div style="margin-bottom:10px">
       <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:6px">PR 費用（円） <span style="font-size:11px;color:var(--text3);font-weight:400">幅がある場合は下限・上限両方入力</span></label>
@@ -1236,25 +1254,25 @@
 </div>
 </div>
 
-<script src="js/vendor/pizzip.min.js?v=100"></script>
-<script src="js/vendor/docxtemplater.min.js?v=100"></script>
-<script src="js/config.js?v=100"></script>
-<script src="js/db.js?v=100"></script>
-<script src="js/utils.js?v=100"></script>
-<script src="js/settings.js?v=100"></script>
-<script src="js/stores.js?v=100"></script>
-<script src="js/schedule.js?v=100"></script>
-<script src="js/casting.js?v=100"></script>
-<script src="js/check.js?v=100"></script>
-<script src="js/accounting.js?v=100"></script>
-<script src="js/plans.js?v=100"></script>
-<script src="js/creators.js?v=100"></script>
-<script src="js/corps.js?v=100"></script>
-<script src="js/faqs.js?v=100"></script>
-<script src="js/orders.js?v=100"></script>
-<script src="js/hearing.js?v=100"></script>
-<script src="js/dashboard.js?v=100"></script>
-<script src="js/app.js?v=100"></script>
+<script src="js/vendor/pizzip.min.js?v=102"></script>
+<script src="js/vendor/docxtemplater.min.js?v=102"></script>
+<script src="js/config.js?v=102"></script>
+<script src="js/db.js?v=102"></script>
+<script src="js/utils.js?v=102"></script>
+<script src="js/settings.js?v=102"></script>
+<script src="js/stores.js?v=102"></script>
+<script src="js/schedule.js?v=102"></script>
+<script src="js/casting.js?v=102"></script>
+<script src="js/check.js?v=102"></script>
+<script src="js/accounting.js?v=102"></script>
+<script src="js/plans.js?v=102"></script>
+<script src="js/creators.js?v=102"></script>
+<script src="js/corps.js?v=102"></script>
+<script src="js/faqs.js?v=102"></script>
+<script src="js/orders.js?v=102"></script>
+<script src="js/hearing.js?v=102"></script>
+<script src="js/dashboard.js?v=102"></script>
+<script src="js/app.js?v=102"></script>
 <!-- GENRE MODAL -->
 <!-- 追加費用モーダル -->
 <div class="modal-overlay" id="addFeeModal">
