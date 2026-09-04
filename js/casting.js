@@ -1875,7 +1875,7 @@ function getFilteredSortedInfluencers(){
 /* 名前・アカウントURL・エリア・フォロワー・フォロー・傾向のみをCSV出力する（お客様向けリストアップ用）。
    PR単価や社内メモなど非公開情報は含めない。 */
 /* 名前・アカウントURL・エリア・フォロワー・フォロー・傾向のみをCSVでダウンロードする（お客様向けリストアップ用） */
-function downloadInfluencerCsv(list){
+function downloadInfluencerCsv(list,targetStoreName){
   if(!list.length){alert('出力対象のインフルエンサーがありません（絞り込み条件をご確認ください）');return;}
   var platUrl={Instagram:'https://www.instagram.com/',TikTok:'https://www.tiktok.com/@',YouTube:'',X:'https://x.com/'};
   var csvEscape=function(v){
@@ -1883,7 +1883,10 @@ function downloadInfluencerCsv(list){
     if(/[",\n]/.test(s))s='"'+s.replace(/"/g,'""')+'"';
     return s;
   };
-  var rows=[['名前','アカウント','エリア','フォロワー','フォロー','傾向']];
+  var rows=[];
+  /* 商談で特定の店舗にお渡しする場合、店舗名が分かるよう一覧の先頭に一行入れる */
+  if(targetStoreName)rows.push([targetStoreName+'様 ご提案リスト']);
+  rows.push(['名前','アカウント','エリア','フォロワー','フォロー','傾向']);
   list.forEach(function(i){
     var accountUrl=i.url||(i.handle?(platUrl[i.platform]||'')+(i.handle.replace('@','')):'');
     rows.push([i.name||'',accountUrl,i.area||'',i.followers||'',i.following||'',i.genre||'']);
@@ -1894,7 +1897,8 @@ function downloadInfluencerCsv(list){
   var a=document.createElement('a');
   var pad=function(n){return String(n).padStart(2,'0');};
   var now=new Date();
-  a.href=url;a.download='インフルエンサーリスト_'+now.getFullYear()+pad(now.getMonth()+1)+pad(now.getDate())+'.csv';
+  var fname=(targetStoreName?targetStoreName+'様_':'')+'インフルエンサーリスト_'+now.getFullYear()+pad(now.getMonth()+1)+pad(now.getDate())+'.csv';
+  a.href=url;a.download=fname;
   document.body.appendChild(a);a.click();a.remove();
   setTimeout(function(){URL.revokeObjectURL(url);},1000);
 }
@@ -1911,6 +1915,10 @@ function exportCheckboxesHtml(containerValues,checkedSet,type){
   }).join('');
 }
 function openInfluencerExportModal(){
+  var storeEl=document.getElementById('exportTargetStore');
+  if(storeEl){
+    storeEl.innerHTML='<option value="">選択しない</option>'+DB.stores.slice().sort(function(a,b){return(a.name||'').localeCompare(b.name||'');}).map(function(s){return'<option value="'+esc(s.id)+'">'+esc(s.name)+'</option>';}).join('');
+  }
   var areas=[...new Set(DB.influencers.map(function(i){return(i.area||'').trim();}).filter(Boolean))].sort();
   var genres=[...new Set(DB.influencers.map(function(i){return(i.genre||'').trim();}).filter(Boolean))].sort();
   var areaEl=document.getElementById('exportAreaChecks');
@@ -1944,7 +1952,9 @@ function updateInfExportCount(){
   el.textContent=exportModalFilteredList().length+'件が出力対象です';
 }
 function runInfluencerExportFromModal(){
-  downloadInfluencerCsv(exportModalFilteredList());
+  var storeId=(document.getElementById('exportTargetStore')||{}).value||'';
+  var store=storeId?DB.stores.find(function(s){return s.id===storeId;}):null;
+  downloadInfluencerCsv(exportModalFilteredList(),store?store.name:'');
   closeModal('infExportModal');
 }
 /* 従来の「今の画面の絞り込み」に基づく出力（他機能から直接呼び出す場合用に残す） */
