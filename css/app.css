@@ -37,6 +37,10 @@ body{font-family:'Noto Sans JP',sans-serif;background:var(--bg);color:var(--text
 input,select,textarea,button{font-family:'Noto Sans JP',sans-serif;font-size:15px}
 input,select,textarea{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);color:var(--text);padding:8px 11px;width:100%;outline:none;transition:border-color .15s,box-shadow .15s}
 input:focus,select:focus,textarea:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(37,99,235,.08)}
+/* 上のinput全般ルール（width:100%など）はcheckbox/radioには不要かつ有害
+   （幅いっぱいに引き伸ばされ、隣に置いた文字が枠の外に押し出されて見えなくなる不具合の原因になっていたため）
+   ネイティブの小さいサイズに戻す */
+input[type=checkbox],input[type=radio]{width:auto;height:auto;padding:0;background:none;border:none;box-shadow:none}
 select option{background:#fff}
 textarea{resize:vertical;min-height:64px}
 button{cursor:pointer;border:none;border-radius:var(--r);transition:all .15s;font-weight:400}
