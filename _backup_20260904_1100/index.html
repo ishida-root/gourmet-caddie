@@ -763,7 +763,7 @@
 
       <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:10px;padding-top:10px;border-top:1px solid var(--border)">スケジュール</div>
       <div class="fr"><div class="field"><label>運用開始希望日</label><input id="hOpStart" type="date"></div><div class="field"><label>撮影希望日</label><input id="hShootDate" type="date"></div></div>
-      <div class="fr"><div class="field"><label>投稿開始希望日</label><input id="hPostStart" type="date"></div><div class="field"><label>広告開始希望日 <span style="font-size:11px;color:var(--text3);font-weight:400">※上の「広告配信」欄と重複項目</span></label><input id="hAdStart2" type="date"></div></div>
+      <div class="fr"><div class="field"><label>投稿開始希望日</label><input id="hPostStart" type="date"></div><div class="field"><label>広告開始希望日</label><input id="hAdStart2" type="date"></div></div>
       <div class="fr1 field"><label>インフルエンサー投稿日希望</label><input id="hInfPostDate" type="date"></div>
       <div class="fr1 field"><label>その他要望</label><textarea id="hOther" style="min-height:52px"></textarea></div>
     </div>
@@ -913,6 +913,7 @@
       <button class="btn btn-primary" onclick="runInfDuplicateMerge()">選択した内容で統合する</button>
     </div>
   </div>
+</div>
 </div>
 </div>
 
@@ -1254,7 +1255,25 @@
 </div>
 </div>
 
-
+<script src="js/vendor/pizzip.min.js?v=103"></script>
+<script src="js/vendor/docxtemplater.min.js?v=103"></script>
+<script src="js/config.js?v=103"></script>
+<script src="js/db.js?v=103"></script>
+<script src="js/utils.js?v=103"></script>
+<script src="js/settings.js?v=103"></script>
+<script src="js/stores.js?v=103"></script>
+<script src="js/schedule.js?v=103"></script>
+<script src="js/casting.js?v=103"></script>
+<script src="js/check.js?v=103"></script>
+<script src="js/accounting.js?v=103"></script>
+<script src="js/plans.js?v=103"></script>
+<script src="js/creators.js?v=103"></script>
+<script src="js/corps.js?v=103"></script>
+<script src="js/faqs.js?v=103"></script>
+<script src="js/orders.js?v=103"></script>
+<script src="js/hearing.js?v=103"></script>
+<script src="js/dashboard.js?v=103"></script>
+<script src="js/app.js?v=103"></script>
 <!-- GENRE MODAL -->
 <!-- 追加費用モーダル -->
 <div class="modal-overlay" id="addFeeModal">
@@ -1541,6 +1560,7 @@
 </div>
 </div>
 
+  </div><!-- /mainApp -->
 
 <!-- SHOOTING MODAL -->
 <div class="modal-overlay" id="shootingModal">
@@ -1575,25 +1595,5 @@
 </div>
 </div>
 
-
-<script src="js/vendor/pizzip.min.js?v=103"></script>
-<script src="js/vendor/docxtemplater.min.js?v=103"></script>
-<script src="js/config.js?v=103"></script>
-<script src="js/db.js?v=103"></script>
-<script src="js/utils.js?v=103"></script>
-<script src="js/settings.js?v=103"></script>
-<script src="js/stores.js?v=103"></script>
-<script src="js/schedule.js?v=103"></script>
-<script src="js/casting.js?v=103"></script>
-<script src="js/check.js?v=103"></script>
-<script src="js/accounting.js?v=103"></script>
-<script src="js/plans.js?v=103"></script>
-<script src="js/creators.js?v=103"></script>
-<script src="js/corps.js?v=103"></script>
-<script src="js/faqs.js?v=103"></script>
-<script src="js/orders.js?v=103"></script>
-<script src="js/hearing.js?v=103"></script>
-<script src="js/dashboard.js?v=103"></script>
-<script src="js/app.js?v=103"></script>
 </body>
 </html>

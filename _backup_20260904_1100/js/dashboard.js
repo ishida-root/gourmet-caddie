@@ -175,6 +175,9 @@ function getSalesNotifs(){
   if(!DB.salesNotifs)DB.salesNotifs=[];
   return DB.salesNotifs;
 }
+function saveSalesNotifs(){
+  try{localStorage.setItem('adcore3',JSON.stringify(DB));}catch(e){}
+}
 function renderSalesNotifs(){
   var el=document.getElementById('salesNotifList');
   if(!el)return;

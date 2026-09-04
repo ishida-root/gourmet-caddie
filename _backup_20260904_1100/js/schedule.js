@@ -529,7 +529,25 @@ function calCellDrop(e,toDay){
   _calDragPostId=null;
 }
 
-/* runChecks / toggleWeekDone / toggleMonthDone は js/check.js:115- に定義があります。
-   ここにあった同一定義は読込順(schedule.js→check.js)で上書きされ実行されないため削除しました。
-   削除したコード全文は DEADCODE.md を参照（2026-09-04）。 */
+function runChecks(){}/* 旧runChecksは廃止 */
+
+function toggleWeekDone(){
+  var wrap=document.getElementById('chk-week-done-wrap');
+  var btn=document.getElementById('chk-week-done-btn');
+  if(!wrap||!btn)return;
+  var isOpen=wrap.style.display!=='none';
+  wrap.style.display=isOpen?'none':'block';
+  var count=wrap.children.length;
+  btn.textContent=isOpen?'▼ 完了済みを表示（'+count+'件）':'▲ 完了済みを非表示';
+}
+
+function toggleMonthDone(){
+  var wrap=document.getElementById('chk-month-done-wrap');
+  var btn=document.getElementById('chk-month-done-btn');
+  if(!wrap||!btn)return;
+  var isOpen=wrap.style.display!=='none';
+  wrap.style.display=isOpen?'none':'block';
+  var count=wrap.children.length;
+  btn.textContent=isOpen?'▼ 完了済みを表示（'+count+'件）':'▲ 完了済みを非表示';
+}
 

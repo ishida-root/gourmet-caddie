@@ -21,7 +21,7 @@ function openShootingModal(id){
     /* 編集 */
     var p=DB.posts.find(function(x){return x.id===id;});
     if(p){
-      var _smt=document.getElementById('shootingModalTitle'); if(_smt)_smt.textContent='撮影予定を編集';
+      document.getElementById('shootModalTitle') && (document.getElementById('shootingModalTitle').textContent='撮影予定を編集');
       var dw=document.getElementById('shootDateWrap');
       if(dw&&dw._setDate)dw._setDate((p.date||'').split('T')[0]);
       var tw=document.getElementById('shootTimeWrap');

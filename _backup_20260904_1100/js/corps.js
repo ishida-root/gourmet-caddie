@@ -60,6 +60,8 @@ function updateCorpSelects(){
   var opts='<option value="">選択しない（個人・未設定）</option>'+DB.corporations.map(function(c){return'<option value="'+c.id+'">'+esc(c.name)+'</option>';}).join('');
   var sCorp=document.getElementById('sCorpId');
   if(sCorp){var pv=sCorp.value;sCorp.innerHTML=opts;if(pv)sCorp.value=pv;}
+  var slCorpSel=document.getElementById('sl-corp-select');
+  if(slCorpSel){var pv2=slCorpSel.value;slCorpSel.innerHTML='<option value="">新規法人 / 個人</option>'+DB.corporations.map(function(c){return'<option value="'+c.id+'">'+esc(c.name)+'</option>';}).join('');if(pv2)slCorpSel.value=pv2;}
   var nb=document.getElementById('nb-corps');
   if(nb)nb.textContent=DB.corporations.length;
 }
@@ -74,6 +76,16 @@ function onCorpSelect(){
   var email=document.getElementById('sContactEmail');
   if(tel&&!tel.value&&corp.tel)tel.value=corp.tel;
   if(email&&!email.value&&corp.email)email.value=corp.email;
+}
+
+function onSlCorpSelect(){
+  var sel=document.getElementById('sl-corp-select');
+  var inp=document.getElementById('sl-corp');
+  if(!sel||!inp)return;
+  if(sel.value){
+    var corp=DB.corporations.find(function(x){return x.id===sel.value;});
+    if(corp)inp.value=corp.name;
+  }
 }
 
 function openCorpDetail(id){
