@@ -409,11 +409,14 @@ function toggleInfAreaCheck(p){
 /* 海外エリア：47都道府県には無い国名を自由に追加できる（ジャンルの＋追加と同じ仕組み）。
    「韓国」を初期値として、既存データや今回の選択に含まれる国名も選択肢に加える。 */
 var OVERSEAS_SEED=['韓国'];
+/* 「全国」「関西」のような国内の地方・全域を指す古い自由記述は国名ではないため、
+   海外の選択肢には出さない（都道府県名リストと合わせてブロックリストで除外する） */
+var OVERSEAS_BLOCKLIST=Object.keys(PREF_REGIONS).concat(['全国','関西','関東','近畿','中部','中国','四国','九州','東北','北陸','甲信越']);
 function renderInfOverseasChecks(){
   var wrap=document.getElementById('iOverseasChecks');
   if(!wrap)return;
   var used=DB.influencers.reduce(function(acc,i){return acc.concat(infAreas(i));},[]).concat(_curAreaSel);
-  var known=[...new Set(OVERSEAS_SEED.concat(used.filter(function(a){return PREF_LIST.indexOf(a)<0;})))];
+  var known=[...new Set(OVERSEAS_SEED.concat(used.filter(function(a){return PREF_LIST.indexOf(a)<0&&OVERSEAS_BLOCKLIST.indexOf(a)<0;})))];
   wrap.innerHTML=known.map(function(c){
     return'<label style="display:inline-flex;align-items:center;gap:5px;font-size:13px;cursor:pointer">'
       +'<input type="checkbox" '+(_curAreaSel.indexOf(c)>=0?'checked':'')+' onchange="toggleInfAreaCheck(\''+esc(c)+'\')">'
