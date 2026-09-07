@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=113">
+<link rel="stylesheet" href="css/app.css?v=114">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -359,12 +359,21 @@
               <option value="exclude_fee">PR単価未登録を除く</option>
               <option value="only_fee">PR単価未登録のみ</option>
             </select>
+            <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;white-space:nowrap">
+              <input type="checkbox" id="filterInfIncomplete" onchange="renderInfluencers()">
+              未記入あり（エリア・ジャンル・フォロー数）のみ
+            </label>
+            <select id="filterInfReviewChecked" onchange="renderInfluencers()" style="font-size:12px;padding:4px 8px;width:auto">
+              <option value="">確認状況（一時）：全て</option>
+              <option value="unchecked">未確認のみ</option>
+              <option value="checked">確認済みのみ</option>
+            </select>
             <button class="btn btn-sm" onclick="resetInfFilters()">↺ 絞り込みをリセット</button>
             <button class="btn btn-sm" onclick="openInfluencerExportModal()">📤 リストを出力</button>
             <button class="btn btn-primary btn-sm" onclick="openInfluencerModal()">＋ 追加</button>
           </div>
         </div>
-        <div class="table-wrap"><table><thead><tr><th>名前 / ID</th><th>媒体</th><th id="infSortFollowers" onclick="setInfSort('followers')" style="cursor:pointer;white-space:nowrap">フォロワー <span id="infSortFollowersIcon"></span></th><th id="infSortFee" onclick="setInfSort('fee')" style="cursor:pointer;white-space:nowrap">PR単価 <span id="infSortFeeIcon"></span></th><th>ジャンル</th><th>ステータス</th><th>連絡先</th><th>直近起用</th><th></th></tr></thead><tbody id="infBody"></tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>名前 / ID</th><th>媒体</th><th id="infSortFollowers" onclick="setInfSort('followers')" style="cursor:pointer;white-space:nowrap">フォロワー <span id="infSortFollowersIcon"></span></th><th id="infSortFee" onclick="setInfSort('fee')" style="cursor:pointer;white-space:nowrap">PR単価 <span id="infSortFeeIcon"></span></th><th>ジャンル</th><th>ステータス</th><th>連絡先</th><th>直近起用</th><th style="white-space:nowrap">確認<span style="font-size:10px;color:var(--text3);font-weight:400">（一時）</span></th><th></th></tr></thead><tbody id="infBody"></tbody></table></div>
       </div>
     </div>
 
@@ -1644,24 +1653,24 @@
 </div>
 
 
-<script src="js/vendor/pizzip.min.js?v=113"></script>
-<script src="js/vendor/docxtemplater.min.js?v=113"></script>
-<script src="js/config.js?v=113"></script>
-<script src="js/db.js?v=113"></script>
-<script src="js/utils.js?v=113"></script>
-<script src="js/settings.js?v=113"></script>
-<script src="js/stores.js?v=113"></script>
-<script src="js/schedule.js?v=113"></script>
-<script src="js/casting.js?v=113"></script>
-<script src="js/check.js?v=113"></script>
-<script src="js/accounting.js?v=113"></script>
-<script src="js/plans.js?v=113"></script>
-<script src="js/creators.js?v=113"></script>
-<script src="js/corps.js?v=113"></script>
-<script src="js/faqs.js?v=113"></script>
-<script src="js/orders.js?v=113"></script>
-<script src="js/hearing.js?v=113"></script>
-<script src="js/dashboard.js?v=113"></script>
-<script src="js/app.js?v=113"></script>
+<script src="js/vendor/pizzip.min.js?v=114"></script>
+<script src="js/vendor/docxtemplater.min.js?v=114"></script>
+<script src="js/config.js?v=114"></script>
+<script src="js/db.js?v=114"></script>
+<script src="js/utils.js?v=114"></script>
+<script src="js/settings.js?v=114"></script>
+<script src="js/stores.js?v=114"></script>
+<script src="js/schedule.js?v=114"></script>
+<script src="js/casting.js?v=114"></script>
+<script src="js/check.js?v=114"></script>
+<script src="js/accounting.js?v=114"></script>
+<script src="js/plans.js?v=114"></script>
+<script src="js/creators.js?v=114"></script>
+<script src="js/corps.js?v=114"></script>
+<script src="js/faqs.js?v=114"></script>
+<script src="js/orders.js?v=114"></script>
+<script src="js/hearing.js?v=114"></script>
+<script src="js/dashboard.js?v=114"></script>
+<script src="js/app.js?v=114"></script>
 </body>
 </html>

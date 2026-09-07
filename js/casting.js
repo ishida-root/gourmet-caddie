@@ -956,6 +956,21 @@ function copyOutreachEmail(){
     if(btn){var orig=btn.textContent;btn.textContent='✓ コピーしました';setTimeout(function(){btn.textContent=orig;},2000);}
   }):document.execCommand('copy');
 }
+/* ============================================================
+   【一時機能】手動での全件目視レビュー用チェック（reviewChecked）
+   一括インポートしたデータを1件ずつ目で確認する作業の進捗管理のためだけの機能。
+   確認作業が終わったら、このtoggleInfReviewChecked関数・一覧テーブルの「確認」列
+   （index.htmlのth/tdとfilterInfReviewChecked select）・下のフィルター処理3行を
+   まとめて削除してよい。
+   ============================================================ */
+function toggleInfReviewChecked(id){
+  var inf=DB.influencers.find(function(x){return x.id===id;});
+  if(!inf)return;
+  inf.reviewChecked=!inf.reviewChecked;
+  saveItem('influencers',inf);
+  renderInfluencers();
+}
+
 /* 声かけメール文コピー後、ワンクリックで「声掛け済み」に更新し、押した日を声かけ日として記録する */
 function markInfluencerContacted(id){
   var inf=DB.influencers.find(function(x){return x.id===id;});
@@ -2018,6 +2033,8 @@ function resetInfFilters(){
     var el=document.getElementById(id);if(el)el.value='';
   });
   var sortMissingEl=document.getElementById('filterInfSortMissing');if(sortMissingEl)sortMissingEl.value='';
+  var incompleteEl=document.getElementById('filterInfIncomplete');if(incompleteEl)incompleteEl.checked=false;
+  var reviewEl=document.getElementById('filterInfReviewChecked');if(reviewEl)reviewEl.value='';
   renderInfluencers();
 }
 /* 現在の検索・絞り込み・並び替え条件を反映したインフルエンサー一覧を返す（画面表示・出力で共用） */
@@ -2031,12 +2048,17 @@ function getFilteredSortedInfluencers(){
   var feeMinEl=document.getElementById('filterInfFeeMin'),feeMaxEl=document.getElementById('filterInfFeeMax');
   var feeMin=feeMinEl&&feeMinEl.value!==''?Number(feeMinEl.value):null;
   var feeMax=feeMaxEl&&feeMaxEl.value!==''?Number(feeMaxEl.value):null;
+  var incompleteOnly=(document.getElementById('filterInfIncomplete')||{}).checked;
+  var reviewFilter=(document.getElementById('filterInfReviewChecked')||{}).value||'';
   var list=DB.influencers.filter(function(i){
     if(statusFilter&&infOutreachStatus(i)!==statusFilter)return false;
     if(engagementFilter&&infEngagementStatus(i)!==engagementFilter)return false;
     if(tierFilter&&infTierOf(i)!==tierFilter)return false;
     if(areaFilters.length&&!infAreas(i).some(function(a){return areaFilters.indexOf(a)>=0;}))return false;
     if(genreFilters.length&&!infGenres(i).some(function(g){return genreFilters.indexOf(g)>=0;}))return false;
+    if(incompleteOnly&&infAreas(i).length&&infGenres(i).length&&i.following)return false;
+    if(reviewFilter==='unchecked'&&i.reviewChecked)return false;
+    if(reviewFilter==='checked'&&!i.reviewChecked)return false;
     if(feeMin!==null||feeMax!==null){
       /* 料金は下限〜上限の幅で持っているため、指定した範囲と少しでも重なれば対象とする */
       var lo=(i.feeLow!==undefined&&i.feeLow!=='')?Number(i.feeLow):Number(i.fee)||0;
@@ -2179,7 +2201,7 @@ function renderInfluencers(){
   var fIcon=document.getElementById('infSortFollowersIcon');if(fIcon)fIcon.textContent=infSortKey==='followers'?(infSortDir==='asc'?'▲':'▼'):'';
   var pIcon=document.getElementById('infSortFeeIcon');if(pIcon)pIcon.textContent=infSortKey==='fee'?(infSortDir==='asc'?'▲':'▼'):'';
   var tb=document.getElementById('infBody');
-  if(!list.length){tb.innerHTML='<tr><td colspan="9" class="empty-state">インフルエンサーが登録されていません</td></tr>';return;}
+  if(!list.length){tb.innerHTML='<tr><td colspan="10" class="empty-state">インフルエンサーが登録されていません</td></tr>';return;}
   var platColor={Instagram:'#e1306c',TikTok:'#010101',YouTube:'#ff0000',X:'#1da1f2'};
   var platUrl={Instagram:'https://www.instagram.com/',TikTok:'https://www.tiktok.com/@',YouTube:'',X:'https://x.com/'};
   tb.innerHTML=list.map(function(i){
@@ -2206,6 +2228,7 @@ function renderInfluencers(){
       +'</td>'
       +'<td style="color:var(--text2);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(i.contact||'—')+'</td>'
       +'<td style="color:var(--text3)">'+(last?fmtD(last.date):'—')+'</td>'
+      +'<td onclick="event.stopPropagation()" style="text-align:center"><input type="checkbox" '+(i.reviewChecked?'checked':'')+' onchange="toggleInfReviewChecked(\''+i.id+'\')"></td>'
       +'<td onclick="event.stopPropagation()"><button class="btn btn-sm" onclick="openInfluencerModal(\''+i.id+'\')">編集</button></td>'
       +'</tr>';
   }).join('');
