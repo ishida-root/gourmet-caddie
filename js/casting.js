@@ -1,4 +1,17 @@
-﻿var INF_PLATFORM_LIST=[
+﻿/* 対応エリア：47都道府県を地方でグループ化。地方ボタンを押すとその地方の県を一括ON/OFFできる。
+   「全国」は特別枠で47都道府県すべてを対象にする（値としては保存されない、一括選択の近道） */
+var PREF_REGIONS={
+  '北海道・東北':['北海道','青森県','岩手県','宮城県','秋田県','山形県','福島県'],
+  '関東':['茨城県','栃木県','群馬県','埼玉県','千葉県','東京都','神奈川県'],
+  '中部':['新潟県','富山県','石川県','福井県','山梨県','長野県','岐阜県','静岡県','愛知県'],
+  '近畿':['三重県','滋賀県','京都府','大阪府','兵庫県','奈良県','和歌山県'],
+  '中国':['鳥取県','島根県','岡山県','広島県','山口県'],
+  '四国':['徳島県','香川県','愛媛県','高知県'],
+  '九州・沖縄':['福岡県','佐賀県','長崎県','熊本県','大分県','宮崎県','鹿児島県','沖縄県']
+};
+var PREF_LIST=Object.keys(PREF_REGIONS).reduce(function(acc,k){return acc.concat(PREF_REGIONS[k]);},[]);
+
+var INF_PLATFORM_LIST=[
   {id:'ig_feed',       label:'Instagram フィード'},
   {id:'ig_reel',       label:'Instagram リール'},
   {id:'ig_story',      label:'Instagram ストーリーズ'},
@@ -353,12 +366,52 @@ function addInfGenreNew(){
   renderInfGenreChecks();
 }
 
+/* 対応エリアは47都道府県のチェックボックスで複数選択する。
+   従来の自由記述（例：「大阪・京都・兵庫」）は後方互換のため読み取り時のみ1件の要素として吸収し、
+   「エリア整理」ツールで正式な都道府県表記へ統合できるようにする。 */
+var _curAreaSel=[];
+function infAreas(i){return(i.areas&&i.areas.length)?i.areas:(i.area?[i.area]:[]);}
+function renderInfAreaRegionBtns(){
+  var wrap=document.getElementById('iAreaRegionBtns');
+  if(!wrap)return;
+  var regionNames=Object.keys(PREF_REGIONS).concat(['全国']);
+  wrap.innerHTML=regionNames.map(function(r){
+    return'<button type="button" class="btn btn-sm" onclick="toggleInfAreaRegion(\''+esc(r)+'\')">'+esc(r)+'</button>';
+  }).join('');
+}
+function renderInfAreaChecks(){
+  var wrap=document.getElementById('iAreaChecks');
+  if(!wrap)return;
+  wrap.innerHTML=PREF_LIST.map(function(p){
+    return'<label style="display:inline-flex;align-items:center;gap:5px;font-size:13px;cursor:pointer">'
+      +'<input type="checkbox" '+(_curAreaSel.indexOf(p)>=0?'checked':'')+' onchange="toggleInfAreaCheck(\''+p+'\')">'
+      +esc(p)
+    +'</label>';
+  }).join('');
+}
+function toggleInfAreaCheck(p){
+  var idx=_curAreaSel.indexOf(p);
+  if(idx>=0)_curAreaSel.splice(idx,1);else _curAreaSel.push(p);
+  renderInfAreaChecks();
+}
+/* 地方ボタン：その地方の県が全て選択済みなら解除、そうでなければ全選択する（トグル） */
+function toggleInfAreaRegion(region){
+  var prefs=region==='全国'?PREF_LIST:(PREF_REGIONS[region]||[]);
+  var allSelected=prefs.every(function(p){return _curAreaSel.indexOf(p)>=0;});
+  if(allSelected){
+    _curAreaSel=_curAreaSel.filter(function(p){return prefs.indexOf(p)<0;});
+  }else{
+    prefs.forEach(function(p){if(_curAreaSel.indexOf(p)<0)_curAreaSel.push(p);});
+  }
+  renderInfAreaChecks();
+}
+
 function openInfluencerModal(id){
   editingInfId=id||null;
   _expandedIndividualPlats={};
   var titleEl=document.getElementById('infModalTitle');
   if(titleEl)titleEl.textContent=id?'インフルエンサーを編集':'インフルエンサーを追加';
-  ['iName','iHandle','iUrl','iContact','iAgency','iMemo','iFeeLow','iFeeHigh','iOutreachDate','iArea','iTendency'].forEach(function(fid){var el=document.getElementById(fid);if(el)el.value='';});
+  ['iName','iHandle','iUrl','iContact','iAgency','iMemo','iFeeLow','iFeeHigh','iOutreachDate'].forEach(function(fid){var el=document.getElementById(fid);if(el)el.value='';});
   document.getElementById('iPlatform').value='Instagram';
   document.getElementById('iFollowers').value='';
   document.getElementById('iFollowing').value='';
@@ -371,11 +424,12 @@ function openInfluencerModal(id){
   if(id){
     var inf=DB.influencers.find(function(x){return x.id===id;});
     if(inf){
-      var map={iName:'name',iHandle:'handle',iUrl:'url',iPlatform:'platform',iFollowers:'followers',iFollowing:'following',iContact:'contact',iAgency:'agency',iMemo:'memo',iRating:'rating',iArea:'area',iTendency:'tendency',iOutreachDate:'outreachDate'};
+      var map={iName:'name',iHandle:'handle',iUrl:'url',iPlatform:'platform',iFollowers:'followers',iFollowing:'following',iContact:'contact',iAgency:'agency',iMemo:'memo',iRating:'rating',iOutreachDate:'outreachDate'};
       Object.keys(map).forEach(function(fid){var el=document.getElementById(fid);if(el&&inf[map[fid]]!==undefined)el.value=inf[map[fid]]||'';});
       if(inf.outreachStatus)document.getElementById('iOutreachStatus').value=inf.outreachStatus;
       document.getElementById('iAccountGone').checked=!!inf.accountGone;
       _curGenreSel=infGenres(inf).slice();
+      _curAreaSel=infAreas(inf).slice();
       /* fee range */
       if(inf.feeLow!==undefined){document.getElementById('iFeeLow').value=inf.feeLow||'';}
       else if(inf.fee){document.getElementById('iFeeLow').value=inf.fee;}
@@ -386,13 +440,17 @@ function openInfluencerModal(id){
       renderPlatformDetails({});
       _pricePlanRows=[];
       _curGenreSel=[];
+      _curAreaSel=[];
     }
   }else{
     renderPlatformDetails({});
     _pricePlanRows=[];
     _curGenreSel=[];
+    _curAreaSel=[];
   }
   renderInfGenreChecks();
+  renderInfAreaRegionBtns();
+  renderInfAreaChecks();
   renderInfPricePlanRows();
   openModal('infModal');
 }
@@ -495,8 +553,7 @@ function importedRowToInfluencer(row){
     rating:'',
     outreachStatus:INF_IMPORT_OUTREACH_MAP[row.outreachRaw]||'未声掛け',
     outreachDate:'',
-    area:row.area,
-    tendency:''
+    area:row.area
   };
 }
 function runInfluencerBulkImport(){
@@ -570,8 +627,7 @@ function saveInfluencer(){
     memo:document.getElementById('iMemo').value,
     outreachStatus:document.getElementById('iOutreachStatus').value,
     outreachDate:document.getElementById('iOutreachDate').value,
-    area:document.getElementById('iArea').value,
-    tendency:document.getElementById('iTendency').value,
+    areas:_curAreaSel.slice(),
     platformDetails:getPlatformData(),
     pricePlans:_pricePlanRows.filter(function(r){return r.label||r.amount;})
   };
@@ -913,10 +969,9 @@ function openInfluencerDetail(id){
           +infGenres(inf).map(function(g){return'<span class="badge b-gray">'+esc(g)+'</span>';}).join('')
           +(inf.agency&&inf.agency!=='なし'?'<span class="badge b-gray">'+esc(inf.agency)+'</span>':'')
         +'</div>'
-        +((inf.area||inf.tendency||inf.outreachDate)?'<div style="font-size:12px;color:var(--text3);margin-top:6px">'
+        +((infAreas(inf).length||inf.outreachDate)?'<div style="font-size:12px;color:var(--text3);margin-top:6px">'
           +(inf.outreachDate?'声かけ日：'+esc(inf.outreachDate)+'　':'')
-          +(inf.area?'エリア：'+esc(inf.area)+'　':'')
-          +(inf.tendency?'傾向：'+esc(inf.tendency):'')
+          +(infAreas(inf).length?'エリア：'+esc(infAreas(inf).join('・')):'')
         +'</div>':'')
       +'</div>'
     +'</div>'
@@ -1737,6 +1792,47 @@ function runInfGenreMerge(){
   renderInfluencers();
 }
 
+/* エリアの表記ゆれ統合（47都道府県への移行前の自由記述を、正式な都道府県表記に統合する） */
+function refreshInfAreaMergeOptions(){
+  var sel=document.getElementById('mergeFromArea');
+  var areas=[...new Set(DB.influencers.reduce(function(acc,i){return acc.concat(infAreas(i));},[]))].sort();
+  if(sel)sel.innerHTML=areas.map(function(a){
+    var count=DB.influencers.filter(function(i){return infAreas(i).indexOf(a)>=0;}).length;
+    return'<option value="'+esc(a)+'">'+esc(a)+'（'+count+'件）</option>';
+  }).join('');
+  var toSel=document.getElementById('mergeToArea');
+  if(toSel)toSel.innerHTML=PREF_LIST.map(function(p){return'<option value="'+esc(p)+'">'+esc(p)+'</option>';}).join('');
+}
+function openInfAreaMerge(){
+  refreshInfAreaMergeOptions();
+  var res=document.getElementById('infAreaMergeResult');if(res)res.innerHTML='';
+  openModal('infAreaMergeModal');
+}
+function runInfAreaMerge(){
+  var from=document.getElementById('mergeFromArea').value;
+  var to=document.getElementById('mergeToArea').value;
+  var resultEl=document.getElementById('infAreaMergeResult');
+  if(!from){resultEl.innerHTML='<div style="color:var(--red)">統合元の表記を選択してください</div>';return;}
+  if(!to){resultEl.innerHTML='<div style="color:var(--red)">統合先の都道府県を選択してください</div>';return;}
+  if(from===to){resultEl.innerHTML='<div style="color:var(--text3)">統合元と統合先が同じです</div>';return;}
+  var count=0;
+  DB.influencers.forEach(function(i){
+    var a=infAreas(i);
+    var idx=a.indexOf(from);
+    if(idx<0)return;
+    a=a.slice();
+    a.splice(idx,1);
+    if(a.indexOf(to)<0)a.push(to);
+    i.areas=a;
+    delete i.area;
+    saveItem('influencers',i);
+    count++;
+  });
+  resultEl.innerHTML='<div style="color:var(--green);font-weight:500">✓ '+count+'件のエリアを「'+esc(to)+'」に統一しました</div>';
+  refreshInfAreaMergeOptions();
+  renderInfluencers();
+}
+
 /* ============================================================
    重複インフルエンサーの検出・統合
    アカウントID（正規化した表記）が一致する登録、ハンドルが無い場合は
@@ -1851,7 +1947,7 @@ document.addEventListener('click',function(e){
 function updateInfFilterOptions(){
   var areaSel=document.getElementById('filterInfArea');
   if(areaSel){
-    var areas=[...new Set(DB.influencers.map(function(i){return(i.area||'').trim();}).filter(Boolean))].sort();
+    var areas=[...new Set(DB.influencers.reduce(function(acc,i){return acc.concat(infAreas(i));},[]))].sort();
     rebuildMultiSelectOptions(areaSel,areas);
     renderInfFilterCheckPanel('filterInfArea','filterInfAreaPanel','filterInfAreaCount');
   }
@@ -1895,7 +1991,7 @@ function getFilteredSortedInfluencers(){
     if(statusFilter&&infOutreachStatus(i)!==statusFilter)return false;
     if(engagementFilter&&infEngagementStatus(i)!==engagementFilter)return false;
     if(tierFilter&&infTierOf(i)!==tierFilter)return false;
-    if(areaFilters.length&&areaFilters.indexOf((i.area||'').trim())<0)return false;
+    if(areaFilters.length&&!infAreas(i).some(function(a){return areaFilters.indexOf(a)>=0;}))return false;
     if(genreFilters.length&&!infGenres(i).some(function(g){return genreFilters.indexOf(g)>=0;}))return false;
     if(feeMin!==null||feeMax!==null){
       /* 料金は下限〜上限の幅で持っているため、指定した範囲と少しでも重なれば対象とする */
@@ -1932,7 +2028,7 @@ function downloadInfluencerCsv(list,targetStoreName){
   rows.push(['名前','アカウント','エリア','フォロワー','フォロー','傾向']);
   list.forEach(function(i){
     var accountUrl=i.url||(i.handle?(platUrl[i.platform]||'')+(i.handle.replace('@','')):'');
-    rows.push([i.name||'',accountUrl,i.area||'',i.followers||'',i.following||'',infGenres(i).join('・')]);
+    rows.push([i.name||'',accountUrl,infAreas(i).join('・'),i.followers||'',i.following||'',infGenres(i).join('・')]);
   });
   var csv=rows.map(function(r){return r.map(csvEscape).join(',');}).join('\r\n');
   var blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
@@ -1950,7 +2046,7 @@ function downloadInfluencerCsv(list,targetStoreName){
    ============================================================ */
 function exportCheckboxesHtml(containerValues,checkedSet,type){
   return containerValues.map(function(v){
-    var count=DB.influencers.filter(function(i){return type==='area'?(i.area||'').trim()===v:type==='tier'?infTierOf(i)===v:infGenres(i).indexOf(v)>=0;}).length;
+    var count=DB.influencers.filter(function(i){return type==='area'?infAreas(i).indexOf(v)>=0:type==='tier'?infTierOf(i)===v:infGenres(i).indexOf(v)>=0;}).length;
     return'<label style="display:block;font-size:13px;padding:3px 0;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'
       +'<input type="checkbox" class="export-'+type+'-chk" value="'+esc(v)+'" '+(checkedSet.has(v)?'checked':'')+' onchange="updateInfExportCount()" style="vertical-align:middle;margin-right:6px">'
       +esc(v)+' <span style="color:var(--text3);font-size:11px">（'+count+'）</span>'
@@ -1962,7 +2058,7 @@ function openInfluencerExportModal(){
   if(storeEl){
     storeEl.innerHTML='<option value="">選択しない</option>'+DB.stores.slice().sort(function(a,b){return(a.name||'').localeCompare(b.name||'');}).map(function(s){return'<option value="'+esc(s.id)+'">'+esc(s.name)+'</option>';}).join('');
   }
-  var areas=[...new Set(DB.influencers.map(function(i){return(i.area||'').trim();}).filter(Boolean))].sort();
+  var areas=[...new Set(DB.influencers.reduce(function(acc,i){return acc.concat(infAreas(i));},[]))].sort();
   var genres=[...new Set(DB.influencers.reduce(function(acc,i){return acc.concat(infGenres(i));},[]))].sort();
   var areaEl=document.getElementById('exportAreaChecks');
   if(areaEl)areaEl.innerHTML=areas.length?exportCheckboxesHtml(areas,new Set(areas),'area'):'<div style="font-size:12px;color:var(--text3)">エリアが未登録です</div>';
@@ -1991,7 +2087,7 @@ function exportModalFilteredList(){
   var genreAvailable=document.querySelectorAll('.export-genre-chk').length>0;
   var tierAvailable=document.querySelectorAll('.export-tier-chk').length>0;
   return DB.influencers.filter(function(i){
-    if(areaAvailable&&areaChecked.indexOf((i.area||'').trim())<0)return false;
+    if(areaAvailable&&!infAreas(i).some(function(a){return areaChecked.indexOf(a)>=0;}))return false;
     if(genreAvailable&&!infGenres(i).some(function(g){return genreChecked.indexOf(g)>=0;}))return false;
     if(tierAvailable&&tierChecked.indexOf(infTierOf(i))<0)return false;
     return true;

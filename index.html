@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=106">
+<link rel="stylesheet" href="css/app.css?v=107">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -354,6 +354,7 @@
             </div>
             <button class="btn btn-sm" onclick="resetInfFilters()">↺ 絞り込みをリセット</button>
             <button class="btn btn-sm" onclick="openInfGenreMerge()">🏷️ ジャンル整理</button>
+            <button class="btn btn-sm" onclick="openInfAreaMerge()">🗾 エリア整理</button>
             <button class="btn btn-sm" onclick="openInfDuplicateMerge()">🧩 重複を統合</button>
             <button class="btn btn-sm" onclick="openInfluencerBulkImport()">📋 一括インポート</button>
             <button class="btn btn-sm" onclick="openInfluencerExportModal()">📤 リストを出力</button>
@@ -911,6 +912,23 @@
 </div>
 </div>
 
+<!-- INFLUENCER エリア整理モーダル -->
+<div class="modal-overlay" id="infAreaMergeModal">
+<div class="modal" style="width:480px">
+  <div class="modal-header"><span class="modal-title">エリア整理（表記ゆれの統合）</span><button class="modal-close" onclick="closeModal('infAreaMergeModal')">✕</button></div>
+  <div class="modal-body">
+    <div style="font-size:12px;color:var(--text3);margin-bottom:12px">対応エリアを47都道府県のチェックボックスに変更する前の、自由記述の古い表記（例：「大阪・京都・兵庫」「枚方」など）を、都道府県のチェックボックスに統合します。統合元の全員に統合先の都道府県がチェック追加され、古い表記は削除されます。</div>
+    <div class="fr1 field"><label>統合元（この古い表記を）</label><select id="mergeFromArea"></select></div>
+    <div class="fr1 field"><label>統合先（この都道府県に統一）</label><select id="mergeToArea"></select></div>
+    <div id="infAreaMergeResult" style="margin-top:8px"></div>
+    <div class="form-actions">
+      <button class="btn" onclick="closeModal('infAreaMergeModal')">閉じる</button>
+      <button class="btn btn-primary" onclick="runInfAreaMerge()">統合する</button>
+    </div>
+  </div>
+</div>
+</div>
+
 <!-- INFLUENCER 重複統合モーダル -->
 <div class="modal-overlay" id="infDuplicateMergeModal">
 <div class="modal" style="width:640px">
@@ -972,7 +990,11 @@
     <!-- 声かけ状況 -->
     <div style="font-size:13px;font-weight:500;color:var(--text2);margin:14px 0 8px;padding-top:10px;border-top:1px solid var(--border)">📨 声かけ状況</div>
     <div class="fr"><div class="field"><label>ステータス <span style="font-size:11px;color:var(--text3);font-weight:400">※起用実績は自動判定（キャスティング履歴から）</span></label><select id="iOutreachStatus"><option value="">—（未設定）</option><option value="未声掛け">未声掛け</option><option value="保留">保留</option><option value="声掛け済み">声掛け済み</option><option value="返信待ち">返信待ち</option><option value="交渉中">交渉中</option><option value="NG">NG</option></select></div><div class="field"><label>声かけ日</label><input id="iOutreachDate" type="date"></div></div>
-    <div class="fr"><div class="field"><label>対応エリア</label><input id="iArea" type="text" placeholder="例: 大阪・兵庫中心"></div><div class="field"><label>傾向タグ</label><input id="iTendency" type="text" placeholder="例: 女性一人飲み系、ファミリー系"></div></div>
+    <div class="fr1 field">
+      <label>対応エリア <span style="font-size:11px;color:var(--text3);font-weight:400">（複数選択可）</span></label>
+      <div id="iAreaRegionBtns" style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px"></div>
+      <div id="iAreaChecks" style="display:flex;flex-wrap:wrap;gap:4px 14px;padding:8px 10px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg2);max-height:180px;overflow-y:auto"></div>
+    </div>
     <div style="margin-bottom:10px">
       <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:6px">PR 費用（円） <span style="font-size:11px;color:var(--text3);font-weight:400">幅がある場合は下限・上限両方入力</span></label>
       <div style="display:flex;align-items:center;gap:8px">
@@ -1595,24 +1617,24 @@
 </div>
 
 
-<script src="js/vendor/pizzip.min.js?v=106"></script>
-<script src="js/vendor/docxtemplater.min.js?v=106"></script>
-<script src="js/config.js?v=106"></script>
-<script src="js/db.js?v=106"></script>
-<script src="js/utils.js?v=106"></script>
-<script src="js/settings.js?v=106"></script>
-<script src="js/stores.js?v=106"></script>
-<script src="js/schedule.js?v=106"></script>
-<script src="js/casting.js?v=106"></script>
-<script src="js/check.js?v=106"></script>
-<script src="js/accounting.js?v=106"></script>
-<script src="js/plans.js?v=106"></script>
-<script src="js/creators.js?v=106"></script>
-<script src="js/corps.js?v=106"></script>
-<script src="js/faqs.js?v=106"></script>
-<script src="js/orders.js?v=106"></script>
-<script src="js/hearing.js?v=106"></script>
-<script src="js/dashboard.js?v=106"></script>
-<script src="js/app.js?v=106"></script>
+<script src="js/vendor/pizzip.min.js?v=107"></script>
+<script src="js/vendor/docxtemplater.min.js?v=107"></script>
+<script src="js/config.js?v=107"></script>
+<script src="js/db.js?v=107"></script>
+<script src="js/utils.js?v=107"></script>
+<script src="js/settings.js?v=107"></script>
+<script src="js/stores.js?v=107"></script>
+<script src="js/schedule.js?v=107"></script>
+<script src="js/casting.js?v=107"></script>
+<script src="js/check.js?v=107"></script>
+<script src="js/accounting.js?v=107"></script>
+<script src="js/plans.js?v=107"></script>
+<script src="js/creators.js?v=107"></script>
+<script src="js/corps.js?v=107"></script>
+<script src="js/faqs.js?v=107"></script>
+<script src="js/orders.js?v=107"></script>
+<script src="js/hearing.js?v=107"></script>
+<script src="js/dashboard.js?v=107"></script>
+<script src="js/app.js?v=107"></script>
 </body>
 </html>
