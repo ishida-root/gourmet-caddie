@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=109">
+<link rel="stylesheet" href="css/app.css?v=110">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -352,6 +352,11 @@
               <span style="font-size:12px;color:var(--text3)">〜</span>
               <input id="filterInfFeeMax" type="number" placeholder="上限" onchange="renderInfluencers()" style="font-size:12px;padding:4px 6px;width:70px">
             </div>
+            <select id="filterInfSortMissing" onchange="renderInfluencers()" title="フォロワー数／PR単価でソート中のみ有効" style="font-size:12px;padding:4px 8px;width:auto">
+              <option value="">ソート時：未登録も表示</option>
+              <option value="exclude">ソート時：未登録を除く</option>
+              <option value="only">ソート時：未登録のみ</option>
+            </select>
             <button class="btn btn-sm" onclick="resetInfFilters()">↺ 絞り込みをリセット</button>
             <button class="btn btn-sm" onclick="openInfGenreMerge()">🏷️ ジャンル整理</button>
             <button class="btn btn-sm" onclick="openInfAreaMerge()">🗾 エリア整理</button>
@@ -1631,24 +1636,24 @@
 </div>
 
 
-<script src="js/vendor/pizzip.min.js?v=109"></script>
-<script src="js/vendor/docxtemplater.min.js?v=109"></script>
-<script src="js/config.js?v=109"></script>
-<script src="js/db.js?v=109"></script>
-<script src="js/utils.js?v=109"></script>
-<script src="js/settings.js?v=109"></script>
-<script src="js/stores.js?v=109"></script>
-<script src="js/schedule.js?v=109"></script>
-<script src="js/casting.js?v=109"></script>
-<script src="js/check.js?v=109"></script>
-<script src="js/accounting.js?v=109"></script>
-<script src="js/plans.js?v=109"></script>
-<script src="js/creators.js?v=109"></script>
-<script src="js/corps.js?v=109"></script>
-<script src="js/faqs.js?v=109"></script>
-<script src="js/orders.js?v=109"></script>
-<script src="js/hearing.js?v=109"></script>
-<script src="js/dashboard.js?v=109"></script>
-<script src="js/app.js?v=109"></script>
+<script src="js/vendor/pizzip.min.js?v=110"></script>
+<script src="js/vendor/docxtemplater.min.js?v=110"></script>
+<script src="js/config.js?v=110"></script>
+<script src="js/db.js?v=110"></script>
+<script src="js/utils.js?v=110"></script>
+<script src="js/settings.js?v=110"></script>
+<script src="js/stores.js?v=110"></script>
+<script src="js/schedule.js?v=110"></script>
+<script src="js/casting.js?v=110"></script>
+<script src="js/check.js?v=110"></script>
+<script src="js/accounting.js?v=110"></script>
+<script src="js/plans.js?v=110"></script>
+<script src="js/creators.js?v=110"></script>
+<script src="js/corps.js?v=110"></script>
+<script src="js/faqs.js?v=110"></script>
+<script src="js/orders.js?v=110"></script>
+<script src="js/hearing.js?v=110"></script>
+<script src="js/dashboard.js?v=110"></script>
+<script src="js/app.js?v=110"></script>
 </body>
 </html>

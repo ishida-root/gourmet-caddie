@@ -1787,6 +1787,13 @@ function infSortValue(i,key){
   var fee=(i.feeLow!==undefined&&i.feeLow!=='')?i.feeLow:i.fee;
   return Number(fee)||0;
 }
+/* ソート対象の列（フォロワー数／PR単価）が未登録（空欄）かどうか。
+   0という実際の値とは区別する（infSortValueは表示・比較用に0へ丸めてしまうため） */
+function infSortFieldMissing(i,key){
+  if(key==='followers')return i.followers===undefined||i.followers===null||i.followers==='';
+  var fee=(i.feeLow!==undefined&&i.feeLow!=='')?i.feeLow:i.fee;
+  return fee===undefined||fee===null||fee==='';
+}
 /* エリア・ジャンルの絞り込みselectの選択肢を、既存データから重複なく作る */
 /* ジャンルの表記ゆれ統合（例：「おでかけ」「お出かけ」を1つに統一する） */
 function refreshInfGenreMergeOptions(){
@@ -2010,6 +2017,7 @@ function resetInfFilters(){
   ['filterInfFeeMin','filterInfFeeMax'].forEach(function(id){
     var el=document.getElementById(id);if(el)el.value='';
   });
+  var sortMissingEl=document.getElementById('filterInfSortMissing');if(sortMissingEl)sortMissingEl.value='';
   renderInfluencers();
 }
 /* 現在の検索・絞り込み・並び替え条件を反映したインフルエンサー一覧を返す（画面表示・出力で共用） */
@@ -2040,6 +2048,9 @@ function getFilteredSortedInfluencers(){
     return!search||(i.name||'').toLowerCase().includes(search)||(i.handle||'').toLowerCase().includes(search)||infGenres(i).join(' ').toLowerCase().includes(search);
   });
   if(infSortKey){
+    var missingMode=(document.getElementById('filterInfSortMissing')||{}).value||'';
+    if(missingMode==='exclude')list=list.filter(function(i){return!infSortFieldMissing(i,infSortKey);});
+    else if(missingMode==='only')list=list.filter(function(i){return infSortFieldMissing(i,infSortKey);});
     list=list.slice().sort(function(a,b){
       var va=infSortValue(a,infSortKey),vb=infSortValue(b,infSortKey);
       return infSortDir==='asc'?va-vb:vb-va;
@@ -2164,6 +2175,7 @@ function renderInfluencers(){
   var list=getFilteredSortedInfluencers();
   var fIcon=document.getElementById('infSortFollowersIcon');if(fIcon)fIcon.textContent=infSortKey==='followers'?(infSortDir==='asc'?'▲':'▼'):'';
   var pIcon=document.getElementById('infSortFeeIcon');if(pIcon)pIcon.textContent=infSortKey==='fee'?(infSortDir==='asc'?'▲':'▼'):'';
+  var sortMissingEl=document.getElementById('filterInfSortMissing');if(sortMissingEl)sortMissingEl.disabled=!infSortKey;
   var tb=document.getElementById('infBody');
   if(!list.length){tb.innerHTML='<tr><td colspan="9" class="empty-state">インフルエンサーが登録されていません</td></tr>';return;}
   var platColor={Instagram:'#e1306c',TikTok:'#010101',YouTube:'#ff0000',X:'#1da1f2'};
