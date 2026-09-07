@@ -993,7 +993,7 @@ function openInfluencerDetail(id){
   var platColor={Instagram:'#e1306c',TikTok:'#010101',YouTube:'#ff0000',X:'#1da1f2'};
   var platUrl={Instagram:'https://www.instagram.com/',TikTok:'https://www.tiktok.com/@',YouTube:'',X:'https://x.com/'};
   /* アカウントURL決定 */
-  var accountUrl=inf.url||(inf.handle?(platUrl[inf.platform]||'')+(inf.handle.replace('@','')):'');
+  var accountUrl=inf.url||(platUrl[inf.platform]&&inf.handle?platUrl[inf.platform]+inf.handle.replace('@',''):'');
   var castings=DB.castings.filter(function(c){return c.infId===id;}).sort(function(a,b){return new Date(b.date)-new Date(a.date);});
   var totalFee=castings.reduce(function(s,c){return s+(Number(c.fee)||0);},0);
   var totalReach=castings.reduce(function(s,c){return s+(Number(c.reach)||0);},0);
@@ -2102,7 +2102,7 @@ function downloadInfluencerCsv(list,targetStoreName){
   if(targetStoreName)rows.push([targetStoreName+'様 ご提案リスト']);
   rows.push(['名前','アカウント','エリア','フォロワー','フォロー','傾向']);
   list.forEach(function(i){
-    var accountUrl=i.url||(i.handle?(platUrl[i.platform]||'')+(i.handle.replace('@','')):'');
+    var accountUrl=i.url||(platUrl[i.platform]&&i.handle?platUrl[i.platform]+i.handle.replace('@',''):'');
     rows.push([i.name||'',accountUrl,infAreas(i).join('・'),i.followers||'',i.following||'',infGenres(i).join('・')]);
   });
   var csv=rows.map(function(r){return r.map(csvEscape).join(',');}).join('\r\n');
@@ -2209,7 +2209,7 @@ function renderInfluencers(){
   var platUrl={Instagram:'https://www.instagram.com/',TikTok:'https://www.tiktok.com/@',YouTube:'',X:'https://x.com/'};
   tb.innerHTML=list.map(function(i){
     var last=DB.castings.filter(function(c){return c.infId===i.id;}).sort(function(a,b){return new Date(b.date)-new Date(a.date);})[0];
-    var accountUrl=i.url||(i.handle?(platUrl[i.platform]||'')+(i.handle.replace('@','')):'');
+    var accountUrl=i.url||(platUrl[i.platform]&&i.handle?platUrl[i.platform]+i.handle.replace('@',''):'');
     var handleHtml=i.handle
       ?(accountUrl
         ?'<a href="'+esc(accountUrl)+'" target="_blank" rel="noopener" style="font-size:11px;color:'+(platColor[i.platform]||'var(--accent)')+';text-decoration:none">'+esc(i.handle)+'&nbsp;↗</a>'
