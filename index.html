@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=104">
+<link rel="stylesheet" href="css/app.css?v=106">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -878,6 +878,13 @@
         </div>
         <div id="exportGenreChecks" style="max-height:220px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--r);padding:8px"></div>
       </div>
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">
+          <span style="font-size:12px;font-weight:500;color:var(--text2)">規模（フォロワー数）</span>
+          <span><a href="#" onclick="toggleExportCheckAll('exportTierChecks',true);return false;" style="font-size:11px">全選択</a> / <a href="#" onclick="toggleExportCheckAll('exportTierChecks',false);return false;" style="font-size:11px">解除</a></span>
+        </div>
+        <div id="exportTierChecks" style="max-height:220px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--r);padding:8px"></div>
+      </div>
     </div>
     <div id="infExportCount" style="margin-top:12px;font-size:13px;color:var(--text2)"></div>
     <div class="form-actions">
@@ -952,7 +959,15 @@
     <div class="fr"><div class="field"><label>主な媒体</label><select id="iPlatform"><option>Instagram</option><option>TikTok</option><option>YouTube</option><option>X</option><option>その他</option></select></div><div class="field"><label>フォロワー数</label><input id="iFollowers" type="number" placeholder="50000"></div></div>
     <div class="fr"><div class="field"><label>フォロー数</label><input id="iFollowing" type="number" placeholder="500"></div><div class="field"></div></div>
     <div class="fr1 field"><label>アカウント URL <span style="font-size:11px;color:var(--text3);font-weight:400">（名前クリックで開くリンク）</span></label><input id="iUrl" type="url" placeholder="https://www.instagram.com/tanakami_food"></div>
-    <div class="fr"><div class="field"><label>ジャンル</label><input id="iGenre" type="text" placeholder="グルメ・飲食"></div><div class="field"><label>連絡先</label><input id="iContact" type="text" placeholder="mail@example.com / LINE ID"></div></div>
+    <div class="fr1 field">
+      <label>ジャンル <span style="font-size:11px;color:var(--text3);font-weight:400">（複数選択可）</span></label>
+      <div id="iGenreChecks" style="display:flex;flex-wrap:wrap;gap:4px 14px;padding:8px 10px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg2)"></div>
+      <div style="display:flex;gap:6px;margin-top:6px">
+        <input id="iGenreNew" type="text" placeholder="新しいジャンルを入力" style="flex:1" onkeydown="if(event.key==='Enter'){event.preventDefault();addInfGenreNew();}">
+        <button type="button" class="btn btn-sm" onclick="addInfGenreNew()">＋ 追加</button>
+      </div>
+    </div>
+    <div class="fr1 field"><label>連絡先</label><input id="iContact" type="text" placeholder="mail@example.com / LINE ID"></div>
 
     <!-- 声かけ状況 -->
     <div style="font-size:13px;font-weight:500;color:var(--text2);margin:14px 0 8px;padding-top:10px;border-top:1px solid var(--border)">📨 声かけ状況</div>
@@ -1580,24 +1595,24 @@
 </div>
 
 
-<script src="js/vendor/pizzip.min.js?v=104"></script>
-<script src="js/vendor/docxtemplater.min.js?v=104"></script>
-<script src="js/config.js?v=104"></script>
-<script src="js/db.js?v=104"></script>
-<script src="js/utils.js?v=104"></script>
-<script src="js/settings.js?v=104"></script>
-<script src="js/stores.js?v=104"></script>
-<script src="js/schedule.js?v=104"></script>
-<script src="js/casting.js?v=104"></script>
-<script src="js/check.js?v=104"></script>
-<script src="js/accounting.js?v=104"></script>
-<script src="js/plans.js?v=104"></script>
-<script src="js/creators.js?v=104"></script>
-<script src="js/corps.js?v=104"></script>
-<script src="js/faqs.js?v=104"></script>
-<script src="js/orders.js?v=104"></script>
-<script src="js/hearing.js?v=104"></script>
-<script src="js/dashboard.js?v=104"></script>
-<script src="js/app.js?v=104"></script>
+<script src="js/vendor/pizzip.min.js?v=106"></script>
+<script src="js/vendor/docxtemplater.min.js?v=106"></script>
+<script src="js/config.js?v=106"></script>
+<script src="js/db.js?v=106"></script>
+<script src="js/utils.js?v=106"></script>
+<script src="js/settings.js?v=106"></script>
+<script src="js/stores.js?v=106"></script>
+<script src="js/schedule.js?v=106"></script>
+<script src="js/casting.js?v=106"></script>
+<script src="js/check.js?v=106"></script>
+<script src="js/accounting.js?v=106"></script>
+<script src="js/plans.js?v=106"></script>
+<script src="js/creators.js?v=106"></script>
+<script src="js/corps.js?v=106"></script>
+<script src="js/faqs.js?v=106"></script>
+<script src="js/orders.js?v=106"></script>
+<script src="js/hearing.js?v=106"></script>
+<script src="js/dashboard.js?v=106"></script>
+<script src="js/app.js?v=106"></script>
 </body>
 </html>

@@ -323,28 +323,59 @@ function updateInfPricePlanField(idx,field,value){
 }
 
 var editingInfId=null;
+/* ジャンルは複数選択できるようにする（従来の単一genre文字列は後方互換のため読み取り時のみ吸収する）。
+   既存の全ジャンル一覧からチェックボックスで選び、無い場合は自由入力で追加できる。 */
+var _curGenreSel=[];
+function infGenres(i){return(i.genres&&i.genres.length)?i.genres:(i.genre?[i.genre]:[]);}
+function renderInfGenreChecks(){
+  var wrap=document.getElementById('iGenreChecks');
+  if(!wrap)return;
+  var known=[...new Set(DB.influencers.reduce(function(acc,i){return acc.concat(infGenres(i));},[]).concat(_curGenreSel))].filter(Boolean).sort();
+  if(!known.length){wrap.innerHTML='<span style="font-size:12px;color:var(--text3)">まだジャンルが登録されていません。下から追加してください</span>';return;}
+  wrap.innerHTML=known.map(function(g){
+    return'<label style="display:inline-flex;align-items:center;gap:5px;font-size:13px;cursor:pointer">'
+      +'<input type="checkbox" '+(_curGenreSel.indexOf(g)>=0?'checked':'')+' onchange="toggleInfGenreCheck(\''+esc(g)+'\')">'
+      +esc(g)
+    +'</label>';
+  }).join('');
+}
+function toggleInfGenreCheck(g){
+  var idx=_curGenreSel.indexOf(g);
+  if(idx>=0)_curGenreSel.splice(idx,1);else _curGenreSel.push(g);
+  renderInfGenreChecks();
+}
+function addInfGenreNew(){
+  var el=document.getElementById('iGenreNew');
+  var g=(el.value||'').trim();
+  if(!g)return;
+  if(_curGenreSel.indexOf(g)<0)_curGenreSel.push(g);
+  el.value='';
+  renderInfGenreChecks();
+}
 
 function openInfluencerModal(id){
   editingInfId=id||null;
   _expandedIndividualPlats={};
   var titleEl=document.getElementById('infModalTitle');
   if(titleEl)titleEl.textContent=id?'インフルエンサーを編集':'インフルエンサーを追加';
-  ['iName','iHandle','iUrl','iGenre','iContact','iAgency','iMemo','iFeeLow','iFeeHigh','iOutreachDate','iArea','iTendency'].forEach(function(fid){var el=document.getElementById(fid);if(el)el.value='';});
+  ['iName','iHandle','iUrl','iContact','iAgency','iMemo','iFeeLow','iFeeHigh','iOutreachDate','iArea','iTendency'].forEach(function(fid){var el=document.getElementById(fid);if(el)el.value='';});
   document.getElementById('iPlatform').value='Instagram';
   document.getElementById('iFollowers').value='';
   document.getElementById('iFollowing').value='';
   document.getElementById('iRating').value='';
   document.getElementById('iAccountGone').checked=false;
+  var genreNewEl=document.getElementById('iGenreNew');if(genreNewEl)genreNewEl.value='';
   /* 新規追加は「未声掛け」から開始。起用実績はキャスティング履歴から自動判定するため、
      声かけ状況が未設定の既存登録はここでは強制せず「—（未設定）」のままにする */
   document.getElementById('iOutreachStatus').value=id?'':'未声掛け';
   if(id){
     var inf=DB.influencers.find(function(x){return x.id===id;});
     if(inf){
-      var map={iName:'name',iHandle:'handle',iUrl:'url',iPlatform:'platform',iFollowers:'followers',iFollowing:'following',iGenre:'genre',iContact:'contact',iAgency:'agency',iMemo:'memo',iRating:'rating',iArea:'area',iTendency:'tendency',iOutreachDate:'outreachDate'};
+      var map={iName:'name',iHandle:'handle',iUrl:'url',iPlatform:'platform',iFollowers:'followers',iFollowing:'following',iContact:'contact',iAgency:'agency',iMemo:'memo',iRating:'rating',iArea:'area',iTendency:'tendency',iOutreachDate:'outreachDate'};
       Object.keys(map).forEach(function(fid){var el=document.getElementById(fid);if(el&&inf[map[fid]]!==undefined)el.value=inf[map[fid]]||'';});
       if(inf.outreachStatus)document.getElementById('iOutreachStatus').value=inf.outreachStatus;
       document.getElementById('iAccountGone').checked=!!inf.accountGone;
+      _curGenreSel=infGenres(inf).slice();
       /* fee range */
       if(inf.feeLow!==undefined){document.getElementById('iFeeLow').value=inf.feeLow||'';}
       else if(inf.fee){document.getElementById('iFeeLow').value=inf.fee;}
@@ -354,11 +385,14 @@ function openInfluencerModal(id){
     }else{
       renderPlatformDetails({});
       _pricePlanRows=[];
+      _curGenreSel=[];
     }
   }else{
     renderPlatformDetails({});
     _pricePlanRows=[];
+    _curGenreSel=[];
   }
+  renderInfGenreChecks();
   renderInfPricePlanRows();
   openModal('infModal');
 }
@@ -451,7 +485,7 @@ function importedRowToInfluencer(row){
     platform:'Instagram',
     followers:row.followers.replace(/[^\d]/g,''),
     following:row.following.replace(/[^\d]/g,''),
-    genre:row.genre,
+    genres:(row.genre||'').split(/[、,\/・]/).map(function(g){return g.trim();}).filter(Boolean),
     feeLow:fee.low,
     feeHigh:fee.high,
     fee:fee.low,
@@ -525,7 +559,7 @@ function saveInfluencer(){
     platform:document.getElementById('iPlatform').value,
     followers:document.getElementById('iFollowers').value,
     following:document.getElementById('iFollowing').value,
-    genre:document.getElementById('iGenre').value,
+    genres:_curGenreSel.slice(),
     feeLow:feeLow,
     feeHigh:feeHigh,
     fee:feeLow, /* 後方互換 */
@@ -876,7 +910,7 @@ function openInfluencerDetail(id){
           +'<span class="badge" style="font-size:11px;border:1px solid;'+(INF_ENGAGEMENT_BADGE[infEngagementStatus(inf)]||'')+'">'+esc(infEngagementStatus(inf))+'</span>'
           +(infTierOf(inf)?'<span class="badge" style="font-size:11px;border:1px solid;'+(INF_TIER_BADGE[infTierOf(inf)]||'')+'">'+infTierOf(inf)+'インフルエンサー</span>':'')
           +(inf.platform?'<span class="badge b-blue">'+esc(inf.platform)+'</span>':'')
-          +(inf.genre?'<span class="badge b-gray">'+esc(inf.genre)+'</span>':'')
+          +infGenres(inf).map(function(g){return'<span class="badge b-gray">'+esc(g)+'</span>';}).join('')
           +(inf.agency&&inf.agency!=='なし'?'<span class="badge b-gray">'+esc(inf.agency)+'</span>':'')
         +'</div>'
         +((inf.area||inf.tendency||inf.outreachDate)?'<div style="font-size:12px;color:var(--text3);margin-top:6px">'
@@ -1666,9 +1700,9 @@ function infSortValue(i,key){
 /* ジャンルの表記ゆれ統合（例：「おでかけ」「お出かけ」を1つに統一する） */
 function refreshInfGenreMergeOptions(){
   var sel=document.getElementById('mergeFromGenre');
-  var genres=[...new Set(DB.influencers.map(function(i){return(i.genre||'').trim();}).filter(Boolean))].sort();
+  var genres=[...new Set(DB.influencers.reduce(function(acc,i){return acc.concat(infGenres(i));},[]))].sort();
   if(sel)sel.innerHTML=genres.map(function(g){
-    var count=DB.influencers.filter(function(i){return(i.genre||'').trim()===g;}).length;
+    var count=DB.influencers.filter(function(i){return infGenres(i).indexOf(g)>=0;}).length;
     return'<option value="'+esc(g)+'">'+esc(g)+'（'+count+'件）</option>';
   }).join('');
 }
@@ -1687,7 +1721,16 @@ function runInfGenreMerge(){
   if(from===to){resultEl.innerHTML='<div style="color:var(--text3)">統合元と統合先が同じです</div>';return;}
   var count=0;
   DB.influencers.forEach(function(i){
-    if((i.genre||'').trim()===from){i.genre=to;saveItem('influencers',i);count++;}
+    var g=infGenres(i);
+    var idx=g.indexOf(from);
+    if(idx<0)return;
+    g=g.slice();
+    g.splice(idx,1);
+    if(g.indexOf(to)<0)g.push(to);
+    i.genres=g;
+    delete i.genre;
+    saveItem('influencers',i);
+    count++;
   });
   resultEl.innerHTML='<div style="color:var(--green);font-weight:500">✓ '+count+'件のジャンルを「'+esc(to)+'」に統一しました</div>';
   refreshInfGenreMergeOptions();
@@ -1814,7 +1857,7 @@ function updateInfFilterOptions(){
   }
   var genreSel=document.getElementById('filterInfGenre');
   if(genreSel){
-    var genres=[...new Set(DB.influencers.map(function(i){return(i.genre||'').trim();}).filter(Boolean))].sort();
+    var genres=[...new Set(DB.influencers.reduce(function(acc,i){return acc.concat(infGenres(i));},[]))].sort();
     rebuildMultiSelectOptions(genreSel,genres);
     renderInfFilterCheckPanel('filterInfGenre','filterInfGenrePanel','filterInfGenreCount');
   }
@@ -1853,7 +1896,7 @@ function getFilteredSortedInfluencers(){
     if(engagementFilter&&infEngagementStatus(i)!==engagementFilter)return false;
     if(tierFilter&&infTierOf(i)!==tierFilter)return false;
     if(areaFilters.length&&areaFilters.indexOf((i.area||'').trim())<0)return false;
-    if(genreFilters.length&&genreFilters.indexOf((i.genre||'').trim())<0)return false;
+    if(genreFilters.length&&!infGenres(i).some(function(g){return genreFilters.indexOf(g)>=0;}))return false;
     if(feeMin!==null||feeMax!==null){
       /* 料金は下限〜上限の幅で持っているため、指定した範囲と少しでも重なれば対象とする */
       var lo=(i.feeLow!==undefined&&i.feeLow!=='')?Number(i.feeLow):Number(i.fee)||0;
@@ -1862,7 +1905,7 @@ function getFilteredSortedInfluencers(){
       if(feeMin!==null&&hi<feeMin)return false;
       if(feeMax!==null&&lo>feeMax)return false;
     }
-    return!search||(i.name||'').toLowerCase().includes(search)||(i.handle||'').toLowerCase().includes(search)||(i.genre||'').toLowerCase().includes(search);
+    return!search||(i.name||'').toLowerCase().includes(search)||(i.handle||'').toLowerCase().includes(search)||infGenres(i).join(' ').toLowerCase().includes(search);
   });
   if(infSortKey){
     list=list.slice().sort(function(a,b){
@@ -1889,7 +1932,7 @@ function downloadInfluencerCsv(list,targetStoreName){
   rows.push(['名前','アカウント','エリア','フォロワー','フォロー','傾向']);
   list.forEach(function(i){
     var accountUrl=i.url||(i.handle?(platUrl[i.platform]||'')+(i.handle.replace('@','')):'');
-    rows.push([i.name||'',accountUrl,i.area||'',i.followers||'',i.following||'',i.genre||'']);
+    rows.push([i.name||'',accountUrl,i.area||'',i.followers||'',i.following||'',infGenres(i).join('・')]);
   });
   var csv=rows.map(function(r){return r.map(csvEscape).join(',');}).join('\r\n');
   var blob=new Blob(['﻿'+csv],{type:'text/csv;charset=utf-8'});
@@ -1907,7 +1950,7 @@ function downloadInfluencerCsv(list,targetStoreName){
    ============================================================ */
 function exportCheckboxesHtml(containerValues,checkedSet,type){
   return containerValues.map(function(v){
-    var count=DB.influencers.filter(function(i){return(type==='area'?(i.area||'').trim():(i.genre||'').trim())===v;}).length;
+    var count=DB.influencers.filter(function(i){return type==='area'?(i.area||'').trim()===v:type==='tier'?infTierOf(i)===v:infGenres(i).indexOf(v)>=0;}).length;
     return'<label style="display:block;font-size:13px;padding:3px 0;cursor:pointer;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">'
       +'<input type="checkbox" class="export-'+type+'-chk" value="'+esc(v)+'" '+(checkedSet.has(v)?'checked':'')+' onchange="updateInfExportCount()" style="vertical-align:middle;margin-right:6px">'
       +esc(v)+' <span style="color:var(--text3);font-size:11px">（'+count+'）</span>'
@@ -1920,11 +1963,14 @@ function openInfluencerExportModal(){
     storeEl.innerHTML='<option value="">選択しない</option>'+DB.stores.slice().sort(function(a,b){return(a.name||'').localeCompare(b.name||'');}).map(function(s){return'<option value="'+esc(s.id)+'">'+esc(s.name)+'</option>';}).join('');
   }
   var areas=[...new Set(DB.influencers.map(function(i){return(i.area||'').trim();}).filter(Boolean))].sort();
-  var genres=[...new Set(DB.influencers.map(function(i){return(i.genre||'').trim();}).filter(Boolean))].sort();
+  var genres=[...new Set(DB.influencers.reduce(function(acc,i){return acc.concat(infGenres(i));},[]))].sort();
   var areaEl=document.getElementById('exportAreaChecks');
   if(areaEl)areaEl.innerHTML=areas.length?exportCheckboxesHtml(areas,new Set(areas),'area'):'<div style="font-size:12px;color:var(--text3)">エリアが未登録です</div>';
   var genreEl=document.getElementById('exportGenreChecks');
   if(genreEl)genreEl.innerHTML=genres.length?exportCheckboxesHtml(genres,new Set(genres),'genre'):'<div style="font-size:12px;color:var(--text3)">ジャンルが未登録です</div>';
+  var tiers=['ナノ','マイクロ','ミドル','メガ'].filter(function(t){return DB.influencers.some(function(i){return infTierOf(i)===t;});});
+  var tierEl=document.getElementById('exportTierChecks');
+  if(tierEl)tierEl.innerHTML=tiers.length?exportCheckboxesHtml(tiers,new Set(tiers),'tier'):'<div style="font-size:12px;color:var(--text3)">フォロワー数が未登録です</div>';
   openModal('infExportModal');
   updateInfExportCount();
 }
@@ -1940,9 +1986,14 @@ function exportModalFilteredList(){
      （空にした場合は「全員」ではなく「0件」＝そのカテゴリでは何も一致しない、が直感的な挙動） */
   var areaChecked=getExportCheckedValues('export-area-chk');
   var genreChecked=getExportCheckedValues('export-genre-chk');
+  var tierChecked=getExportCheckedValues('export-tier-chk');
+  var areaAvailable=document.querySelectorAll('.export-area-chk').length>0;
+  var genreAvailable=document.querySelectorAll('.export-genre-chk').length>0;
+  var tierAvailable=document.querySelectorAll('.export-tier-chk').length>0;
   return DB.influencers.filter(function(i){
-    if(areaChecked.indexOf((i.area||'').trim())<0)return false;
-    if(genreChecked.indexOf((i.genre||'').trim())<0)return false;
+    if(areaAvailable&&areaChecked.indexOf((i.area||'').trim())<0)return false;
+    if(genreAvailable&&!infGenres(i).some(function(g){return genreChecked.indexOf(g)>=0;}))return false;
+    if(tierAvailable&&tierChecked.indexOf(infTierOf(i))<0)return false;
     return true;
   });
 }
@@ -1987,7 +2038,7 @@ function renderInfluencers(){
       +'<td>'+esc(i.platform||'')+'</td>'
       +'<td class="td-mono">'+(i.followers?Number(i.followers).toLocaleString():'—')+(infTierOf(i)?'　<span class="badge" style="font-size:11px;border:1px solid;white-space:nowrap;'+(INF_TIER_BADGE[infTierOf(i)]||'')+'">'+infTierOf(i)+'</span>':'')+'</td>'
       +'<td class="td-mono" style="white-space:nowrap">'+fmtFeeRange(i)+'</td>'
-      +'<td>'+esc(i.genre||'—')+'</td>'
+      +'<td>'+(infGenres(i).length?infGenres(i).map(esc).join('・'):'—')+'</td>'
       +'<td style="white-space:nowrap">'
         +(infOutreachStatus(i)?'<span class="badge" style="font-size:11px;border:1px solid;white-space:nowrap;'+(INF_OUTREACH_BADGE[infOutreachStatus(i)]||'')+'">'+esc(infOutreachStatus(i))+'</span>':'<span style="color:var(--text3)">—</span>')
         +' <span class="badge" style="font-size:11px;border:1px solid;white-space:nowrap;'+(INF_ENGAGEMENT_BADGE[infEngagementStatus(i)]||'')+'">'+esc(infEngagementStatus(i))+'</span>'
