@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=107">
+<link rel="stylesheet" href="css/app.css?v=109">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -887,6 +887,16 @@
         <div id="exportTierChecks" style="max-height:220px;overflow-y:auto;border:1px solid var(--border);border-radius:var(--r);padding:8px"></div>
       </div>
     </div>
+    <div style="display:flex;align-items:center;gap:14px;margin-top:12px;padding-top:12px;border-top:1px solid var(--border)">
+      <span style="font-size:12px;font-weight:500;color:var(--text2);white-space:nowrap">料金（円）<span style="font-size:11px;color:var(--text3);font-weight:400">※出力するリストには金額は含まれません</span></span>
+      <input id="exportFeeMin" type="number" placeholder="下限" onchange="updateInfExportCount()" style="width:100px">
+      <span style="color:var(--text3)">〜</span>
+      <input id="exportFeeMax" type="number" placeholder="上限" onchange="updateInfExportCount()" style="width:100px">
+      <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;white-space:nowrap">
+        <input type="checkbox" id="exportIncludeNoFee" checked onchange="updateInfExportCount()">
+        料金未記載も含める
+      </label>
+    </div>
     <div id="infExportCount" style="margin-top:12px;font-size:13px;color:var(--text2)"></div>
     <div class="form-actions">
       <button class="btn" onclick="closeModal('infExportModal')">キャンセル</button>
@@ -973,10 +983,8 @@
     <button class="modal-close" onclick="closeModal('infModal')">✕</button>
   </div>
   <div class="modal-body">
-    <div class="fr"><div class="field"><label>名前 *</label><input id="iName" type="text" placeholder="田中 みな"></div><div class="field"><label>ID</label><input id="iHandle" type="text" placeholder="@tanakami_food"></div></div>
-    <div class="fr"><div class="field"><label>主な媒体</label><select id="iPlatform"><option>Instagram</option><option>TikTok</option><option>YouTube</option><option>X</option><option>その他</option></select></div><div class="field"><label>フォロワー数</label><input id="iFollowers" type="number" placeholder="50000"></div></div>
-    <div class="fr"><div class="field"><label>フォロー数</label><input id="iFollowing" type="number" placeholder="500"></div><div class="field"></div></div>
-    <div class="fr1 field"><label>アカウント URL <span style="font-size:11px;color:var(--text3);font-weight:400">（名前クリックで開くリンク）</span></label><input id="iUrl" type="url" placeholder="https://www.instagram.com/tanakami_food"></div>
+    <div class="fr"><div class="field"><label>名前 *</label><input id="iName" type="text" placeholder="田中 みな"></div><div class="field"><label>ID <span style="font-size:11px;color:var(--text3);font-weight:400">（名前クリックで開くリンクを自動生成）</span></label><input id="iHandle" type="text" placeholder="@tanakami_food"></div></div>
+    <div class="fr"><div class="field"><label>フォロワー数</label><input id="iFollowers" type="number" placeholder="50000"></div><div class="field"><label>フォロー数</label><input id="iFollowing" type="number" placeholder="500"></div></div>
     <div class="fr1 field">
       <label>ジャンル <span style="font-size:11px;color:var(--text3);font-weight:400">（複数選択可）</span></label>
       <div id="iGenreChecks" style="display:flex;flex-wrap:wrap;gap:4px 14px;padding:8px 10px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg2)"></div>
@@ -994,6 +1002,12 @@
       <label>対応エリア <span style="font-size:11px;color:var(--text3);font-weight:400">（複数選択可）</span></label>
       <div id="iAreaRegionBtns" style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px"></div>
       <div id="iAreaChecks" style="display:flex;flex-wrap:wrap;gap:4px 14px;padding:8px 10px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg2);max-height:180px;overflow-y:auto"></div>
+      <div style="font-size:12px;color:var(--text2);margin-top:8px;margin-bottom:4px">海外</div>
+      <div id="iOverseasChecks" style="display:flex;flex-wrap:wrap;gap:4px 14px;padding:8px 10px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg2);margin-bottom:6px"></div>
+      <div style="display:flex;gap:6px">
+        <input id="iOverseasNew" type="text" placeholder="新しい国を入力" style="flex:1" onkeydown="if(event.key==='Enter'){event.preventDefault();addInfOverseasNew();}">
+        <button type="button" class="btn btn-sm" onclick="addInfOverseasNew()">＋ 追加</button>
+      </div>
     </div>
     <div style="margin-bottom:10px">
       <label style="font-size:12px;color:var(--text2);display:block;margin-bottom:6px">PR 費用（円） <span style="font-size:11px;color:var(--text3);font-weight:400">幅がある場合は下限・上限両方入力</span></label>
@@ -1617,24 +1631,24 @@
 </div>
 
 
-<script src="js/vendor/pizzip.min.js?v=107"></script>
-<script src="js/vendor/docxtemplater.min.js?v=107"></script>
-<script src="js/config.js?v=107"></script>
-<script src="js/db.js?v=107"></script>
-<script src="js/utils.js?v=107"></script>
-<script src="js/settings.js?v=107"></script>
-<script src="js/stores.js?v=107"></script>
-<script src="js/schedule.js?v=107"></script>
-<script src="js/casting.js?v=107"></script>
-<script src="js/check.js?v=107"></script>
-<script src="js/accounting.js?v=107"></script>
-<script src="js/plans.js?v=107"></script>
-<script src="js/creators.js?v=107"></script>
-<script src="js/corps.js?v=107"></script>
-<script src="js/faqs.js?v=107"></script>
-<script src="js/orders.js?v=107"></script>
-<script src="js/hearing.js?v=107"></script>
-<script src="js/dashboard.js?v=107"></script>
-<script src="js/app.js?v=107"></script>
+<script src="js/vendor/pizzip.min.js?v=109"></script>
+<script src="js/vendor/docxtemplater.min.js?v=109"></script>
+<script src="js/config.js?v=109"></script>
+<script src="js/db.js?v=109"></script>
+<script src="js/utils.js?v=109"></script>
+<script src="js/settings.js?v=109"></script>
+<script src="js/stores.js?v=109"></script>
+<script src="js/schedule.js?v=109"></script>
+<script src="js/casting.js?v=109"></script>
+<script src="js/check.js?v=109"></script>
+<script src="js/accounting.js?v=109"></script>
+<script src="js/plans.js?v=109"></script>
+<script src="js/creators.js?v=109"></script>
+<script src="js/corps.js?v=109"></script>
+<script src="js/faqs.js?v=109"></script>
+<script src="js/orders.js?v=109"></script>
+<script src="js/hearing.js?v=109"></script>
+<script src="js/dashboard.js?v=109"></script>
+<script src="js/app.js?v=109"></script>
 </body>
 </html>

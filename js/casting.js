@@ -17,6 +17,7 @@ var INF_PLATFORM_LIST=[
   {id:'ig_story',      label:'Instagram ストーリーズ'},
   {id:'ig_pin',        label:'Instagram ピン留め'},
   {id:'ig_collab',     label:'Instagram コラボ投稿'},
+  {id:'threads',       label:'Threads'},
   {id:'tiktok',        label:'TikTok'},
   {id:'facebook',      label:'Facebook'},
   {id:'lemon8',        label:'Lemon8'},
@@ -371,6 +372,16 @@ function addInfGenreNew(){
    「エリア整理」ツールで正式な都道府県表記へ統合できるようにする。 */
 var _curAreaSel=[];
 function infAreas(i){return(i.areas&&i.areas.length)?i.areas:(i.area?[i.area]:[]);}
+/* 主な媒体は対応媒体（platformDetails）のチェック状況から自動推定する（手入力欄は廃止）。
+   プロフィールURLの生成やハンドル表示色に使うため、代表的な媒体だけ判定できれば十分。 */
+function inferInfPlatform(pd){
+  if(!pd)return'';
+  if(['ig_feed','ig_reel','ig_story','ig_pin','ig_collab'].some(function(k){return pd[k]&&pd[k].enabled;}))return'Instagram';
+  if(pd.tiktok&&pd.tiktok.enabled)return'TikTok';
+  if(pd.yt_shorts&&pd.yt_shorts.enabled)return'YouTube';
+  if(pd.facebook&&pd.facebook.enabled)return'Facebook';
+  return'';
+}
 function renderInfAreaRegionBtns(){
   var wrap=document.getElementById('iAreaRegionBtns');
   if(!wrap)return;
@@ -393,6 +404,30 @@ function toggleInfAreaCheck(p){
   var idx=_curAreaSel.indexOf(p);
   if(idx>=0)_curAreaSel.splice(idx,1);else _curAreaSel.push(p);
   renderInfAreaChecks();
+  renderInfOverseasChecks();
+}
+/* 海外エリア：47都道府県には無い国名を自由に追加できる（ジャンルの＋追加と同じ仕組み）。
+   「韓国」を初期値として、既存データや今回の選択に含まれる国名も選択肢に加える。 */
+var OVERSEAS_SEED=['韓国'];
+function renderInfOverseasChecks(){
+  var wrap=document.getElementById('iOverseasChecks');
+  if(!wrap)return;
+  var used=DB.influencers.reduce(function(acc,i){return acc.concat(infAreas(i));},[]).concat(_curAreaSel);
+  var known=[...new Set(OVERSEAS_SEED.concat(used.filter(function(a){return PREF_LIST.indexOf(a)<0;})))];
+  wrap.innerHTML=known.map(function(c){
+    return'<label style="display:inline-flex;align-items:center;gap:5px;font-size:13px;cursor:pointer">'
+      +'<input type="checkbox" '+(_curAreaSel.indexOf(c)>=0?'checked':'')+' onchange="toggleInfAreaCheck(\''+esc(c)+'\')">'
+      +esc(c)
+    +'</label>';
+  }).join('');
+}
+function addInfOverseasNew(){
+  var el=document.getElementById('iOverseasNew');
+  var c=(el.value||'').trim();
+  if(!c)return;
+  if(_curAreaSel.indexOf(c)<0)_curAreaSel.push(c);
+  el.value='';
+  renderInfOverseasChecks();
 }
 /* 地方ボタン：その地方の県が全て選択済みなら解除、そうでなければ全選択する（トグル） */
 function toggleInfAreaRegion(region){
@@ -404,6 +439,7 @@ function toggleInfAreaRegion(region){
     prefs.forEach(function(p){if(_curAreaSel.indexOf(p)<0)_curAreaSel.push(p);});
   }
   renderInfAreaChecks();
+  renderInfOverseasChecks();
 }
 
 function openInfluencerModal(id){
@@ -411,20 +447,20 @@ function openInfluencerModal(id){
   _expandedIndividualPlats={};
   var titleEl=document.getElementById('infModalTitle');
   if(titleEl)titleEl.textContent=id?'インフルエンサーを編集':'インフルエンサーを追加';
-  ['iName','iHandle','iUrl','iContact','iAgency','iMemo','iFeeLow','iFeeHigh','iOutreachDate'].forEach(function(fid){var el=document.getElementById(fid);if(el)el.value='';});
-  document.getElementById('iPlatform').value='Instagram';
+  ['iName','iHandle','iContact','iAgency','iMemo','iFeeLow','iFeeHigh','iOutreachDate'].forEach(function(fid){var el=document.getElementById(fid);if(el)el.value='';});
   document.getElementById('iFollowers').value='';
   document.getElementById('iFollowing').value='';
   document.getElementById('iRating').value='';
   document.getElementById('iAccountGone').checked=false;
   var genreNewEl=document.getElementById('iGenreNew');if(genreNewEl)genreNewEl.value='';
+  var overseasNewEl=document.getElementById('iOverseasNew');if(overseasNewEl)overseasNewEl.value='';
   /* 新規追加は「未声掛け」から開始。起用実績はキャスティング履歴から自動判定するため、
      声かけ状況が未設定の既存登録はここでは強制せず「—（未設定）」のままにする */
   document.getElementById('iOutreachStatus').value=id?'':'未声掛け';
   if(id){
     var inf=DB.influencers.find(function(x){return x.id===id;});
     if(inf){
-      var map={iName:'name',iHandle:'handle',iUrl:'url',iPlatform:'platform',iFollowers:'followers',iFollowing:'following',iContact:'contact',iAgency:'agency',iMemo:'memo',iRating:'rating',iOutreachDate:'outreachDate'};
+      var map={iName:'name',iHandle:'handle',iFollowers:'followers',iFollowing:'following',iContact:'contact',iAgency:'agency',iMemo:'memo',iRating:'rating',iOutreachDate:'outreachDate'};
       Object.keys(map).forEach(function(fid){var el=document.getElementById(fid);if(el&&inf[map[fid]]!==undefined)el.value=inf[map[fid]]||'';});
       if(inf.outreachStatus)document.getElementById('iOutreachStatus').value=inf.outreachStatus;
       document.getElementById('iAccountGone').checked=!!inf.accountGone;
@@ -451,6 +487,7 @@ function openInfluencerModal(id){
   renderInfGenreChecks();
   renderInfAreaRegionBtns();
   renderInfAreaChecks();
+  renderInfOverseasChecks();
   renderInfPricePlanRows();
   openModal('infModal');
 }
@@ -612,8 +649,7 @@ function saveInfluencer(){
     id:id,
     name:name,
     handle:document.getElementById('iHandle').value,
-    url:document.getElementById('iUrl').value,
-    platform:document.getElementById('iPlatform').value,
+    platform:inferInfPlatform(getPlatformData()),
     followers:document.getElementById('iFollowers').value,
     following:document.getElementById('iFollowing').value,
     genres:_curGenreSel.slice(),
@@ -2067,6 +2103,9 @@ function openInfluencerExportModal(){
   var tiers=['ナノ','マイクロ','ミドル','メガ'].filter(function(t){return DB.influencers.some(function(i){return infTierOf(i)===t;});});
   var tierEl=document.getElementById('exportTierChecks');
   if(tierEl)tierEl.innerHTML=tiers.length?exportCheckboxesHtml(tiers,new Set(tiers),'tier'):'<div style="font-size:12px;color:var(--text3)">フォロワー数が未登録です</div>';
+  var feeMinEl=document.getElementById('exportFeeMin');if(feeMinEl)feeMinEl.value='';
+  var feeMaxEl=document.getElementById('exportFeeMax');if(feeMaxEl)feeMaxEl.value='';
+  var noFeeEl=document.getElementById('exportIncludeNoFee');if(noFeeEl)noFeeEl.checked=true;
   openModal('infExportModal');
   updateInfExportCount();
 }
@@ -2086,10 +2125,22 @@ function exportModalFilteredList(){
   var areaAvailable=document.querySelectorAll('.export-area-chk').length>0;
   var genreAvailable=document.querySelectorAll('.export-genre-chk').length>0;
   var tierAvailable=document.querySelectorAll('.export-tier-chk').length>0;
+  var feeMinEl=document.getElementById('exportFeeMin'),feeMaxEl=document.getElementById('exportFeeMax');
+  var feeMin=feeMinEl&&feeMinEl.value!==''?Number(feeMinEl.value):null;
+  var feeMax=feeMaxEl&&feeMaxEl.value!==''?Number(feeMaxEl.value):null;
+  var includeNoFeeEl=document.getElementById('exportIncludeNoFee');
+  var includeNoFee=includeNoFeeEl?includeNoFeeEl.checked:true;
   return DB.influencers.filter(function(i){
     if(areaAvailable&&!infAreas(i).some(function(a){return areaChecked.indexOf(a)>=0;}))return false;
     if(genreAvailable&&!infGenres(i).some(function(g){return genreChecked.indexOf(g)>=0;}))return false;
     if(tierAvailable&&tierChecked.indexOf(infTierOf(i))<0)return false;
+    if(feeMin!==null||feeMax!==null){
+      var lo=(i.feeLow!==undefined&&i.feeLow!=='')?Number(i.feeLow):Number(i.fee)||0;
+      var hi=i.feeHigh?Number(i.feeHigh):lo;
+      if(!lo&&!hi)return includeNoFee;
+      if(feeMin!==null&&hi<feeMin)return false;
+      if(feeMax!==null&&lo>feeMax)return false;
+    }
     return true;
   });
 }
