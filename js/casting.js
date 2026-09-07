@@ -2047,10 +2047,13 @@ function getFilteredSortedInfluencers(){
     }
     return!search||(i.name||'').toLowerCase().includes(search)||(i.handle||'').toLowerCase().includes(search)||infGenres(i).join(' ').toLowerCase().includes(search);
   });
+  /* 未登録（フォロワー数／PR単価が空欄）の絞り込み。現在ソート中かどうかに関係なく常に有効 */
+  var missingMode=(document.getElementById('filterInfSortMissing')||{}).value||'';
+  if(missingMode==='exclude_followers')list=list.filter(function(i){return!infSortFieldMissing(i,'followers');});
+  else if(missingMode==='only_followers')list=list.filter(function(i){return infSortFieldMissing(i,'followers');});
+  else if(missingMode==='exclude_fee')list=list.filter(function(i){return!infSortFieldMissing(i,'fee');});
+  else if(missingMode==='only_fee')list=list.filter(function(i){return infSortFieldMissing(i,'fee');});
   if(infSortKey){
-    var missingMode=(document.getElementById('filterInfSortMissing')||{}).value||'';
-    if(missingMode==='exclude')list=list.filter(function(i){return!infSortFieldMissing(i,infSortKey);});
-    else if(missingMode==='only')list=list.filter(function(i){return infSortFieldMissing(i,infSortKey);});
     list=list.slice().sort(function(a,b){
       var va=infSortValue(a,infSortKey),vb=infSortValue(b,infSortKey);
       return infSortDir==='asc'?va-vb:vb-va;
@@ -2175,7 +2178,6 @@ function renderInfluencers(){
   var list=getFilteredSortedInfluencers();
   var fIcon=document.getElementById('infSortFollowersIcon');if(fIcon)fIcon.textContent=infSortKey==='followers'?(infSortDir==='asc'?'▲':'▼'):'';
   var pIcon=document.getElementById('infSortFeeIcon');if(pIcon)pIcon.textContent=infSortKey==='fee'?(infSortDir==='asc'?'▲':'▼'):'';
-  var sortMissingEl=document.getElementById('filterInfSortMissing');if(sortMissingEl)sortMissingEl.disabled=!infSortKey;
   var tb=document.getElementById('infBody');
   if(!list.length){tb.innerHTML='<tr><td colspan="9" class="empty-state">インフルエンサーが登録されていません</td></tr>';return;}
   var platColor={Instagram:'#e1306c',TikTok:'#010101',YouTube:'#ff0000',X:'#1da1f2'};
