@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=110">
+<link rel="stylesheet" href="css/app.css?v=112">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -358,10 +358,6 @@
               <option value="only">ソート時：未登録のみ</option>
             </select>
             <button class="btn btn-sm" onclick="resetInfFilters()">↺ 絞り込みをリセット</button>
-            <button class="btn btn-sm" onclick="openInfGenreMerge()">🏷️ ジャンル整理</button>
-            <button class="btn btn-sm" onclick="openInfAreaMerge()">🗾 エリア整理</button>
-            <button class="btn btn-sm" onclick="openInfDuplicateMerge()">🧩 重複を統合</button>
-            <button class="btn btn-sm" onclick="openInfluencerBulkImport()">📋 一括インポート</button>
             <button class="btn btn-sm" onclick="openInfluencerExportModal()">📤 リストを出力</button>
             <button class="btn btn-primary btn-sm" onclick="openInfluencerModal()">＋ 追加</button>
           </div>
@@ -558,6 +554,16 @@
           <div class="card-header"><span class="card-title">通知プレビュー</span></div>
           <div style="font-size:13px;color:var(--text2);margin-bottom:10px">営業入力時に送信されるメッセージ</div>
           <div style="background:var(--bg3);border-radius:var(--r);padding:12px;font-size:13px;line-height:1.8;color:var(--text);white-space:pre-wrap" id="cwPreview"></div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">🧹 インフルエンサー データ整理</span></div>
+          <div style="font-size:13px;color:var(--text2);margin-bottom:12px">普段は使わないメンテナンス用ツールです。</div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            <button class="btn btn-sm" onclick="openInfGenreMerge()">🏷️ ジャンル整理</button>
+            <button class="btn btn-sm" onclick="openInfAreaMerge()">🗾 エリア整理</button>
+            <button class="btn btn-sm" onclick="openInfDuplicateMerge()">🧩 重複を統合</button>
+            <button class="btn btn-sm" onclick="openInfluencerBulkImport()">📋 一括インポート</button>
+          </div>
         </div>
       </div>
     </div>
@@ -1636,24 +1642,24 @@
 </div>
 
 
-<script src="js/vendor/pizzip.min.js?v=110"></script>
-<script src="js/vendor/docxtemplater.min.js?v=110"></script>
-<script src="js/config.js?v=110"></script>
-<script src="js/db.js?v=110"></script>
-<script src="js/utils.js?v=110"></script>
-<script src="js/settings.js?v=110"></script>
-<script src="js/stores.js?v=110"></script>
-<script src="js/schedule.js?v=110"></script>
-<script src="js/casting.js?v=110"></script>
-<script src="js/check.js?v=110"></script>
-<script src="js/accounting.js?v=110"></script>
-<script src="js/plans.js?v=110"></script>
-<script src="js/creators.js?v=110"></script>
-<script src="js/corps.js?v=110"></script>
-<script src="js/faqs.js?v=110"></script>
-<script src="js/orders.js?v=110"></script>
-<script src="js/hearing.js?v=110"></script>
-<script src="js/dashboard.js?v=110"></script>
-<script src="js/app.js?v=110"></script>
+<script src="js/vendor/pizzip.min.js?v=112"></script>
+<script src="js/vendor/docxtemplater.min.js?v=112"></script>
+<script src="js/config.js?v=112"></script>
+<script src="js/db.js?v=112"></script>
+<script src="js/utils.js?v=112"></script>
+<script src="js/settings.js?v=112"></script>
+<script src="js/stores.js?v=112"></script>
+<script src="js/schedule.js?v=112"></script>
+<script src="js/casting.js?v=112"></script>
+<script src="js/check.js?v=112"></script>
+<script src="js/accounting.js?v=112"></script>
+<script src="js/plans.js?v=112"></script>
+<script src="js/creators.js?v=112"></script>
+<script src="js/corps.js?v=112"></script>
+<script src="js/faqs.js?v=112"></script>
+<script src="js/orders.js?v=112"></script>
+<script src="js/hearing.js?v=112"></script>
+<script src="js/dashboard.js?v=112"></script>
+<script src="js/app.js?v=112"></script>
 </body>
 </html>
