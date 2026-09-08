@@ -1061,31 +1061,38 @@ function openInfluencerDetail(id){
       var enabledIds=INF_PLATFORM_LIST.filter(function(pl){return pd[pl.id]&&pd[pl.id].enabled;}).map(function(pl){return pl.id;});
       if(!enabledIds.length)return'';
       var shown={};
+      /* 個別・セット料金が未設定の媒体は、料金プラン一覧の方に情報が乗っているため表示しない
+         （対応媒体・費用にはここで実際に金額が入っている物だけ出す） */
       var lines=enabledIds.map(function(pid){
         if(shown[pid])return'';
         var d=pd[pid]||{};
         var bid=d.bundleId;
-        var label,feeStr,transStr;
+        var label,lo,hi,feeStr,transStr;
         if(bid&&pd._bundles&&pd._bundles[bid]){
           var members=enabledIds.filter(function(x){return(pd[x]||{}).bundleId===bid;});
           members.forEach(function(m){shown[m]=true;});
           var b=pd._bundles[bid];
+          lo=b.feeLow!==undefined?b.feeLow:b.fee;hi=b.feeHigh;
+          if(!Number(lo)&&!Number(hi))return'';
           var labels=members.map(function(m){var p=INF_PLATFORM_LIST.find(function(x){return x.id===m;});return p?p.label:m;});
           label=labels.length>1?labels.join('＋')+'（セット）':labels[0];
-          feeStr=feeRangeStr(b.feeLow!==undefined?b.feeLow:b.fee,b.feeHigh,b.taxIncl);
+          feeStr=feeRangeStr(lo,hi,b.taxIncl);
           transStr=b.transIncl?'交通費込':'交通費別';
         }else{
           shown[pid]=true;
+          lo=d.fee;hi=d.feeHigh;
+          if(!Number(lo)&&!Number(hi))return'';
           var pl=INF_PLATFORM_LIST.find(function(x){return x.id===pid;});
           label=pl?pl.label:pid;
-          feeStr=feeRangeStr(d.fee,d.feeHigh,d.taxIncl);
+          feeStr=feeRangeStr(lo,hi,d.taxIncl);
           transStr=d.transIncl?'交通費込':'交通費別';
         }
         return'<div style="display:flex;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);font-size:13px">'
           +'<span style="color:var(--text3);min-width:140px;flex-shrink:0">'+esc(label)+'</span>'
           +'<span style="flex:1;color:var(--text2)">'+feeStr+' ・ '+transStr+'</span>'
         +'</div>';
-      }).join('');
+      }).filter(Boolean).join('');
+      if(!lines)return'';
       return'<div style="margin-bottom:14px">'
         +'<div style="font-size:13px;font-weight:500;color:var(--text2);margin-bottom:6px">📱 対応媒体・費用</div>'
         +lines
