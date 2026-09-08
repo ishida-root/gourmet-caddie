@@ -640,7 +640,8 @@ function saveInfluencer(){
     outreachDate:document.getElementById('iOutreachDate').value,
     areas:_curAreaSel.slice(),
     platformDetails:getPlatformData(),
-    pricePlans:_pricePlanRows.filter(function(r){return r.label||r.amount;})
+    pricePlans:_pricePlanRows.filter(function(r){return r.label||r.amount;}),
+    reviewChecked:isEdit?true:false /* 編集＝目視確認済みとみなすので、編集保存時は確認チェックを外さない（むしろON） */
   };
   if(isEdit){
     var idx=DB.influencers.findIndex(function(x){return x.id===id;});
