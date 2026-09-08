@@ -26,6 +26,7 @@ var INF_PLATFORM_LIST=[
   {id:'tabelog',       label:'食べログ'},
   {id:'tripadvisor',   label:'TripAdvisor'},
   {id:'yt_shorts',     label:'YouTube Shorts'},
+  {id:'x_twitter',     label:'X(旧Twitter)'},
 ];
 
 /* 対応媒体・費用設定：
