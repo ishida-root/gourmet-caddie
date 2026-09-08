@@ -272,6 +272,7 @@ function renderInfPricePlanRows(){
         +'<div class="field" style="flex:0 0 100px"><label style="font-size:12px">交通費</label><select onchange="updateInfPricePlanField('+i+',\'transport\',this.value)"><option value="込み"'+(r.transport==='込み'?' selected':'')+'>込み</option><option value="別"'+(r.transport==='別'?' selected':'')+'>別</option></select></div>'
         +'<button type="button" class="btn-ghost-danger btn-sm" style="flex:0 0 auto" onclick="removeInfPricePlanRow('+i+')">削除</button>'
       +'</div>'
+      +'<div style="margin-bottom:8px">'+platTaxToggleHtml('setInfPricePlanTax',i,!!r.taxIncl)+'</div>'
       +'<div style="font-size:11px;color:var(--text3);margin-bottom:4px">含む媒体（複数選択可・他のプランと重複してOK）</div>'
       +'<div style="display:flex;flex-wrap:wrap;gap:4px 12px;margin-bottom:8px">'
         +INF_PLATFORM_LIST.map(function(pl){
@@ -286,7 +287,12 @@ function renderInfPricePlanRows(){
   }).join('');
 }
 function addInfPricePlanRow(){
-  _pricePlanRows.push({id:uid(),label:'',amount:'',includes:'',transport:'込み',platforms:[]});
+  _pricePlanRows.push({id:uid(),label:'',amount:'',includes:'',transport:'込み',taxIncl:false,platforms:[]});
+  renderInfPricePlanRows();
+}
+function setInfPricePlanTax(idx,val){
+  if(!_pricePlanRows[idx])return;
+  _pricePlanRows[idx].taxIncl=val;
   renderInfPricePlanRows();
 }
 function removeInfPricePlanRow(idx){_pricePlanRows.splice(idx,1);renderInfPricePlanRows();}
@@ -1095,7 +1101,7 @@ function openInfluencerDetail(id){
           return'<div style="padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);margin-bottom:6px">'
             +'<div style="display:flex;justify-content:space-between;align-items:center">'
               +'<span style="font-size:13px;font-weight:500;color:var(--text)">'+esc(p.label||'（プラン名未設定）')+'</span>'
-              +'<span style="font-size:13px;color:var(--accent);font-weight:500">'+(p.amount?fmtMoney(p.amount):'—')+(p.transport?'　<span style="font-size:11px;color:var(--text3);font-weight:400">交通費'+esc(p.transport)+'</span>':'')+'</span>'
+              +'<span style="font-size:13px;color:var(--accent);font-weight:500">'+(p.amount?fmtMoney(p.amount):'—')+'　<span style="font-size:11px;color:var(--text3);font-weight:400">'+(p.taxIncl?'税込':'税別')+(p.transport?'・交通費'+esc(p.transport):'')+'</span></span>'
             +'</div>'
             +((p.platforms&&p.platforms.length)?'<div style="margin-top:4px">'+p.platforms.map(function(pid){var pl=INF_PLATFORM_LIST.find(function(x){return x.id===pid;});return'<span style="display:inline-block;font-size:11px;padding:1px 6px;background:var(--accent-bg);color:var(--accent);border-radius:3px;margin:1px">'+esc(pl?pl.label:pid)+'</span>';}).join('')+'</div>':'')
             +(p.includes?'<div style="font-size:12px;color:var(--text3);margin-top:4px">'+esc(p.includes)+'</div>':'')
