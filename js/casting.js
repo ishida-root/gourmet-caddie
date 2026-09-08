@@ -2097,6 +2097,87 @@ function downloadInfluencerCsv(list,targetStoreName){
   setTimeout(function(){URL.revokeObjectURL(url);},1000);
 }
 /* ============================================================
+   予算に応じたフォロワー層別の招待可能人数の算出＋層別シートのExcel出力
+   （商談前に「予算◯円だとフォロワー数ごとに何名くらい呼べるか」を
+   お客様に説明する資料を作るための機能） */
+var BUDGET_TIER_GROUPS=[
+  {key:'g1',label:'①フォロワー5万人以下',min:0,max:50000},
+  {key:'g2',label:'②フォロワー5万〜10万人',min:50000,max:100000},
+  {key:'g3',label:'③フォロワー10万人以上',min:100000,max:Infinity}
+];
+/* 1名あたりの実質PR単価。下限・上限両方あれば平均、上限が無ければ下限のみを使う */
+function infEffectiveFee(i){
+  var lo=Number(i.feeLow!==undefined&&i.feeLow!==''?i.feeLow:i.fee)||0;
+  var hi=Number(i.feeHigh)||0;
+  if(!lo&&!hi)return 0;
+  return hi?(lo+hi)/2:lo;
+}
+/* フォロワー数未登録の人は層に振り分けられないため、別枠（unregistered）にまとめる */
+function computeBudgetTierBreakdown(list,budget){
+  var groups=BUDGET_TIER_GROUPS.map(function(g){return{group:g,list:[]};});
+  var unregistered=[];
+  list.forEach(function(i){
+    var hasFollowers=i.followers!==undefined&&i.followers!==null&&i.followers!=='';
+    if(!hasFollowers){unregistered.push(i);return;}
+    var f=Number(i.followers)||0;
+    var g=groups.find(function(x){return f>x.group.min&&f<=x.group.max;})||groups[0];
+    g.list.push(i);
+  });
+  groups.forEach(function(g){
+    var fees=g.list.map(infEffectiveFee).filter(function(x){return x>0;});
+    g.avgFee=fees.length?Math.round(fees.reduce(function(a,b){return a+b;},0)/fees.length):0;
+    g.count=(budget&&g.avgFee)?Math.floor(budget/g.avgFee):null;
+  });
+  return{groups:groups,unregistered:unregistered};
+}
+/* 予算・層ごとの目安人数を、お客様向けの文章として1行ずつ組み立てる */
+function budgetTierNoteLines(breakdown,budget){
+  var lines=breakdown.groups.map(function(g){
+    var n=g.list.length;
+    if(!n)return g.group.label+'：対象者なし';
+    if(!budget)return g.group.label+'：対象'+n+'名（平均PR単価 '+(g.avgFee?g.avgFee.toLocaleString()+'円':'未登録')+'）';
+    if(!g.avgFee)return g.group.label+'：対象'+n+'名中、PR単価未登録のため人数の目安を算出できません';
+    return g.group.label+'：'+g.count+'名まで招待可能です（対象'+n+'名 / 平均PR単価 '+g.avgFee.toLocaleString()+'円）';
+  });
+  if(breakdown.unregistered.length)lines.push('④フォロワー数未登録：'+breakdown.unregistered.length+'名（層分け対象外）');
+  return lines.join('\n');
+}
+function downloadInfluencerExcelByTier(list,targetStoreName,budget){
+  if(!list.length){alert('出力対象のインフルエンサーがありません（絞り込み条件をご確認ください）');return;}
+  if(typeof XLSX==='undefined'){alert('Excel出力用ライブラリの読み込みに失敗しました。ページを再読み込みしてください。');return;}
+  var breakdown=computeBudgetTierBreakdown(list,budget);
+  var wb=XLSX.utils.book_new();
+  var addSheet=function(sheetName,items,noteLines){
+    var aoa=[];
+    if(targetStoreName)aoa.push([targetStoreName+'様 ご提案リスト']);
+    noteLines.forEach(function(line){aoa.push([line]);});
+    aoa.push([]);
+    aoa.push(['名前','アカウント','エリア','フォロワー','フォロー','ジャンル']);
+    items.forEach(function(i){
+      var accountUrl=i.url||(i.handle?'https://www.instagram.com/'+i.handle.replace(/^@/,''):'');
+      aoa.push([i.name||'',accountUrl,infAreas(i).join('・'),i.followers||'',i.following||'',infGenres(i).join('・')]);
+    });
+    var ws=XLSX.utils.aoa_to_sheet(aoa);
+    ws['!cols']=[{wch:16},{wch:28},{wch:16},{wch:10},{wch:10},{wch:20}];
+    /* シート名はExcelの制約（31文字・一部記号不可）に合わせて整形する */
+    var safeName=sheetName.replace(/[\\\/\?\*\[\]:]/g,'').slice(0,31)||'Sheet';
+    XLSX.utils.book_append_sheet(wb,ws,safeName);
+  };
+  breakdown.groups.forEach(function(g){
+    if(!g.list.length)return;
+    var note=budget
+      ?(g.avgFee?g.group.label+'：予算'+budget.toLocaleString()+'円 ÷ 平均PR単価'+g.avgFee.toLocaleString()+'円 ＝ 目安'+g.count+'名まで招待可能です'
+                :g.group.label+'：PR単価未登録のため人数の目安を算出できません')
+      :g.group.label;
+    addSheet(g.group.label,g.list,[note]);
+  });
+  if(breakdown.unregistered.length)addSheet('④フォロワー数未登録',breakdown.unregistered,['フォロワー数未登録のため層分け対象外です']);
+  var pad=function(n){return String(n).padStart(2,'0');};
+  var now=new Date();
+  var fname=(targetStoreName?targetStoreName+'様_':'')+'インフルエンサーリスト_層別_'+now.getFullYear()+pad(now.getMonth()+1)+pad(now.getDate())+'.xlsx';
+  XLSX.writeFile(wb,fname);
+}
+/* ============================================================
    リスト出力モーダル：エリア・ジャンルをチェックボックスで複数選択して出力する
    ============================================================ */
 function exportCheckboxesHtml(containerValues,checkedSet,type){
@@ -2125,6 +2206,7 @@ function openInfluencerExportModal(){
   var feeMinEl=document.getElementById('exportFeeMin');if(feeMinEl)feeMinEl.value='';
   var feeMaxEl=document.getElementById('exportFeeMax');if(feeMaxEl)feeMaxEl.value='';
   var noFeeEl=document.getElementById('exportIncludeNoFee');if(noFeeEl)noFeeEl.checked=true;
+  var budgetEl=document.getElementById('exportBudget');if(budgetEl)budgetEl.value='';
   openModal('infExportModal');
   updateInfExportCount();
 }
@@ -2164,14 +2246,24 @@ function exportModalFilteredList(){
   });
 }
 function updateInfExportCount(){
+  var list=exportModalFilteredList();
   var el=document.getElementById('infExportCount');
-  if(!el)return;
-  el.textContent=exportModalFilteredList().length+'件が出力対象です';
+  if(el)el.textContent=list.length+'件が出力対象です';
+  var noteEl=document.getElementById('exportBudgetNote');
+  if(noteEl){
+    var budgetEl=document.getElementById('exportBudget');
+    var budget=budgetEl&&budgetEl.value!==''?Number(budgetEl.value):0;
+    noteEl.textContent=budget?budgetTierNoteLines(computeBudgetTierBreakdown(list,budget),budget):'';
+  }
 }
 function runInfluencerExportFromModal(){
   var storeId=(document.getElementById('exportTargetStore')||{}).value||'';
   var store=storeId?DB.stores.find(function(s){return s.id===storeId;}):null;
-  downloadInfluencerCsv(exportModalFilteredList(),store?store.name:'');
+  var budgetEl=document.getElementById('exportBudget');
+  var budget=budgetEl&&budgetEl.value!==''?Number(budgetEl.value):0;
+  var list=exportModalFilteredList();
+  if(budget)downloadInfluencerExcelByTier(list,store?store.name:'',budget);
+  else downloadInfluencerCsv(list,store?store.name:'');
   closeModal('infExportModal');
 }
 /* 従来の「今の画面の絞り込み」に基づく出力（他機能から直接呼び出す場合用に残す） */
