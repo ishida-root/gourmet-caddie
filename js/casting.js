@@ -19,6 +19,7 @@ var INF_PLATFORM_LIST=[
   {id:'ig_collab',     label:'Instagram コラボ投稿'},
   {id:'threads',       label:'Threads'},
   {id:'tiktok',        label:'TikTok'},
+  {id:'tiktok_story',  label:'TikTok ストーリー'},
   {id:'facebook',      label:'Facebook'},
   {id:'lemon8',        label:'Lemon8'},
   {id:'google_review', label:'Googleマップ クチコミ'},
@@ -35,7 +36,6 @@ var INF_PLATFORM_LIST=[
 var _curPlatformData={};
 var _expandedIndividualPlats={};
 function toggleIndividualPlatformInput(pid){_expandedIndividualPlats[pid]=!_expandedIndividualPlats[pid];renderPlatformDetails(getPlatformData());}
-var _bundleCreateOpen=false;
 
 function platformFeeInfo(pd,plId){
   var d=(pd&&pd[plId])||{};
@@ -154,38 +154,14 @@ function renderPlatformDetails(saved){
     +'</div>';
   }).join('');
 
-  /* セット作成候補は「対応中の全媒体」から選べるようにする（既にセット済みの媒体も対象に含める。
-     含めないと一度セットに入れた媒体が二度と選べなくなってしまうため） */
-  var bundleBtnHtml=enabledIds.length>=1?'<button type="button" class="btn btn-sm" onclick="toggleBundleCreatePanel()">＋ セット料金を作る</button>':'';
-  var bundlePanelHtml='';
-  if(_bundleCreateOpen){
-    if(enabledIds.length<1){
-      bundlePanelHtml='<div style="margin-top:8px;padding:10px;background:var(--bg3);border-radius:var(--r);font-size:12px;color:var(--text3)">上で対応媒体を選択してください</div>';
-    }else{
-      bundlePanelHtml='<div style="margin-top:8px;padding:10px;background:var(--bg3);border-radius:var(--r)">'
-        +'<div style="font-size:12px;color:var(--text2);margin-bottom:6px">料金を設定する媒体を選択（1つでも可・複数選ぶとセット料金に・例：料理写真セットで5万円）<br>※既に別のセットに入っている媒体を選ぶと、そちらから外れて新しいセットに移動します</div>'
-        +'<div style="display:flex;flex-wrap:wrap;gap:6px 14px;margin-bottom:8px">'
-        +enabledIds.map(function(id){
-          var pl=INF_PLATFORM_LIST.find(function(x){return x.id===id;});
-          var already=(saved[id]&&saved[id].bundleId)?'<span style="font-size:11px;color:var(--text3)">（セット済み）</span>':'';
-          return'<label style="display:inline-flex;align-items:center;gap:5px;font-size:12px;cursor:pointer">'
-            +'<input type="checkbox" class="bundle-create-chk" value="'+id+'" style="width:14px;height:14px;cursor:pointer;accent-color:var(--accent)"> '+esc(pl?pl.label:id)+already
-          +'</label>';
-        }).join('')
-        +'</div>'
-        +'<button type="button" class="btn btn-sm btn-primary" onclick="createPlatformBundle()">作成</button>'
-        +' <button type="button" class="btn btn-sm" onclick="toggleBundleCreatePanel()">キャンセル</button>'
-      +'</div>';
-    }
-  }
-
+  /* セットの新規作成は廃止（重なる価格帯を表現できないため）。料金プラン一覧の
+     チェックボックス式に一本化した。既存にセットが残っている場合の表示・解除（dissolveBundle）
+     は引き続き残してあるので、既存データが消えることはない。 */
   var feeSectionHtml='<div style="padding:10px 12px">'
     +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">'
       +'<span style="font-size:12px;font-weight:500;color:var(--text2)">料金設定</span>'
-      +bundleBtnHtml
     +'</div>'
-    +(enabledIds.length?(feeRowsHtml||'<div style="font-size:12px;color:var(--text3)">「＋ セット料金を作る」から料金を設定してください</div>'):'<div style="font-size:12px;color:var(--text3)">上で対応媒体を選択してください</div>')
-    +bundlePanelHtml
+    +(enabledIds.length?(feeRowsHtml||'<div style="font-size:12px;color:var(--text3)">下の「＋ 入力」から料金を設定してください</div>'):'<div style="font-size:12px;color:var(--text3)">上で対応媒体を選択してください</div>')
   +'</div>';
 
   el.innerHTML=checklistHtml+feeSectionHtml;
@@ -223,33 +199,6 @@ function setBundleTrans(bid,val){
   if(!d._bundles[bid])d._bundles[bid]={feeLow:0,feeHigh:0,taxIncl:false,transIncl:false};
   d._bundles[bid].transIncl=val;
   renderPlatformDetails(d);
-}
-
-function toggleBundleCreatePanel(){
-  _bundleCreateOpen=!_bundleCreateOpen;
-  renderPlatformDetails(getPlatformData());
-}
-
-function createPlatformBundle(){
-  var checked=Array.from(document.querySelectorAll('.bundle-create-chk:checked')).map(function(cb){return cb.value;});
-  if(checked.length<1){alert('媒体を選んでください');return;}
-  var data=getPlatformData();
-  var bid=uid();
-  if(!data._bundles)data._bundles={};
-  data._bundles[bid]={feeLow:0,feeHigh:0,taxIncl:false,transIncl:false};
-  /* 既に別セットに入っている媒体を選んだ場合、そちらから外す（元のセットが空になれば削除） */
-  var oldBundleIds={};
-  checked.forEach(function(id){
-    if(!data[id])data[id]={enabled:true};
-    if(data[id].bundleId&&data[id].bundleId!==bid)oldBundleIds[data[id].bundleId]=true;
-    data[id].bundleId=bid;
-  });
-  Object.keys(oldBundleIds).forEach(function(oldBid){
-    var stillHasMembers=Object.keys(data).some(function(k){return k!=='_bundles'&&data[k]&&data[k].bundleId===oldBid;});
-    if(!stillHasMembers&&data._bundles)delete data._bundles[oldBid];
-  });
-  _bundleCreateOpen=false;
-  renderPlatformDetails(data);
 }
 
 function dissolveBundle(bid){
@@ -315,25 +264,42 @@ function renderInfPricePlanRows(){
     return;
   }
   wrap.innerHTML=_pricePlanRows.map(function(r,i){
+    var platforms=r.platforms||[];
     return'<div style="padding:10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);margin-bottom:8px">'
       +'<div style="display:flex;gap:10px;align-items:flex-end;margin-bottom:8px">'
-        +'<div class="field" style="flex:1"><label style="font-size:12px">プラン名</label><input type="text" value="'+esc(r.label||'')+'" placeholder="例: ストーリーのみ" oninput="updateInfPricePlanField('+i+',\'label\',this.value)"></div>'
+        +'<div class="field" style="flex:1"><label style="font-size:12px">プラン名</label><input type="text" value="'+esc(r.label||'')+'" placeholder="例: プレミアムプラン" oninput="updateInfPricePlanField('+i+',\'label\',this.value)"></div>'
         +'<div class="field" style="flex:1"><label style="font-size:12px">金額（円）</label><input type="number" value="'+esc(r.amount||'')+'" placeholder="例: 50000" oninput="updateInfPricePlanField('+i+',\'amount\',this.value)"></div>'
         +'<div class="field" style="flex:0 0 100px"><label style="font-size:12px">交通費</label><select onchange="updateInfPricePlanField('+i+',\'transport\',this.value)"><option value="込み"'+(r.transport==='込み'?' selected':'')+'>込み</option><option value="別"'+(r.transport==='別'?' selected':'')+'>別</option></select></div>'
         +'<button type="button" class="btn-ghost-danger btn-sm" style="flex:0 0 auto" onclick="removeInfPricePlanRow('+i+')">削除</button>'
       +'</div>'
-      +'<input type="text" value="'+esc(r.includes||'')+'" placeholder="含む内容（例: Instagramストーリー1本＋フィード投稿1本）" oninput="updateInfPricePlanField('+i+',\'includes\',this.value)" style="width:100%">'
+      +'<div style="font-size:11px;color:var(--text3);margin-bottom:4px">含む媒体（複数選択可・他のプランと重複してOK）</div>'
+      +'<div style="display:flex;flex-wrap:wrap;gap:4px 12px;margin-bottom:8px">'
+        +INF_PLATFORM_LIST.map(function(pl){
+          return'<label style="display:inline-flex;align-items:center;gap:4px;font-size:12px;cursor:pointer">'
+            +'<input type="checkbox" '+(platforms.indexOf(pl.id)>=0?'checked':'')+' onchange="toggleInfPricePlanPlatform('+i+',\''+pl.id+'\')">'
+            +esc(pl.label)
+          +'</label>';
+        }).join('')
+      +'</div>'
+      +'<input type="text" value="'+esc(r.includes||'')+'" placeholder="補足（例: ピン留め1ヶ月間、1ヶ月半後に再投稿1回など）" oninput="updateInfPricePlanField('+i+',\'includes\',this.value)" style="width:100%">'
     +'</div>';
   }).join('');
 }
 function addInfPricePlanRow(){
-  _pricePlanRows.push({id:uid(),label:'',amount:'',includes:'',transport:'込み'});
+  _pricePlanRows.push({id:uid(),label:'',amount:'',includes:'',transport:'込み',platforms:[]});
   renderInfPricePlanRows();
 }
 function removeInfPricePlanRow(idx){_pricePlanRows.splice(idx,1);renderInfPricePlanRows();}
 function updateInfPricePlanField(idx,field,value){
   if(!_pricePlanRows[idx])return;
   _pricePlanRows[idx][field]=value;
+}
+function toggleInfPricePlanPlatform(idx,platformId){
+  var r=_pricePlanRows[idx];
+  if(!r)return;
+  if(!r.platforms)r.platforms=[];
+  var pos=r.platforms.indexOf(platformId);
+  if(pos>=0)r.platforms.splice(pos,1);else r.platforms.push(platformId);
 }
 
 var editingInfId=null;
@@ -474,7 +440,7 @@ function openInfluencerModal(id){
       else if(inf.fee){document.getElementById('iFeeLow').value=inf.fee;}
       document.getElementById('iFeeHigh').value=inf.feeHigh||'';
       renderPlatformDetails(inf.platformDetails||{});
-      _pricePlanRows=(inf.pricePlans||[]).map(function(r){return Object.assign({},r);});
+      _pricePlanRows=(inf.pricePlans||[]).map(function(r){return Object.assign({},r,{platforms:(r.platforms||[]).slice()});});
     }else{
       renderPlatformDetails({});
       _pricePlanRows=[];
@@ -990,7 +956,6 @@ function markInfluencerContacted(id){
 function openInfluencerDetail(id){
   var inf=DB.influencers.find(function(x){return x.id===id;});
   if(!inf)return;
-  var platColor={Instagram:'#e1306c',TikTok:'#010101',YouTube:'#ff0000',X:'#1da1f2'};
   /* アカウントURL決定：登録内容にかかわらず、常にInstagramのURL形式で生成する */
   var accountUrl=inf.url||(inf.handle?'https://www.instagram.com/'+inf.handle.replace(/^@/,''):'');
   var castings=DB.castings.filter(function(c){return c.infId===id;}).sort(function(a,b){return new Date(b.date)-new Date(a.date);});
@@ -1009,7 +974,7 @@ function openInfluencerDetail(id){
             ?'<a href="'+esc(accountUrl)+'" target="_blank" rel="noopener" style="font-size:16px;font-weight:500;color:var(--accent);text-decoration:none">'+esc(inf.name)+'&nbsp;↗</a>'
             :'<span style="font-size:16px;font-weight:500">'+esc(inf.name)+'</span>'
           )
-          +(inf.handle?'<span style="font-size:13px;color:'+(platColor[inf.platform]||'var(--text3)')+'">'+esc(inf.handle)+'</span>':'')
+          +(inf.handle?'<span style="font-size:13px;color:#e1306c">'+esc(inf.handle)+'</span>':'')
           +ratingStars(inf.rating)
           +ratingWarningBadge(inf.rating)
           +(inf.accountGone?'<span class="badge" style="background:var(--bg3);color:var(--text3);border:1px solid var(--border)">🚫 アカウント不明（垢消し・逃亡など）</span>':'')
@@ -1132,7 +1097,8 @@ function openInfluencerDetail(id){
               +'<span style="font-size:13px;font-weight:500;color:var(--text)">'+esc(p.label||'（プラン名未設定）')+'</span>'
               +'<span style="font-size:13px;color:var(--accent);font-weight:500">'+(p.amount?fmtMoney(p.amount):'—')+(p.transport?'　<span style="font-size:11px;color:var(--text3);font-weight:400">交通費'+esc(p.transport)+'</span>':'')+'</span>'
             +'</div>'
-            +(p.includes?'<div style="font-size:12px;color:var(--text3);margin-top:2px">'+esc(p.includes)+'</div>':'')
+            +((p.platforms&&p.platforms.length)?'<div style="margin-top:4px">'+p.platforms.map(function(pid){var pl=INF_PLATFORM_LIST.find(function(x){return x.id===pid;});return'<span style="display:inline-block;font-size:11px;padding:1px 6px;background:var(--accent-bg);color:var(--accent);border-radius:3px;margin:1px">'+esc(pl?pl.label:pid)+'</span>';}).join('')+'</div>':'')
+            +(p.includes?'<div style="font-size:12px;color:var(--text3);margin-top:4px">'+esc(p.includes)+'</div>':'')
           +'</div>';
         }).join('')
       +'</div>';
@@ -2203,15 +2169,14 @@ function renderInfluencers(){
   var pIcon=document.getElementById('infSortFeeIcon');if(pIcon)pIcon.textContent=infSortKey==='fee'?(infSortDir==='asc'?'▲':'▼'):'';
   var tb=document.getElementById('infBody');
   if(!list.length){tb.innerHTML='<tr><td colspan="10" class="empty-state">インフルエンサーが登録されていません</td></tr>';return;}
-  var platColor={Instagram:'#e1306c',TikTok:'#010101',YouTube:'#ff0000',X:'#1da1f2'};
   tb.innerHTML=list.map(function(i){
     var last=DB.castings.filter(function(c){return c.infId===i.id;}).sort(function(a,b){return new Date(b.date)-new Date(a.date);})[0];
     var accountUrl=i.url||(i.handle?'https://www.instagram.com/'+i.handle.replace(/^@/,''):'');
+    /* リンク先は常にInstagramなので、色も常にInstagramブランドカラーで統一する
+       （以前はplatform項目の値でリンクの色が赤/青に変わってしまい紛らわしかった） */
     var handleHtml=i.handle
-      ?(accountUrl
-        ?'<a href="'+esc(accountUrl)+'" target="_blank" rel="noopener" style="font-size:11px;color:'+(platColor[i.platform]||'var(--accent)')+';text-decoration:none">'+esc(i.handle)+'&nbsp;↗</a>'
-        :'<span style="font-size:11px;color:'+(platColor[i.platform]||'var(--text3)')+'">'+esc(i.handle)+'</span>'
-      ):'';
+      ?'<a href="'+esc(accountUrl)+'" target="_blank" rel="noopener" style="font-size:11px;color:#e1306c;text-decoration:none">'+esc(i.handle)+'&nbsp;↗</a>'
+      :'';
     var warnBadge=ratingWarningBadge(i.rating);
     var goneBadge=i.accountGone?'<span class="badge" style="background:var(--bg3);color:var(--text3);border:1px solid var(--border);white-space:nowrap">🚫 アカウント不明</span>':'';
     var rowBg=i.accountGone?'':parseInt(i.rating)===1?'background:var(--red-bg)':parseInt(i.rating)===2?'background:var(--amber-bg)':'';
