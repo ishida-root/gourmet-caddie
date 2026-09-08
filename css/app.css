@@ -98,7 +98,9 @@ button{cursor:pointer;border:none;border-radius:var(--r);transition:all .15s;fon
 .fr1{margin-bottom:10px}
 .field{display:flex;flex-direction:column;gap:4px}
 .field label{font-size:13px;color:var(--text2);font-weight:400}
-.form-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;padding-top:14px;border-top:1px solid var(--border)}
+/* モーダル内フォームの保存・キャンセル操作は、内容が長くてスクロールしても
+   毎回下まで探しに行かなくて済むよう、モーダル下部に固定表示する */
+.form-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:14px;padding:14px 0;border-top:1px solid var(--border);position:sticky;bottom:0;background:var(--bg2);z-index:2}
 
 .stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px}
 .stat-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--rl);padding:16px 18px}
