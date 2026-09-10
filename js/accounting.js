@@ -107,6 +107,8 @@ function openInvoiceModal(id,opts){
       if(ctxLabel)ctxLabel.textContent=storeName(lc.storeId)+' × '+infName(lc.infId);
       /* PR費用セット（新規のときのみ） */
       if(!id&&lc.fee){document.getElementById('invPrFee').value=lc.fee;calcInvTotal();}
+      /* セレクトが非表示でも、インボイス番号表示のためにinfIdは反映しておく */
+      if(lc.infId)infSel.value=lc.infId;
     }
     if(ctxBox)ctxBox.style.display='';
     if(infStoreRow)infStoreRow.style.display='none';
@@ -114,6 +116,7 @@ function openInvoiceModal(id,opts){
     if(ctxBox)ctxBox.style.display='none';
     if(infStoreRow)infStoreRow.style.display='';
   }
+  updateInvInvoiceNumberDisplay();
   openModal('invoiceModal');
 }
 
@@ -135,6 +138,7 @@ function onInvoiceTypeChange(){
   var req=document.getElementById('invStoreReq');if(req)req.style.display=isAd?'':'none';
   /* キャスティング文脈はインフルエンサーのみ */
   if(!isInf){var ctx=document.getElementById('invCastingCtxBox');if(ctx)ctx.style.display='none';}
+  updateInvInvoiceNumberDisplay();
   /* 進捗ステータスの選択肢を方向（支払い/入金）に応じて切替 */
   var statusSel=document.getElementById('invStatus');
   if(statusSel){
@@ -146,6 +150,26 @@ function onInvoiceTypeChange(){
   calcInvTotal();
 }
 
+/* 選択中のインフルエンサーがインフルエンサー管理側に登録しているインボイス番号を表示する。
+   未登録の場合は「不課税にする」ボタンで気づけるよう、税率0%への切り替えを促す */
+function updateInvInvoiceNumberDisplay(){
+  var row=document.getElementById('invInfInvoiceRow');
+  var isInf=(document.getElementById('invPayeeType')||{}).value==='influencer';
+  var infId=(document.getElementById('invInfId')||{}).value;
+  if(!row)return;
+  if(!isInf||!infId){row.style.display='none';return;}
+  var inf=DB.influencers.find(function(x){return x.id===infId;});
+  var numEl=document.getElementById('invInvoiceNumber');
+  if(numEl)numEl.value=(inf&&inf.invoiceNumber)?inf.invoiceNumber:'';
+  row.style.display='';
+}
+/* 個人でインボイス未登録など、消費税がかからない場合にワンクリックで税率0%にする */
+function setInvoiceTaxFree(){
+  var el=document.getElementById('invTaxRate');
+  if(!el)return;
+  el.value='0';
+  calcInvTotal();
+}
 function calcInvTotal(){
   var t=document.querySelector('input[name="invTypeRadio"]:checked');
   var val=t?t.value:'influencer';
@@ -228,6 +252,17 @@ function saveInvoice(){
   inv.billingName=(payeeType==='ad')?'':((document.getElementById('invBillingName')||{}).value||'');
   /* 仮の費用（請求書発行前の見込み・経費抜き） */
   inv.isEstimate=!!document.getElementById('invIsEstimate').checked;
+  /* インボイス登録番号：ここで入力・変更した内容はインフルエンサー管理側にも反映する
+     （請求書処理のたびに毎回入力し直さなくて済むように） */
+  if(payeeType==='influencer'&&inv.infId){
+    var numEl=document.getElementById('invInvoiceNumber');
+    var newNum=numEl?numEl.value.trim():'';
+    var targetInf=DB.influencers.find(function(x){return x.id===inv.infId;});
+    if(targetInf&&(targetInf.invoiceNumber||'')!==newNum){
+      targetInf.invoiceNumber=newNum;
+      saveItem('influencers',targetInf);
+    }
+  }
   if(!DB.invoices)DB.invoices=[];
   if(isEdit){
     var idx=DB.invoices.findIndex(function(x){return x.id===id;});

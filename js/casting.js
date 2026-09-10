@@ -437,7 +437,7 @@ function openInfluencerModal(id){
   _expandedIndividualPlats={};
   var titleEl=document.getElementById('infModalTitle');
   if(titleEl)titleEl.textContent=id?'インフルエンサーを編集':'インフルエンサーを追加';
-  ['iName','iHandle','iContact','iAgency','iMemo','iFeeLow','iFeeHigh','iOutreachDate'].forEach(function(fid){var el=document.getElementById(fid);if(el)el.value='';});
+  ['iName','iHandle','iContact','iAgency','iMemo','iFeeLow','iFeeHigh','iOutreachDate','iInvoiceNumber'].forEach(function(fid){var el=document.getElementById(fid);if(el)el.value='';});
   document.getElementById('iFollowers').value='';
   document.getElementById('iFollowing').value='';
   document.getElementById('iRating').value='';
@@ -450,7 +450,7 @@ function openInfluencerModal(id){
   if(id){
     var inf=DB.influencers.find(function(x){return x.id===id;});
     if(inf){
-      var map={iName:'name',iHandle:'handle',iFollowers:'followers',iFollowing:'following',iContact:'contact',iAgency:'agency',iMemo:'memo',iRating:'rating',iOutreachDate:'outreachDate'};
+      var map={iName:'name',iHandle:'handle',iFollowers:'followers',iFollowing:'following',iContact:'contact',iAgency:'agency',iMemo:'memo',iRating:'rating',iOutreachDate:'outreachDate',iInvoiceNumber:'invoiceNumber'};
       Object.keys(map).forEach(function(fid){var el=document.getElementById(fid);if(el&&inf[map[fid]]!==undefined)el.value=inf[map[fid]]||'';});
       /* 廃止した「返信待ち」「交渉中」は編集フォームに選択肢が無いため、正規化した値を入れる
          （そのまま保存すると声掛け状況が空になってしまうのを防ぐ） */
@@ -650,6 +650,7 @@ function saveInfluencer(){
     fee:feeLow, /* 後方互換 */
     contact:document.getElementById('iContact').value,
     agency:document.getElementById('iAgency').value,
+    invoiceNumber:document.getElementById('iInvoiceNumber').value.trim(),
     rating:document.getElementById('iRating').value,
     accountGone:document.getElementById('iAccountGone').checked,
     memo:document.getElementById('iMemo').value,
