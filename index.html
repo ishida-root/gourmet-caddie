@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=133">
+<link rel="stylesheet" href="css/app.css?v=134">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -319,8 +319,6 @@
               <option value="未声掛け">未声掛け</option>
               <option value="保留">保留</option>
               <option value="声掛け済み">声掛け済み</option>
-              <option value="返信待ち">返信待ち</option>
-              <option value="交渉中">交渉中</option>
               <option value="NG">NG</option>
             </select>
             <select id="filterInfEngagement" onchange="renderInfluencers()" style="font-size:12px;padding:4px 8px;width:auto">
@@ -1027,7 +1025,7 @@
 
     <!-- 声かけ状況 -->
     <div style="font-size:13px;font-weight:500;color:var(--text2);margin:14px 0 8px;padding-top:10px;border-top:1px solid var(--border)">📨 声かけ状況</div>
-    <div class="fr"><div class="field"><label>ステータス <span style="font-size:11px;color:var(--text3);font-weight:400">※起用実績は自動判定（キャスティング履歴から）</span></label><select id="iOutreachStatus"><option value="">—（未設定）</option><option value="未声掛け">未声掛け</option><option value="保留">保留</option><option value="声掛け済み">声掛け済み</option><option value="返信待ち">返信待ち</option><option value="交渉中">交渉中</option><option value="NG">NG</option></select></div><div class="field"><label>声かけ日</label><input id="iOutreachDate" type="date"></div></div>
+    <div class="fr"><div class="field"><label>ステータス <span style="font-size:11px;color:var(--text3);font-weight:400">※起用実績は自動判定（キャスティング履歴から）</span></label><select id="iOutreachStatus"><option value="">—（未設定）</option><option value="未声掛け">未声掛け</option><option value="保留">保留</option><option value="声掛け済み">声掛け済み</option><option value="NG">NG</option></select></div><div class="field"><label>声かけ日</label><input id="iOutreachDate" type="date"></div></div>
     <div class="fr1 field">
       <label>対応エリア <span style="font-size:11px;color:var(--text3);font-weight:400">（複数選択可）</span></label>
       <div id="iAreaRegionBtns" style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px"></div>
@@ -1661,25 +1659,25 @@
 </div>
 
 
-<script src="js/vendor/pizzip.min.js?v=133"></script>
-<script src="js/vendor/docxtemplater.min.js?v=133"></script>
-<script src="js/vendor/xlsx.full.min.js?v=133"></script>
-<script src="js/config.js?v=133"></script>
-<script src="js/db.js?v=133"></script>
-<script src="js/utils.js?v=133"></script>
-<script src="js/settings.js?v=133"></script>
-<script src="js/stores.js?v=133"></script>
-<script src="js/schedule.js?v=133"></script>
-<script src="js/casting.js?v=133"></script>
-<script src="js/check.js?v=133"></script>
-<script src="js/accounting.js?v=133"></script>
-<script src="js/plans.js?v=133"></script>
-<script src="js/creators.js?v=133"></script>
-<script src="js/corps.js?v=133"></script>
-<script src="js/faqs.js?v=133"></script>
-<script src="js/orders.js?v=133"></script>
-<script src="js/hearing.js?v=133"></script>
-<script src="js/dashboard.js?v=133"></script>
-<script src="js/app.js?v=133"></script>
+<script src="js/vendor/pizzip.min.js?v=134"></script>
+<script src="js/vendor/docxtemplater.min.js?v=134"></script>
+<script src="js/vendor/xlsx.full.min.js?v=134"></script>
+<script src="js/config.js?v=134"></script>
+<script src="js/db.js?v=134"></script>
+<script src="js/utils.js?v=134"></script>
+<script src="js/settings.js?v=134"></script>
+<script src="js/stores.js?v=134"></script>
+<script src="js/schedule.js?v=134"></script>
+<script src="js/casting.js?v=134"></script>
+<script src="js/check.js?v=134"></script>
+<script src="js/accounting.js?v=134"></script>
+<script src="js/plans.js?v=134"></script>
+<script src="js/creators.js?v=134"></script>
+<script src="js/corps.js?v=134"></script>
+<script src="js/faqs.js?v=134"></script>
+<script src="js/orders.js?v=134"></script>
+<script src="js/hearing.js?v=134"></script>
+<script src="js/dashboard.js?v=134"></script>
+<script src="js/app.js?v=134"></script>
 </body>
 </html>

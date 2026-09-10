@@ -452,7 +452,9 @@ function openInfluencerModal(id){
     if(inf){
       var map={iName:'name',iHandle:'handle',iFollowers:'followers',iFollowing:'following',iContact:'contact',iAgency:'agency',iMemo:'memo',iRating:'rating',iOutreachDate:'outreachDate'};
       Object.keys(map).forEach(function(fid){var el=document.getElementById(fid);if(el&&inf[map[fid]]!==undefined)el.value=inf[map[fid]]||'';});
-      if(inf.outreachStatus)document.getElementById('iOutreachStatus').value=inf.outreachStatus;
+      /* 廃止した「返信待ち」「交渉中」は編集フォームに選択肢が無いため、正規化した値を入れる
+         （そのまま保存すると声掛け状況が空になってしまうのを防ぐ） */
+      if(inf.outreachStatus)document.getElementById('iOutreachStatus').value=infOutreachStatus(inf);
       document.getElementById('iAccountGone').checked=!!inf.accountGone;
       _curGenreSel=infGenres(inf).slice();
       _curAreaSel=infAreas(inf).slice();
@@ -1058,8 +1060,8 @@ function openInfluencerDetail(id){
         +'<textarea id="infOutreachEmailText" readonly style="width:100%;min-height:180px;font-size:12px;line-height:1.7;padding:10px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg2);color:var(--text);resize:vertical" onclick="this.select()">'+esc(infOutreachEmailTemplate(inf))+'</textarea>'
       +'</div>'
       :'')
-    /* 返信定型文（条件をご共有いただいた後の返信・コピー用。返信待ち・交渉中の間だけ表示） */
-    +(['返信待ち','交渉中'].indexOf(infOutreachStatus(inf))>=0
+    /* 返信定型文（条件をご共有いただいた後の返信・コピー用。声掛け済みの間だけ表示） */
+    +(infOutreachStatus(inf)==='声掛け済み'
       ?'<div style="margin-bottom:16px;padding:10px 12px;background:var(--bg3);border-radius:var(--r)">'
         +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">'
           +'<span style="font-size:12px;font-weight:500;color:var(--text2)">💬 返信定型文（条件確認後・コピー用）</span>'
@@ -1779,13 +1781,17 @@ function deleteCasting(id){
    ============================================================ */
 
 /* 声かけ状況（アプローチの進捗）。起用実績とは別軸で管理する（infEngagementStatusを参照） */
-function infOutreachStatus(i){return i.outreachStatus||'';}
+/* 「返信待ち」「交渉中」は声掛け状況として使う場面がなく廃止した（具体的な起用交渉はキャスティング
+   レコード側で管理するため）。過去にこれらの値で保存されたデータは、書き換えずに読み込み時点で
+   「声掛け済み」として扱う */
+function infOutreachStatus(i){
+  var s=i.outreachStatus||'';
+  return(s==='返信待ち'||s==='交渉中')?'声掛け済み':s;
+}
 var INF_OUTREACH_BADGE={
   '未声掛け':'background:var(--bg3);color:var(--text3);border-color:var(--border)',
   '保留':'background:var(--bg3);color:var(--text2);border-color:var(--border2)',
   '声掛け済み':'background:var(--accent-bg);color:var(--accent);border-color:var(--accent-border)',
-  '返信待ち':'background:var(--amber-bg);color:var(--amber);border-color:var(--amber-border)',
-  '交渉中':'background:var(--purple-bg);color:var(--purple);border-color:var(--purple-border)',
   'NG':'background:var(--red-bg);color:var(--red);border-color:var(--red-border)'
 };
 /* 起用実績（声掛け状況とは独立に、実際のキャスティング履歴から自動判定する）

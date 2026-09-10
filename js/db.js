@@ -387,11 +387,15 @@ function migrateCreatorRequests(){
 
 /* インフルエンサーの声かけ状況から「契約済み」を廃止（冪等）。
    起用実績は声かけ状況とは別軸でキャスティング履歴から自動判定するように変更したため、
-   旧「契約済み」値は空欄（未設定）に戻す。それ以外の声かけ状況（未声掛け/声掛け済み/返信待ち/交渉中/NG）はそのまま維持する。 */
+   旧「契約済み」値は空欄（未設定）に戻す。
+   「返信待ち」「交渉中」も、具体的な起用交渉はキャスティングレコード側で管理するため
+   声かけ状況としては廃止し、「声掛け済み」に統合する。それ以外（未声掛け/保留/声掛け済み/NG）
+   はそのまま維持する。 */
 function migrateInfluencerOutreach(){
   if(!DB.influencers)return;
   DB.influencers.forEach(function(i){
     if(i.outreachStatus==='契約済み')i.outreachStatus='';
+    if(i.outreachStatus==='返信待ち'||i.outreachStatus==='交渉中')i.outreachStatus='声掛け済み';
   });
 }
 
