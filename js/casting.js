@@ -948,6 +948,25 @@ function copyOutreachEmail(){
     if(btn){var orig=btn.textContent;btn.textContent='✓ コピーしました';setTimeout(function(){btn.textContent=orig;},2000);}
   }):document.execCommand('copy');
 }
+/* 返信定型文（条件をご共有いただいた後の返信・コピー用） */
+function infConditionReplyTemplate(inf){
+  var name=(inf.name||'')+' 様';
+  return name+'\n\n'
+    +'お世話になっております。\n'
+    +'ルート株式会社 SNSマーケティング局の石田です。\n\n'
+    +'この度は条件をご共有いただき、誠にありがとうございます。承知いたしました。\n\n'
+    +'今後、ご提示いただいた条件に合う店舗様がございましたら、改めてご相談させていただければと存じます。\n\n'
+    +'引き続きどうぞよろしくお願いいたします。';
+}
+function copyConditionReply(){
+  var ta=document.getElementById('infConditionReplyText');
+  if(!ta)return;
+  ta.select();
+  navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(ta.value).then(function(){
+    var btn=document.getElementById('infConditionReplyCopyBtn');
+    if(btn){var orig=btn.textContent;btn.textContent='✓ コピーしました';setTimeout(function(){btn.textContent=orig;},2000);}
+  }):document.execCommand('copy');
+}
 /* ============================================================
    【一時機能】手動での全件目視レビュー用チェック（reviewChecked）
    一括インポートしたデータを1件ずつ目で確認する作業の進捗管理のためだけの機能。
@@ -1037,6 +1056,16 @@ function openInfluencerDetail(id){
           +'</span>'
         +'</div>'
         +'<textarea id="infOutreachEmailText" readonly style="width:100%;min-height:180px;font-size:12px;line-height:1.7;padding:10px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg2);color:var(--text);resize:vertical" onclick="this.select()">'+esc(infOutreachEmailTemplate(inf))+'</textarea>'
+      +'</div>'
+      :'')
+    /* 返信定型文（条件をご共有いただいた後の返信・コピー用。返信待ち・交渉中の間だけ表示） */
+    +(['返信待ち','交渉中'].indexOf(infOutreachStatus(inf))>=0
+      ?'<div style="margin-bottom:16px;padding:10px 12px;background:var(--bg3);border-radius:var(--r)">'
+        +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">'
+          +'<span style="font-size:12px;font-weight:500;color:var(--text2)">💬 返信定型文（条件確認後・コピー用）</span>'
+          +'<button type="button" id="infConditionReplyCopyBtn" class="btn btn-sm" onclick="copyConditionReply()">📋 コピー</button>'
+        +'</div>'
+        +'<textarea id="infConditionReplyText" readonly style="width:100%;min-height:140px;font-size:12px;line-height:1.7;padding:10px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg2);color:var(--text);resize:vertical" onclick="this.select()">'+esc(infConditionReplyTemplate(inf))+'</textarea>'
       +'</div>'
       :'')
     /* キャスティング履歴 */
