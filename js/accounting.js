@@ -119,6 +119,7 @@ function openInvoiceModal(id,opts){
     if(infStoreRow)infStoreRow.style.display='';
   }
   updateInvInvoiceNumberDisplay();
+  checkInvFoodCap();
   openModal('invoiceModal');
 }
 
@@ -141,6 +142,7 @@ function onInvoiceTypeChange(){
   /* キャスティング文脈はインフルエンサーのみ */
   if(!isInf){var ctx=document.getElementById('invCastingCtxBox');if(ctx)ctx.style.display='none';}
   updateInvInvoiceNumberDisplay();
+  checkInvFoodCap();
   /* 進捗ステータスの選択肢を方向（支払い/入金）に応じて切替 */
   var statusSel=document.getElementById('invStatus');
   if(statusSel){
@@ -164,6 +166,26 @@ function updateInvInvoiceNumberDisplay(){
   var numEl=document.getElementById('invInvoiceNumber');
   if(numEl)numEl.value=(inf&&inf.invoiceNumber)?inf.invoiceNumber:'';
   row.style.display='';
+}
+/* キャスティングに登録された来店人数（visitCount）から、飲食代の立替上限
+   （1人5,000円・税込5,500円）を超えていないか警告する（経費ミス防止のため） */
+function checkInvFoodCap(){
+  calcInvTotal();
+  var warnEl=document.getElementById('invFoodWarning');
+  if(!warnEl)return;
+  var isInf=(document.getElementById('invPayeeType')||{}).value==='influencer';
+  var castingId=(document.getElementById('invCastingId')||{}).value;
+  if(!isInf||!castingId){warnEl.style.display='none';return;}
+  var c=DB.castings.find(function(x){return x.id===castingId;});
+  var visitCount=(c&&Number(c.visitCount))||1;
+  var cap=visitCount*5500;
+  var food=Number((document.getElementById('invFood')||{}).value)||0;
+  if(food>cap){
+    warnEl.textContent='⚠ 来店人数'+visitCount+'人×5,500円＝'+cap.toLocaleString()+'円の立替上限を超えています（現在'+food.toLocaleString()+'円）';
+    warnEl.style.display='';
+  }else{
+    warnEl.style.display='none';
+  }
 }
 function calcInvTotal(){
   var t=document.querySelector('input[name="invTypeRadio"]:checked');

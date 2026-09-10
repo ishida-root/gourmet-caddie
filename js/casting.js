@@ -970,6 +970,65 @@ function copyConditionReply(){
     if(btn){var orig=btn.textContent;btn.textContent='✓ コピーしました';setTimeout(function(){btn.textContent=orig;},2000);}
   }):document.execCommand('copy');
 }
+/* 特定店舗のPR依頼文テンプレート（すでに登録済みのインフルエンサーに、個別の店舗案件を
+   打診する際のコピー用。登録済みの料金プラン一覧の先頭プランを「以前お聞きした内容」として引用する） */
+function infPrOfferTemplate(inf,store){
+  var name=(inf.name||'')+' 様';
+  var plans=(inf.pricePlans||[]).filter(function(p){return p.label||p.amount;});
+  var plan=plans[0];
+  var priceLine=plan
+    ?'以前、'+(plan.platforms||[]).map(function(pid){var pl=INF_PLATFORM_LIST.find(function(x){return x.id===pid;});return pl?pl.label:pid;}).join('・')+'への投稿で'+(Number(plan.amount)||0).toLocaleString()+'円とお聞きしておりましたが、その内容でのご依頼となりますでしょうか。'
+    :'PR費用や投稿内容について、あらためて条件をお伺いできますでしょうか。';
+  var location=[store.pref,store.area].filter(Boolean).join('');
+  return name+'\n\n'
+    +'お世話になっております。\n'
+    +'ルート株式会社 SNSマーケティング局の石田と申します。\n'
+    +'この度は、弊社クライアント店舗のPRについて\n'
+    +'ご相談させていただきたく、ご連絡いたしました。\n'
+    +'いくつか確認させていただけますでしょうか。\n\n'
+    +'━━━━━━━━━━━━━━━\n'
+    +'【ご依頼可否について】\n'
+    +'━━━━━━━━━━━━━━━\n'
+    +'下記店舗のPRをご依頼できるか、\n'
+    +'まずはご意向をお聞かせいただけますと幸いです。\n'
+    +'▼対象店舗\n'
+    +'店舗名　'+(store.name||'')+'\n'
+    +(location?'場所　'+location+'\n':'')
+    +(store.genre?'ジャンル　'+store.genre+'\n':'')
+    +(store.tabelog?'食べログ\n'+store.tabelog+'\n':'')
+    +'\n━━━━━━━━━━━━━━━\n'
+    +'【ご料金・PR内容について】\n'
+    +'━━━━━━━━━━━━━━━\n'
+    +priceLine+'\n\n'
+    +'━━━━━━━━━━━━━━━\n'
+    +'【お支払い・その他条件について】\n'
+    +'━━━━━━━━━━━━━━━\n'
+    +'・PR費用は、請求書受領月の翌月末のお支払いとなります。\n'
+    +'・ご来店時のお食事代は一旦ご自身でお支払いいただき、後日PR費用と合わせて立替精算という形でお戻しいたします（立替上限：お一人5,000円／税込5,500円まで）。\n'
+    +'・同伴は撮影補助を目的とした方１名までとさせていただいております。\n\n'
+    +'ご不明点などございましたら、お気軽にお問い合わせください。\n'
+    +'ご確認のほど、よろしくお願いいたします。';
+}
+function renderInfPrOfferText(infId){
+  var sel=document.getElementById('infPrOfferStoreSel');
+  var ta=document.getElementById('infPrOfferText');
+  if(!sel||!ta)return;
+  var storeId=sel.value;
+  if(!storeId){ta.value='';return;}
+  var inf=DB.influencers.find(function(x){return x.id===infId;});
+  var store=DB.stores.find(function(x){return x.id===storeId;});
+  if(!inf||!store)return;
+  ta.value=infPrOfferTemplate(inf,store);
+}
+function copyInfPrOfferText(){
+  var ta=document.getElementById('infPrOfferText');
+  if(!ta||!ta.value)return;
+  ta.select();
+  navigator.clipboard&&navigator.clipboard.writeText?navigator.clipboard.writeText(ta.value).then(function(){
+    var btn=document.getElementById('infPrOfferCopyBtn');
+    if(btn){var orig=btn.textContent;btn.textContent='✓ コピーしました';setTimeout(function(){btn.textContent=orig;},2000);}
+  }):document.execCommand('copy');
+}
 /* ============================================================
    【一時機能】手動での全件目視レビュー用チェック（reviewChecked）
    一括インポートしたデータを1件ずつ目で確認する作業の進捗管理のためだけの機能。
@@ -1069,6 +1128,17 @@ function openInfluencerDetail(id){
           +'<button type="button" id="infConditionReplyCopyBtn" class="btn btn-sm" onclick="copyConditionReply()">📋 コピー</button>'
         +'</div>'
         +'<textarea id="infConditionReplyText" readonly style="width:100%;min-height:140px;font-size:12px;line-height:1.7;padding:10px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg2);color:var(--text);resize:vertical" onclick="this.select()">'+esc(infConditionReplyTemplate(inf))+'</textarea>'
+      +'</div>'
+      :'')
+    /* 店舗PR依頼文（個別の店舗案件を打診する際のコピー用。アカウント不明の場合は送りようがないため出さない） */
+    +(!inf.accountGone
+      ?'<div style="margin-bottom:16px;padding:10px 12px;background:var(--bg3);border-radius:var(--r)">'
+        +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">'
+          +'<span style="font-size:12px;font-weight:500;color:var(--text2)">🎯 店舗PR依頼文（コピー用）</span>'
+          +'<button type="button" id="infPrOfferCopyBtn" class="btn btn-sm" onclick="copyInfPrOfferText()">📋 コピー</button>'
+        +'</div>'
+        +'<select id="infPrOfferStoreSel" onchange="renderInfPrOfferText(\''+inf.id+'\')" style="width:100%;margin-bottom:8px"><option value="">対象店舗を選択...</option>'+DB.stores.slice().sort(function(a,b){return(a.name||'').localeCompare(b.name||'');}).map(function(s){return'<option value="'+s.id+'">'+esc(s.name)+'</option>';}).join('')+'</select>'
+        +'<textarea id="infPrOfferText" readonly placeholder="店舗を選択すると依頼文が生成されます" style="width:100%;min-height:260px;font-size:12px;line-height:1.7;padding:10px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg2);color:var(--text);resize:vertical" onclick="this.select()"></textarea>'
       +'</div>'
       :'')
     /* キャスティング履歴 */

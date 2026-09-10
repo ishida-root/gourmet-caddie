@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=137">
+<link rel="stylesheet" href="css/app.css?v=138">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -1145,8 +1145,9 @@
       <div class="fr3" id="invInfCosts">
         <div class="field"><label id="invPrFeeLabel">PR費</label><input type="number" id="invPrFee" placeholder="0" oninput="calcInvTotal()"></div>
         <div class="field" id="invTransportField"><label>交通費</label><input type="number" id="invTransport" placeholder="0" oninput="calcInvTotal()"></div>
-        <div class="field" id="invFoodField"><label>飲食代</label><input type="number" id="invFood" placeholder="0" oninput="calcInvTotal()"></div>
+        <div class="field" id="invFoodField"><label>飲食代</label><input type="number" id="invFood" placeholder="0" oninput="checkInvFoodCap()"></div>
       </div>
+      <div id="invFoodWarning" style="display:none;font-size:12px;color:var(--red);margin-top:-4px;margin-bottom:8px"></div>
       <div class="fr3" id="invCreatorCosts" style="display:none">
         <div class="field"><label id="invMakeFeeLabel">制作費</label><input type="number" id="invMakeFee" placeholder="0" oninput="calcInvTotal()"></div>
         <div class="field" id="invCrTransportField"><label>交通費</label><input type="number" id="invCrTransport" placeholder="0" oninput="calcInvTotal()"></div>
@@ -1671,25 +1672,25 @@
 </div>
 
 
-<script src="js/vendor/pizzip.min.js?v=137"></script>
-<script src="js/vendor/docxtemplater.min.js?v=137"></script>
-<script src="js/vendor/xlsx.full.min.js?v=137"></script>
-<script src="js/config.js?v=137"></script>
-<script src="js/db.js?v=137"></script>
-<script src="js/utils.js?v=137"></script>
-<script src="js/settings.js?v=137"></script>
-<script src="js/stores.js?v=137"></script>
-<script src="js/schedule.js?v=137"></script>
-<script src="js/casting.js?v=137"></script>
-<script src="js/check.js?v=137"></script>
-<script src="js/accounting.js?v=137"></script>
-<script src="js/plans.js?v=137"></script>
-<script src="js/creators.js?v=137"></script>
-<script src="js/corps.js?v=137"></script>
-<script src="js/faqs.js?v=137"></script>
-<script src="js/orders.js?v=137"></script>
-<script src="js/hearing.js?v=137"></script>
-<script src="js/dashboard.js?v=137"></script>
-<script src="js/app.js?v=137"></script>
+<script src="js/vendor/pizzip.min.js?v=138"></script>
+<script src="js/vendor/docxtemplater.min.js?v=138"></script>
+<script src="js/vendor/xlsx.full.min.js?v=138"></script>
+<script src="js/config.js?v=138"></script>
+<script src="js/db.js?v=138"></script>
+<script src="js/utils.js?v=138"></script>
+<script src="js/settings.js?v=138"></script>
+<script src="js/stores.js?v=138"></script>
+<script src="js/schedule.js?v=138"></script>
+<script src="js/casting.js?v=138"></script>
+<script src="js/check.js?v=138"></script>
+<script src="js/accounting.js?v=138"></script>
+<script src="js/plans.js?v=138"></script>
+<script src="js/creators.js?v=138"></script>
+<script src="js/corps.js?v=138"></script>
+<script src="js/faqs.js?v=138"></script>
+<script src="js/orders.js?v=138"></script>
+<script src="js/hearing.js?v=138"></script>
+<script src="js/dashboard.js?v=138"></script>
+<script src="js/app.js?v=138"></script>
 </body>
 </html>
