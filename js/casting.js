@@ -271,6 +271,7 @@ function renderInfPricePlanRows(){
         +'<div class="field" style="flex:1"><label style="font-size:12px">プラン名</label><input type="text" value="'+esc(r.label||'')+'" placeholder="例: プレミアムプラン" oninput="updateInfPricePlanField('+i+',\'label\',this.value)"></div>'
         +'<div class="field" style="flex:1"><label style="font-size:12px">金額（円）</label><input type="number" value="'+esc(r.amount||'')+'" placeholder="例: 50000" oninput="updateInfPricePlanField('+i+',\'amount\',this.value)"></div>'
         +'<div class="field" style="flex:0 0 100px"><label style="font-size:12px">交通費</label><select onchange="updateInfPricePlanField('+i+',\'transport\',this.value)"><option value="込み"'+(r.transport==='込み'?' selected':'')+'>込み</option><option value="別"'+(r.transport==='別'?' selected':'')+'>別</option></select></div>'
+        +'<button type="button" class="btn btn-sm" style="flex:0 0 auto" onclick="duplicateInfPricePlanRow('+i+')" title="このプランの内容（媒体・税区分など）をコピーして次のプランを作ります">複製</button>'
         +'<button type="button" class="btn-ghost-danger btn-sm" style="flex:0 0 auto" onclick="removeInfPricePlanRow('+i+')">削除</button>'
       +'</div>'
       +'<div style="margin-bottom:8px">'+platTaxToggleHtml('setInfPricePlanTax',i,!!r.taxIncl)+'</div>'
@@ -289,6 +290,15 @@ function renderInfPricePlanRows(){
 }
 function addInfPricePlanRow(){
   _pricePlanRows.push({id:uid(),label:'',amount:'',includes:'',transport:'込み',taxIncl:false,platforms:[]});
+  renderInfPricePlanRows();
+}
+/* ①⊃②⊃③のように上位プランが下位プランの媒体を含んで金額だけ上がっていくケースが多いため、
+   複製して媒体チェックはそのまま・プラン名と金額だけ変えれば次のプランを作れるようにする */
+function duplicateInfPricePlanRow(idx){
+  var src=_pricePlanRows[idx];
+  if(!src)return;
+  var copy=Object.assign({},src,{id:uid(),platforms:(src.platforms||[]).slice()});
+  _pricePlanRows.splice(idx+1,0,copy);
   renderInfPricePlanRows();
 }
 function setInfPricePlanTax(idx,val){
