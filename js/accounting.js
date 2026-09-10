@@ -33,9 +33,8 @@ function openInvoiceModal(id,opts){
   ['invPrFee','invTransport','invFood','invMakeFee','invCrTransport','invOther','invAdFee','invAdMonth','invBillingName','invNote'].forEach(function(fid){var el=document.getElementById(fid);if(el)el.value='';});
   if(crSel)crSel.value='';
   var adPlatEl=document.getElementById('invAdPlatform');if(adPlatEl)adPlatEl.value='Meta広告';
-  /* 税区分・税率リセット（既定：税別10%） */
-  var taxExcl=document.querySelector('input[name="invTaxModeRadio"][value="excl"]');if(taxExcl)taxExcl.checked=true;
-  var taxRateEl=document.getElementById('invTaxRate');if(taxRateEl)taxRateEl.value='10';
+  /* 税区分リセット（既定：税別。税率は設定ページのTAX_RATEを使用） */
+  var taxExcl=document.querySelector('input[name="invTaxKindRadio"][value="excl"]');if(taxExcl)taxExcl.checked=true;
   document.getElementById('invReceivedDate').value='';
   document.getElementById('invStatus').value='pending';
   document.getElementById('invTotal').textContent='¥0';
@@ -64,8 +63,11 @@ function openInvoiceModal(id,opts){
       document.getElementById('invAdFee').value=inv.adFee||'';
       document.getElementById('invAdMonth').value=inv.adMonth||'';
       if(adPlatEl)adPlatEl.value=inv.adPlatform||'Meta広告';
-      var tm=document.querySelector('input[name="invTaxModeRadio"][value="'+(inv.taxMode||'excl')+'"]');if(tm)tm.checked=true;
-      if(taxRateEl)taxRateEl.value=String(inv.taxRate!=null?inv.taxRate:10);
+      /* 税率0（不課税）で保存されている場合は「不課税」ボタンを、それ以外は税別/税込のボタンを選択状態にする。
+         過去に8%など現在の標準税率と異なる値で保存されたデータを編集した場合、そのまま保存すると
+         標準税率（TAX_RATE）で上書きされる点に注意 */
+      var kind=inv.taxRate===0?'free':(inv.taxMode==='incl'?'incl':'excl');
+      var tm=document.querySelector('input[name="invTaxKindRadio"][value="'+kind+'"]');if(tm)tm.checked=true;
       document.getElementById('invBillingName').value=inv.billingName||'';
       document.getElementById('invNote').value=inv.note||'';
       document.getElementById('invCastingId').value=inv.castingId||'';
@@ -163,16 +165,6 @@ function updateInvInvoiceNumberDisplay(){
   if(numEl)numEl.value=(inf&&inf.invoiceNumber)?inf.invoiceNumber:'';
   row.style.display='';
 }
-/* 不課税（税率0%）を選んだ場合、税を上乗せする/しないの違いが無意味になるため、
-   入力した金額がそのまま最終金額になる「税込で入力」に自動で合わせる */
-function onInvTaxRateChange(){
-  var rateEl=document.getElementById('invTaxRate');
-  if(rateEl&&rateEl.value==='0'){
-    var inclRadio=document.querySelector('input[name="invTaxModeRadio"][value="incl"]');
-    if(inclRadio)inclRadio.checked=true;
-  }
-  calcInvTotal();
-}
 function calcInvTotal(){
   var t=document.querySelector('input[name="invTypeRadio"]:checked');
   var val=t?t.value:'influencer';
@@ -182,9 +174,12 @@ function calcInvTotal(){
   if(val==='creator'){taxable=g('invMakeFee');expense=g('invCrTransport')+g('invOther');}
   else if(val==='ad'){taxable=g('invAdFee');expense=0;}
   else{taxable=g('invPrFee');expense=g('invTransport')+g('invFood');}
-  var modeEl=document.querySelector('input[name="invTaxModeRadio"]:checked');
-  var mode=modeEl?modeEl.value:'excl';
-  var rate=(Number((document.getElementById('invTaxRate')||{}).value)||0)/100;
+  /* 税区分は「税別／税込／不課税」の3択ボタンで選ぶ。不課税は税率0%、それ以外は
+     設定ページのTAX_RATE（標準税率）を使う */
+  var kindEl=document.querySelector('input[name="invTaxKindRadio"]:checked');
+  var kind=kindEl?kindEl.value:'excl';
+  var mode=kind==='incl'?'incl':'excl';
+  var rate=kind==='free'?0:(TAX_RATE/100);
   var taxExcl=mode==='incl'?Math.round(taxable/(1+rate)):taxable;
   var taxIncl=mode==='incl'?taxable:Math.round(taxable*(1+rate));
   var excl=taxExcl+expense,incl=taxIncl+expense;
@@ -247,10 +242,11 @@ function saveInvoice(){
       note:document.getElementById('invNote').value
     };
   }
-  /* 税区分・税率（全種別共通） */
-  var tmEl=document.querySelector('input[name="invTaxModeRadio"]:checked');
-  inv.taxMode=tmEl?tmEl.value:'excl';
-  inv.taxRate=Number((document.getElementById('invTaxRate')||{}).value)||0;
+  /* 税区分・税率（全種別共通）：税別／税込／不課税の3択ボタンから決定 */
+  var kindEl=document.querySelector('input[name="invTaxKindRadio"]:checked');
+  var kind=kindEl?kindEl.value:'excl';
+  inv.taxMode=kind==='incl'?'incl':'excl';
+  inv.taxRate=kind==='free'?0:TAX_RATE;
   /* 請求書記載名（広告費以外） */
   inv.billingName=(payeeType==='ad')?'':((document.getElementById('invBillingName')||{}).value||'');
   /* 仮の費用（請求書発行前の見込み・経費抜き） */

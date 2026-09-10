@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=136">
+<link rel="stylesheet" href="css/app.css?v=137">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -573,6 +573,16 @@
             <button class="btn btn-sm" onclick="openInfDuplicateMerge()">🧩 重複を統合</button>
             <button class="btn btn-sm" onclick="openInfluencerBulkImport()">📋 一括インポート</button>
           </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><span class="card-title">💰 消費税率設定</span></div>
+          <div style="font-size:13px;color:var(--text2);margin-bottom:12px">請求書（インフルエンサー・クリエイター・広告費）の「税別／税込」入力で使う標準税率です。将来税率が変わった場合はここを変更してください。</div>
+          <div class="fr1 field" style="margin-bottom:10px">
+            <label>標準税率（%）</label>
+            <input id="settingsTaxRate" type="number" placeholder="10" style="width:120px">
+          </div>
+          <button class="btn btn-primary" onclick="saveTaxRateSetting()">保存</button>
+          <div id="settingsTaxRateStatus" style="font-size:13px;margin-top:10px"></div>
         </div>
       </div>
     </div>
@@ -1151,10 +1161,10 @@
       <div style="font-size:11px;color:var(--text3);margin-top:8px">※消費税は報酬（PR費・制作費・広告費）のみ。交通費・飲食代・その他は実費精算のため税対象外です。</div>
       <div style="display:flex;align-items:center;gap:10px;margin-top:8px;padding-top:10px;border-top:1px solid var(--border);flex-wrap:wrap">
         <div style="display:flex;gap:4px" id="invTaxModeGroup">
-          <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;padding:4px 8px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg2)"><input type="radio" name="invTaxModeRadio" value="excl" onchange="calcInvTotal()" style="width:auto;margin:0" checked> 税別で入力</label>
-          <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;padding:4px 8px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg2)"><input type="radio" name="invTaxModeRadio" value="incl" onchange="calcInvTotal()" style="width:auto;margin:0"> 税込で入力</label>
+          <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;padding:4px 8px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg2)"><input type="radio" name="invTaxKindRadio" value="excl" onchange="calcInvTotal()" style="width:auto;margin:0" checked> 税別</label>
+          <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;padding:4px 8px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg2)"><input type="radio" name="invTaxKindRadio" value="incl" onchange="calcInvTotal()" style="width:auto;margin:0"> 税込</label>
+          <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;padding:4px 8px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg2)"><input type="radio" name="invTaxKindRadio" value="free" onchange="calcInvTotal()" style="width:auto;margin:0"> 不課税</label>
         </div>
-        <select id="invTaxRate" onchange="onInvTaxRateChange()" style="font-size:12px;padding:4px 6px;width:auto"><option value="10">税率10%</option><option value="8">税率8%</option><option value="0">不課税</option></select>
         <div style="margin-left:auto;text-align:right">
           <div style="font-size:12px;color:var(--text3)">税別 <span id="invTotalExcl" style="font-weight:500;color:var(--text2)">¥0</span></div>
           <div style="font-size:13px;color:var(--text2)">税込 <span id="invTotal" style="font-size:18px;font-weight:500;font-family:'Noto Sans JP',sans-serif;color:var(--text)">¥0</span></div>
@@ -1661,25 +1671,25 @@
 </div>
 
 
-<script src="js/vendor/pizzip.min.js?v=136"></script>
-<script src="js/vendor/docxtemplater.min.js?v=136"></script>
-<script src="js/vendor/xlsx.full.min.js?v=136"></script>
-<script src="js/config.js?v=136"></script>
-<script src="js/db.js?v=136"></script>
-<script src="js/utils.js?v=136"></script>
-<script src="js/settings.js?v=136"></script>
-<script src="js/stores.js?v=136"></script>
-<script src="js/schedule.js?v=136"></script>
-<script src="js/casting.js?v=136"></script>
-<script src="js/check.js?v=136"></script>
-<script src="js/accounting.js?v=136"></script>
-<script src="js/plans.js?v=136"></script>
-<script src="js/creators.js?v=136"></script>
-<script src="js/corps.js?v=136"></script>
-<script src="js/faqs.js?v=136"></script>
-<script src="js/orders.js?v=136"></script>
-<script src="js/hearing.js?v=136"></script>
-<script src="js/dashboard.js?v=136"></script>
-<script src="js/app.js?v=136"></script>
+<script src="js/vendor/pizzip.min.js?v=137"></script>
+<script src="js/vendor/docxtemplater.min.js?v=137"></script>
+<script src="js/vendor/xlsx.full.min.js?v=137"></script>
+<script src="js/config.js?v=137"></script>
+<script src="js/db.js?v=137"></script>
+<script src="js/utils.js?v=137"></script>
+<script src="js/settings.js?v=137"></script>
+<script src="js/stores.js?v=137"></script>
+<script src="js/schedule.js?v=137"></script>
+<script src="js/casting.js?v=137"></script>
+<script src="js/check.js?v=137"></script>
+<script src="js/accounting.js?v=137"></script>
+<script src="js/plans.js?v=137"></script>
+<script src="js/creators.js?v=137"></script>
+<script src="js/corps.js?v=137"></script>
+<script src="js/faqs.js?v=137"></script>
+<script src="js/orders.js?v=137"></script>
+<script src="js/hearing.js?v=137"></script>
+<script src="js/dashboard.js?v=137"></script>
+<script src="js/app.js?v=137"></script>
 </body>
 </html>

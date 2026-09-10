@@ -288,6 +288,10 @@ function applyAppSettings(map){
   if(map.chatwork&&typeof map.chatwork==='object'){
     try{localStorage.setItem('gc_cw_settings',JSON.stringify(map.chatwork));}catch(e){}
   }
+  if(map.tax_rate!=null){
+    TAX_RATE=Number(map.tax_rate)||10;
+    try{localStorage.setItem('gc_tax_rate',String(TAX_RATE));}catch(e){}
+  }
   if(typeof updateSalesPersonSelects==='function')updateSalesPersonSelects();
 }
 async function loadAppSettings(){
@@ -305,6 +309,7 @@ async function loadAppSettings(){
     if(!('genres' in map)&&GENRES&&GENRES.length)saveAppSetting('genres',GENRES);
     if(!('sales_goal' in map)){var g=localStorage.getItem('gc_sales_goal');if(g)saveAppSetting('sales_goal',Number(g));}
     if(!('chatwork' in map)){var cw=localStorage.getItem('gc_cw_settings');if(cw){try{saveAppSetting('chatwork',JSON.parse(cw));}catch(e){}}}
+    if(!('tax_rate' in map))saveAppSetting('tax_rate',TAX_RATE);
   }catch(e){}
 }
 

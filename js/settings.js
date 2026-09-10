@@ -63,6 +63,24 @@ function saveChatworkSettings(){
   setTimeout(function(){var el=document.getElementById('cwStatus');if(el)el.innerHTML='';},2000);
   renderCwPreview();
 }
+/* ============================================================
+   消費税率設定（請求書の税別／税込入力で使う標準税率）
+   ============================================================ */
+function loadTaxRateSetting(){
+  var el=document.getElementById('settingsTaxRate');
+  if(el)el.value=TAX_RATE;
+}
+function saveTaxRateSetting(){
+  var el=document.getElementById('settingsTaxRate');
+  var num=Number(el?el.value:0);
+  if(!num||num<0||num>100){alert('正しい税率を入力してください（例: 10）');return;}
+  TAX_RATE=num;
+  try{localStorage.setItem('gc_tax_rate',String(TAX_RATE));}catch(e){}
+  if(typeof saveAppSetting==='function')saveAppSetting('tax_rate',TAX_RATE);
+  var statusEl=document.getElementById('settingsTaxRateStatus');
+  if(statusEl)statusEl.innerHTML='<span style="color:var(--green)">✓ 保存しました</span>';
+  setTimeout(function(){var s=document.getElementById('settingsTaxRateStatus');if(s)s.innerHTML='';},2000);
+}
 function getCwSettings(){
   try{
     var d=localStorage.getItem('gc_cw_settings');

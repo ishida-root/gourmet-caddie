@@ -47,7 +47,7 @@ function navigate(page){
   /* プラン管理はフォームが常時ページ内に表示されているため、スクロールするだけの追加ボタンは不要 */
   document.getElementById('addBtn').style.display=(page==='settings'||page==='plans')?'none':'';
   if(page==='settings'){
-    loadChatworkSettings();renderCwPreview();loadUserList();
+    loadChatworkSettings();renderCwPreview();loadUserList();loadTaxRateSetting();
     var ghCard=document.getElementById('ghPatCard');
     if(ghCard)ghCard.style.display=(currentUser&&currentUser.email==='ishida@root-and-activation.co.jp')?'':'none';
   }
