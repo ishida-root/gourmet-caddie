@@ -163,11 +163,14 @@ function updateInvInvoiceNumberDisplay(){
   if(numEl)numEl.value=(inf&&inf.invoiceNumber)?inf.invoiceNumber:'';
   row.style.display='';
 }
-/* 個人でインボイス未登録など、消費税がかからない場合にワンクリックで税率0%にする */
-function setInvoiceTaxFree(){
-  var el=document.getElementById('invTaxRate');
-  if(!el)return;
-  el.value='0';
+/* 不課税（税率0%）を選んだ場合、税を上乗せする/しないの違いが無意味になるため、
+   入力した金額がそのまま最終金額になる「税込で入力」に自動で合わせる */
+function onInvTaxRateChange(){
+  var rateEl=document.getElementById('invTaxRate');
+  if(rateEl&&rateEl.value==='0'){
+    var inclRadio=document.querySelector('input[name="invTaxModeRadio"][value="incl"]');
+    if(inclRadio)inclRadio.checked=true;
+  }
   calcInvTotal();
 }
 function calcInvTotal(){

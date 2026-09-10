@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=135">
+<link rel="stylesheet" href="css/app.css?v=136">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -1154,8 +1154,7 @@
           <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;padding:4px 8px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg2)"><input type="radio" name="invTaxModeRadio" value="excl" onchange="calcInvTotal()" style="width:auto;margin:0" checked> 税別で入力</label>
           <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;padding:4px 8px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg2)"><input type="radio" name="invTaxModeRadio" value="incl" onchange="calcInvTotal()" style="width:auto;margin:0"> 税込で入力</label>
         </div>
-        <select id="invTaxRate" onchange="calcInvTotal()" style="font-size:12px;padding:4px 6px;width:auto"><option value="10">税率10%</option><option value="8">税率8%</option><option value="0">非課税</option></select>
-        <button type="button" class="btn btn-sm" onclick="setInvoiceTaxFree()" title="個人でインボイス未登録など、消費税がかからない場合にワンクリックで税率0%にします">🚫 不課税にする</button>
+        <select id="invTaxRate" onchange="onInvTaxRateChange()" style="font-size:12px;padding:4px 6px;width:auto"><option value="10">税率10%</option><option value="8">税率8%</option><option value="0">不課税</option></select>
         <div style="margin-left:auto;text-align:right">
           <div style="font-size:12px;color:var(--text3)">税別 <span id="invTotalExcl" style="font-weight:500;color:var(--text2)">¥0</span></div>
           <div style="font-size:13px;color:var(--text2)">税込 <span id="invTotal" style="font-size:18px;font-weight:500;font-family:'Noto Sans JP',sans-serif;color:var(--text)">¥0</span></div>
@@ -1662,25 +1661,25 @@
 </div>
 
 
-<script src="js/vendor/pizzip.min.js?v=135"></script>
-<script src="js/vendor/docxtemplater.min.js?v=135"></script>
-<script src="js/vendor/xlsx.full.min.js?v=135"></script>
-<script src="js/config.js?v=135"></script>
-<script src="js/db.js?v=135"></script>
-<script src="js/utils.js?v=135"></script>
-<script src="js/settings.js?v=135"></script>
-<script src="js/stores.js?v=135"></script>
-<script src="js/schedule.js?v=135"></script>
-<script src="js/casting.js?v=135"></script>
-<script src="js/check.js?v=135"></script>
-<script src="js/accounting.js?v=135"></script>
-<script src="js/plans.js?v=135"></script>
-<script src="js/creators.js?v=135"></script>
-<script src="js/corps.js?v=135"></script>
-<script src="js/faqs.js?v=135"></script>
-<script src="js/orders.js?v=135"></script>
-<script src="js/hearing.js?v=135"></script>
-<script src="js/dashboard.js?v=135"></script>
-<script src="js/app.js?v=135"></script>
+<script src="js/vendor/pizzip.min.js?v=136"></script>
+<script src="js/vendor/docxtemplater.min.js?v=136"></script>
+<script src="js/vendor/xlsx.full.min.js?v=136"></script>
+<script src="js/config.js?v=136"></script>
+<script src="js/db.js?v=136"></script>
+<script src="js/utils.js?v=136"></script>
+<script src="js/settings.js?v=136"></script>
+<script src="js/stores.js?v=136"></script>
+<script src="js/schedule.js?v=136"></script>
+<script src="js/casting.js?v=136"></script>
+<script src="js/check.js?v=136"></script>
+<script src="js/accounting.js?v=136"></script>
+<script src="js/plans.js?v=136"></script>
+<script src="js/creators.js?v=136"></script>
+<script src="js/corps.js?v=136"></script>
+<script src="js/faqs.js?v=136"></script>
+<script src="js/orders.js?v=136"></script>
+<script src="js/hearing.js?v=136"></script>
+<script src="js/dashboard.js?v=136"></script>
+<script src="js/app.js?v=136"></script>
 </body>
 </html>
