@@ -977,7 +977,7 @@ function infPrOfferTemplate(inf,store,plan){
   var name=(inf.name||'')+' 様';
   var priceLine=plan
     ?'以前、'+(plan.platforms||[]).map(function(pid){var pl=INF_PLATFORM_LIST.find(function(x){return x.id===pid;});return pl?pl.label:pid;}).join('・')+'への投稿で'+(Number(plan.amount)||0).toLocaleString()+'円とお聞きしておりましたが、その内容でのご依頼となりますでしょうか。'
-    :'PR費用や投稿内容について、あらためて条件をお伺いできますでしょうか。';
+    :'リール投稿でのPRをご依頼した場合のご料金を教えていただけますでしょうか。また、投稿媒体によって料金が複数ございましたら、媒体ごとのご料金もあわせてお伺いできますと幸いです。';
   var location=[store.pref,store.area].filter(Boolean).join('');
   return name+'\n\n'
     +'お世話になっております。\n'
