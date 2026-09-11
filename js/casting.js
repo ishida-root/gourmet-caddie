@@ -301,7 +301,11 @@ function renderInfPricePlanRows(){
         +'<button type="button" class="btn btn-sm" style="flex:0 0 auto" onclick="duplicateInfPricePlanRow('+i+')" title="このプランの内容（媒体・税区分など）をコピーして次のプランを作ります">複製</button>'
         +'<button type="button" class="btn-ghost-danger btn-sm" style="flex:0 0 auto" onclick="removeInfPricePlanRow('+i+')">削除</button>'
       +'</div>'
-      +'<div style="display:flex;gap:12px;margin-bottom:8px">'+platTaxToggleHtml('setInfPricePlanTax',i,!!r.taxIncl)+platTransToggleHtml('setInfPricePlanTrans',i,r.transport!=='別')+'</div>'
+      +'<div style="display:flex;gap:12px;align-items:center;margin-bottom:8px;flex-wrap:wrap">'+platTaxToggleHtml('setInfPricePlanTax',i,!!r.taxIncl)+platTransToggleHtml('setInfPricePlanTrans',i,r.transport!=='別')
+        +'<label style="display:inline-flex;align-items:center;gap:4px;font-size:12px;cursor:pointer" title="単体では成立せず、他のプランに追加する形で提案するオプション項目">'
+          +'<input type="checkbox" '+(r.isOption?'checked':'')+' onchange="setInfPricePlanOption('+i+',this.checked)"> 追加オプション'
+        +'</label>'
+      +'</div>'
       +'<div style="font-size:11px;color:var(--text3);margin-bottom:4px">含む媒体（複数選択可・他のプランと重複してOK）</div>'
       +'<div style="display:flex;flex-wrap:wrap;gap:4px 12px;margin-bottom:8px">'
         +INF_PLATFORM_LIST.map(function(pl){
@@ -354,6 +358,11 @@ function setInfPricePlanTax(idx,val){
 function setInfPricePlanTrans(idx,transIncl){
   if(!_pricePlanRows[idx])return;
   _pricePlanRows[idx].transport=transIncl?'込み':'別';
+  renderInfPricePlanRows();
+}
+function setInfPricePlanOption(idx,isOption){
+  if(!_pricePlanRows[idx])return;
+  _pricePlanRows[idx].isOption=isOption;
   renderInfPricePlanRows();
 }
 function removeInfPricePlanRow(idx){_pricePlanRows.splice(idx,1);renderInfPricePlanRows();}
@@ -1190,7 +1199,7 @@ function openInfluencerDetail(id){
           var plans=(inf.pricePlans||[]).filter(function(p){return p.label||p.amount;});
           if(!plans.length)return'<div style="font-size:11px;color:var(--text3);margin-bottom:8px">料金プラン未登録のため「あらためて条件をお伺いする」文面になります</div>';
           return'<select id="infPrOfferPlanSel" onchange="renderInfPrOfferText(\''+inf.id+'\')" style="width:100%;margin-bottom:8px">'
-            +plans.map(function(p){return'<option value="'+esc(p.id)+'">'+esc(p.label||'（プラン名未設定）')+'　'+(Number(p.amount)||0).toLocaleString()+'円</option>';}).join('')
+            +plans.map(function(p){return'<option value="'+esc(p.id)+'">'+esc(p.label||'（プラン名未設定）')+'　'+(Number(p.amount)||0).toLocaleString()+'円'+(p.isOption?'（追加オプション）':'')+'</option>';}).join('')
           +'</select>';
         })()
         +'<textarea id="infPrOfferText" readonly placeholder="店舗を選択すると依頼文が生成されます" style="width:100%;min-height:260px;font-size:12px;line-height:1.7;padding:10px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg2);color:var(--text);resize:vertical" onclick="this.select()"></textarea>'
@@ -1281,7 +1290,7 @@ function openInfluencerDetail(id){
         +plans.map(function(p){
           return'<div style="padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);margin-bottom:6px">'
             +'<div style="display:flex;justify-content:space-between;align-items:center">'
-              +'<span style="font-size:13px;font-weight:500;color:var(--text)">'+esc(p.label||'（プラン名未設定）')+'</span>'
+              +'<span style="font-size:13px;font-weight:500;color:var(--text)">'+esc(p.label||'（プラン名未設定）')+(p.isOption?'　<span class="badge" style="font-size:10px;background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border)">追加オプション</span>':'')+'</span>'
               +'<span style="font-size:13px;color:var(--accent);font-weight:500">'+(p.amount?fmtMoney(p.amount):'—')+'　<span style="font-size:11px;color:var(--text3);font-weight:400">'+(p.taxIncl?'税込':'税別')+(p.transport?'・交通費'+esc(p.transport):'')+'</span></span>'
             +'</div>'
             +((p.platforms&&p.platforms.length)?'<div style="margin-top:4px">'+p.platforms.map(function(pid){var pl=INF_PLATFORM_LIST.find(function(x){return x.id===pid;});return'<span style="display:inline-block;font-size:11px;padding:1px 6px;background:var(--accent-bg);color:var(--accent);border-radius:3px;margin:1px">'+esc(pl?pl.label:pid)+'</span>';}).join('')+'</div>':'')
