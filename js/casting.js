@@ -977,7 +977,7 @@ function infPrOfferTemplate(inf,store,plan){
   var name=(inf.name||'')+' 様';
   var priceLine=plan
     ?'以前、'+(plan.platforms||[]).map(function(pid){var pl=INF_PLATFORM_LIST.find(function(x){return x.id===pid;});return pl?pl.label:pid;}).join('・')+'への投稿で'+(Number(plan.amount)||0).toLocaleString()+'円とお聞きしておりましたが、その内容でのご依頼となりますでしょうか。'
-    :'リール投稿でのPRをご依頼した場合のご料金を教えていただけますでしょうか。また、投稿媒体によって料金が複数ございましたら、媒体ごとのご料金もあわせてお伺いできますと幸いです。';
+    :'リール投稿でのPRをご依頼した場合のご料金を教えていただけますでしょうか。また、投稿媒体によって料金が複数ございましたら、媒体ごとのご料金もあわせてお伺いできますと幸いです。あわせて、交通費のご条件と、ご提示いただく金額が税込か税別かについてもご教示いただけますと幸いです。';
   var location=[store.pref,store.area].filter(Boolean).join('');
   return name+'\n\n'
     +'お世話になっております。\n'
@@ -2266,7 +2266,7 @@ function budgetTierNoteLines(breakdown,budget){
     if(!n)return g.group.label+'：対象者なし';
     if(!budget)return g.group.label+'：対象'+n+'名（平均PR単価 '+(g.avgFee?g.avgFee.toLocaleString()+'円':'未登録')+'）';
     if(!g.avgFee)return g.group.label+'：対象'+n+'名中、PR単価未登録のため人数の目安を算出できません';
-    return g.group.label+'：'+g.count+'名まで招待可能です（対象'+n+'名 / 平均PR単価 '+g.avgFee.toLocaleString()+'円）';
+    return g.group.label+'：目安'+g.count+'名まで招待可能です';
   });
   if(breakdown.unregistered.length)lines.push('④フォロワー数未登録：'+breakdown.unregistered.length+'名（層分け対象外）');
   return lines.join('\n');
@@ -2295,15 +2295,13 @@ function downloadInfluencerExcelByTier(list,targetStoreName,budget){
   breakdown.groups.forEach(function(g){
     if(!g.list.length)return;
     var note=budget
-      ?(g.avgFee?g.group.label+'：予算'+budget.toLocaleString()+'円 ÷ 平均PR単価'+g.avgFee.toLocaleString()+'円 ＝ 目安'+g.count+'名まで招待可能です'
+      ?(g.avgFee?g.group.label+'：目安'+g.count+'名まで招待可能です'
                 :g.group.label+'：PR単価未登録のため人数の目安を算出できません')
       :g.group.label;
     addSheet(g.group.label,g.list,[note]);
   });
   if(breakdown.unregistered.length)addSheet('④フォロワー数未登録',breakdown.unregistered,['フォロワー数未登録のため層分け対象外です']);
-  var pad=function(n){return String(n).padStart(2,'0');};
-  var now=new Date();
-  var fname=(targetStoreName?targetStoreName+'様_':'')+'インフルエンサーリスト_層別_'+now.getFullYear()+pad(now.getMonth()+1)+pad(now.getDate())+'.xlsx';
+  var fname=(targetStoreName?targetStoreName+'様_':'')+'インフルエンサーリスト.xlsx';
   XLSX.writeFile(wb,fname);
 }
 /* ============================================================
