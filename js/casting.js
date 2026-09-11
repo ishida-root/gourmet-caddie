@@ -319,15 +319,22 @@ function addInfPricePlanRow(){
   _pricePlanRows.push({id:uid(),label:'',amount:'',includes:'',transport:'込み',taxIncl:false,platforms:[]});
   renderInfPricePlanRows();
 }
-/* 「フォロワー数×単価」で金額を計算して反映する（毎回電卓で計算する手間を省くため） */
+/* 「フォロワー数×単価」で金額を計算して反映する（毎回電卓で計算する手間を省くため）。
+   フォロワー数は日々変動するため、算出条件を補足欄に注釈として残しておく
+   （再計算のたびに単価が変わっても、前回分の注釈と重複しないよう置き換える） */
+var PRICE_PLAN_FOLLOWER_NOTE_RE=/※フォロワー数×単価（[^）]*）で算出した金額です。フォロワー数の変動により実際の金額は変わります\n?/;
 function calcInfPricePlanByFollowers(idx){
-  if(!_pricePlanRows[idx])return;
+  var row=_pricePlanRows[idx];
+  if(!row)return;
   var followers=Number((document.getElementById('iFollowers')||{}).value)||0;
   if(!followers){alert('フォロワー数を先に入力してください');return;}
   var rateEl=document.getElementById('pricePlanRate_'+idx);
   var rate=Number(rateEl?rateEl.value:0)||0;
   if(!rate){alert('フォロワー1人あたりの単価（円）を入力してください');return;}
-  _pricePlanRows[idx].amount=Math.round(followers*rate);
+  row.amount=Math.round(followers*rate);
+  var note='※フォロワー数×単価（'+rate.toLocaleString()+'円/人）で算出した金額です。フォロワー数の変動により実際の金額は変わります';
+  var rest=(row.includes||'').replace(PRICE_PLAN_FOLLOWER_NOTE_RE,'').trim();
+  row.includes=rest?note+'\n'+rest:note;
   renderInfPricePlanRows();
 }
 /* ①⊃②⊃③のように上位プランが下位プランの媒体を含んで金額だけ上がっていくケースが多いため、
