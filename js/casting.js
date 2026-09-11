@@ -27,7 +27,29 @@ var INF_PLATFORM_LIST=[
   {id:'tripadvisor',   label:'TripAdvisor'},
   {id:'yt_shorts',     label:'YouTube Shorts'},
   {id:'x_twitter',     label:'X(旧Twitter)'},
+  {id:'line_voom',     label:'LINE VOOM'},
 ];
+/* 対応媒体は上記の初期セットに加え、「＋追加」で自由に増やせる。追加分はapp_settings
+   （custom_platforms）で端末間共有し、localStorageにもキャッシュする（GENRES等と同じ方式） */
+var INF_PLATFORM_BASE_COUNT=INF_PLATFORM_LIST.length;
+try{var _cp=localStorage.getItem('gc_custom_platforms');if(_cp)JSON.parse(_cp).forEach(function(p){INF_PLATFORM_LIST.push(p);});}catch(e){}
+function saveCustomPlatforms(){
+  var custom=INF_PLATFORM_LIST.slice(INF_PLATFORM_BASE_COUNT);
+  try{localStorage.setItem('gc_custom_platforms',JSON.stringify(custom));}catch(e){}
+  if(typeof saveAppSetting==='function')saveAppSetting('custom_platforms',custom);
+}
+function addInfPlatformNew(){
+  var el=document.getElementById('iPlatformNew');
+  if(!el)return;
+  var label=(el.value||'').trim();
+  if(!label)return;
+  if(INF_PLATFORM_LIST.some(function(p){return p.label===label;})){alert('すでに登録されています');return;}
+  INF_PLATFORM_LIST.push({id:'custom_'+uid(),label:label});
+  saveCustomPlatforms();
+  el.value='';
+  renderPlatformDetails(_curPlatformData);
+  if(typeof renderInfPricePlanRows==='function')renderInfPricePlanRows();
+}
 
 /* 対応媒体・費用設定：
    ・上段は「対応可否」チェックリスト（チェックのみ、料金は持たない）
@@ -102,7 +124,12 @@ function renderPlatformDetails(saved){
         +esc(pl.label)
       +'</label>';
     }).join('')
-    +'</div></div>';
+    +'</div>'
+    +'<div style="display:flex;gap:6px;margin-top:8px">'
+      +'<input type="text" id="iPlatformNew" placeholder="新しい媒体名を入力" style="flex:1;font-size:12px;padding:4px 8px" onkeydown="if(event.key===\'Enter\'){event.preventDefault();addInfPlatformNew();}">'
+      +'<button type="button" class="btn btn-sm" onclick="addInfPlatformNew()">＋ 追加</button>'
+    +'</div>'
+    +'</div>';
 
   /* ② 料金設定（対応中の媒体のみ。「＋料金を作る」で1媒体〜まとめて設定） */
   var enabledIds=INF_PLATFORM_LIST.filter(function(pl){return saved[pl.id]&&saved[pl.id].enabled;}).map(function(pl){return pl.id;});
@@ -270,6 +297,7 @@ function renderInfPricePlanRows(){
       +'<div style="display:flex;gap:10px;align-items:flex-end;margin-bottom:8px">'
         +'<div class="field" style="flex:1"><label style="font-size:12px">プラン名</label><input type="text" value="'+esc(r.label||'')+'" placeholder="例: プレミアムプラン" oninput="updateInfPricePlanField('+i+',\'label\',this.value)"></div>'
         +'<div class="field" style="flex:1"><label style="font-size:12px">金額（円）</label><input type="number" value="'+esc(r.amount||'')+'" placeholder="例: 50000" oninput="updateInfPricePlanField('+i+',\'amount\',this.value)"></div>'
+        +'<div class="field" style="flex:0 0 auto"><label style="font-size:12px">フォロワー×円</label><div style="display:flex;gap:4px"><input type="number" id="pricePlanRate_'+i+'" placeholder="例: 2" style="width:64px" title="フォロワー1人あたりの単価（円）"><button type="button" class="btn btn-sm" onclick="calcInfPricePlanByFollowers('+i+')">反映</button></div></div>'
         +'<button type="button" class="btn btn-sm" style="flex:0 0 auto" onclick="duplicateInfPricePlanRow('+i+')" title="このプランの内容（媒体・税区分など）をコピーして次のプランを作ります">複製</button>'
         +'<button type="button" class="btn-ghost-danger btn-sm" style="flex:0 0 auto" onclick="removeInfPricePlanRow('+i+')">削除</button>'
       +'</div>'
@@ -289,6 +317,17 @@ function renderInfPricePlanRows(){
 }
 function addInfPricePlanRow(){
   _pricePlanRows.push({id:uid(),label:'',amount:'',includes:'',transport:'込み',taxIncl:false,platforms:[]});
+  renderInfPricePlanRows();
+}
+/* 「フォロワー数×単価」で金額を計算して反映する（毎回電卓で計算する手間を省くため） */
+function calcInfPricePlanByFollowers(idx){
+  if(!_pricePlanRows[idx])return;
+  var followers=Number((document.getElementById('iFollowers')||{}).value)||0;
+  if(!followers){alert('フォロワー数を先に入力してください');return;}
+  var rateEl=document.getElementById('pricePlanRate_'+idx);
+  var rate=Number(rateEl?rateEl.value:0)||0;
+  if(!rate){alert('フォロワー1人あたりの単価（円）を入力してください');return;}
+  _pricePlanRows[idx].amount=Math.round(followers*rate);
   renderInfPricePlanRows();
 }
 /* ①⊃②⊃③のように上位プランが下位プランの媒体を含んで金額だけ上がっていくケースが多いため、

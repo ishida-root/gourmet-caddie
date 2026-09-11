@@ -292,6 +292,12 @@ function applyAppSettings(map){
     TAX_RATE=Number(map.tax_rate)||10;
     try{localStorage.setItem('gc_tax_rate',String(TAX_RATE));}catch(e){}
   }
+  if(Array.isArray(map.custom_platforms)&&typeof INF_PLATFORM_LIST!=='undefined'){
+    try{localStorage.setItem('gc_custom_platforms',JSON.stringify(map.custom_platforms));}catch(e){}
+    map.custom_platforms.forEach(function(p){
+      if(p&&p.id&&!INF_PLATFORM_LIST.some(function(x){return x.id===p.id;}))INF_PLATFORM_LIST.push(p);
+    });
+  }
   if(typeof updateSalesPersonSelects==='function')updateSalesPersonSelects();
 }
 async function loadAppSettings(){
@@ -310,6 +316,7 @@ async function loadAppSettings(){
     if(!('sales_goal' in map)){var g=localStorage.getItem('gc_sales_goal');if(g)saveAppSetting('sales_goal',Number(g));}
     if(!('chatwork' in map)){var cw=localStorage.getItem('gc_cw_settings');if(cw){try{saveAppSetting('chatwork',JSON.parse(cw));}catch(e){}}}
     if(!('tax_rate' in map))saveAppSetting('tax_rate',TAX_RATE);
+    if(!('custom_platforms' in map)){var cp=localStorage.getItem('gc_custom_platforms');if(cp){try{saveAppSetting('custom_platforms',JSON.parse(cp));}catch(e){}}}
   }catch(e){}
 }
 
