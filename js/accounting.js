@@ -31,6 +31,7 @@ function openInvoiceModal(id,opts){
   storeSel.innerHTML='<option value="">選択...</option>'+DB.stores.map(function(s){return'<option value="'+s.id+'">'+esc(s.name)+'</option>';}).join('');
   /* フォームリセット */
   ['invPrFee','invTransport','invFood','invMakeFee','invCrTransport','invOther','invAdFee','invAdMonth','invBillingName','invNote'].forEach(function(fid){var el=document.getElementById(fid);if(el)el.value='';});
+  var visitCountEl=document.getElementById('invVisitCount');if(visitCountEl)visitCountEl.value='1';
   if(crSel)crSel.value='';
   var adPlatEl=document.getElementById('invAdPlatform');if(adPlatEl)adPlatEl.value='Meta広告';
   /* 税区分リセット（既定：税別。税率は設定ページのTAX_RATEを使用） */
@@ -57,6 +58,7 @@ function openInvoiceModal(id,opts){
       document.getElementById('invPrFee').value=inv.prFee||'';
       document.getElementById('invTransport').value=inv.transport||'';
       document.getElementById('invFood').value=inv.food||'';
+      if(visitCountEl)visitCountEl.value=inv.visitCount||'1';
       document.getElementById('invMakeFee').value=inv.makeFee||'';
       document.getElementById('invCrTransport').value=inv.crTransport||'';
       document.getElementById('invOther').value=inv.other||'';
@@ -107,8 +109,9 @@ function openInvoiceModal(id,opts){
     if(lc){
       var ctxLabel=document.getElementById('invCastingCtxLabel');
       if(ctxLabel)ctxLabel.textContent=storeName(lc.storeId)+' × '+infName(lc.infId);
-      /* PR費用セット（新規のときのみ） */
+      /* PR費用・来店人数セット（新規のときのみ。編集時は請求書側に保存済みの値を優先） */
       if(!id&&lc.fee){document.getElementById('invPrFee').value=lc.fee;calcInvTotal();}
+      if(!id&&lc.visitCount&&visitCountEl)visitCountEl.value=lc.visitCount;
       /* セレクトが非表示でも、インボイス番号表示のためにinfIdは反映しておく */
       if(lc.infId)infSel.value=lc.infId;
     }
@@ -167,17 +170,18 @@ function updateInvInvoiceNumberDisplay(){
   if(numEl)numEl.value=(inf&&inf.invoiceNumber)?inf.invoiceNumber:'';
   row.style.display='';
 }
-/* キャスティングに登録された来店人数（visitCount）から、飲食代の立替上限
-   （1人5,000円・税込5,500円）を超えていないか警告する（経費ミス防止のため） */
+/* 来店人数（invVisitCount、請求書編集画面で直接入力・キャスティングに紐づく場合は
+   そちらのvisitCountと相互に同期する）から、飲食代の立替上限（1人5,000円・税込5,500円）
+   を超えていないか警告する（経費ミス防止のため） */
 function checkInvFoodCap(){
   calcInvTotal();
   var warnEl=document.getElementById('invFoodWarning');
+  var rowEl=document.getElementById('invVisitCountRow');
   if(!warnEl)return;
   var isInf=(document.getElementById('invPayeeType')||{}).value==='influencer';
-  var castingId=(document.getElementById('invCastingId')||{}).value;
-  if(!isInf||!castingId){warnEl.style.display='none';return;}
-  var c=DB.castings.find(function(x){return x.id===castingId;});
-  var visitCount=(c&&Number(c.visitCount))||1;
+  if(rowEl)rowEl.style.display=isInf?'':'none';
+  if(!isInf){warnEl.style.display='none';return;}
+  var visitCount=Number((document.getElementById('invVisitCount')||{}).value)||1;
   var cap=visitCount*5500;
   var food=Number((document.getElementById('invFood')||{}).value)||0;
   if(food>cap){
@@ -261,6 +265,7 @@ function saveInvoice(){
       prFee:num('invPrFee'),
       transport:num('invTransport'),
       food:num('invFood'),
+      visitCount:num('invVisitCount')||1,
       note:document.getElementById('invNote').value
     };
   }
@@ -282,6 +287,15 @@ function saveInvoice(){
     if(targetInf&&(targetInf.invoiceNumber||'')!==newNum){
       targetInf.invoiceNumber=newNum;
       saveItem('influencers',targetInf);
+    }
+  }
+  /* 来店人数：ここで入力・変更した内容はキャスティング側にも反映する
+     （次回以降の飲食代アラートや、キャスティング編集画面での再入力の手間を省くため） */
+  if(payeeType==='influencer'&&inv.castingId){
+    var targetCasting=DB.castings.find(function(x){return x.id===inv.castingId;});
+    if(targetCasting&&Number(targetCasting.visitCount||0)!==inv.visitCount){
+      targetCasting.visitCount=inv.visitCount;
+      saveItem('castings',targetCasting);
     }
   }
   if(!DB.invoices)DB.invoices=[];
