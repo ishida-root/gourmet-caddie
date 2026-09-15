@@ -2152,7 +2152,7 @@ function renderInfFilterCheckPanel(selId,panelId,countId){
   panel.innerHTML=opts.map(function(o,i){
     return'<label style="display:block;font-size:12px;padding:3px 4px;cursor:pointer;color:var(--text);max-width:220px;overflow-wrap:break-word">'
       +'<input type="checkbox" '+(o.selected?'checked':'')+' onchange="toggleInfFilterCheck(\''+selId+'\',\''+panelId+'\',\''+countId+'\','+i+')" style="vertical-align:middle;margin-right:5px">'
-      +'<span style="color:var(--text)">'+esc(o.value)+'</span>'
+      +'<span style="color:var(--text)">'+esc(o.text||o.value)+'</span>'
     +'</label>';
   }).join('');
 }
@@ -2163,9 +2163,9 @@ function toggleInfFilterCheck(selId,panelId,countId,idx){
   renderInfFilterCheckPanel(selId,panelId,countId);
   renderInfluencers();
 }
-/* エリア／ジャンルの絞り込みパネル外をクリックしたら閉じる */
+/* エリア／ジャンル／規模の絞り込みパネル外をクリックしたら閉じる */
 document.addEventListener('click',function(e){
-  ['filterInfAreaDetails','filterInfGenreDetails'].forEach(function(id){
+  ['filterInfAreaDetails','filterInfGenreDetails','filterInfTierDetails'].forEach(function(id){
     var el=document.getElementById(id);
     if(el&&el.open&&!el.contains(e.target))el.open=false;
   });
@@ -2183,6 +2183,9 @@ function updateInfFilterOptions(){
     rebuildMultiSelectOptions(genreSel,genres);
     renderInfFilterCheckPanel('filterInfGenre','filterInfGenrePanel','filterInfGenreCount');
   }
+  /* 規模（ナノ/マイクロ/ミドル/メガ）は固定の選択肢のため、選択肢自体の再構築は不要。
+     チェック状態の見た目だけ最新化する */
+  if(document.getElementById('filterInfTier'))renderInfFilterCheckPanel('filterInfTier','filterInfTierPanel','filterInfTierCount');
 }
 function getMultiSelectValues(id){
   var el=document.getElementById(id);
@@ -2190,10 +2193,10 @@ function getMultiSelectValues(id){
 }
 /* インフルエンサー一覧の絞り込み条件をすべて初期状態（＝全件表示）に戻す */
 function resetInfFilters(){
-  ['filterInfStatus','filterInfEngagement','filterInfTier'].forEach(function(id){
+  ['filterInfStatus','filterInfEngagement'].forEach(function(id){
     var el=document.getElementById(id);if(el)el.value='';
   });
-  ['filterInfArea','filterInfGenre'].forEach(function(id){
+  ['filterInfArea','filterInfGenre','filterInfTier'].forEach(function(id){
     var el=document.getElementById(id);
     if(el)Array.from(el.options).forEach(function(o){o.selected=false;});
   });
@@ -2210,7 +2213,7 @@ function getFilteredSortedInfluencers(){
   var search=(document.getElementById('globalSearch').value||'').toLowerCase();
   var statusFilter=(document.getElementById('filterInfStatus')||{}).value||'';
   var engagementFilter=(document.getElementById('filterInfEngagement')||{}).value||'';
-  var tierFilter=(document.getElementById('filterInfTier')||{}).value||'';
+  var tierFilters=getMultiSelectValues('filterInfTier');
   var areaFilters=getMultiSelectValues('filterInfArea');
   var genreFilters=getMultiSelectValues('filterInfGenre');
   var feeMinEl=document.getElementById('filterInfFeeMin'),feeMaxEl=document.getElementById('filterInfFeeMax');
@@ -2221,7 +2224,7 @@ function getFilteredSortedInfluencers(){
   var list=DB.influencers.filter(function(i){
     if(statusFilter&&infOutreachStatus(i)!==statusFilter)return false;
     if(engagementFilter&&infEngagementStatus(i)!==engagementFilter)return false;
-    if(tierFilter&&infTierOf(i)!==tierFilter)return false;
+    if(tierFilters.length&&tierFilters.indexOf(infTierOf(i))<0)return false;
     if(areaFilters.length&&!infAreas(i).some(function(a){return areaFilters.indexOf(a)>=0;}))return false;
     if(genreFilters.length&&!infGenres(i).some(function(g){return genreFilters.indexOf(g)>=0;}))return false;
     if(incompleteOnly&&infAreas(i).length&&infGenres(i).length&&i.following)return false;
