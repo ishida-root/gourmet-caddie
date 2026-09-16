@@ -934,9 +934,19 @@ function deleteInfluencer(id){
   deleteItem('influencers',id);
 }
 
+/* 料金プラン一覧（複数プラン・セット料金）を登録している人は、そちらの金額の
+   最小〜最大からPR単価の幅を算出する。未登録の人は従来通りfeeLow/feeHighを使う */
 function fmtFeeRange(inf){
-  var low=inf.feeLow!==undefined?inf.feeLow:inf.fee;
-  var high=inf.feeHigh;
+  var plans=(inf.pricePlans||[]).filter(function(p){return Number(p.amount)>0;});
+  var low,high;
+  if(plans.length){
+    var amounts=plans.map(function(p){return Number(p.amount);});
+    low=Math.min.apply(null,amounts);
+    high=Math.max.apply(null,amounts);
+  }else{
+    low=inf.feeLow!==undefined?inf.feeLow:inf.fee;
+    high=inf.feeHigh;
+  }
   if(!low&&!high)return'—';
   if(low&&high&&String(low)!==String(high))return Number(low).toLocaleString()+'〜'+Number(high).toLocaleString()+'円';
   return Number(low||high).toLocaleString()+'円';
@@ -1168,46 +1178,50 @@ function openInfluencerDetail(id){
     +(inf.contact?'<div style="margin-bottom:12px;padding:10px 12px;background:var(--bg3);border-radius:var(--r);font-size:13px"><span style="color:var(--text3)">連絡先：</span><span style="color:var(--accent)">'+esc(inf.contact)+'</span></div>':'')
     /* メモ */
     +(inf.memo?'<div style="margin-bottom:16px;padding:10px 12px;background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:var(--r);font-size:13px;color:var(--text);line-height:1.7;white-space:pre-wrap">'+esc(inf.memo)+'</div>':'')
-    /* 声かけメール文（未声掛けの場合のみ表示・コピー用。アカウント不明の場合は送りようがないため出さない） */
-    +(!inf.accountGone&&(!infOutreachStatus(inf)||infOutreachStatus(inf)==='未声掛け')
-      ?'<div style="margin-bottom:16px;padding:10px 12px;background:var(--bg3);border-radius:var(--r)">'
-        +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">'
-          +'<span style="font-size:12px;font-weight:500;color:var(--text2)">✉️ 声かけメール文（コピー用）</span>'
-          +'<span style="display:flex;gap:6px">'
+    /* 声かけメール文（コピー用）。声掛け状況に関わらず常に開けるようにし、
+       普段は折りたたんで場所を取らないようにする（保留中などでも毎回ステータスを
+       変更しなくても文面を確認・コピーできるように）。アカウント不明は送りようがないため出さない */
+    +(!inf.accountGone
+      ?'<details style="margin-bottom:16px;background:var(--bg3);border-radius:var(--r)">'
+        +'<summary style="cursor:pointer;padding:10px 12px;font-size:12px;font-weight:500;color:var(--text2);list-style:none">✉️ 声かけメール文（コピー用） ▾</summary>'
+        +'<div style="padding:0 12px 12px 12px">'
+          +'<div style="display:flex;justify-content:flex-end;gap:6px;margin-bottom:6px">'
             +'<button type="button" id="infOutreachCopyBtn" class="btn btn-sm" onclick="copyOutreachEmail()">📋 コピー</button>'
             +'<button type="button" class="btn btn-sm btn-primary" onclick="markInfluencerContacted(\''+inf.id+'\')">✅ 声掛け済みにする</button>'
-          +'</span>'
+          +'</div>'
+          +'<textarea id="infOutreachEmailText" readonly style="width:100%;min-height:180px;font-size:12px;line-height:1.7;padding:10px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg2);color:var(--text);resize:vertical" onclick="this.select()">'+esc(infOutreachEmailTemplate(inf))+'</textarea>'
         +'</div>'
-        +'<textarea id="infOutreachEmailText" readonly style="width:100%;min-height:180px;font-size:12px;line-height:1.7;padding:10px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg2);color:var(--text);resize:vertical" onclick="this.select()">'+esc(infOutreachEmailTemplate(inf))+'</textarea>'
-      +'</div>'
+      +'</details>'
       :'')
-    /* 返信定型文（条件をご共有いただいた後の返信・コピー用。声掛け済みの間だけ表示） */
-    +(infOutreachStatus(inf)==='声掛け済み'
-      ?'<div style="margin-bottom:16px;padding:10px 12px;background:var(--bg3);border-radius:var(--r)">'
-        +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">'
-          +'<span style="font-size:12px;font-weight:500;color:var(--text2)">💬 返信定型文（条件確認後・コピー用）</span>'
+    /* 返信定型文（条件をご共有いただいた後の返信・コピー用）。同様に常に開けるが折りたたんでおく */
+    +'<details style="margin-bottom:16px;background:var(--bg3);border-radius:var(--r)">'
+      +'<summary style="cursor:pointer;padding:10px 12px;font-size:12px;font-weight:500;color:var(--text2);list-style:none">💬 返信定型文（条件確認後・コピー用） ▾</summary>'
+      +'<div style="padding:0 12px 12px 12px">'
+        +'<div style="display:flex;justify-content:flex-end;margin-bottom:6px">'
           +'<button type="button" id="infConditionReplyCopyBtn" class="btn btn-sm" onclick="copyConditionReply()">📋 コピー</button>'
         +'</div>'
         +'<textarea id="infConditionReplyText" readonly style="width:100%;min-height:140px;font-size:12px;line-height:1.7;padding:10px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg2);color:var(--text);resize:vertical" onclick="this.select()">'+esc(infConditionReplyTemplate(inf))+'</textarea>'
       +'</div>'
-      :'')
+    +'</details>'
     /* 店舗PR依頼文（個別の店舗案件を打診する際のコピー用。アカウント不明の場合は送りようがないため出さない） */
     +(!inf.accountGone
-      ?'<div style="margin-bottom:16px;padding:10px 12px;background:var(--bg3);border-radius:var(--r)">'
-        +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px">'
-          +'<span style="font-size:12px;font-weight:500;color:var(--text2)">🎯 店舗PR依頼文（コピー用）</span>'
-          +'<button type="button" id="infPrOfferCopyBtn" class="btn btn-sm" onclick="copyInfPrOfferText()">📋 コピー</button>'
+      ?'<details style="margin-bottom:16px;background:var(--bg3);border-radius:var(--r)">'
+        +'<summary style="cursor:pointer;padding:10px 12px;font-size:12px;font-weight:500;color:var(--text2);list-style:none">🎯 店舗PR依頼文（コピー用） ▾</summary>'
+        +'<div style="padding:0 12px 12px 12px">'
+          +'<div style="display:flex;justify-content:flex-end;margin-bottom:6px">'
+            +'<button type="button" id="infPrOfferCopyBtn" class="btn btn-sm" onclick="copyInfPrOfferText()">📋 コピー</button>'
+          +'</div>'
+          +'<select id="infPrOfferStoreSel" onchange="renderInfPrOfferText(\''+inf.id+'\')" style="width:100%;margin-bottom:6px"><option value="">対象店舗を選択...</option>'+DB.stores.slice().sort(function(a,b){return(a.name||'').localeCompare(b.name||'');}).map(function(s){return'<option value="'+s.id+'">'+esc(s.name)+'</option>';}).join('')+'</select>'
+          +(function(){
+            var plans=(inf.pricePlans||[]).filter(function(p){return p.label||p.amount;});
+            if(!plans.length)return'<div style="font-size:11px;color:var(--text3);margin-bottom:8px">料金プラン未登録のため「あらためて条件をお伺いする」文面になります</div>';
+            return'<select id="infPrOfferPlanSel" onchange="renderInfPrOfferText(\''+inf.id+'\')" style="width:100%;margin-bottom:8px">'
+              +plans.map(function(p){return'<option value="'+esc(p.id)+'">'+esc(p.label||'（プラン名未設定）')+'　'+(Number(p.amount)||0).toLocaleString()+'円'+(p.isOption?'（追加オプション）':'')+'</option>';}).join('')
+            +'</select>';
+          })()
+          +'<textarea id="infPrOfferText" readonly placeholder="店舗を選択すると依頼文が生成されます" style="width:100%;min-height:260px;font-size:12px;line-height:1.7;padding:10px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg2);color:var(--text);resize:vertical" onclick="this.select()"></textarea>'
         +'</div>'
-        +'<select id="infPrOfferStoreSel" onchange="renderInfPrOfferText(\''+inf.id+'\')" style="width:100%;margin-bottom:6px"><option value="">対象店舗を選択...</option>'+DB.stores.slice().sort(function(a,b){return(a.name||'').localeCompare(b.name||'');}).map(function(s){return'<option value="'+s.id+'">'+esc(s.name)+'</option>';}).join('')+'</select>'
-        +(function(){
-          var plans=(inf.pricePlans||[]).filter(function(p){return p.label||p.amount;});
-          if(!plans.length)return'<div style="font-size:11px;color:var(--text3);margin-bottom:8px">料金プラン未登録のため「あらためて条件をお伺いする」文面になります</div>';
-          return'<select id="infPrOfferPlanSel" onchange="renderInfPrOfferText(\''+inf.id+'\')" style="width:100%;margin-bottom:8px">'
-            +plans.map(function(p){return'<option value="'+esc(p.id)+'">'+esc(p.label||'（プラン名未設定）')+'　'+(Number(p.amount)||0).toLocaleString()+'円'+(p.isOption?'（追加オプション）':'')+'</option>';}).join('')
-          +'</select>';
-        })()
-        +'<textarea id="infPrOfferText" readonly placeholder="店舗を選択すると依頼文が生成されます" style="width:100%;min-height:260px;font-size:12px;line-height:1.7;padding:10px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg2);color:var(--text);resize:vertical" onclick="this.select()"></textarea>'
-      +'</div>'
+      +'</details>'
       :'')
     /* キャスティング履歴 */
     +'<div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:8px">キャスティング履歴</div>'
