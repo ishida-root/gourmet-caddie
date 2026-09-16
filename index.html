@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=151">
+<link rel="stylesheet" href="css/app.css?v=153">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -1060,9 +1060,15 @@
     </div>
     <div class="fr"><div class="field"><label>所属事務所</label><input id="iAgency" type="text" placeholder="なし"></div><div class="field"><label>評価</label><select id="iRating"><option value="">—</option><option value="5">★★★★★ 最高</option><option value="4">★★★★ 良い</option><option value="3">★★★ 普通</option><option value="2">★★ 要注意</option><option value="1">★ NG</option></select></div></div>
     <div class="fr1 field" style="margin-bottom:14px"><label>インボイス登録番号（任意）<span style="font-size:11px;color:var(--text3);font-weight:400"> ※未登録（個人事業者でインボイス未登録など）の場合は空欄のままでOK</span></label><input id="iInvoiceNumber" type="text" placeholder="例: T1234567890123"></div>
-    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;padding:10px 12px;background:var(--bg3);border-radius:var(--r)">
-      <input type="checkbox" id="iAccountGone" style="width:16px;height:16px;cursor:pointer;accent-color:var(--red)">
-      <span style="font-size:14px">🚫 アカウント不明（垢消し・逃亡など）</span>
+    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:14px;padding:10px 12px;background:var(--bg3);border-radius:var(--r)">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+        <input type="checkbox" id="iAccountGone" style="width:16px;height:16px;cursor:pointer;accent-color:var(--red)">
+        <span style="font-size:14px">🚫 アカウント不明</span>
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+        <input type="checkbox" id="iCommCaution" style="width:16px;height:16px;cursor:pointer;accent-color:var(--amber)">
+        <span style="font-size:14px">⚠️ コミュニケーション要注意</span>
+      </label>
     </div>
     <div class="fr1 field"><label>備考・注意点</label><textarea id="iMemo" placeholder="得意ジャンル、投稿スタイル、注意点など..."></textarea></div>
 
@@ -1678,25 +1684,25 @@
 </div>
 
 
-<script src="js/vendor/pizzip.min.js?v=151"></script>
-<script src="js/vendor/docxtemplater.min.js?v=151"></script>
-<script src="js/vendor/xlsx.full.min.js?v=151"></script>
-<script src="js/config.js?v=151"></script>
-<script src="js/db.js?v=151"></script>
-<script src="js/utils.js?v=151"></script>
-<script src="js/settings.js?v=151"></script>
-<script src="js/stores.js?v=151"></script>
-<script src="js/schedule.js?v=151"></script>
-<script src="js/casting.js?v=151"></script>
-<script src="js/check.js?v=151"></script>
-<script src="js/accounting.js?v=151"></script>
-<script src="js/plans.js?v=151"></script>
-<script src="js/creators.js?v=151"></script>
-<script src="js/corps.js?v=151"></script>
-<script src="js/faqs.js?v=151"></script>
-<script src="js/orders.js?v=151"></script>
-<script src="js/hearing.js?v=151"></script>
-<script src="js/dashboard.js?v=151"></script>
-<script src="js/app.js?v=151"></script>
+<script src="js/vendor/pizzip.min.js?v=153"></script>
+<script src="js/vendor/docxtemplater.min.js?v=153"></script>
+<script src="js/vendor/xlsx.full.min.js?v=153"></script>
+<script src="js/config.js?v=153"></script>
+<script src="js/db.js?v=153"></script>
+<script src="js/utils.js?v=153"></script>
+<script src="js/settings.js?v=153"></script>
+<script src="js/stores.js?v=153"></script>
+<script src="js/schedule.js?v=153"></script>
+<script src="js/casting.js?v=153"></script>
+<script src="js/check.js?v=153"></script>
+<script src="js/accounting.js?v=153"></script>
+<script src="js/plans.js?v=153"></script>
+<script src="js/creators.js?v=153"></script>
+<script src="js/corps.js?v=153"></script>
+<script src="js/faqs.js?v=153"></script>
+<script src="js/orders.js?v=153"></script>
+<script src="js/hearing.js?v=153"></script>
+<script src="js/dashboard.js?v=153"></script>
+<script src="js/app.js?v=153"></script>
 </body>
 </html>

@@ -497,6 +497,7 @@ function openInfluencerModal(id){
   document.getElementById('iFollowing').value='';
   document.getElementById('iRating').value='';
   document.getElementById('iAccountGone').checked=false;
+  var commCautionEl=document.getElementById('iCommCaution');if(commCautionEl)commCautionEl.checked=false;
   var genreNewEl=document.getElementById('iGenreNew');if(genreNewEl)genreNewEl.value='';
   var overseasNewEl=document.getElementById('iOverseasNew');if(overseasNewEl)overseasNewEl.value='';
   /* 新規追加は「未声掛け」から開始。起用実績はキャスティング履歴から自動判定するため、
@@ -511,6 +512,7 @@ function openInfluencerModal(id){
          （そのまま保存すると声掛け状況が空になってしまうのを防ぐ） */
       if(inf.outreachStatus)document.getElementById('iOutreachStatus').value=infOutreachStatus(inf);
       document.getElementById('iAccountGone').checked=!!inf.accountGone;
+      if(commCautionEl)commCautionEl.checked=!!inf.commCaution;
       _curGenreSel=infGenres(inf).slice();
       _curAreaSel=infAreas(inf).slice();
       /* fee range */
@@ -708,6 +710,7 @@ function saveInfluencer(){
     invoiceNumber:document.getElementById('iInvoiceNumber').value.trim(),
     rating:document.getElementById('iRating').value,
     accountGone:document.getElementById('iAccountGone').checked,
+    commCaution:document.getElementById('iCommCaution').checked,
     memo:document.getElementById('iMemo').value,
     outreachStatus:document.getElementById('iOutreachStatus').value,
     outreachDate:document.getElementById('iOutreachDate').value,
@@ -1138,7 +1141,8 @@ function openInfluencerDetail(id){
           +(inf.handle?'<span style="font-size:13px;color:#e1306c">'+esc(inf.handle)+'</span>':'')
           +ratingStars(inf.rating)
           +ratingWarningBadge(inf.rating)
-          +(inf.accountGone?'<span class="badge" style="background:var(--bg3);color:var(--text3);border:1px solid var(--border)">🚫 アカウント不明（垢消し・逃亡など）</span>':'')
+          +(inf.accountGone?'<span class="badge" style="background:var(--bg3);color:var(--text3);border:1px solid var(--border)">🚫 アカウント不明</span>':'')
+          +(inf.commCaution?'<span class="badge" style="background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border)">⚠️ コミュニケーション要注意</span>':'')
         +'</div>'
         +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">'
           +(infOutreachStatus(inf)?'<span class="badge" style="font-size:11px;border:1px solid;'+(INF_OUTREACH_BADGE[infOutreachStatus(inf)]||'')+'">'+esc(infOutreachStatus(inf))+'</span>':'')
@@ -2472,10 +2476,11 @@ function renderInfluencers(){
       :'';
     var warnBadge=ratingWarningBadge(i.rating);
     var goneBadge=i.accountGone?'<span class="badge" style="background:var(--bg3);color:var(--text3);border:1px solid var(--border);white-space:nowrap">🚫 アカウント不明</span>':'';
+    var cautionBadge=i.commCaution?'<span class="badge" style="background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border);white-space:nowrap">⚠️ 要注意</span>':'';
     var rowBg=i.accountGone?'':parseInt(i.rating)===1?'background:var(--red-bg)':parseInt(i.rating)===2?'background:var(--amber-bg)':'';
     var rowStyle=i.accountGone?'cursor:pointer;opacity:0.5;'+rowBg:'cursor:pointer;'+rowBg;
     return'<tr style="'+rowStyle+'" onclick="openInfluencerDetail(\''+i.id+'\')">'
-      +'<td><div style="display:flex;align-items:center;gap:6px"><div style="font-weight:500;color:var(--accent)">'+esc(i.name)+'</div>'+warnBadge+goneBadge+'</div>'+handleHtml+'</td>'
+      +'<td><div style="display:flex;align-items:center;gap:6px"><div style="font-weight:500;color:var(--accent)">'+esc(i.name)+'</div>'+warnBadge+goneBadge+cautionBadge+'</div>'+handleHtml+'</td>'
       +'<td>'+esc(i.platform||'')+'</td>'
       +'<td class="td-mono">'+(i.followers?Number(i.followers).toLocaleString():'—')+(infTierOf(i)?'　<span class="badge" style="font-size:11px;border:1px solid;white-space:nowrap;'+(INF_TIER_BADGE[infTierOf(i)]||'')+'">'+infTierOf(i)+'</span>':'')+'</td>'
       +'<td class="td-mono" style="white-space:nowrap">'+fmtFeeRange(i)+'</td>'
