@@ -498,6 +498,12 @@ function openInfluencerModal(id){
   document.getElementById('iRating').value='';
   document.getElementById('iAccountGone').checked=false;
   var commCautionEl=document.getElementById('iCommCaution');if(commCautionEl)commCautionEl.checked=false;
+  var relatedSel=document.getElementById('iRelatedInfId');
+  if(relatedSel){
+    var others=DB.influencers.filter(function(x){return x.id!==id;}).sort(function(a,b){return(a.name||'').localeCompare(b.name||'');});
+    relatedSel.innerHTML='<option value="">選択しない</option>'+others.map(function(x){return'<option value="'+x.id+'">'+esc(x.name)+(x.handle?'（'+esc(x.handle)+'）':'')+'</option>';}).join('');
+    relatedSel.value='';
+  }
   var genreNewEl=document.getElementById('iGenreNew');if(genreNewEl)genreNewEl.value='';
   var overseasNewEl=document.getElementById('iOverseasNew');if(overseasNewEl)overseasNewEl.value='';
   /* 新規追加は「未声掛け」から開始。起用実績はキャスティング履歴から自動判定するため、
@@ -513,6 +519,7 @@ function openInfluencerModal(id){
       if(inf.outreachStatus)document.getElementById('iOutreachStatus').value=infOutreachStatus(inf);
       document.getElementById('iAccountGone').checked=!!inf.accountGone;
       if(commCautionEl)commCautionEl.checked=!!inf.commCaution;
+      if(relatedSel&&inf.relatedInfId)relatedSel.value=inf.relatedInfId;
       _curGenreSel=infGenres(inf).slice();
       _curAreaSel=infAreas(inf).slice();
       /* fee range */
@@ -708,6 +715,7 @@ function saveInfluencer(){
     contact:document.getElementById('iContact').value,
     agency:document.getElementById('iAgency').value,
     invoiceNumber:document.getElementById('iInvoiceNumber').value.trim(),
+    relatedInfId:(document.getElementById('iRelatedInfId')||{}).value||'',
     rating:document.getElementById('iRating').value,
     accountGone:document.getElementById('iAccountGone').checked,
     commCaution:document.getElementById('iCommCaution').checked,
@@ -1168,6 +1176,16 @@ function openInfluencerDetail(id){
           +(inf.outreachDate?'声かけ日：'+esc(inf.outreachDate)+'　':'')
           +(infAreas(inf).length?'エリア：'+esc(infAreas(inf).join('・')):'')
         +'</div>':'')
+        /* 関連アカウント（別垢）：自分が紐づけた相手（片方向）＋自分を紐づけている相手（逆方向）の両方を表示する */
+        +(function(){
+          var related=[];
+          if(inf.relatedInfId){var r1=DB.influencers.find(function(x){return x.id===inf.relatedInfId;});if(r1)related.push(r1);}
+          DB.influencers.forEach(function(x){if(x.relatedInfId===inf.id&&related.indexOf(x)<0)related.push(x);});
+          if(!related.length)return'';
+          return'<div style="font-size:12px;color:var(--text3);margin-top:6px">🔗 関連アカウント：'
+            +related.map(function(r){return'<a href="#" onclick="openInfluencerDetail(\''+r.id+'\');return false;" style="color:var(--accent)">'+esc(r.name)+'</a>';}).join('　')
+          +'</div>';
+        })()
       +'</div>'
     +'</div>'
     /* 数値サマリー */
