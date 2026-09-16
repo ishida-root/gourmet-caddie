@@ -487,6 +487,16 @@ function toggleInfAreaRegion(region){
   renderInfOverseasChecks();
 }
 
+/* 関連アカウント欄：相手を選んだ時だけ「関係の種類」を出し、
+   種類が「移転」の時だけさらに「移転理由」を出す */
+function onRelatedInfChange(){
+  var hasRelated=!!(document.getElementById('iRelatedInfId')||{}).value;
+  var typeRow=document.getElementById('iRelatedTypeRow');
+  if(typeRow)typeRow.style.display=hasRelated?'':'none';
+  var isMoved=(document.getElementById('iRelatedType')||{}).value==='moved';
+  var reasonField=document.getElementById('iRelatedReasonField');
+  if(reasonField)reasonField.style.display=(hasRelated&&isMoved)?'':'none';
+}
 function openInfluencerModal(id){
   editingInfId=id||null;
   _expandedIndividualPlats={};
@@ -504,6 +514,9 @@ function openInfluencerModal(id){
     relatedSel.innerHTML='<option value="">選択しない</option>'+others.map(function(x){return'<option value="'+x.id+'">'+esc(x.name)+(x.handle?'（'+esc(x.handle)+'）':'')+'</option>';}).join('');
     relatedSel.value='';
   }
+  var relatedTypeEl=document.getElementById('iRelatedType');if(relatedTypeEl)relatedTypeEl.value='parallel';
+  var relatedReasonEl=document.getElementById('iRelatedReason');if(relatedReasonEl)relatedReasonEl.value='stopped';
+  onRelatedInfChange();
   var genreNewEl=document.getElementById('iGenreNew');if(genreNewEl)genreNewEl.value='';
   var overseasNewEl=document.getElementById('iOverseasNew');if(overseasNewEl)overseasNewEl.value='';
   /* 新規追加は「未声掛け」から開始。起用実績はキャスティング履歴から自動判定するため、
@@ -520,6 +533,9 @@ function openInfluencerModal(id){
       document.getElementById('iAccountGone').checked=!!inf.accountGone;
       if(commCautionEl)commCautionEl.checked=!!inf.commCaution;
       if(relatedSel&&inf.relatedInfId)relatedSel.value=inf.relatedInfId;
+      if(relatedTypeEl&&inf.relatedType)relatedTypeEl.value=inf.relatedType;
+      if(relatedReasonEl&&inf.relatedReason)relatedReasonEl.value=inf.relatedReason;
+      onRelatedInfChange();
       _curGenreSel=infGenres(inf).slice();
       _curAreaSel=infAreas(inf).slice();
       /* fee range */
@@ -716,6 +732,8 @@ function saveInfluencer(){
     agency:document.getElementById('iAgency').value,
     invoiceNumber:document.getElementById('iInvoiceNumber').value.trim(),
     relatedInfId:(document.getElementById('iRelatedInfId')||{}).value||'',
+    relatedType:(document.getElementById('iRelatedType')||{}).value||'parallel',
+    relatedReason:(document.getElementById('iRelatedReason')||{}).value||'',
     rating:document.getElementById('iRating').value,
     accountGone:document.getElementById('iAccountGone').checked,
     commCaution:document.getElementById('iCommCaution').checked,
@@ -1176,15 +1194,27 @@ function openInfluencerDetail(id){
           +(inf.outreachDate?'声かけ日：'+esc(inf.outreachDate)+'　':'')
           +(infAreas(inf).length?'エリア：'+esc(infAreas(inf).join('・')):'')
         +'</div>':'')
-        /* 関連アカウント（別垢）：自分が紐づけた相手（片方向）＋自分を紐づけている相手（逆方向）の両方を表示する */
+        /* 関連アカウント（別垢・移転）：自分が紐づけた相手（順方向）＋自分を紐づけている相手（逆方向）の
+           両方を表示する。関係の種類が「移転」の場合は移転先/移転元・理由も添える */
         +(function(){
-          var related=[];
-          if(inf.relatedInfId){var r1=DB.influencers.find(function(x){return x.id===inf.relatedInfId;});if(r1)related.push(r1);}
-          DB.influencers.forEach(function(x){if(x.relatedInfId===inf.id&&related.indexOf(x)<0)related.push(x);});
-          if(!related.length)return'';
-          return'<div style="font-size:12px;color:var(--text3);margin-top:6px">🔗 関連アカウント：'
-            +related.map(function(r){return'<a href="#" onclick="openInfluencerDetail(\''+r.id+'\');return false;" style="color:var(--accent)">'+esc(r.name)+'</a>';}).join('　')
-          +'</div>';
+          var REASON_LABEL={stopped:'旧アカウントは停止',agency:'事務所に明け渡して別に'};
+          var lines=[];
+          if(inf.relatedInfId){
+            var r1=DB.influencers.find(function(x){return x.id===inf.relatedInfId;});
+            if(r1){
+              var label1=inf.relatedType==='moved'?'移転先':'関連アカウント';
+              var note1=inf.relatedType==='moved'&&inf.relatedReason?'（'+(REASON_LABEL[inf.relatedReason]||inf.relatedReason)+'）':'';
+              lines.push(label1+'：<a href="#" onclick="openInfluencerDetail(\''+r1.id+'\');return false;" style="color:var(--accent)">'+esc(r1.name)+'</a>'+note1);
+            }
+          }
+          DB.influencers.forEach(function(x){
+            if(x.relatedInfId!==inf.id)return;
+            var label2=x.relatedType==='moved'?'移転元':'関連アカウント';
+            var note2=x.relatedType==='moved'&&x.relatedReason?'（'+(REASON_LABEL[x.relatedReason]||x.relatedReason)+'）':'';
+            lines.push(label2+'：<a href="#" onclick="openInfluencerDetail(\''+x.id+'\');return false;" style="color:var(--accent)">'+esc(x.name)+'</a>'+note2);
+          });
+          if(!lines.length)return'';
+          return'<div style="font-size:12px;color:var(--text3);margin-top:6px">🔗 '+lines.join('　｜　')+'</div>';
         })()
       +'</div>'
     +'</div>'

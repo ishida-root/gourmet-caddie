@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=156">
+<link rel="stylesheet" href="css/app.css?v=157">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -1052,7 +1052,11 @@
   </div>
   <div class="modal-body">
     <div class="fr"><div class="field"><label>名前 *</label><input id="iName" type="text" placeholder="田中 みな"></div><div class="field"><label>ID <span style="font-size:11px;color:var(--text3);font-weight:400">（名前クリックで開くリンクを自動生成）</span></label><input id="iHandle" type="text" placeholder="@tanakami_food"></div></div>
-    <div class="fr1 field" style="margin-bottom:14px"><label>関連アカウント（別垢・任意）<span style="font-size:11px;color:var(--text3);font-weight:400"> ※同一人物のメイン/サブアカウントなどを別のインフルエンサーとして登録している場合、ここで紐づけます</span></label><select id="iRelatedInfId"><option value="">選択しない</option></select></div>
+    <div class="fr1 field" style="margin-bottom:8px"><label>関連アカウント（別垢・任意）<span style="font-size:11px;color:var(--text3);font-weight:400"> ※同一人物のメイン/サブアカウントや、移転（旧→新）で別のインフルエンサーとして登録している場合、ここで紐づけます</span></label><select id="iRelatedInfId" onchange="onRelatedInfChange()"><option value="">選択しない</option></select></div>
+    <div class="fr" id="iRelatedTypeRow" style="display:none;margin-bottom:14px">
+      <div class="field"><label style="font-size:12px">関係の種類</label><select id="iRelatedType" onchange="onRelatedInfChange()"><option value="parallel">並行運用（メイン/サブなど）</option><option value="moved">移転（このアカウント→上記へ移行）</option></select></div>
+      <div class="field" id="iRelatedReasonField" style="display:none"><label style="font-size:12px">移転理由</label><select id="iRelatedReason"><option value="stopped">旧アカウントは停止</option><option value="agency">事務所に明け渡して別に</option></select></div>
+    </div>
     <div class="fr"><div class="field"><label>フォロワー数</label><input id="iFollowers" type="number" placeholder="50000"></div><div class="field"><label>フォロー数</label><input id="iFollowing" type="number" placeholder="500"></div></div>
     <div class="fr1 field">
       <label>ジャンル <span style="font-size:11px;color:var(--text3);font-weight:400">（複数選択可）</span></label>
@@ -1712,25 +1716,25 @@
 </div>
 
 
-<script src="js/vendor/pizzip.min.js?v=156"></script>
-<script src="js/vendor/docxtemplater.min.js?v=156"></script>
-<script src="js/vendor/xlsx.full.min.js?v=156"></script>
-<script src="js/config.js?v=156"></script>
-<script src="js/db.js?v=156"></script>
-<script src="js/utils.js?v=156"></script>
-<script src="js/settings.js?v=156"></script>
-<script src="js/stores.js?v=156"></script>
-<script src="js/schedule.js?v=156"></script>
-<script src="js/casting.js?v=156"></script>
-<script src="js/check.js?v=156"></script>
-<script src="js/accounting.js?v=156"></script>
-<script src="js/plans.js?v=156"></script>
-<script src="js/creators.js?v=156"></script>
-<script src="js/corps.js?v=156"></script>
-<script src="js/faqs.js?v=156"></script>
-<script src="js/orders.js?v=156"></script>
-<script src="js/hearing.js?v=156"></script>
-<script src="js/dashboard.js?v=156"></script>
-<script src="js/app.js?v=156"></script>
+<script src="js/vendor/pizzip.min.js?v=157"></script>
+<script src="js/vendor/docxtemplater.min.js?v=157"></script>
+<script src="js/vendor/xlsx.full.min.js?v=157"></script>
+<script src="js/config.js?v=157"></script>
+<script src="js/db.js?v=157"></script>
+<script src="js/utils.js?v=157"></script>
+<script src="js/settings.js?v=157"></script>
+<script src="js/stores.js?v=157"></script>
+<script src="js/schedule.js?v=157"></script>
+<script src="js/casting.js?v=157"></script>
+<script src="js/check.js?v=157"></script>
+<script src="js/accounting.js?v=157"></script>
+<script src="js/plans.js?v=157"></script>
+<script src="js/creators.js?v=157"></script>
+<script src="js/corps.js?v=157"></script>
+<script src="js/faqs.js?v=157"></script>
+<script src="js/orders.js?v=157"></script>
+<script src="js/hearing.js?v=157"></script>
+<script src="js/dashboard.js?v=157"></script>
+<script src="js/app.js?v=157"></script>
 </body>
 </html>
