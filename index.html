@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=154">
+<link rel="stylesheet" href="css/app.css?v=155">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -631,6 +631,33 @@
     <div class="page" id="page-casting">
       <div class="card">
         <div class="card-header"><span class="card-title">キャスティング履歴</span><button class="btn btn-primary btn-sm" onclick="openCastingModal()">＋ 記録追加</button></div>
+        <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap;row-gap:8px;margin-bottom:14px">
+          <select id="filterCastStore" onchange="renderCasting()" style="font-size:12px;padding:4px 8px;width:auto"><option value="">店舗：全て</option></select>
+          <select id="filterCastInf" onchange="renderCasting()" style="font-size:12px;padding:4px 8px;width:auto"><option value="">インフルエンサー：全て</option></select>
+          <select id="filterCastContract" onchange="renderCasting()" style="font-size:12px;padding:4px 8px;width:auto">
+            <option value="">契約書：全て</option>
+            <option value="sent">送付済み</option>
+            <option value="unsent">未送付</option>
+          </select>
+          <select id="filterCastLiaison" onchange="renderCasting()" style="font-size:12px;padding:4px 8px;width:auto">
+            <option value="">渉外対応：全て</option>
+            <option value="needed">対応必要</option>
+            <option value="none">なし</option>
+          </select>
+          <select id="filterCastInvoice" onchange="renderCasting()" style="font-size:12px;padding:4px 8px;width:auto">
+            <option value="">請求書状況：全て</option>
+            <option value="none">未登録</option>
+            <option value="pending">未受領</option>
+            <option value="sns_received">請求書受領</option>
+            <option value="accounting_submitted">経理申請</option>
+            <option value="done">支払い済み</option>
+          </select>
+          <label style="display:flex;align-items:center;gap:5px;font-size:12px;cursor:pointer;white-space:nowrap">
+            <input type="checkbox" id="filterCastIncludeCancelled" onchange="renderCasting()">
+            キャンセルも表示
+          </label>
+          <button class="btn btn-sm" onclick="resetCastFilters()">↺ 絞り込みをリセット</button>
+        </div>
         <div class="table-wrap"><table><thead><tr><th>店舗</th><th>インフルエンサー</th><th>来店日</th><th>投稿日</th><th>媒体</th><th>契約書</th><th>渉外対応</th><th>請求書状況</th><th></th></tr></thead><tbody id="castBody"></tbody></table></div>
       </div>
     </div>
@@ -1684,25 +1711,25 @@
 </div>
 
 
-<script src="js/vendor/pizzip.min.js?v=154"></script>
-<script src="js/vendor/docxtemplater.min.js?v=154"></script>
-<script src="js/vendor/xlsx.full.min.js?v=154"></script>
-<script src="js/config.js?v=154"></script>
-<script src="js/db.js?v=154"></script>
-<script src="js/utils.js?v=154"></script>
-<script src="js/settings.js?v=154"></script>
-<script src="js/stores.js?v=154"></script>
-<script src="js/schedule.js?v=154"></script>
-<script src="js/casting.js?v=154"></script>
-<script src="js/check.js?v=154"></script>
-<script src="js/accounting.js?v=154"></script>
-<script src="js/plans.js?v=154"></script>
-<script src="js/creators.js?v=154"></script>
-<script src="js/corps.js?v=154"></script>
-<script src="js/faqs.js?v=154"></script>
-<script src="js/orders.js?v=154"></script>
-<script src="js/hearing.js?v=154"></script>
-<script src="js/dashboard.js?v=154"></script>
-<script src="js/app.js?v=154"></script>
+<script src="js/vendor/pizzip.min.js?v=155"></script>
+<script src="js/vendor/docxtemplater.min.js?v=155"></script>
+<script src="js/vendor/xlsx.full.min.js?v=155"></script>
+<script src="js/config.js?v=155"></script>
+<script src="js/db.js?v=155"></script>
+<script src="js/utils.js?v=155"></script>
+<script src="js/settings.js?v=155"></script>
+<script src="js/stores.js?v=155"></script>
+<script src="js/schedule.js?v=155"></script>
+<script src="js/casting.js?v=155"></script>
+<script src="js/check.js?v=155"></script>
+<script src="js/accounting.js?v=155"></script>
+<script src="js/plans.js?v=155"></script>
+<script src="js/creators.js?v=155"></script>
+<script src="js/corps.js?v=155"></script>
+<script src="js/faqs.js?v=155"></script>
+<script src="js/orders.js?v=155"></script>
+<script src="js/hearing.js?v=155"></script>
+<script src="js/dashboard.js?v=155"></script>
+<script src="js/app.js?v=155"></script>
 </body>
 </html>

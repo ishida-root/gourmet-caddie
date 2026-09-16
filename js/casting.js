@@ -717,7 +717,9 @@ function saveInfluencer(){
     areas:_curAreaSel.slice(),
     platformDetails:getPlatformData(),
     pricePlans:_pricePlanRows.filter(function(r){return r.label||r.amount;}),
-    reviewChecked:isEdit?true:false /* 編集＝目視確認済みとみなすので、編集保存時は確認チェックを外さない（むしろON） */
+    /* 確認（一時）チェックは編集で勝手に外れたり付いたりしないよう、既存の値をそのまま引き継ぐ
+       （オブジェクトを丸ごと差し替える保存方式のため、ここで明示的に維持する必要がある） */
+    reviewChecked:isEdit?!!(DB.influencers.find(function(x){return x.id===id;})||{}).reviewChecked:false
   };
   if(isEdit){
     var idx=DB.influencers.findIndex(function(x){return x.id===id;});
@@ -2517,12 +2519,52 @@ function castSortKey(c){
   var d=c.visitDate?new Date(c.visitDate).getTime():(c.date?new Date(c.date).getTime():NaN);
   return isNaN(d)?-Infinity:d;
 }
+/* キャスティング履歴の絞り込み欄（店舗・インフルエンサー）は、実際に履歴がある
+   店舗・インフルエンサーだけを選択肢にする（無関係な候補で埋まらないように） */
+function updateCastFilterOptions(){
+  var storeSel=document.getElementById('filterCastStore');
+  var infSel=document.getElementById('filterCastInf');
+  if(!storeSel||!infSel)return;
+  var storeIds=[...new Set(DB.castings.map(function(c){return c.storeId;}))].filter(Boolean);
+  var infIds=[...new Set(DB.castings.map(function(c){return c.infId;}))].filter(Boolean);
+  var storeOpts=storeIds.map(function(id){return{id:id,name:storeName(id)};}).sort(function(a,b){return a.name.localeCompare(b.name);});
+  var infOpts=infIds.map(function(id){return{id:id,name:infName(id)};}).sort(function(a,b){return a.name.localeCompare(b.name);});
+  var curStore=storeSel.value,curInf=infSel.value;
+  storeSel.innerHTML='<option value="">店舗：全て</option>'+storeOpts.map(function(o){return'<option value="'+esc(o.id)+'">'+esc(o.name)+'</option>';}).join('');
+  infSel.innerHTML='<option value="">インフルエンサー：全て</option>'+infOpts.map(function(o){return'<option value="'+esc(o.id)+'">'+esc(o.name)+'</option>';}).join('');
+  if(storeIds.indexOf(curStore)>=0)storeSel.value=curStore;
+  if(infIds.indexOf(curInf)>=0)infSel.value=curInf;
+}
+function resetCastFilters(){
+  ['filterCastStore','filterCastInf','filterCastContract','filterCastLiaison','filterCastInvoice'].forEach(function(id){
+    var el=document.getElementById(id);if(el)el.value='';
+  });
+  var ccEl=document.getElementById('filterCastIncludeCancelled');if(ccEl)ccEl.checked=false;
+  renderCasting();
+}
 function renderCasting(){
+  updateCastFilterOptions();
   var search=(document.getElementById('globalSearch').value||'').toLowerCase();
+  var storeFilter=(document.getElementById('filterCastStore')||{}).value||'';
+  var infFilter=(document.getElementById('filterCastInf')||{}).value||'';
+  var contractFilter=(document.getElementById('filterCastContract')||{}).value||'';
+  var liaisonFilter=(document.getElementById('filterCastLiaison')||{}).value||'';
+  var invoiceFilter=(document.getElementById('filterCastInvoice')||{}).value||'';
+  var includeCancelled=(document.getElementById('filterCastIncludeCancelled')||{}).checked;
   var list=DB.castings.slice().sort(function(a,b){return castSortKey(b)-castSortKey(a);});
   if(search)list=list.filter(function(c){
     return storeName(c.storeId).toLowerCase().includes(search)
       ||infName(c.infId).toLowerCase().includes(search);
+  });
+  if(!includeCancelled)list=list.filter(function(c){return c.status!=='cancelled';});
+  if(storeFilter)list=list.filter(function(c){return c.storeId===storeFilter;});
+  if(infFilter)list=list.filter(function(c){return c.infId===infFilter;});
+  if(contractFilter)list=list.filter(function(c){return contractFilter==='sent'?!!c.contractSent:!c.contractSent;});
+  if(liaisonFilter)list=list.filter(function(c){return liaisonFilter==='needed'?!!c.liaisonNeeded:!c.liaisonNeeded;});
+  if(invoiceFilter)list=list.filter(function(c){
+    var inv=(DB.invoices||[]).find(function(x){return x.castingId===c.id&&x.payeeType!=='ad';})
+      ||(DB.invoices||[]).find(function(x){return x.payeeType!=='ad'&&x.storeId===c.storeId&&x.infId===c.infId;});
+    return invoiceFilter==='none'?!inv:!!inv&&inv.status===invoiceFilter;
   });
   var tb=document.getElementById('castBody');
   if(!list.length){tb.innerHTML='<tr><td colspan="9" class="empty-state">キャスティング履歴がありません</td></tr>';return;}
