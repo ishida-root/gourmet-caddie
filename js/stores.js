@@ -553,19 +553,19 @@ function saveStore(){
   var colorIdx=isEdit?(DB.stores.findIndex(function(x){return x.id===id;})):(DB.stores.length);
   if(colorIdx<0)colorIdx=DB.stores.length;
   var color=existing?existing.color:COLORS[colorIdx%COLORS.length];
-  /* 契約プラン（主契約・追加契約とも、種別を問わず全プラン）ごとにキャスティング
+  /* 追加契約に「インフルエンサーキャスティング」等のスポットプランがあれば、キャスティング
      案件（パッケージ）を自動作成・同期する（キャスティング登録画面で毎回手動作成し直す
      二度手間をなくすため）。既に自動作成済み（r.autoPkgId）なら、名称・予算を最新の
      契約内容に合わせて更新する。手動作成済みの他の案件はそのまま保持する。
-     「金額」欄は月額ではなく契約期間全体の総額（売価）で、基本設計として利益率50%を
-     目標に総額の半分をキャスティング予算（原価上限）に設定する */
+     「金額」欄は月額ではなく契約期間全体の総額（売価）で、キャスティング予算（原価上限）は
+     利益率50%を目標に総額の半分をPR費用の上限として設定する */
   var contractRows=_storeContractRows.filter(function(r){return r.planId;});
   var castingPkgs=existing?(existing.castingPackages||[]).map(function(p){return Object.assign({},p);}):[];
   var CASTING_SPOT_MARGIN=0.5;
   contractRows.forEach(function(r){
     if(r.status!=='active')return;
     var plan=DB.plans.find(function(p){return p.id===r.planId;});
-    if(!plan)return;
+    if(!plan||plan.type!=='spot'||!plan.name||plan.name.indexOf('インフルエンサー')<0)return;
     var total=Number(r.monthlyFee)||0;
     var budget=total?Math.round(total*CASTING_SPOT_MARGIN):'';
     var pkg=r.autoPkgId?castingPkgs.find(function(p){return p.id===r.autoPkgId;}):null;
@@ -579,12 +579,13 @@ function saveStore(){
       r.autoPkgId=pkg.id;
     }
   });
-  /* 主契約プランについても同様に同期する（種別を問わない） */
+  /* 主契約プラン自体がインフルエンサーキャスティング等のスポットプランの場合も同様に同期する
+     （店舗の契約がそもそもスポット契約のみ、というケース） */
   var mainPlanId=document.getElementById('sPlanId').value;
   var mainAutoPkgId=existing?existing.mainPlanAutoPkgId:'';
   if(document.getElementById('sStatus').value==='active'){
     var mplan=DB.plans.find(function(p){return p.id===mainPlanId;});
-    if(mplan){
+    if(mplan&&mplan.type==='spot'&&mplan.name&&mplan.name.indexOf('インフルエンサー')>=0){
       var mTotal=Number(document.getElementById('sMonthlyFee').value)||0;
       var mBudget=mTotal?Math.round(mTotal*CASTING_SPOT_MARGIN):'';
       var mpkg=mainAutoPkgId?castingPkgs.find(function(p){return p.id===mainAutoPkgId;}):null;
