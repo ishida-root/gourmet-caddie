@@ -497,6 +497,37 @@ function onRelatedInfChange(){
   var reasonField=document.getElementById('iRelatedReasonField');
   if(reasonField)reasonField.style.display=(hasRelated&&isMoved)?'':'none';
 }
+/* IDを直接貼り付けて移転先/移転元を紐づける。既存インフルエンサーなら即座に
+   関連アカウント欄へ反映し、未登録ならまず今の内容を保存してから、そのIDで
+   新規登録画面を開く（移転元として自動で紐づけた状態で開始する） */
+function linkOrCreateRelatedByHandle(){
+  var pasteEl=document.getElementById('iRelatedPasteHandle');
+  if(!pasteEl)return;
+  var raw=pasteEl.value.trim();
+  if(!raw){alert('IDを入力してください');return;}
+  var normalize=function(h){return h.trim().toLowerCase().replace(/^@/,'');};
+  var target=DB.influencers.find(function(x){return x.id!==editingInfId&&x.handle&&normalize(x.handle)===normalize(raw);});
+  if(target){
+    var relatedSel=document.getElementById('iRelatedInfId');
+    if(relatedSel)relatedSel.value=target.id;
+    var relatedTypeEl=document.getElementById('iRelatedType');if(relatedTypeEl)relatedTypeEl.value='moved';
+    var relatedReasonEl=document.getElementById('iRelatedReason');if(relatedReasonEl)relatedReasonEl.value='stopped';
+    onRelatedInfChange();
+    pasteEl.value='';
+    alert('既存の「'+target.name+'」に紐づけました。移転理由を確認のうえ保存してください。');
+    return;
+  }
+  if(!confirm('「'+raw+'」は未登録です。今の内容を保存してから、このIDで新規インフルエンサー登録画面を開きます。よろしいですか？'))return;
+  saveInfluencer();
+  var currentId=editingInfId;
+  if(!currentId)return; /* 名前未入力などで保存できなかった場合は何もしない */
+  openInfluencerModal();
+  var handleEl=document.getElementById('iHandle');if(handleEl)handleEl.value=raw;
+  var relatedSel2=document.getElementById('iRelatedInfId');if(relatedSel2)relatedSel2.value=currentId;
+  var relatedTypeEl2=document.getElementById('iRelatedType');if(relatedTypeEl2)relatedTypeEl2.value='moved';
+  var relatedReasonEl2=document.getElementById('iRelatedReason');if(relatedReasonEl2)relatedReasonEl2.value='stopped';
+  onRelatedInfChange();
+}
 function openInfluencerModal(id){
   editingInfId=id||null;
   _expandedIndividualPlats={};
