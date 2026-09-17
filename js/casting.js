@@ -197,6 +197,7 @@ function renderPlatformDetails(saved){
 
 function onPlatformCheck(pid){
   renderPlatformDetails(getPlatformData());
+  if(typeof renderInfPricePlanRows==='function')renderInfPricePlanRows();
 }
 
 function setPlatformTax(pid,val){
@@ -291,8 +292,14 @@ function renderInfPricePlanRows(){
     wrap.innerHTML='<div style="font-size:12px;color:var(--text3)">「＋ プランを追加」から登録してください</div>';
     return;
   }
+  /* 上の「対応媒体」でチェックした媒体だけに絞り込んで表示する（1媒体しか対応していないのに
+     全媒体の選択肢が並ぶと見づらいため）。対応媒体が1つもチェックされていない場合や、
+     過去に選択済みの媒体が対応媒体側で外れた場合は、選択肢が消えないよう全媒体を表示する */
+  var pd=getPlatformData();
+  var enabledIds=INF_PLATFORM_LIST.filter(function(pl){return pd[pl.id]&&pd[pl.id].enabled;}).map(function(pl){return pl.id;});
   wrap.innerHTML=_pricePlanRows.map(function(r,i){
     var platforms=r.platforms||[];
+    var visibleList=enabledIds.length?INF_PLATFORM_LIST.filter(function(pl){return enabledIds.indexOf(pl.id)>=0||platforms.indexOf(pl.id)>=0;}):INF_PLATFORM_LIST;
     return'<div style="padding:10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);margin-bottom:8px">'
       +'<div style="display:flex;gap:10px;align-items:flex-end;margin-bottom:8px">'
         +'<div class="field" style="flex:1"><label style="font-size:12px">プラン名</label><input type="text" value="'+esc(r.label||'')+'" placeholder="例: プレミアムプラン" oninput="updateInfPricePlanField('+i+',\'label\',this.value)"></div>'
@@ -306,9 +313,9 @@ function renderInfPricePlanRows(){
           +'<input type="checkbox" '+(r.isOption?'checked':'')+' onchange="setInfPricePlanOption('+i+',this.checked)"> 追加オプション'
         +'</label>'
       +'</div>'
-      +'<div style="font-size:11px;color:var(--text3);margin-bottom:4px">含む媒体（複数選択可・他のプランと重複してOK）</div>'
+      +'<div style="font-size:11px;color:var(--text3);margin-bottom:4px">含む媒体（複数選択可・他のプランと重複してOK・上の「対応媒体」で絞り込み中）</div>'
       +'<div style="display:flex;flex-wrap:wrap;gap:4px 12px;margin-bottom:8px">'
-        +INF_PLATFORM_LIST.map(function(pl){
+        +visibleList.map(function(pl){
           return'<label style="display:inline-flex;align-items:center;gap:4px;font-size:12px;cursor:pointer">'
             +'<input type="checkbox" '+(platforms.indexOf(pl.id)>=0?'checked':'')+' onchange="toggleInfPricePlanPlatform('+i+',\''+pl.id+'\')">'
             +esc(pl.label)
