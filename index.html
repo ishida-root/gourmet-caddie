@@ -1065,6 +1065,20 @@
       <div class="field" id="iRelatedReasonField" style="display:none"><label style="font-size:12px">移転理由</label><select id="iRelatedReason"><option value="stopped">旧アカウントは停止</option><option value="agency">事務所に明け渡して別に</option></select></div>
     </div>
     <div class="fr"><div class="field"><label>フォロワー数</label><input id="iFollowers" type="number" placeholder="50000"></div><div class="field"><label>フォロー数</label><input id="iFollowing" type="number" placeholder="500"></div></div>
+    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:14px;padding:10px 12px;background:var(--bg3);border-radius:var(--r)">
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+        <input type="checkbox" id="iAccountGone" style="width:16px;height:16px;cursor:pointer;accent-color:var(--red)">
+        <span style="font-size:14px">🚫 アカウント不明</span>
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+        <input type="checkbox" id="iCommCaution" style="width:16px;height:16px;cursor:pointer;accent-color:var(--amber)">
+        <span style="font-size:14px">⚠️ コミュニケーション要注意</span>
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+        <input type="checkbox" id="iAccountSuspended" style="width:16px;height:16px;cursor:pointer;accent-color:var(--text3)">
+        <span style="font-size:14px">⏸️ アカウント停止・休止</span>
+      </label>
+    </div>
     <div class="fr1 field">
       <label>ジャンル <span style="font-size:11px;color:var(--text3);font-weight:400">（複数選択可）</span></label>
       <div id="iGenreChecks" style="display:flex;flex-wrap:wrap;gap:4px 14px;padding:8px 10px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg2)"></div>
@@ -1099,20 +1113,6 @@
     </div>
     <div class="fr"><div class="field"><label>所属事務所</label><input id="iAgency" type="text" placeholder="なし"></div><div class="field"><label>評価</label><select id="iRating"><option value="">—</option><option value="5">★★★★★ 最高</option><option value="4">★★★★ 良い</option><option value="3">★★★ 普通</option><option value="2">★★ 要注意</option><option value="1">★ NG</option></select></div></div>
     <div class="fr1 field" style="margin-bottom:14px"><label>インボイス登録番号（任意）<span style="font-size:11px;color:var(--text3);font-weight:400"> ※未登録（個人事業者でインボイス未登録など）の場合は空欄のままでOK</span></label><input id="iInvoiceNumber" type="text" placeholder="例: T1234567890123"></div>
-    <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:14px;padding:10px 12px;background:var(--bg3);border-radius:var(--r)">
-      <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
-        <input type="checkbox" id="iAccountGone" style="width:16px;height:16px;cursor:pointer;accent-color:var(--red)">
-        <span style="font-size:14px">🚫 アカウント不明</span>
-      </label>
-      <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
-        <input type="checkbox" id="iCommCaution" style="width:16px;height:16px;cursor:pointer;accent-color:var(--amber)">
-        <span style="font-size:14px">⚠️ コミュニケーション要注意</span>
-      </label>
-      <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
-        <input type="checkbox" id="iAccountSuspended" style="width:16px;height:16px;cursor:pointer;accent-color:var(--text3)">
-        <span style="font-size:14px">⏸️ アカウント停止・休止</span>
-      </label>
-    </div>
     <div class="fr1 field"><label>備考・注意点</label><textarea id="iMemo" placeholder="得意ジャンル、投稿スタイル、注意点など..."></textarea></div>
 
     <!-- 対応媒体・費用設定 -->
