@@ -2564,7 +2564,7 @@ function renderInfluencers(){
   var fIcon=document.getElementById('infSortFollowersIcon');if(fIcon)fIcon.textContent=infSortKey==='followers'?(infSortDir==='asc'?'▲':'▼'):'';
   var pIcon=document.getElementById('infSortFeeIcon');if(pIcon)pIcon.textContent=infSortKey==='fee'?(infSortDir==='asc'?'▲':'▼'):'';
   var tb=document.getElementById('infBody');
-  if(!list.length){tb.innerHTML='<tr><td colspan="10" class="empty-state">インフルエンサーが登録されていません</td></tr>';return;}
+  if(!list.length){tb.innerHTML='<tr><td colspan="8" class="empty-state">インフルエンサーが登録されていません</td></tr>';return;}
   tb.innerHTML=list.map(function(i){
     var last=DB.castings.filter(function(c){return c.infId===i.id;}).sort(function(a,b){return new Date(b.date)-new Date(a.date);})[0];
     var accountUrl=i.url||(i.handle?'https://www.instagram.com/'+i.handle.replace(/^@/,''):'');
@@ -2581,7 +2581,6 @@ function renderInfluencers(){
     var rowStyle=i.accountGone?'cursor:pointer;opacity:0.5;'+rowBg:'cursor:pointer;'+rowBg;
     return'<tr style="'+rowStyle+'" onclick="openInfluencerDetail(\''+i.id+'\')">'
       +'<td><div style="display:flex;align-items:center;gap:6px"><div style="font-weight:500;color:var(--accent)">'+esc(i.name)+'</div>'+warnBadge+goneBadge+cautionBadge+suspendedBadge+'</div>'+handleHtml+'</td>'
-      +'<td>'+esc(i.platform||'')+'</td>'
       +'<td class="td-mono">'+(i.followers?Number(i.followers).toLocaleString():'—')+(infTierOf(i)?'　<span class="badge" style="font-size:11px;border:1px solid;white-space:nowrap;'+(INF_TIER_BADGE[infTierOf(i)]||'')+'">'+infTierOf(i)+'</span>':'')+'</td>'
       +'<td class="td-mono" style="white-space:nowrap">'+fmtFeeRange(i)+'</td>'
       +'<td>'+(infGenres(i).length?infGenres(i).map(esc).join('・'):'—')+'</td>'
@@ -2589,7 +2588,6 @@ function renderInfluencers(){
         +(infOutreachStatus(i)?'<span class="badge" style="font-size:11px;border:1px solid;white-space:nowrap;'+(INF_OUTREACH_BADGE[infOutreachStatus(i)]||'')+'">'+esc(infOutreachStatus(i))+'</span>':'<span style="color:var(--text3)">—</span>')
         +' <span class="badge" style="font-size:11px;border:1px solid;white-space:nowrap;'+(INF_ENGAGEMENT_BADGE[infEngagementStatus(i)]||'')+'">'+esc(infEngagementStatus(i))+'</span>'
       +'</td>'
-      +'<td style="color:var(--text2);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(i.contact||'—')+'</td>'
       +'<td style="color:var(--text3)">'+(last?fmtD(last.date):'—')+'</td>'
       +'<td onclick="event.stopPropagation()" style="text-align:center"><input type="checkbox" '+(i.reviewChecked?'checked':'')+' onchange="toggleInfReviewChecked(\''+i.id+'\')"></td>'
       +'<td onclick="event.stopPropagation()"><button class="btn btn-sm" onclick="openInfluencerModal(\''+i.id+'\')">編集</button></td>'
