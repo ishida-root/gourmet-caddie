@@ -539,6 +539,7 @@ function openInfluencerModal(id){
   document.getElementById('iRating').value='';
   document.getElementById('iAccountGone').checked=false;
   var commCautionEl=document.getElementById('iCommCaution');if(commCautionEl)commCautionEl.checked=false;
+  var accountSuspendedEl=document.getElementById('iAccountSuspended');if(accountSuspendedEl)accountSuspendedEl.checked=false;
   var relatedSel=document.getElementById('iRelatedInfId');
   if(relatedSel){
     var others=DB.influencers.filter(function(x){return x.id!==id;}).sort(function(a,b){return(a.name||'').localeCompare(b.name||'');});
@@ -563,6 +564,7 @@ function openInfluencerModal(id){
       if(inf.outreachStatus)document.getElementById('iOutreachStatus').value=infOutreachStatus(inf);
       document.getElementById('iAccountGone').checked=!!inf.accountGone;
       if(commCautionEl)commCautionEl.checked=!!inf.commCaution;
+      if(accountSuspendedEl)accountSuspendedEl.checked=!!inf.accountSuspended;
       if(relatedSel&&inf.relatedInfId)relatedSel.value=inf.relatedInfId;
       if(relatedTypeEl&&inf.relatedType)relatedTypeEl.value=inf.relatedType;
       if(relatedReasonEl&&inf.relatedReason)relatedReasonEl.value=inf.relatedReason;
@@ -768,6 +770,7 @@ function saveInfluencer(){
     rating:document.getElementById('iRating').value,
     accountGone:document.getElementById('iAccountGone').checked,
     commCaution:document.getElementById('iCommCaution').checked,
+    accountSuspended:(document.getElementById('iAccountSuspended')||{}).checked||false,
     memo:document.getElementById('iMemo').value,
     outreachStatus:document.getElementById('iOutreachStatus').value,
     outreachDate:document.getElementById('iOutreachDate').value,
@@ -1212,6 +1215,7 @@ function openInfluencerDetail(id){
           +ratingWarningBadge(inf.rating)
           +(inf.accountGone?'<span class="badge" style="background:var(--bg3);color:var(--text3);border:1px solid var(--border)">🚫 アカウント不明</span>':'')
           +(inf.commCaution?'<span class="badge" style="background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border)">⚠️ コミュニケーション要注意</span>':'')
+          +(inf.accountSuspended?'<span class="badge" style="background:var(--bg3);color:var(--text3);border:1px solid var(--border)">⏸️ アカウント停止・休止</span>':'')
         +'</div>'
         +'<div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px">'
           +(infOutreachStatus(inf)?'<span class="badge" style="font-size:11px;border:1px solid;'+(INF_OUTREACH_BADGE[infOutreachStatus(inf)]||'')+'">'+esc(infOutreachStatus(inf))+'</span>':'')
@@ -2572,10 +2576,11 @@ function renderInfluencers(){
     var warnBadge=ratingWarningBadge(i.rating);
     var goneBadge=i.accountGone?'<span class="badge" style="background:var(--bg3);color:var(--text3);border:1px solid var(--border);white-space:nowrap">🚫 アカウント不明</span>':'';
     var cautionBadge=i.commCaution?'<span class="badge" style="background:var(--amber-bg);color:var(--amber);border:1px solid var(--amber-border);white-space:nowrap">⚠️ 要注意</span>':'';
+    var suspendedBadge=i.accountSuspended?'<span class="badge" style="background:var(--bg3);color:var(--text3);border:1px solid var(--border);white-space:nowrap">⏸️ 停止・休止</span>':'';
     var rowBg=i.accountGone?'':parseInt(i.rating)===1?'background:var(--red-bg)':parseInt(i.rating)===2?'background:var(--amber-bg)':'';
     var rowStyle=i.accountGone?'cursor:pointer;opacity:0.5;'+rowBg:'cursor:pointer;'+rowBg;
     return'<tr style="'+rowStyle+'" onclick="openInfluencerDetail(\''+i.id+'\')">'
-      +'<td><div style="display:flex;align-items:center;gap:6px"><div style="font-weight:500;color:var(--accent)">'+esc(i.name)+'</div>'+warnBadge+goneBadge+cautionBadge+'</div>'+handleHtml+'</td>'
+      +'<td><div style="display:flex;align-items:center;gap:6px"><div style="font-weight:500;color:var(--accent)">'+esc(i.name)+'</div>'+warnBadge+goneBadge+cautionBadge+suspendedBadge+'</div>'+handleHtml+'</td>'
       +'<td>'+esc(i.platform||'')+'</td>'
       +'<td class="td-mono">'+(i.followers?Number(i.followers).toLocaleString():'—')+(infTierOf(i)?'　<span class="badge" style="font-size:11px;border:1px solid;white-space:nowrap;'+(INF_TIER_BADGE[infTierOf(i)]||'')+'">'+infTierOf(i)+'</span>':'')+'</td>'
       +'<td class="td-mono" style="white-space:nowrap">'+fmtFeeRange(i)+'</td>'
