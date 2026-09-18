@@ -512,16 +512,18 @@ function linkOrCreateRelatedByHandle(){
   if(!pasteEl)return;
   var raw=pasteEl.value.trim();
   if(!raw){alert('IDを入力してください');return;}
+  var pasteType=(document.getElementById('iRelatedPasteType')||{}).value||'moved';
+  var typeLabel=pasteType==='parallel'?'並行運用':'移転';
   var normalize=function(h){return h.trim().toLowerCase().replace(/^@/,'');};
   var target=DB.influencers.find(function(x){return x.id!==editingInfId&&x.handle&&normalize(x.handle)===normalize(raw);});
   if(target){
     var relatedSel=document.getElementById('iRelatedInfId');
     if(relatedSel)relatedSel.value=target.id;
-    var relatedTypeEl=document.getElementById('iRelatedType');if(relatedTypeEl)relatedTypeEl.value='moved';
+    var relatedTypeEl=document.getElementById('iRelatedType');if(relatedTypeEl)relatedTypeEl.value=pasteType;
     var relatedReasonEl=document.getElementById('iRelatedReason');if(relatedReasonEl)relatedReasonEl.value='stopped';
     onRelatedInfChange();
     pasteEl.value='';
-    alert('既存の「'+target.name+'」に紐づけました。移転理由を確認のうえ保存してください。');
+    alert('既存の「'+target.name+'」に'+typeLabel+'として紐づけました。'+(pasteType==='moved'?'移転理由を確認のうえ':'内容を確認のうえ')+'保存してください。');
     return;
   }
   if(!confirm('「'+raw+'」は未登録です。今の内容を保存してから、このIDで新規インフルエンサー登録画面を開きます。よろしいですか？'))return;
@@ -531,7 +533,7 @@ function linkOrCreateRelatedByHandle(){
   openInfluencerModal();
   var handleEl=document.getElementById('iHandle');if(handleEl)handleEl.value=raw;
   var relatedSel2=document.getElementById('iRelatedInfId');if(relatedSel2)relatedSel2.value=currentId;
-  var relatedTypeEl2=document.getElementById('iRelatedType');if(relatedTypeEl2)relatedTypeEl2.value='moved';
+  var relatedTypeEl2=document.getElementById('iRelatedType');if(relatedTypeEl2)relatedTypeEl2.value=pasteType;
   var relatedReasonEl2=document.getElementById('iRelatedReason');if(relatedReasonEl2)relatedReasonEl2.value='stopped';
   onRelatedInfChange();
 }
