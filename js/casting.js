@@ -496,17 +496,50 @@ function toggleInfAreaRegion(region){
 
 /* 関連アカウント欄：相手を選んだ時だけ「関係の種類」を出し、
    種類が「移転」の時だけさらに「移転理由」を出す */
-function onRelatedInfChange(){
-  var hasRelated=!!(document.getElementById('iRelatedInfId')||{}).value;
-  var typeRow=document.getElementById('iRelatedTypeRow');
-  if(typeRow)typeRow.style.display=hasRelated?'':'none';
-  var isMoved=(document.getElementById('iRelatedType')||{}).value==='moved';
-  var reasonField=document.getElementById('iRelatedReasonField');
-  if(reasonField)reasonField.style.display=(hasRelated&&isMoved)?'':'none';
+/* 関連アカウントは配列（relatedAccounts:[{infId,type,reason}]）で複数保持する。
+   旧データは単一のrelatedInfId/relatedType/relatedReasonしか持たないため、
+   表示・編集のたびにこの関数で配列形式へ読み替える（後方互換） */
+function infRelatedAccountsList(inf){
+  if(!inf)return[];
+  if(Array.isArray(inf.relatedAccounts))return inf.relatedAccounts.filter(function(r){return r&&r.infId;});
+  if(inf.relatedInfId)return[{infId:inf.relatedInfId,type:inf.relatedType||'parallel',reason:inf.relatedReason||''}];
+  return[];
 }
-/* IDを直接貼り付けて移転先/移転元を紐づける。既存インフルエンサーなら即座に
-   関連アカウント欄へ反映し、未登録ならまず今の内容を保存してから、そのIDで
-   新規登録画面を開く（移転元として自動で紐づけた状態で開始する） */
+var _relatedAccountRows=[];
+function renderRelatedAccountRows(){
+  var wrap=document.getElementById('iRelatedAccountsList');
+  if(!wrap)return;
+  var others=DB.influencers.filter(function(x){return x.id!==editingInfId;}).sort(function(a,b){return(a.name||'').localeCompare(b.name||'');});
+  if(!_relatedAccountRows.length){
+    wrap.innerHTML='<div style="font-size:12px;color:var(--text3)">登録されていません</div>';
+    return;
+  }
+  wrap.innerHTML=_relatedAccountRows.map(function(r,i){
+    var optsHtml='<option value="">選択してください</option>'+others.map(function(x){return'<option value="'+x.id+'"'+(x.id===r.infId?' selected':'')+'>'+esc(x.name)+(x.handle?'（'+esc(x.handle)+'）':'')+'</option>';}).join('');
+    return'<div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:6px;padding:8px;background:var(--bg3);border-radius:var(--r);flex-wrap:wrap">'
+      +'<div class="field" style="flex:1;min-width:180px"><label style="font-size:11px">アカウント</label><select onchange="updateRelatedAccountRow('+i+',\'infId\',this.value)">'+optsHtml+'</select></div>'
+      +'<div class="field" style="flex:0 0 140px"><label style="font-size:11px">関係の種類</label><select onchange="updateRelatedAccountRow('+i+',\'type\',this.value)"><option value="parallel"'+(r.type!=='moved'?' selected':'')+'>並行運用</option><option value="moved"'+(r.type==='moved'?' selected':'')+'>移転</option></select></div>'
+      +(r.type==='moved'?'<div class="field" style="flex:0 0 160px"><label style="font-size:11px">移転理由</label><select onchange="updateRelatedAccountRow('+i+',\'reason\',this.value)"><option value="stopped"'+(r.reason!=='agency'?' selected':'')+'>旧アカウントは停止</option><option value="agency"'+(r.reason==='agency'?' selected':'')+'>事務所に明け渡して別に</option></select></div>':'')
+      +'<button type="button" class="btn-ghost-danger btn-sm" onclick="removeRelatedAccountRow('+i+')">削除</button>'
+    +'</div>';
+  }).join('');
+}
+function addRelatedAccountRow(infId,type,reason){
+  _relatedAccountRows.push({infId:infId||'',type:type||'parallel',reason:reason||'stopped'});
+  renderRelatedAccountRows();
+}
+function updateRelatedAccountRow(i,field,value){
+  if(!_relatedAccountRows[i])return;
+  _relatedAccountRows[i][field]=value;
+  renderRelatedAccountRows();
+}
+function removeRelatedAccountRow(i){
+  _relatedAccountRows.splice(i,1);
+  renderRelatedAccountRows();
+}
+/* IDを直接貼り付けて関連アカウントを紐づける。既存インフルエンサーなら即座に
+   関連アカウント一覧へ1件追加し、未登録ならまず今の内容を保存してから、そのIDで
+   新規登録画面を開く（選んだ関係の種類で自動的に紐づけた状態で開始する） */
 function linkOrCreateRelatedByHandle(){
   var pasteEl=document.getElementById('iRelatedPasteHandle');
   if(!pasteEl)return;
@@ -517,11 +550,7 @@ function linkOrCreateRelatedByHandle(){
   var normalize=function(h){return h.trim().toLowerCase().replace(/^@/,'');};
   var target=DB.influencers.find(function(x){return x.id!==editingInfId&&x.handle&&normalize(x.handle)===normalize(raw);});
   if(target){
-    var relatedSel=document.getElementById('iRelatedInfId');
-    if(relatedSel)relatedSel.value=target.id;
-    var relatedTypeEl=document.getElementById('iRelatedType');if(relatedTypeEl)relatedTypeEl.value=pasteType;
-    var relatedReasonEl=document.getElementById('iRelatedReason');if(relatedReasonEl)relatedReasonEl.value='stopped';
-    onRelatedInfChange();
+    addRelatedAccountRow(target.id,pasteType,'stopped');
     pasteEl.value='';
     alert('既存の「'+target.name+'」に'+typeLabel+'として紐づけました。'+(pasteType==='moved'?'移転理由を確認のうえ':'内容を確認のうえ')+'保存してください。');
     return;
@@ -532,10 +561,7 @@ function linkOrCreateRelatedByHandle(){
   if(!currentId)return; /* 名前未入力などで保存できなかった場合は何もしない */
   openInfluencerModal();
   var handleEl=document.getElementById('iHandle');if(handleEl)handleEl.value=raw;
-  var relatedSel2=document.getElementById('iRelatedInfId');if(relatedSel2)relatedSel2.value=currentId;
-  var relatedTypeEl2=document.getElementById('iRelatedType');if(relatedTypeEl2)relatedTypeEl2.value=pasteType;
-  var relatedReasonEl2=document.getElementById('iRelatedReason');if(relatedReasonEl2)relatedReasonEl2.value='stopped';
-  onRelatedInfChange();
+  addRelatedAccountRow(currentId,pasteType,'stopped');
 }
 function openInfluencerModal(id){
   editingInfId=id||null;
@@ -549,15 +575,7 @@ function openInfluencerModal(id){
   document.getElementById('iAccountGone').checked=false;
   var commCautionEl=document.getElementById('iCommCaution');if(commCautionEl)commCautionEl.checked=false;
   var accountSuspendedEl=document.getElementById('iAccountSuspended');if(accountSuspendedEl)accountSuspendedEl.checked=false;
-  var relatedSel=document.getElementById('iRelatedInfId');
-  if(relatedSel){
-    var others=DB.influencers.filter(function(x){return x.id!==id;}).sort(function(a,b){return(a.name||'').localeCompare(b.name||'');});
-    relatedSel.innerHTML='<option value="">選択しない</option>'+others.map(function(x){return'<option value="'+x.id+'">'+esc(x.name)+(x.handle?'（'+esc(x.handle)+'）':'')+'</option>';}).join('');
-    relatedSel.value='';
-  }
-  var relatedTypeEl=document.getElementById('iRelatedType');if(relatedTypeEl)relatedTypeEl.value='parallel';
-  var relatedReasonEl=document.getElementById('iRelatedReason');if(relatedReasonEl)relatedReasonEl.value='stopped';
-  onRelatedInfChange();
+  _relatedAccountRows=[];
   var genreNewEl=document.getElementById('iGenreNew');if(genreNewEl)genreNewEl.value='';
   var overseasNewEl=document.getElementById('iOverseasNew');if(overseasNewEl)overseasNewEl.value='';
   /* 新規追加は「未声掛け」から開始。起用実績はキャスティング履歴から自動判定するため、
@@ -574,10 +592,7 @@ function openInfluencerModal(id){
       document.getElementById('iAccountGone').checked=!!inf.accountGone;
       if(commCautionEl)commCautionEl.checked=!!inf.commCaution;
       if(accountSuspendedEl)accountSuspendedEl.checked=!!inf.accountSuspended;
-      if(relatedSel&&inf.relatedInfId)relatedSel.value=inf.relatedInfId;
-      if(relatedTypeEl&&inf.relatedType)relatedTypeEl.value=inf.relatedType;
-      if(relatedReasonEl&&inf.relatedReason)relatedReasonEl.value=inf.relatedReason;
-      onRelatedInfChange();
+      _relatedAccountRows=infRelatedAccountsList(inf).map(function(r){return Object.assign({},r);});
       _curGenreSel=infGenres(inf).slice();
       _curAreaSel=infAreas(inf).slice();
       /* fee range */
@@ -598,6 +613,7 @@ function openInfluencerModal(id){
     _curGenreSel=[];
     _curAreaSel=[];
   }
+  renderRelatedAccountRows();
   renderInfGenreChecks();
   renderInfAreaRegionBtns();
   renderInfAreaChecks();
@@ -773,9 +789,7 @@ function saveInfluencer(){
     contact:document.getElementById('iContact').value,
     agency:document.getElementById('iAgency').value,
     invoiceNumber:document.getElementById('iInvoiceNumber').value.trim(),
-    relatedInfId:(document.getElementById('iRelatedInfId')||{}).value||'',
-    relatedType:(document.getElementById('iRelatedType')||{}).value||'parallel',
-    relatedReason:(document.getElementById('iRelatedReason')||{}).value||'',
+    relatedAccounts:_relatedAccountRows.filter(function(r){return r.infId;}).map(function(r){return{infId:r.infId,type:r.type||'parallel',reason:r.reason||''};}),
     rating:document.getElementById('iRating').value,
     accountGone:document.getElementById('iAccountGone').checked,
     commCaution:document.getElementById('iCommCaution').checked,
@@ -1243,19 +1257,20 @@ function openInfluencerDetail(id){
         +(function(){
           var REASON_LABEL={stopped:'旧アカウントは停止',agency:'事務所に明け渡して別に'};
           var lines=[];
-          if(inf.relatedInfId){
-            var r1=DB.influencers.find(function(x){return x.id===inf.relatedInfId;});
-            if(r1){
-              var label1=inf.relatedType==='moved'?'移転先':'関連アカウント';
-              var note1=inf.relatedType==='moved'&&inf.relatedReason?'（'+(REASON_LABEL[inf.relatedReason]||inf.relatedReason)+'）':'';
-              lines.push(label1+'：<a href="#" onclick="openInfluencerDetail(\''+r1.id+'\');return false;" style="color:var(--accent)">'+esc(r1.name)+'</a>'+note1);
-            }
-          }
+          infRelatedAccountsList(inf).forEach(function(rel){
+            var r1=DB.influencers.find(function(x){return x.id===rel.infId;});
+            if(!r1)return;
+            var label1=rel.type==='moved'?'移転先':'関連アカウント';
+            var note1=rel.type==='moved'&&rel.reason?'（'+(REASON_LABEL[rel.reason]||rel.reason)+'）':'';
+            lines.push(label1+'：<a href="#" onclick="openInfluencerDetail(\''+r1.id+'\');return false;" style="color:var(--accent)">'+esc(r1.name)+'</a>'+note1);
+          });
           DB.influencers.forEach(function(x){
-            if(x.relatedInfId!==inf.id)return;
-            var label2=x.relatedType==='moved'?'移転元':'関連アカウント';
-            var note2=x.relatedType==='moved'&&x.relatedReason?'（'+(REASON_LABEL[x.relatedReason]||x.relatedReason)+'）':'';
-            lines.push(label2+'：<a href="#" onclick="openInfluencerDetail(\''+x.id+'\');return false;" style="color:var(--accent)">'+esc(x.name)+'</a>'+note2);
+            infRelatedAccountsList(x).forEach(function(rel){
+              if(rel.infId!==inf.id)return;
+              var label2=rel.type==='moved'?'移転元':'関連アカウント';
+              var note2=rel.type==='moved'&&rel.reason?'（'+(REASON_LABEL[rel.reason]||rel.reason)+'）':'';
+              lines.push(label2+'：<a href="#" onclick="openInfluencerDetail(\''+x.id+'\');return false;" style="color:var(--accent)">'+esc(x.name)+'</a>'+note2);
+            });
           });
           if(!lines.length)return'';
           return'<div style="font-size:12px;color:var(--text3);margin-top:6px">🔗 '+lines.join('　｜　')+'</div>';

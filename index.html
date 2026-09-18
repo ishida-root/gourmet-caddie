@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=161">
+<link rel="stylesheet" href="css/app.css?v=162">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -1052,7 +1052,11 @@
   </div>
   <div class="modal-body">
     <div class="fr"><div class="field"><label>名前 *</label><input id="iName" type="text" placeholder="田中 みな"></div><div class="field"><label>ID <span style="font-size:11px;color:var(--text3);font-weight:400">（名前クリックで開くリンクを自動生成）</span></label><input id="iHandle" type="text" placeholder="@tanakami_food"></div></div>
-    <div class="fr1 field" style="margin-bottom:8px"><label>関連アカウント（別垢・任意）<span style="font-size:11px;color:var(--text3);font-weight:400"> ※同一人物のメイン/サブアカウントや、移転（旧→新）で別のインフルエンサーとして登録している場合、ここで紐づけます</span></label><select id="iRelatedInfId" onchange="onRelatedInfChange()"><option value="">選択しない</option></select></div>
+    <div class="fr1 field" style="margin-bottom:8px">
+      <label>関連アカウント（別垢・複数登録可）<span style="font-size:11px;color:var(--text3);font-weight:400"> ※同一人物のメイン/サブアカウントや、移転（旧→新）で別のインフルエンサーとして登録している場合、ここで紐づけます</span></label>
+      <div id="iRelatedAccountsList"></div>
+      <button type="button" class="btn btn-sm" onclick="addRelatedAccountRow()" style="margin-top:4px">＋ 関連アカウントを追加</button>
+    </div>
     <div class="fr1 field" style="margin-bottom:14px">
       <label style="font-size:12px">またはIDを直接入力（登録済みなら自動で紐づけ・未登録ならこの内容を保存して新規登録画面を開きます）</label>
       <div style="display:flex;gap:6px">
@@ -1060,10 +1064,6 @@
         <select id="iRelatedPasteType" style="flex:0 0 auto;width:auto"><option value="moved">移転として</option><option value="parallel">並行運用として</option></select>
         <button type="button" class="btn btn-sm" onclick="linkOrCreateRelatedByHandle()">🔄 紐づけ</button>
       </div>
-    </div>
-    <div class="fr" id="iRelatedTypeRow" style="display:none;margin-bottom:14px">
-      <div class="field"><label style="font-size:12px">関係の種類</label><select id="iRelatedType" onchange="onRelatedInfChange()"><option value="parallel">並行運用（メイン/サブなど）</option><option value="moved">移転（このアカウント→上記へ移行）</option></select></div>
-      <div class="field" id="iRelatedReasonField" style="display:none"><label style="font-size:12px">移転理由</label><select id="iRelatedReason"><option value="stopped">旧アカウントは停止</option><option value="agency">事務所に明け渡して別に</option></select></div>
     </div>
     <div class="fr"><div class="field"><label>フォロワー数</label><input id="iFollowers" type="number" placeholder="50000"></div><div class="field"><label>フォロー数</label><input id="iFollowing" type="number" placeholder="500"></div></div>
     <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:14px;padding:10px 12px;background:var(--bg3);border-radius:var(--r)">
@@ -1728,25 +1728,25 @@
 </div>
 
 
-<script src="js/vendor/pizzip.min.js?v=161"></script>
-<script src="js/vendor/docxtemplater.min.js?v=161"></script>
-<script src="js/vendor/xlsx.full.min.js?v=161"></script>
-<script src="js/config.js?v=161"></script>
-<script src="js/db.js?v=161"></script>
-<script src="js/utils.js?v=161"></script>
-<script src="js/settings.js?v=161"></script>
-<script src="js/stores.js?v=161"></script>
-<script src="js/schedule.js?v=161"></script>
-<script src="js/casting.js?v=161"></script>
-<script src="js/check.js?v=161"></script>
-<script src="js/accounting.js?v=161"></script>
-<script src="js/plans.js?v=161"></script>
-<script src="js/creators.js?v=161"></script>
-<script src="js/corps.js?v=161"></script>
-<script src="js/faqs.js?v=161"></script>
-<script src="js/orders.js?v=161"></script>
-<script src="js/hearing.js?v=161"></script>
-<script src="js/dashboard.js?v=161"></script>
-<script src="js/app.js?v=161"></script>
+<script src="js/vendor/pizzip.min.js?v=162"></script>
+<script src="js/vendor/docxtemplater.min.js?v=162"></script>
+<script src="js/vendor/xlsx.full.min.js?v=162"></script>
+<script src="js/config.js?v=162"></script>
+<script src="js/db.js?v=162"></script>
+<script src="js/utils.js?v=162"></script>
+<script src="js/settings.js?v=162"></script>
+<script src="js/stores.js?v=162"></script>
+<script src="js/schedule.js?v=162"></script>
+<script src="js/casting.js?v=162"></script>
+<script src="js/check.js?v=162"></script>
+<script src="js/accounting.js?v=162"></script>
+<script src="js/plans.js?v=162"></script>
+<script src="js/creators.js?v=162"></script>
+<script src="js/corps.js?v=162"></script>
+<script src="js/faqs.js?v=162"></script>
+<script src="js/orders.js?v=162"></script>
+<script src="js/hearing.js?v=162"></script>
+<script src="js/dashboard.js?v=162"></script>
+<script src="js/app.js?v=162"></script>
 </body>
 </html>
