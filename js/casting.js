@@ -506,23 +506,67 @@ function infRelatedAccountsList(inf){
   return[];
 }
 var _relatedAccountRows=[];
+/* 350名を超える登録があるため、アカウント選択はネイティブselectではなく
+   名前・IDの部分一致検索で絞り込めるコンボボックスにしている（cInfと同じ方式） */
 function renderRelatedAccountRows(){
   var wrap=document.getElementById('iRelatedAccountsList');
   if(!wrap)return;
-  var others=DB.influencers.filter(function(x){return x.id!==editingInfId;}).sort(function(a,b){return(a.name||'').localeCompare(b.name||'');});
   if(!_relatedAccountRows.length){
     wrap.innerHTML='<div style="font-size:12px;color:var(--text3)">登録されていません</div>';
     return;
   }
   wrap.innerHTML=_relatedAccountRows.map(function(r,i){
-    var optsHtml='<option value="">選択してください</option>'+others.map(function(x){return'<option value="'+x.id+'"'+(x.id===r.infId?' selected':'')+'>'+esc(x.name)+(x.handle?'（'+esc(x.handle)+'）':'')+'</option>';}).join('');
+    var picked=r.infId?DB.influencers.find(function(x){return x.id===r.infId;}):null;
     return'<div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:6px;padding:8px;background:var(--bg3);border-radius:var(--r);flex-wrap:wrap">'
-      +'<div class="field" style="flex:1;min-width:180px"><label style="font-size:11px">アカウント</label><select onchange="updateRelatedAccountRow('+i+',\'infId\',this.value)">'+optsHtml+'</select></div>'
+      +'<div class="field" style="flex:1;min-width:180px;position:relative">'
+        +'<label style="font-size:11px">アカウント <span style="font-weight:400;color:var(--text3)">名前・IDで検索</span></label>'
+        +'<input type="text" id="relAccSearch_'+i+'" value="'+(picked?esc(picked.name):'')+'" placeholder="名前またはIDで検索..." autocomplete="off" oninput="onRelatedAccSearchInput('+i+',this.value)" onfocus="onRelatedAccSearchFocus('+i+')" onblur="onRelatedAccSearchBlur('+i+')">'
+        +'<div id="relAccDropdown_'+i+'" style="display:none;position:absolute;z-index:20;top:100%;left:0;right:0;max-height:200px;overflow-y:auto;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);box-shadow:0 4px 14px rgba(0,0,0,.18)"></div>'
+      +'</div>'
       +'<div class="field" style="flex:0 0 140px"><label style="font-size:11px">関係の種類</label><select onchange="updateRelatedAccountRow('+i+',\'type\',this.value)"><option value="parallel"'+(r.type!=='moved'?' selected':'')+'>並行運用</option><option value="moved"'+(r.type==='moved'?' selected':'')+'>移転</option></select></div>'
       +(r.type==='moved'?'<div class="field" style="flex:0 0 160px"><label style="font-size:11px">移転理由</label><select onchange="updateRelatedAccountRow('+i+',\'reason\',this.value)"><option value="stopped"'+(r.reason!=='agency'?' selected':'')+'>旧アカウントは停止</option><option value="agency"'+(r.reason==='agency'?' selected':'')+'>事務所に明け渡して別に</option></select></div>':'')
       +'<button type="button" class="btn-ghost-danger btn-sm" onclick="removeRelatedAccountRow('+i+')">削除</button>'
     +'</div>';
   }).join('');
+}
+function renderRelatedAccDropdown(i,query){
+  var dd=document.getElementById('relAccDropdown_'+i);
+  if(!dd)return;
+  var q=(query||'').trim().toLowerCase();
+  var list=DB.influencers.filter(function(x){
+    if(x.id===editingInfId)return false;
+    if(!q)return true;
+    return(x.name||'').toLowerCase().indexOf(q)>=0||(x.handle||'').toLowerCase().indexOf(q)>=0;
+  }).slice(0,50);
+  if(!list.length){
+    dd.innerHTML='<div style="padding:8px 12px;font-size:13px;color:var(--text3)">該当するインフルエンサーがいません</div>';
+  }else{
+    dd.innerHTML=list.map(function(x){
+      return'<div class="cinf-option" data-id="'+x.id+'" data-name="'+esc(x.name)+'" onmousedown="event.preventDefault();selectRelatedAccOption('+i+',this)" style="padding:7px 12px;font-size:13px;cursor:pointer">'
+        +'<span style="font-weight:500">'+esc(x.name)+'</span>'
+        +(x.handle?' <span style="color:var(--text3);font-size:12px">'+esc(x.handle)+'</span>':'')
+      +'</div>';
+    }).join('');
+  }
+  dd.style.display='';
+}
+function onRelatedAccSearchInput(i,val){
+  if(!_relatedAccountRows[i])return;
+  _relatedAccountRows[i].infId='';
+  renderRelatedAccDropdown(i,val);
+}
+function onRelatedAccSearchFocus(i){
+  var input=document.getElementById('relAccSearch_'+i);
+  renderRelatedAccDropdown(i,input?input.value:'');
+}
+function onRelatedAccSearchBlur(i){
+  setTimeout(function(){var dd=document.getElementById('relAccDropdown_'+i);if(dd)dd.style.display='none';},150);
+}
+function selectRelatedAccOption(i,el){
+  if(!_relatedAccountRows[i])return;
+  _relatedAccountRows[i].infId=el.getAttribute('data-id');
+  var input=document.getElementById('relAccSearch_'+i);if(input)input.value=el.getAttribute('data-name');
+  var dd=document.getElementById('relAccDropdown_'+i);if(dd)dd.style.display='none';
 }
 function addRelatedAccountRow(infId,type,reason){
   _relatedAccountRows.push({infId:infId||'',type:type||'parallel',reason:reason||'stopped'});
