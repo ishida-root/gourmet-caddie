@@ -1516,16 +1516,24 @@ function openInfluencerDetail(id){
         +(function(){
           var REASON_LABEL={stopped:'旧アカウントは停止',agency:'事務所に明け渡して別に'};
           var lines=[];
+          /* 自分が相手を紐づけていて、かつ相手も自分を紐づけている（双方向に登録済み）場合、
+             順方向・逆方向の両方から同じ相手が拾われて重複表示されてしまうため、
+             一度出した相手はshownIdsで記録してスキップする */
+          var shownIds={};
           infRelatedAccountsList(inf).forEach(function(rel){
             var r1=DB.influencers.find(function(x){return x.id===rel.infId;});
             if(!r1)return;
+            shownIds[r1.id]=true;
             var label1=rel.type==='moved'?'移転先':'関連アカウント';
             var note1=rel.type==='moved'&&rel.reason?'（'+(REASON_LABEL[rel.reason]||rel.reason)+'）':'';
             lines.push(label1+'：<a href="#" onclick="openInfluencerDetail(\''+r1.id+'\');return false;" style="color:var(--accent)">'+esc(r1.name)+'</a>'+note1);
           });
           DB.influencers.forEach(function(x){
+            if(shownIds[x.id])return;
             infRelatedAccountsList(x).forEach(function(rel){
               if(rel.infId!==inf.id)return;
+              if(shownIds[x.id])return;
+              shownIds[x.id]=true;
               var label2=rel.type==='moved'?'移転元':'関連アカウント';
               var note2=rel.type==='moved'&&rel.reason?'（'+(REASON_LABEL[rel.reason]||rel.reason)+'）':'';
               lines.push(label2+'：<a href="#" onclick="openInfluencerDetail(\''+x.id+'\');return false;" style="color:var(--accent)">'+esc(x.name)+'</a>'+note2);
