@@ -197,7 +197,7 @@ async function checkSession(){
   document.getElementById('mainApp').style.display='none';
 }
 var SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ3dGNzaHd6ZXR4bmFlZGpob2VqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg2MzM3MTgsImV4cCI6MjA5NDIwOTcxOH0.S10RHDE7wvKUMa2SxeoNvkgg6TtiMInw7ax6J5ZuMZk';
-var TABLES=['stores','posts','influencers','castings','plans','salesnotifs','creators','corporations','invoices','orders','faqs'];
+var TABLES=['stores','posts','influencers','castings','plans','salesnotifs','creators','corporations','invoices','orders','faqs','jointplans'];
 
 /* ============================================================
    APIレイヤー（ここを将来書き換えると別サーバーに移行できる）
@@ -416,11 +416,11 @@ async function loadDB(){
   try{
     var results=await Promise.all(TABLES.map(function(t){return apiFetch(t);}));
     TABLES.forEach(function(t,i){
-      var key=t==='salesnotifs'?'salesNotifs':t;
+      var key=t==='salesnotifs'?'salesNotifs':t==='jointplans'?'jointPlans':t;
       DB[key]=results[i]||[];
     });
     if(!DB.plans)DB.plans=[];
-    if(!DB.salesNotifs)DB.salesNotifs=[];if(!DB.orders)DB.orders=[];if(!DB.faqs)DB.faqs=[];
+    if(!DB.salesNotifs)DB.salesNotifs=[];if(!DB.orders)DB.orders=[];if(!DB.faqs)DB.faqs=[];if(!DB.jointPlans)DB.jointPlans=[];
     migrateSetupChecks();migrateInvoiceStatus();migrateProgressMode();migrateCreatorRequests();migrateInfluencerOutreach();
     try{localStorage.setItem('adcore3',JSON.stringify(DB));}catch(e){}
     setSyncStatus('ok','同期済み');
@@ -430,17 +430,17 @@ async function loadDB(){
       await new Promise(function(r){setTimeout(r,2000);});
       var results2=await Promise.all(TABLES.map(function(t){return apiFetch(t);}));
       TABLES.forEach(function(t,i){
-        var key=t==='salesnotifs'?'salesNotifs':t;
+        var key=t==='salesnotifs'?'salesNotifs':t==='jointplans'?'jointPlans':t;
         DB[key]=results2[i]||[];
       });
       if(!DB.plans)DB.plans=[];
-      if(!DB.salesNotifs)DB.salesNotifs=[];if(!DB.orders)DB.orders=[];if(!DB.faqs)DB.faqs=[];
+      if(!DB.salesNotifs)DB.salesNotifs=[];if(!DB.orders)DB.orders=[];if(!DB.faqs)DB.faqs=[];if(!DB.jointPlans)DB.jointPlans=[];
       migrateSetupChecks();migrateInvoiceStatus();migrateProgressMode();migrateCreatorRequests();migrateInfluencerOutreach();
       try{localStorage.setItem('adcore3',JSON.stringify(DB));}catch(e2){}
       setSyncStatus('ok','同期済み');
     }catch(e2){
       var cached=localStorage.getItem('adcore3');
-      if(cached){try{var d=JSON.parse(cached);Object.assign(DB,d);if(!DB.plans)DB.plans=[];if(!DB.salesNotifs)DB.salesNotifs=[];if(!DB.orders)DB.orders=[];if(!DB.faqs)DB.faqs=[];}catch(e3){}}
+      if(cached){try{var d=JSON.parse(cached);Object.assign(DB,d);if(!DB.plans)DB.plans=[];if(!DB.salesNotifs)DB.salesNotifs=[];if(!DB.orders)DB.orders=[];if(!DB.faqs)DB.faqs=[];if(!DB.jointPlans)DB.jointPlans=[];}catch(e3){}}
       migrateSetupChecks();migrateInvoiceStatus();migrateProgressMode();migrateCreatorRequests();migrateInfluencerOutreach();
       setSyncStatus('error','オフライン（キャッシュ表示中）');
     }

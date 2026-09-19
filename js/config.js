@@ -4,7 +4,7 @@ try{var _g=localStorage.getItem('gc_genres');if(_g)GENRES=JSON.parse(_g);}catch(
 var TAX_RATE=10;
 try{var _tr=localStorage.getItem('gc_tax_rate');if(_tr)TAX_RATE=Number(_tr)||10;}catch(e){}
 var COLORS=['#4f8ef7','#e85d75','#f5a623','#7ed321','#9b59b6','#1abc9c','#e67e22','#e74c3c','#3498db','#2ecc71','#f39c12','#8e44ad'];
-var DB={stores:[],posts:[],influencers:[],castings:[],plans:[],corporations:[],invoices:[],orders:[]};
+var DB={stores:[],posts:[],influencers:[],castings:[],plans:[],corporations:[],invoices:[],orders:[],jointPlans:[]};
 var NOW=new Date();
 var calYear=NOW.getFullYear(),calMonth=NOW.getMonth();
 var calActiveStores={};

@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=163">
+<link rel="stylesheet" href="css/app.css?v=164">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -371,6 +371,7 @@
             </select>
             <button class="btn btn-sm" onclick="resetInfFilters()">↺ 絞り込みをリセット</button>
             <button class="btn btn-sm" onclick="openInfluencerExportModal()">📤 リストを出力</button>
+            <button class="btn btn-sm" onclick="openJointPlanListModal()">🤝 合同プランを管理</button>
             <button class="btn btn-primary btn-sm" onclick="openInfluencerModal()">＋ 追加</button>
           </div>
         </div>
@@ -1252,6 +1253,41 @@
 </div>
 </div>
 
+<!-- JOINT PLAN LIST MODAL -->
+<div class="modal-overlay" id="jointPlanListModal">
+<div class="modal" style="width:560px">
+  <div class="modal-header">
+    <span class="modal-title">合同プラン管理</span>
+    <div style="display:flex;gap:6px;align-items:center">
+      <button class="btn btn-sm btn-primary" onclick="openJointPlanEditModal()">＋ 新規作成</button>
+      <button class="modal-close" onclick="closeModal('jointPlanListModal')">✕</button>
+    </div>
+  </div>
+  <div class="modal-body" id="jointPlanListBody"></div>
+</div>
+</div>
+
+<!-- JOINT PLAN EDIT MODAL -->
+<div class="modal-overlay" id="jointPlanEditModal">
+<div class="modal" style="width:520px">
+  <div class="modal-header">
+    <span class="modal-title" id="jointPlanEditTitle">合同プランを追加</span>
+    <button class="modal-close" onclick="closeJointPlanEditModal()">✕</button>
+  </div>
+  <div class="modal-body">
+    <div class="fr1 field" style="margin-bottom:14px"><label>プラン名（任意）<span style="font-size:11px;color:var(--text3);font-weight:400">未入力なら参加者名から自動表示</span></label><input id="jpLabel" type="text" placeholder="例: 大阪グルメ3アカウント合同"></div>
+    <div class="fr1 field" style="margin-bottom:8px">
+      <label>参加インフルエンサー（2名以上）</label>
+      <div id="jpMembersList"></div>
+      <button type="button" class="btn btn-sm" onclick="addJointPlanMemberRow()" style="margin-top:4px">＋ 参加者を追加</button>
+    </div>
+    <div class="fr1 field" style="margin-bottom:14px"><label>合計金額（円）</label><input id="jpAmount" type="number" placeholder="例: 80000"></div>
+    <div class="fr1 field" style="margin-bottom:14px"><label>補足</label><textarea id="jpNote" placeholder="投稿内容・投稿日程など"></textarea></div>
+    <div class="form-actions"><button class="btn" onclick="closeJointPlanEditModal()">キャンセル</button><button class="btn btn-primary" onclick="saveJointPlan()">保存</button></div>
+  </div>
+</div>
+</div>
+
 <!-- CASTING MODAL -->
 <div class="modal-overlay" id="castModal">
 <div class="modal" style="width:560px">
@@ -1728,25 +1764,25 @@
 </div>
 
 
-<script src="js/vendor/pizzip.min.js?v=163"></script>
-<script src="js/vendor/docxtemplater.min.js?v=163"></script>
-<script src="js/vendor/xlsx.full.min.js?v=163"></script>
-<script src="js/config.js?v=163"></script>
-<script src="js/db.js?v=163"></script>
-<script src="js/utils.js?v=163"></script>
-<script src="js/settings.js?v=163"></script>
-<script src="js/stores.js?v=163"></script>
-<script src="js/schedule.js?v=163"></script>
-<script src="js/casting.js?v=163"></script>
-<script src="js/check.js?v=163"></script>
-<script src="js/accounting.js?v=163"></script>
-<script src="js/plans.js?v=163"></script>
-<script src="js/creators.js?v=163"></script>
-<script src="js/corps.js?v=163"></script>
-<script src="js/faqs.js?v=163"></script>
-<script src="js/orders.js?v=163"></script>
-<script src="js/hearing.js?v=163"></script>
-<script src="js/dashboard.js?v=163"></script>
-<script src="js/app.js?v=163"></script>
+<script src="js/vendor/pizzip.min.js?v=164"></script>
+<script src="js/vendor/docxtemplater.min.js?v=164"></script>
+<script src="js/vendor/xlsx.full.min.js?v=164"></script>
+<script src="js/config.js?v=164"></script>
+<script src="js/db.js?v=164"></script>
+<script src="js/utils.js?v=164"></script>
+<script src="js/settings.js?v=164"></script>
+<script src="js/stores.js?v=164"></script>
+<script src="js/schedule.js?v=164"></script>
+<script src="js/casting.js?v=164"></script>
+<script src="js/check.js?v=164"></script>
+<script src="js/accounting.js?v=164"></script>
+<script src="js/plans.js?v=164"></script>
+<script src="js/creators.js?v=164"></script>
+<script src="js/corps.js?v=164"></script>
+<script src="js/faqs.js?v=164"></script>
+<script src="js/orders.js?v=164"></script>
+<script src="js/hearing.js?v=164"></script>
+<script src="js/dashboard.js?v=164"></script>
+<script src="js/app.js?v=164"></script>
 </body>
 </html>

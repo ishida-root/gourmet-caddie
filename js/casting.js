@@ -860,6 +860,175 @@ function saveInfluencer(){
   saveItem('influencers',inf);
 }
 
+/* ============================================================
+   合同プラン：複数インフルエンサーが同行し、合計金額で受ける案件
+   （例：3アカウント同行で合計80,000円）を横断的に記録する。
+   インフルエンサー個別の料金プラン一覧では表現できないため別管理とし、
+   参加している各インフルエンサーの詳細画面から参照できるようにする。
+   ============================================================ */
+var editingJointPlanId=null;
+var _jointPlanMembers=[];
+var _jointPlanReturnInfId=null;
+function openJointPlanListModal(){
+  _jointPlanReturnInfId=null;
+  renderJointPlanListBody();
+  openModal('jointPlanListModal');
+}
+function renderJointPlanListBody(){
+  var wrap=document.getElementById('jointPlanListBody');
+  if(!wrap)return;
+  var list=DB.jointPlans||[];
+  if(!list.length){
+    wrap.innerHTML='<div class="empty-state">合同プランはまだ登録されていません</div>';
+    return;
+  }
+  wrap.innerHTML=list.map(function(jp){
+    var names=(jp.memberIds||[]).map(function(id){var x=DB.influencers.find(function(y){return y.id===id;});return x?x.name:'（削除済み）';});
+    return'<div style="padding:10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);margin-bottom:8px">'
+      +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">'
+        +'<div><div style="font-weight:500">'+esc(jp.label||names.join('・'))+'</div>'
+          +'<div style="font-size:12px;color:var(--text3);margin-top:2px">'+names.map(esc).join('・')+'</div>'
+          +'<div style="font-size:13px;color:var(--accent);margin-top:4px">合計 '+(jp.amount?Number(jp.amount).toLocaleString()+'円':'—')+'</div>'
+          +(jp.note?'<div style="font-size:12px;color:var(--text3);margin-top:4px">'+esc(jp.note)+'</div>':'')
+        +'</div>'
+        +'<div style="display:flex;gap:6px;flex-shrink:0">'
+          +'<button class="btn btn-sm" onclick="openJointPlanEditModal(\''+jp.id+'\')">編集</button>'
+          +'<button class="btn-ghost-danger btn-sm" onclick="deleteJointPlan(\''+jp.id+'\')">削除</button>'
+        +'</div>'
+      +'</div>'
+    +'</div>';
+  }).join('');
+}
+function renderJointPlanMemberRows(){
+  var wrap=document.getElementById('jpMembersList');
+  if(!wrap)return;
+  if(!_jointPlanMembers.length){
+    wrap.innerHTML='<div style="font-size:12px;color:var(--text3)">参加インフルエンサーを追加してください</div>';
+    return;
+  }
+  wrap.innerHTML=_jointPlanMembers.map(function(infId,i){
+    var picked=infId?DB.influencers.find(function(x){return x.id===infId;}):null;
+    return'<div style="display:flex;gap:8px;align-items:flex-end;margin-bottom:6px;padding:8px;background:var(--bg3);border-radius:var(--r);flex-wrap:wrap">'
+      +'<div class="field" style="flex:1;min-width:180px;position:relative">'
+        +'<label style="font-size:11px">参加インフルエンサー'+(i+1)+' <span style="font-weight:400;color:var(--text3)">名前・IDで検索</span></label>'
+        +'<input type="text" id="jpMemberSearch_'+i+'" value="'+(picked?esc(picked.name):'')+'" placeholder="名前またはIDで検索..." autocomplete="off" oninput="onJpMemberSearchInput('+i+',this.value)" onfocus="onJpMemberSearchFocus('+i+')" onblur="onJpMemberSearchBlur('+i+')">'
+        +'<div id="jpMemberDropdown_'+i+'" style="display:none;position:absolute;z-index:20;top:100%;left:0;right:0;max-height:200px;overflow-y:auto;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);box-shadow:0 4px 14px rgba(0,0,0,.18)"></div>'
+      +'</div>'
+      +'<button type="button" class="btn-ghost-danger btn-sm" onclick="removeJointPlanMemberRow('+i+')">削除</button>'
+    +'</div>';
+  }).join('');
+}
+function renderJpMemberDropdown(i,query){
+  var dd=document.getElementById('jpMemberDropdown_'+i);
+  if(!dd)return;
+  var q=(query||'').trim().toLowerCase();
+  var chosen=_jointPlanMembers.filter(function(id,idx){return idx!==i&&id;});
+  var list=DB.influencers.filter(function(x){
+    if(chosen.indexOf(x.id)>=0)return false;
+    if(!q)return true;
+    return(x.name||'').toLowerCase().indexOf(q)>=0||(x.handle||'').toLowerCase().indexOf(q)>=0;
+  }).slice(0,50);
+  if(!list.length){
+    dd.innerHTML='<div style="padding:8px 12px;font-size:13px;color:var(--text3)">該当するインフルエンサーがいません</div>';
+  }else{
+    dd.innerHTML=list.map(function(x){
+      return'<div class="cinf-option" data-id="'+x.id+'" data-name="'+esc(x.name)+'" onmousedown="event.preventDefault();selectJpMemberOption('+i+',this)" style="padding:7px 12px;font-size:13px;cursor:pointer">'
+        +'<span style="font-weight:500">'+esc(x.name)+'</span>'
+        +(x.handle?' <span style="color:var(--text3);font-size:12px">'+esc(x.handle)+'</span>':'')
+      +'</div>';
+    }).join('');
+  }
+  dd.style.display='';
+}
+function onJpMemberSearchInput(i,val){
+  if(i>=_jointPlanMembers.length)return;
+  _jointPlanMembers[i]='';
+  renderJpMemberDropdown(i,val);
+}
+function onJpMemberSearchFocus(i){
+  var input=document.getElementById('jpMemberSearch_'+i);
+  renderJpMemberDropdown(i,input?input.value:'');
+}
+function onJpMemberSearchBlur(i){
+  setTimeout(function(){var dd=document.getElementById('jpMemberDropdown_'+i);if(dd)dd.style.display='none';},150);
+}
+function selectJpMemberOption(i,el){
+  _jointPlanMembers[i]=el.getAttribute('data-id');
+  var input=document.getElementById('jpMemberSearch_'+i);if(input)input.value=el.getAttribute('data-name');
+  var dd=document.getElementById('jpMemberDropdown_'+i);if(dd)dd.style.display='none';
+}
+function addJointPlanMemberRow(){
+  _jointPlanMembers.push('');
+  renderJointPlanMemberRows();
+}
+function removeJointPlanMemberRow(i){
+  _jointPlanMembers.splice(i,1);
+  renderJointPlanMemberRows();
+}
+function openJointPlanEditModal(id,prefillInfId){
+  editingJointPlanId=id||null;
+  var titleEl=document.getElementById('jointPlanEditTitle');
+  if(titleEl)titleEl.textContent=id?'合同プランを編集':'合同プランを追加';
+  document.getElementById('jpLabel').value='';
+  document.getElementById('jpAmount').value='';
+  document.getElementById('jpNote').value='';
+  _jointPlanMembers=[];
+  if(id){
+    var jp=DB.jointPlans.find(function(x){return x.id===id;});
+    if(jp){
+      document.getElementById('jpLabel').value=jp.label||'';
+      document.getElementById('jpAmount').value=jp.amount||'';
+      document.getElementById('jpNote').value=jp.note||'';
+      _jointPlanMembers=(jp.memberIds||[]).slice();
+    }
+  }else if(prefillInfId){
+    _jointPlanMembers=[prefillInfId];
+  }
+  while(_jointPlanMembers.length<2)_jointPlanMembers.push('');
+  renderJointPlanMemberRows();
+  closeModal('jointPlanListModal');
+  openModal('jointPlanEditModal');
+}
+function openJointPlanFromDetail(infId){
+  _jointPlanReturnInfId=infId;
+  closeModal('infDetailModal');
+  openJointPlanEditModal(null,infId);
+}
+function openJointPlanEditModalFromDetail(id,returnInfId){
+  _jointPlanReturnInfId=returnInfId;
+  closeModal('infDetailModal');
+  openJointPlanEditModal(id);
+}
+function closeJointPlanEditModal(){
+  closeModal('jointPlanEditModal');
+  if(_jointPlanReturnInfId){var rid=_jointPlanReturnInfId;_jointPlanReturnInfId=null;openInfluencerDetail(rid);}
+}
+function saveJointPlan(){
+  var memberIds=_jointPlanMembers.filter(function(id){return id;});
+  if(memberIds.length<2){alert('参加インフルエンサーを2名以上選択してください');return;}
+  var id=editingJointPlanId||uid();
+  var jp={
+    id:id,
+    label:document.getElementById('jpLabel').value.trim(),
+    memberIds:memberIds,
+    amount:document.getElementById('jpAmount').value,
+    note:document.getElementById('jpNote').value.trim()
+  };
+  DB.jointPlans=DB.jointPlans||[];
+  var idx=DB.jointPlans.findIndex(function(x){return x.id===id;});
+  if(idx>=0)DB.jointPlans[idx]=jp;else DB.jointPlans.push(jp);
+  saveItem('jointplans',jp);
+  closeModal('jointPlanEditModal');
+  if(_jointPlanReturnInfId){var rid=_jointPlanReturnInfId;_jointPlanReturnInfId=null;openInfluencerDetail(rid);}
+  else{openJointPlanListModal();}
+}
+function deleteJointPlan(id){
+  if(!confirm('この合同プランを削除しますか？'))return;
+  DB.jointPlans=(DB.jointPlans||[]).filter(function(x){return x.id!==id;});
+  deleteItem('jointplans',id);
+  renderJointPlanListBody();
+}
+
 function updatePostStatus(id,newStatus){
   var p=DB.posts.find(function(x){return x.id===id;});
   if(!p)return;
@@ -1329,6 +1498,31 @@ function openInfluencerDetail(id){
     +'</div>'
     /* 連絡先 */
     +(inf.contact?'<div style="margin-bottom:12px;padding:10px 12px;background:var(--bg3);border-radius:var(--r);font-size:13px"><span style="color:var(--text3)">連絡先：</span><span style="color:var(--accent)">'+esc(inf.contact)+'</span></div>':'')
+    /* 合同プラン（複数インフルエンサー同行で合計金額を受ける案件）：自分が参加している分だけ表示 */
+    +(function(){
+      var list=(DB.jointPlans||[]).filter(function(jp){return(jp.memberIds||[]).indexOf(inf.id)>=0;});
+      var rows=list.map(function(jp){
+        var others=(jp.memberIds||[]).filter(function(id){return id!==inf.id;}).map(function(id){
+          var x=DB.influencers.find(function(y){return y.id===id;});
+          return x?'<a href="#" onclick="openInfluencerDetail(\''+x.id+'\');return false;" style="color:var(--accent)">'+esc(x.name)+'</a>':'（削除済み）';
+        });
+        var amount=Number(jp.amount)||0;
+        var share=jp.memberIds&&jp.memberIds.length?Math.round(amount/jp.memberIds.length):0;
+        return'<div style="padding:8px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:6px;font-size:12px">'
+          +'<div>'+(jp.label?esc(jp.label)+'：':'')+others.join('・')+'と合同</div>'
+          +'<div style="color:var(--accent);margin-top:2px">合計 '+(amount?amount.toLocaleString()+'円':'—')+(amount?'（1人あたり目安 '+share.toLocaleString()+'円）':'')+'</div>'
+          +(jp.note?'<div style="color:var(--text3);margin-top:2px">'+esc(jp.note)+'</div>':'')
+          +'<div style="margin-top:4px"><button type="button" class="btn btn-sm" onclick="openJointPlanEditModalFromDetail(\''+jp.id+'\',\''+inf.id+'\')">編集</button></div>'
+        +'</div>';
+      }).join('');
+      return'<div style="margin-bottom:16px">'
+        +'<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">'
+          +'<span style="font-size:13px;font-weight:500;color:var(--text2)">🤝 合同プラン</span>'
+          +'<button type="button" class="btn btn-sm" onclick="openJointPlanFromDetail(\''+inf.id+'\')">＋ 追加</button>'
+        +'</div>'
+        +(rows||'<div style="font-size:12px;color:var(--text3)">登録されていません</div>')
+      +'</div>';
+    })()
     /* メモ */
     +(inf.memo?'<div style="margin-bottom:16px;padding:10px 12px;background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:var(--r);font-size:13px;color:var(--text);line-height:1.7;white-space:pre-wrap">'+esc(inf.memo)+'</div>':'')
     /* 声かけメール文（コピー用）。声掛け状況に関わらず常に開けるようにし、
