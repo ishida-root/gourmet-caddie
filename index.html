@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=164">
+<link rel="stylesheet" href="css/app.css?v=165">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -1132,6 +1132,15 @@
       <div id="iPricePlansList"></div>
     </div>
 
+    <!-- 合同プラン（複数インフルエンサー同行で合計金額を受ける案件）。編集画面から直接確認・追加できるように -->
+    <div style="margin-bottom:12px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div style="font-size:13px;font-weight:500;color:var(--text2)">🤝 合同プラン</div>
+        <button type="button" class="btn btn-sm" onclick="openJointPlanFromEdit()">＋ 追加</button>
+      </div>
+      <div id="iJointPlansList"></div>
+    </div>
+
     <div class="form-actions">
       <button class="btn" onclick="closeModal('infModal')">キャンセル</button>
       <button class="btn btn-primary" onclick="saveInfluencer()">保存</button>
@@ -1764,25 +1773,25 @@
 </div>
 
 
-<script src="js/vendor/pizzip.min.js?v=164"></script>
-<script src="js/vendor/docxtemplater.min.js?v=164"></script>
-<script src="js/vendor/xlsx.full.min.js?v=164"></script>
-<script src="js/config.js?v=164"></script>
-<script src="js/db.js?v=164"></script>
-<script src="js/utils.js?v=164"></script>
-<script src="js/settings.js?v=164"></script>
-<script src="js/stores.js?v=164"></script>
-<script src="js/schedule.js?v=164"></script>
-<script src="js/casting.js?v=164"></script>
-<script src="js/check.js?v=164"></script>
-<script src="js/accounting.js?v=164"></script>
-<script src="js/plans.js?v=164"></script>
-<script src="js/creators.js?v=164"></script>
-<script src="js/corps.js?v=164"></script>
-<script src="js/faqs.js?v=164"></script>
-<script src="js/orders.js?v=164"></script>
-<script src="js/hearing.js?v=164"></script>
-<script src="js/dashboard.js?v=164"></script>
-<script src="js/app.js?v=164"></script>
+<script src="js/vendor/pizzip.min.js?v=165"></script>
+<script src="js/vendor/docxtemplater.min.js?v=165"></script>
+<script src="js/vendor/xlsx.full.min.js?v=165"></script>
+<script src="js/config.js?v=165"></script>
+<script src="js/db.js?v=165"></script>
+<script src="js/utils.js?v=165"></script>
+<script src="js/settings.js?v=165"></script>
+<script src="js/stores.js?v=165"></script>
+<script src="js/schedule.js?v=165"></script>
+<script src="js/casting.js?v=165"></script>
+<script src="js/check.js?v=165"></script>
+<script src="js/accounting.js?v=165"></script>
+<script src="js/plans.js?v=165"></script>
+<script src="js/creators.js?v=165"></script>
+<script src="js/corps.js?v=165"></script>
+<script src="js/faqs.js?v=165"></script>
+<script src="js/orders.js?v=165"></script>
+<script src="js/hearing.js?v=165"></script>
+<script src="js/dashboard.js?v=165"></script>
+<script src="js/app.js?v=165"></script>
 </body>
 </html>

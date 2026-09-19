@@ -663,6 +663,7 @@ function openInfluencerModal(id){
   renderInfAreaChecks();
   renderInfOverseasChecks();
   renderInfPricePlanRows();
+  renderInfJointPlansInEdit();
   openModal('infModal');
 }
 
@@ -989,19 +990,65 @@ function openJointPlanEditModal(id,prefillInfId){
   closeModal('jointPlanListModal');
   openModal('jointPlanEditModal');
 }
+/* 呼び出し元（詳細画面／編集画面）に応じて、保存・キャンセル後に戻る先を切り替える */
+var _jointPlanReturnMode='detail';
+function _returnFromJointPlanModal(){
+  if(!_jointPlanReturnInfId)return false;
+  var rid=_jointPlanReturnInfId,mode=_jointPlanReturnMode;
+  _jointPlanReturnInfId=null;
+  if(mode==='edit')openInfluencerModal(rid);else openInfluencerDetail(rid);
+  return true;
+}
 function openJointPlanFromDetail(infId){
   _jointPlanReturnInfId=infId;
+  _jointPlanReturnMode='detail';
   closeModal('infDetailModal');
   openJointPlanEditModal(null,infId);
 }
 function openJointPlanEditModalFromDetail(id,returnInfId){
   _jointPlanReturnInfId=returnInfId;
+  _jointPlanReturnMode='detail';
   closeModal('infDetailModal');
   openJointPlanEditModal(id);
 }
+function openJointPlanFromEdit(){
+  if(!editingInfId){alert('先にインフルエンサー情報を保存してから追加できます');return;}
+  _jointPlanReturnInfId=editingInfId;
+  _jointPlanReturnMode='edit';
+  closeModal('infModal');
+  openJointPlanEditModal(null,editingInfId);
+}
+function openJointPlanEditModalFromEdit(id){
+  _jointPlanReturnInfId=editingInfId;
+  _jointPlanReturnMode='edit';
+  closeModal('infModal');
+  openJointPlanEditModal(id);
+}
+function renderInfJointPlansInEdit(){
+  var wrap=document.getElementById('iJointPlansList');
+  if(!wrap)return;
+  if(!editingInfId){
+    wrap.innerHTML='<div style="font-size:12px;color:var(--text3)">先にインフルエンサー情報を保存すると追加できます</div>';
+    return;
+  }
+  var infId=editingInfId;
+  var list=(DB.jointPlans||[]).filter(function(jp){return(jp.memberIds||[]).indexOf(infId)>=0;});
+  if(!list.length){
+    wrap.innerHTML='<div style="font-size:12px;color:var(--text3)">登録されていません</div>';
+    return;
+  }
+  wrap.innerHTML=list.map(function(jp){
+    var names=(jp.memberIds||[]).filter(function(id){return id!==infId;}).map(function(id){var x=DB.influencers.find(function(y){return y.id===id;});return x?x.name:'（削除済み）';});
+    return'<div style="padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);margin-bottom:6px;font-size:12px">'
+      +'<div>'+(jp.label?esc(jp.label)+'：':'')+names.map(esc).join('・')+'と合同</div>'
+      +'<div style="color:var(--accent);margin-top:2px">合計 '+(jp.amount?Number(jp.amount).toLocaleString()+'円':'—')+'</div>'
+      +'<div style="margin-top:4px"><button type="button" class="btn btn-sm" onclick="openJointPlanEditModalFromEdit(\''+jp.id+'\')">編集</button></div>'
+    +'</div>';
+  }).join('');
+}
 function closeJointPlanEditModal(){
   closeModal('jointPlanEditModal');
-  if(_jointPlanReturnInfId){var rid=_jointPlanReturnInfId;_jointPlanReturnInfId=null;openInfluencerDetail(rid);}
+  _returnFromJointPlanModal();
 }
 function saveJointPlan(){
   var memberIds=_jointPlanMembers.filter(function(id){return id;});
@@ -1019,8 +1066,7 @@ function saveJointPlan(){
   if(idx>=0)DB.jointPlans[idx]=jp;else DB.jointPlans.push(jp);
   saveItem('jointplans',jp);
   closeModal('jointPlanEditModal');
-  if(_jointPlanReturnInfId){var rid=_jointPlanReturnInfId;_jointPlanReturnInfId=null;openInfluencerDetail(rid);}
-  else{openJointPlanListModal();}
+  if(!_returnFromJointPlanModal())openJointPlanListModal();
 }
 function deleteJointPlan(id){
   if(!confirm('この合同プランを削除しますか？'))return;
