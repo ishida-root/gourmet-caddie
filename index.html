@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=165">
+<link rel="stylesheet" href="css/app.css?v=166">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -1290,6 +1290,10 @@
       <div id="jpMembersList"></div>
       <button type="button" class="btn btn-sm" onclick="addJointPlanMemberRow()" style="margin-top:4px">＋ 参加者を追加</button>
     </div>
+    <div class="fr1 field" style="margin-bottom:14px">
+      <label>対応媒体<span style="font-size:11px;color:var(--text3);font-weight:400">（複数選択可）</span></label>
+      <div id="jpPlatformsList" style="display:flex;flex-wrap:wrap;gap:4px 12px;padding:8px 10px;border:1px solid var(--border);border-radius:var(--r);background:var(--bg2)"></div>
+    </div>
     <div class="fr1 field" style="margin-bottom:14px"><label>合計金額（円）</label><input id="jpAmount" type="number" placeholder="例: 80000"></div>
     <div class="fr1 field" style="margin-bottom:14px"><label>補足</label><textarea id="jpNote" placeholder="投稿内容・投稿日程など"></textarea></div>
     <div class="form-actions"><button class="btn" onclick="closeJointPlanEditModal()">キャンセル</button><button class="btn btn-primary" onclick="saveJointPlan()">保存</button></div>
@@ -1773,25 +1777,25 @@
 </div>
 
 
-<script src="js/vendor/pizzip.min.js?v=165"></script>
-<script src="js/vendor/docxtemplater.min.js?v=165"></script>
-<script src="js/vendor/xlsx.full.min.js?v=165"></script>
-<script src="js/config.js?v=165"></script>
-<script src="js/db.js?v=165"></script>
-<script src="js/utils.js?v=165"></script>
-<script src="js/settings.js?v=165"></script>
-<script src="js/stores.js?v=165"></script>
-<script src="js/schedule.js?v=165"></script>
-<script src="js/casting.js?v=165"></script>
-<script src="js/check.js?v=165"></script>
-<script src="js/accounting.js?v=165"></script>
-<script src="js/plans.js?v=165"></script>
-<script src="js/creators.js?v=165"></script>
-<script src="js/corps.js?v=165"></script>
-<script src="js/faqs.js?v=165"></script>
-<script src="js/orders.js?v=165"></script>
-<script src="js/hearing.js?v=165"></script>
-<script src="js/dashboard.js?v=165"></script>
-<script src="js/app.js?v=165"></script>
+<script src="js/vendor/pizzip.min.js?v=166"></script>
+<script src="js/vendor/docxtemplater.min.js?v=166"></script>
+<script src="js/vendor/xlsx.full.min.js?v=166"></script>
+<script src="js/config.js?v=166"></script>
+<script src="js/db.js?v=166"></script>
+<script src="js/utils.js?v=166"></script>
+<script src="js/settings.js?v=166"></script>
+<script src="js/stores.js?v=166"></script>
+<script src="js/schedule.js?v=166"></script>
+<script src="js/casting.js?v=166"></script>
+<script src="js/check.js?v=166"></script>
+<script src="js/accounting.js?v=166"></script>
+<script src="js/plans.js?v=166"></script>
+<script src="js/creators.js?v=166"></script>
+<script src="js/corps.js?v=166"></script>
+<script src="js/faqs.js?v=166"></script>
+<script src="js/orders.js?v=166"></script>
+<script src="js/hearing.js?v=166"></script>
+<script src="js/dashboard.js?v=166"></script>
+<script src="js/app.js?v=166"></script>
 </body>
 </html>

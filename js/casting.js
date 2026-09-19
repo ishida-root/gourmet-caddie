@@ -869,6 +869,24 @@ function saveInfluencer(){
    ============================================================ */
 var editingJointPlanId=null;
 var _jointPlanMembers=[];
+var _jointPlanPlatforms=[];
+function renderJointPlanPlatforms(){
+  var wrap=document.getElementById('jpPlatformsList');
+  if(!wrap)return;
+  wrap.innerHTML=INF_PLATFORM_LIST.map(function(pl){
+    return'<label style="display:inline-flex;align-items:center;gap:4px;font-size:12px;cursor:pointer">'
+      +'<input type="checkbox" '+(_jointPlanPlatforms.indexOf(pl.id)>=0?'checked':'')+' onchange="toggleJointPlanPlatform(\''+pl.id+'\')">'
+      +esc(pl.label)
+    +'</label>';
+  }).join('');
+}
+function toggleJointPlanPlatform(pid){
+  var idx=_jointPlanPlatforms.indexOf(pid);
+  if(idx>=0)_jointPlanPlatforms.splice(idx,1);else _jointPlanPlatforms.push(pid);
+}
+function jointPlanPlatformLabels(jp){
+  return(jp.platforms||[]).map(function(pid){var pl=INF_PLATFORM_LIST.find(function(x){return x.id===pid;});return pl?pl.label:pid;}).join('・');
+}
 var _jointPlanReturnInfId=null;
 function openJointPlanListModal(){
   _jointPlanReturnInfId=null;
@@ -889,6 +907,7 @@ function renderJointPlanListBody(){
       +'<div style="display:flex;justify-content:space-between;align-items:flex-start;gap:8px">'
         +'<div><div style="font-weight:500">'+esc(jp.label||names.join('・'))+'</div>'
           +'<div style="font-size:12px;color:var(--text3);margin-top:2px">'+names.map(esc).join('・')+'</div>'
+          +(jointPlanPlatformLabels(jp)?'<div style="font-size:12px;color:var(--text3);margin-top:2px">媒体：'+esc(jointPlanPlatformLabels(jp))+'</div>':'')
           +'<div style="font-size:13px;color:var(--accent);margin-top:4px">合計 '+(jp.amount?Number(jp.amount).toLocaleString()+'円':'—')+'</div>'
           +(jp.note?'<div style="font-size:12px;color:var(--text3);margin-top:4px">'+esc(jp.note)+'</div>':'')
         +'</div>'
@@ -974,6 +993,7 @@ function openJointPlanEditModal(id,prefillInfId){
   document.getElementById('jpAmount').value='';
   document.getElementById('jpNote').value='';
   _jointPlanMembers=[];
+  _jointPlanPlatforms=[];
   if(id){
     var jp=DB.jointPlans.find(function(x){return x.id===id;});
     if(jp){
@@ -981,12 +1001,14 @@ function openJointPlanEditModal(id,prefillInfId){
       document.getElementById('jpAmount').value=jp.amount||'';
       document.getElementById('jpNote').value=jp.note||'';
       _jointPlanMembers=(jp.memberIds||[]).slice();
+      _jointPlanPlatforms=(jp.platforms||[]).slice();
     }
   }else if(prefillInfId){
     _jointPlanMembers=[prefillInfId];
   }
   while(_jointPlanMembers.length<2)_jointPlanMembers.push('');
   renderJointPlanMemberRows();
+  renderJointPlanPlatforms();
   closeModal('jointPlanListModal');
   openModal('jointPlanEditModal');
 }
@@ -1041,6 +1063,7 @@ function renderInfJointPlansInEdit(){
     var names=(jp.memberIds||[]).filter(function(id){return id!==infId;}).map(function(id){var x=DB.influencers.find(function(y){return y.id===id;});return x?x.name:'（削除済み）';});
     return'<div style="padding:8px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);margin-bottom:6px;font-size:12px">'
       +'<div>'+(jp.label?esc(jp.label)+'：':'')+names.map(esc).join('・')+'と合同</div>'
+      +(jointPlanPlatformLabels(jp)?'<div style="color:var(--text3);margin-top:2px">媒体：'+esc(jointPlanPlatformLabels(jp))+'</div>':'')
       +'<div style="color:var(--accent);margin-top:2px">合計 '+(jp.amount?Number(jp.amount).toLocaleString()+'円':'—')+'</div>'
       +'<div style="margin-top:4px"><button type="button" class="btn btn-sm" onclick="openJointPlanEditModalFromEdit(\''+jp.id+'\')">編集</button></div>'
     +'</div>';
@@ -1058,6 +1081,7 @@ function saveJointPlan(){
     id:id,
     label:document.getElementById('jpLabel').value.trim(),
     memberIds:memberIds,
+    platforms:_jointPlanPlatforms.slice(),
     amount:document.getElementById('jpAmount').value,
     note:document.getElementById('jpNote').value.trim()
   };
@@ -1564,6 +1588,7 @@ function openInfluencerDetail(id){
         var share=jp.memberIds&&jp.memberIds.length?Math.round(amount/jp.memberIds.length):0;
         return'<div style="padding:8px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);margin-bottom:6px;font-size:12px">'
           +'<div>'+(jp.label?esc(jp.label)+'：':'')+others.join('・')+'と合同</div>'
+          +(jointPlanPlatformLabels(jp)?'<div style="color:var(--text3);margin-top:2px">媒体：'+esc(jointPlanPlatformLabels(jp))+'</div>':'')
           +'<div style="color:var(--accent);margin-top:2px">合計 '+(amount?amount.toLocaleString()+'円':'—')+(amount?'（1人あたり目安 '+share.toLocaleString()+'円）':'')+'</div>'
           +(jp.note?'<div style="color:var(--text3);margin-top:2px">'+esc(jp.note)+'</div>':'')
           +'<div style="margin-top:4px"><button type="button" class="btn btn-sm" onclick="openJointPlanEditModalFromDetail(\''+jp.id+'\',\''+inf.id+'\')">編集</button></div>'
