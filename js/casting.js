@@ -3011,7 +3011,7 @@ function renderCasting(){
     var visitCell=c.visitDate?fmtD(c.visitDate):(isVisitTbd?'<span style="color:var(--amber)">🔁 リスケ中</span>':'—');
     return'<tr'+(isCancelled?' style="opacity:0.55"':'')+'>'
       +'<td>'+esc(storeName(c.storeId))+cancelBadge+'</td>'
-      +'<td style="color:var(--purple);font-weight:500;cursor:pointer;text-decoration:underline" onclick="openInfluencerDetail(\''+c.infId+'\')">'+esc(infObj?infObj.name:'不明')+'</td>'
+      +'<td style="color:var(--purple);font-weight:500;cursor:pointer;text-decoration:underline" onclick="openCastingModal({editId:\''+c.id+'\'})">'+esc(infObj?infObj.name:'不明')+'</td>'
       +'<td class="td-mono" style="color:var(--amber)">'+visitCell+'</td>'
       +'<td class="td-mono">'+fmtD(c.date)+'</td>'
       +'<td>'+platCell+'</td>'
