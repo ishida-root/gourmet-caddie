@@ -211,6 +211,11 @@ function calcInvTotal(){
   var excl=taxExcl+expense,incl=taxIncl+expense;
   var exclEl=document.getElementById('invTotalExcl');if(exclEl)exclEl.textContent='¥'+excl.toLocaleString();
   document.getElementById('invTotal').textContent='¥'+incl.toLocaleString();
+  /* 店舗請求額（課税換算）：インフルエンサーへの支払いが不課税（税率0%）でも、
+     店舗への請求は通常の課税取引になるため、標準税率で計算し直した参考額を表示する */
+  var storeBillIncl=Math.round(taxExcl*(1+TAX_RATE/100))+expense;
+  var storeBillEl=document.getElementById('invStoreBillAmount');
+  if(storeBillEl)storeBillEl.textContent='¥'+storeBillIncl.toLocaleString();
 }
 
 function saveInvoice(){
