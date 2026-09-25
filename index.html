@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=167">
+<link rel="stylesheet" href="css/app.css?v=168">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -1303,6 +1303,20 @@
 </div>
 </div>
 
+<!-- CASTING DETAIL MODAL（読み取り専用・キャスティング履歴の名前クリックで開く） -->
+<div class="modal-overlay" id="castDetailModal">
+<div class="modal" style="width:520px">
+  <div class="modal-header">
+    <span class="modal-title" id="castDetailTitle">キャスティング詳細</span>
+    <div style="display:flex;gap:6px;align-items:center">
+      <button class="btn btn-sm" id="castDetailEditBtn">編集</button>
+      <button class="modal-close" onclick="closeModal('castDetailModal')">✕</button>
+    </div>
+  </div>
+  <div class="modal-body" id="castDetailBody"></div>
+</div>
+</div>
+
 <!-- CASTING MODAL -->
 <div class="modal-overlay" id="castModal">
 <div class="modal" style="width:560px">
@@ -1779,25 +1793,25 @@
 </div>
 
 
-<script src="js/vendor/pizzip.min.js?v=167"></script>
-<script src="js/vendor/docxtemplater.min.js?v=167"></script>
-<script src="js/vendor/xlsx.full.min.js?v=167"></script>
-<script src="js/config.js?v=167"></script>
-<script src="js/db.js?v=167"></script>
-<script src="js/utils.js?v=167"></script>
-<script src="js/settings.js?v=167"></script>
-<script src="js/stores.js?v=167"></script>
-<script src="js/schedule.js?v=167"></script>
-<script src="js/casting.js?v=167"></script>
-<script src="js/check.js?v=167"></script>
-<script src="js/accounting.js?v=167"></script>
-<script src="js/plans.js?v=167"></script>
-<script src="js/creators.js?v=167"></script>
-<script src="js/corps.js?v=167"></script>
-<script src="js/faqs.js?v=167"></script>
-<script src="js/orders.js?v=167"></script>
-<script src="js/hearing.js?v=167"></script>
-<script src="js/dashboard.js?v=167"></script>
-<script src="js/app.js?v=167"></script>
+<script src="js/vendor/pizzip.min.js?v=168"></script>
+<script src="js/vendor/docxtemplater.min.js?v=168"></script>
+<script src="js/vendor/xlsx.full.min.js?v=168"></script>
+<script src="js/config.js?v=168"></script>
+<script src="js/db.js?v=168"></script>
+<script src="js/utils.js?v=168"></script>
+<script src="js/settings.js?v=168"></script>
+<script src="js/stores.js?v=168"></script>
+<script src="js/schedule.js?v=168"></script>
+<script src="js/casting.js?v=168"></script>
+<script src="js/check.js?v=168"></script>
+<script src="js/accounting.js?v=168"></script>
+<script src="js/plans.js?v=168"></script>
+<script src="js/creators.js?v=168"></script>
+<script src="js/corps.js?v=168"></script>
+<script src="js/faqs.js?v=168"></script>
+<script src="js/orders.js?v=168"></script>
+<script src="js/hearing.js?v=168"></script>
+<script src="js/dashboard.js?v=168"></script>
+<script src="js/app.js?v=168"></script>
 </body>
 </html>

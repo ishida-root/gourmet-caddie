@@ -2942,6 +2942,11 @@ function castSortKey(c){
   var d=c.visitDate?new Date(c.visitDate).getTime():(c.date?new Date(c.date).getTime():NaN);
   return isNaN(d)?-Infinity:d;
 }
+/* キャスティング履歴を変更する操作（編集・削除・契約書送付/渉外対応トグル・請求書登録）は
+   ishida本人のみに限定する。他のユーザーは一覧・詳細を見るだけの読み取り専用にする */
+function canEditCasting(){
+  return!!(currentUser&&currentUser.email==='ishida@root-and-activation.co.jp');
+}
 /* キャスティング履歴の絞り込み欄（店舗・インフルエンサー）は、実際に履歴がある
    店舗・インフルエンサーだけを選択肢にする（無関係な候補で埋まらないように） */
 function updateCastFilterOptions(){
@@ -2964,6 +2969,53 @@ function resetCastFilters(){
   });
   var ccEl=document.getElementById('filterCastIncludeCancelled');if(ccEl)ccEl.checked=false;
   renderCasting();
+}
+/* キャスティング履歴の名前クリックで開く読み取り専用の詳細ビュー。
+   ここから「編集」を押した場合のみ実際の編集モーダルを開く（誤操作で
+   いきなり編集モードに入ってしまわないように、一覧→詳細→編集の2段階にする） */
+function openCastingDetail(id){
+  var c=DB.castings.find(function(x){return x.id===id;});
+  if(!c)return;
+  var store=DB.stores.find(function(x){return x.id===c.storeId;});
+  var inf=DB.influencers.find(function(x){return x.id===c.infId;});
+  var pkg=store&&(store.castingPackages||[]).find(function(p){return p.id===c.packageId;});
+  var pp=c.platforms&&c.platforms.length?c.platforms:(c.platform?[c.platform]:[]);
+  var platLabels=pp.map(function(p){var pl=INF_PLATFORM_LIST.find(function(x){return x.id===p||x.label===p;});return pl?pl.label:p;});
+  var inv=(DB.invoices||[]).find(function(x){return x.castingId===c.id&&x.payeeType!=='ad';})
+    ||(DB.invoices||[]).find(function(x){return x.payeeType!=='ad'&&x.storeId===c.storeId&&x.infId===c.infId;});
+  var INV_STATUS_LABEL={pending:'📄 未受領',sns_received:'📥 請求書受領',accounting_submitted:'📊 経理申請',done:'💸 支払い済み',invoiced:'📤 請求書送付済み',received:'✅ 入金確認済み'};
+  var titleEl=document.getElementById('castDetailTitle');
+  if(titleEl)titleEl.textContent=(store?store.name:'不明')+' × '+(inf?inf.name:'不明');
+  var editBtn=document.getElementById('castDetailEditBtn');
+  if(editBtn){
+    var editable=canEditCasting();
+    editBtn.style.display=editable?'':'none';
+    editBtn.onclick=function(){closeModal('castDetailModal');openCastingModal({editId:id});};
+  }
+  var rows=[
+    ['店舗',esc(store?store.name:'不明')],
+    ['インフルエンサー',inf?('<a href="#" onclick="closeModal(\'castDetailModal\');openInfluencerDetail(\''+inf.id+'\');return false;" style="color:var(--accent)">'+esc(inf.name)+'</a>'):'不明'],
+    ['案件（パッケージ）',pkg?esc(pkg.name):'—'],
+    ['媒体',platLabels.length?platLabels.map(esc).join('・'):'—'],
+    ['来店予定日',c.visitDate?fmtD(c.visitDate):'—'],
+    ['初稿確認日',c.draftDate?fmtD(c.draftDate):'—'],
+    ['投稿予定日',c.date?fmtD(c.date):'—'],
+    ['PR費用',c.fee?Number(c.fee).toLocaleString()+'円':'—'],
+    ['来店人数',c.visitCount||'—'],
+    ['リーチ',c.reach?Number(c.reach).toLocaleString():'—'],
+    ['成果メモ',c.result?esc(c.result):'—'],
+    ['契約書',c.contractSent?'✓ 送付済み':'未送付'],
+    ['渉外対応',c.liaisonNeeded?'🚨 対応必要':'—'],
+    ['ステータス',c.status==='cancelled'?'🚫 キャンセル':(c.confirmed?'確定':'仮')],
+    ['請求書状況',inv?esc(INV_STATUS_LABEL[inv.status]||inv.status):'未登録']
+  ];
+  var body=document.getElementById('castDetailBody');
+  if(body){
+    body.innerHTML='<div style="display:grid;grid-template-columns:110px 1fr;gap:8px 12px;font-size:13px">'
+      +rows.map(function(r){return'<div style="color:var(--text3)">'+r[0]+'</div><div>'+r[1]+'</div>';}).join('')
+    +'</div>';
+  }
+  openModal('castDetailModal');
 }
 function renderCasting(){
   updateCastFilterOptions();
@@ -2992,6 +3044,7 @@ function renderCasting(){
   var tb=document.getElementById('castBody');
   if(!list.length){tb.innerHTML='<tr><td colspan="9" class="empty-state">キャスティング履歴がありません</td></tr>';return;}
   var INV_STATUS_LABEL={pending:'📄 未受領',sns_received:'📥 請求書受領',accounting_submitted:'📊 経理申請',done:'💸 支払い済み',invoiced:'📤 請求書送付済み',received:'✅ 入金確認済み'};
+  var canEdit=canEditCasting();
   tb.innerHTML=list.map(function(c){
     /* castingIdで直接紐づく請求書がなくても、同じ店舗×同じインフルエンサーの請求書が既にあれば
        それを表示する（重複キャスティング等でcastingIdがずれているケースで、二重登録を防ぐため） */
@@ -2999,7 +3052,9 @@ function renderCasting(){
       ||(DB.invoices||[]).find(function(x){return x.payeeType!=='ad'&&x.storeId===c.storeId&&x.infId===c.infId;});
     var invCell=inv
       ?'<span style="font-size:12px;padding:2px 7px;border-radius:4px;background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-border);white-space:nowrap">'+(INV_STATUS_LABEL[inv.status]||inv.status)+'</span>'
-      :'<button onclick="event.stopPropagation();openInvoiceFromCasting(\''+c.id+'\')" style="font-size:11px;padding:2px 8px;white-space:nowrap;border:1px dashed var(--text3);border-radius:4px;background:transparent;color:var(--text3);cursor:pointer">＋ 未登録（登録する）</button>';
+      :(canEdit
+        ?'<button onclick="event.stopPropagation();openInvoiceFromCasting(\''+c.id+'\')" style="font-size:11px;padding:2px 8px;white-space:nowrap;border:1px dashed var(--text3);border-radius:4px;background:transparent;color:var(--text3);cursor:pointer">＋ 未登録（登録する）</button>'
+        :'<span style="font-size:12px;color:var(--text3);white-space:nowrap">未登録</span>');
     var pp=c.platforms&&c.platforms.length?c.platforms:(c.platform?[c.platform]:[]);
     var abbrs=[...new Set(pp.map(platformAbbr).filter(Boolean))];
     var platCell=abbrs.length?abbrs.map(function(a){return'<span style="display:inline-block;font-size:11px;padding:1px 6px;background:var(--accent-bg);color:var(--accent);border-radius:3px;margin:1px;white-space:nowrap">'+esc(a)+'</span>';}).join(''):'—';
@@ -3009,24 +3064,28 @@ function renderCasting(){
     var linkedVisitPost=(DB.posts||[]).find(function(p){return p.castingId===c.id&&p.type==='inf_visit';});
     var isVisitTbd=linkedVisitPost&&linkedVisitPost.status==='date_tbd';
     var visitCell=c.visitDate?fmtD(c.visitDate):(isVisitTbd?'<span style="color:var(--amber)">🔁 リスケ中</span>':'—');
+    var contractBadgeStyle='font-size:12px;padding:3px 8px;border-radius:5px;white-space:nowrap;border:1px solid;background:'+(c.contractSent?'var(--green-bg)':'var(--bg3)')+';color:'+(c.contractSent?'var(--green)':'var(--text3)')+';border-color:'+(c.contractSent?'var(--green-border)':'var(--border)')+';';
+    var liaisonBadgeStyle='font-size:12px;padding:3px 8px;border-radius:5px;white-space:nowrap;border:1px solid;background:'+(c.liaisonNeeded?'var(--red-bg)':'var(--bg3)')+';color:'+(c.liaisonNeeded?'var(--red)':'var(--text3)')+';border-color:'+(c.liaisonNeeded?'var(--red-border)':'var(--border)')+';';
     return'<tr'+(isCancelled?' style="opacity:0.55"':'')+'>'
       +'<td>'+esc(storeName(c.storeId))+cancelBadge+'</td>'
-      +'<td style="color:var(--purple);font-weight:500;cursor:pointer;text-decoration:underline" onclick="openCastingModal({editId:\''+c.id+'\'})">'+esc(infObj?infObj.name:'不明')+'</td>'
+      +'<td style="color:var(--purple);font-weight:500;cursor:pointer;text-decoration:underline" onclick="openCastingDetail(\''+c.id+'\')">'+esc(infObj?infObj.name:'不明')+'</td>'
       +'<td class="td-mono" style="color:var(--amber)">'+visitCell+'</td>'
       +'<td class="td-mono">'+fmtD(c.date)+'</td>'
       +'<td>'+platCell+'</td>'
       +'<td onclick="event.stopPropagation()" style="white-space:nowrap">'
-        +'<button onclick="toggleCastContractSent(\''+c.id+'\')" style="font-size:12px;padding:3px 8px;border-radius:5px;cursor:pointer;border:1px solid;white-space:nowrap;background:'+(c.contractSent?'var(--green-bg)':'var(--bg3)')+';color:'+(c.contractSent?'var(--green)':'var(--text3)')+';border-color:'+(c.contractSent?'var(--green-border)':'var(--border)')+';">'
-          +(c.contractSent?'✓ 送付済み':'未送付')
-        +'</button>'
+        +(canEdit
+          ?'<button onclick="toggleCastContractSent(\''+c.id+'\')" style="cursor:pointer;'+contractBadgeStyle+'">'+(c.contractSent?'✓ 送付済み':'未送付')+'</button>'
+          :'<span style="'+contractBadgeStyle+'">'+(c.contractSent?'✓ 送付済み':'未送付')+'</span>')
       +'</td>'
       +'<td onclick="event.stopPropagation()" style="white-space:nowrap">'
-        +'<button onclick="toggleCastLiaison(\''+c.id+'\')" style="font-size:12px;padding:3px 8px;border-radius:5px;cursor:pointer;border:1px solid;white-space:nowrap;background:'+(c.liaisonNeeded?'var(--red-bg)':'var(--bg3)')+';color:'+(c.liaisonNeeded?'var(--red)':'var(--text3)')+';border-color:'+(c.liaisonNeeded?'var(--red-border)':'var(--border)')+';">'
-          +(c.liaisonNeeded?'🚨 渉外対応':'—')
-        +'</button>'
+        +(canEdit
+          ?'<button onclick="toggleCastLiaison(\''+c.id+'\')" style="cursor:pointer;'+liaisonBadgeStyle+'">'+(c.liaisonNeeded?'🚨 渉外対応':'—')+'</button>'
+          :'<span style="'+liaisonBadgeStyle+'">'+(c.liaisonNeeded?'🚨 渉外対応':'—')+'</span>')
       +'</td>'
       +'<td style="white-space:nowrap">'+invCell+'</td>'
-      +'<td onclick="event.stopPropagation()" style="white-space:nowrap"><button class="btn btn-sm" style="margin-right:4px" onclick="openCastingModal({editId:\''+c.id+'\'})">編集</button><button class="btn-ghost-danger" onclick="deleteCasting(\''+c.id+'\')">削除</button></td>'
+      +'<td onclick="event.stopPropagation()" style="white-space:nowrap">'
+        +(canEdit?'<button class="btn btn-sm" style="margin-right:4px" onclick="openCastingModal({editId:\''+c.id+'\'})">編集</button><button class="btn-ghost-danger" onclick="deleteCasting(\''+c.id+'\')">削除</button>':'—')
+      +'</td>'
     +'</tr>';
   }).join('');
 }
