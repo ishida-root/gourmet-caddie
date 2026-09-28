@@ -2992,33 +2992,65 @@ function openCastingDetail(id){
     editBtn.style.display=editable?'':'none';
     editBtn.onclick=function(){closeModal('castDetailModal');openCastingModal({editId:id});};
   }
-  var rows=[
-    ['店舗',esc(store?store.name:'不明')],
-    ['インフルエンサー',inf?('<a href="#" onclick="closeModal(\'castDetailModal\');openInfluencerDetail(\''+inf.id+'\');return false;" style="color:var(--accent)">'+esc(inf.name)+'</a>'):'不明'],
-    ['案件（パッケージ）',pkg?esc(pkg.name):'—'],
-    ['媒体',platLabels.length?platLabels.map(esc).join('・'):'—'],
-    ['来店予定日',c.visitDate?fmtD(c.visitDate):'—'],
-    ['初稿確認日',c.draftDate?fmtD(c.draftDate):'—'],
-    ['投稿予定日',c.date?fmtD(c.date):'—'],
-    ['PR費用',c.fee?Number(c.fee).toLocaleString()+'円':'—'],
-    ['来店人数',c.visitCount||'—'],
-    ['リーチ',c.reach?Number(c.reach).toLocaleString():'—'],
-    ['成果メモ',c.result?esc(c.result):'—'],
-    ['契約書',c.contractSent?'✓ 送付済み':'未送付'],
-    ['渉外対応',c.liaisonNeeded?'🚨 対応必要':'—'],
-    ['ステータス',c.status==='cancelled'?'🚫 キャンセル':(c.confirmed?'確定':'仮')],
-    ['請求書状況',inv?esc(INV_STATUS_LABEL[inv.status]||inv.status):'未登録'],
-    ['投稿URL',(function(){
-      var entries=castPostUrlEntries(c);
-      if(!entries.length)return'—';
-      return entries.map(function(e){return'<div style="overflow-wrap:anywhere"><span style="color:var(--text3)">'+esc(e.label)+'：</span><a href="'+esc(e.url)+'" target="_blank" rel="noopener" style="color:var(--accent)">'+esc(e.url)+'</a></div>';}).join('');
-    })()]
-  ];
+  var isCancelled=c.status==='cancelled';
+  var statusBadge=isCancelled
+    ?'<span class="badge" style="background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)">🚫 キャンセル</span>'
+    :(c.confirmed?'<span class="badge" style="background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)">✓ 確定</span>':'<span class="badge" style="background:var(--bg3);color:var(--text3);border:1px solid var(--border)">仮</span>');
+  var contractBadge=c.contractSent
+    ?'<span class="badge" style="background:var(--green-bg);color:var(--green);border:1px solid var(--green-border)">✓ 契約書送付済み</span>'
+    :'<span class="badge" style="background:var(--bg3);color:var(--text3);border:1px solid var(--border)">契約書未送付</span>';
+  var liaisonBadge=c.liaisonNeeded?'<span class="badge" style="background:var(--red-bg);color:var(--red);border:1px solid var(--red-border)">🚨 渉外対応</span>':'';
+  var invBadge=inv
+    ?'<span class="badge" style="background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-border)">'+esc(INV_STATUS_LABEL[inv.status]||inv.status)+'</span>'
+    :'<span class="badge" style="background:var(--bg3);color:var(--text3);border:1px solid var(--border)">📄 請求書未登録</span>';
+  var platBadges=platLabels.length
+    ?platLabels.map(function(l){return'<span class="badge b-blue">'+esc(platformAbbr(l)||l)+'</span>';}).join('')
+    :'';
   var body=document.getElementById('castDetailBody');
   if(body){
-    body.innerHTML='<div style="display:grid;grid-template-columns:110px 1fr;gap:8px 12px;font-size:13px">'
-      +rows.map(function(r){return'<div style="color:var(--text3)">'+r[0]+'</div><div>'+r[1]+'</div>';}).join('')
-    +'</div>';
+    body.innerHTML=
+      /* ヘッダ：店舗×インフルエンサー、各種ステータスバッジ */
+      '<div style="display:flex;align-items:flex-start;gap:14px;margin-bottom:16px">'
+        +'<div style="width:44px;height:44px;border-radius:50%;background:var(--accent-bg);border:2px solid var(--accent-border);display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0">🎬</div>'
+        +'<div style="flex:1">'
+          +'<div style="font-size:15px;font-weight:500">'+esc(store?store.name:'不明')+' <span style="color:var(--text3);font-weight:400">×</span> '+(inf?('<a href="#" onclick="closeModal(\'castDetailModal\');openInfluencerDetail(\''+inf.id+'\');return false;" style="color:var(--accent)">'+esc(inf.name)+'</a>'):esc('不明'))+'</div>'
+          +'<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:8px">'+statusBadge+contractBadge+liaisonBadge+invBadge+platBadges+'</div>'
+          +(pkg?'<div style="font-size:12px;color:var(--text3);margin-top:6px">案件（パッケージ）：'+esc(pkg.name)+'</div>':'')
+        +'</div>'
+      +'</div>'
+      /* 数値サマリー：未入力の項目はタイルごと非表示にする */
+      +(function(){
+        var tiles=[];
+        if(c.fee)tiles.push(['var(--accent)',Number(c.fee).toLocaleString()+'円','PR費用']);
+        if(c.visitCount)tiles.push(['var(--text)',c.visitCount,'来店人数']);
+        if(c.reach)tiles.push(['var(--green)',Number(c.reach).toLocaleString(),'リーチ']);
+        if(!tiles.length)return'';
+        return'<div style="display:grid;grid-template-columns:repeat('+tiles.length+',1fr);gap:8px;margin-bottom:16px">'
+          +tiles.map(function(t){return'<div class="card-sm" style="text-align:center"><div style="font-size:16px;font-weight:500;color:'+t[0]+'">'+t[1]+'</div><div style="font-size:11px;color:var(--text3);margin-top:2px">'+t[2]+'</div></div>';}).join('')
+        +'</div>';
+      })()
+      /* スケジュール：未入力の日付は非表示にする */
+      +(function(){
+        var items=[];
+        if(c.visitDate)items.push('📍 来店予定日　'+fmtD(c.visitDate));
+        if(c.draftDate)items.push('📝 初稿確認日　'+fmtD(c.draftDate));
+        if(c.date)items.push('✦ 投稿予定日　'+fmtD(c.date));
+        if(!items.length)return'';
+        return'<div style="padding:10px 12px;background:var(--bg3);border-radius:var(--r);margin-bottom:12px;font-size:12px;display:flex;gap:16px;flex-wrap:wrap">'
+          +items.map(function(i){return'<div>'+i+'</div>';}).join('')
+        +'</div>';
+      })()
+      /* 成果メモ */
+      +(c.result?'<div style="margin-bottom:12px;padding:10px 12px;background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:var(--r);font-size:13px;color:var(--text);line-height:1.7;white-space:pre-wrap">'+esc(c.result)+'</div>':'')
+      /* 投稿URL */
+      +(function(){
+        var entries=castPostUrlEntries(c);
+        if(!entries.length)return'';
+        return'<div style="padding:10px 12px;background:var(--bg3);border-radius:var(--r);font-size:12px">'
+          +'<div style="color:var(--text3);margin-bottom:4px">🔗 投稿URL</div>'
+          +entries.map(function(e){return'<div style="overflow-wrap:anywhere;padding:2px 0"><span style="color:var(--text3)">'+esc(e.label)+'：</span><a href="'+esc(e.url)+'" target="_blank" rel="noopener" style="color:var(--accent)">'+esc(e.url)+'</a></div>';}).join('')
+        +'</div>';
+      })();
   }
   openModal('castDetailModal');
 }
