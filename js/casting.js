@@ -3007,7 +3007,12 @@ function openCastingDetail(id){
     ['契約書',c.contractSent?'✓ 送付済み':'未送付'],
     ['渉外対応',c.liaisonNeeded?'🚨 対応必要':'—'],
     ['ステータス',c.status==='cancelled'?'🚫 キャンセル':(c.confirmed?'確定':'仮')],
-    ['請求書状況',inv?esc(INV_STATUS_LABEL[inv.status]||inv.status):'未登録']
+    ['請求書状況',inv?esc(INV_STATUS_LABEL[inv.status]||inv.status):'未登録'],
+    ['投稿URL',(function(){
+      var entries=castPostUrlEntries(c);
+      if(!entries.length)return'—';
+      return entries.map(function(e){return'<div style="overflow-wrap:anywhere"><span style="color:var(--text3)">'+esc(e.label)+'：</span><a href="'+esc(e.url)+'" target="_blank" rel="noopener" style="color:var(--accent)">'+esc(e.url)+'</a></div>';}).join('');
+    })()]
   ];
   var body=document.getElementById('castDetailBody');
   if(body){
