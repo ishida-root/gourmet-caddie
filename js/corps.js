@@ -7,11 +7,10 @@ function openCorpModal(id){
   ['coName','coRep','coTel','coEmail','coAddress','coGenre','coMemo'].forEach(function(fid){
     var el=document.getElementById(fid);if(el)el.value='';
   });
-  var ct=document.getElementById('coContractType');if(ct)ct.value='';
   if(id){
     var corp=DB.corporations.find(function(x){return x.id===id;});
     if(corp){
-      var map={coName:'name',coRep:'rep',coTel:'tel',coEmail:'email',coAddress:'address',coGenre:'genre',coMemo:'memo',coContractType:'contractType'};
+      var map={coName:'name',coRep:'rep',coTel:'tel',coEmail:'email',coAddress:'address',coGenre:'genre',coMemo:'memo'};
       Object.keys(map).forEach(function(fid){var el=document.getElementById(fid);if(el&&corp[map[fid]]!==undefined)el.value=corp[map[fid]]||'';});
     }
   }
@@ -23,6 +22,8 @@ function saveCorp(){
   if(!name){alert('法人名を入力してください');return;}
   var isEdit=!!editingCorpId;
   var id=isEdit?editingCorpId:uid();
+  /* 契約形態は入力欄を廃止したため、既存データがあればそのまま引き継ぐだけにする */
+  var existingCorp=isEdit?DB.corporations.find(function(x){return x.id===id;}):null;
   var corp={
     id:id,
     name:name,
@@ -31,7 +32,7 @@ function saveCorp(){
     email:document.getElementById('coEmail').value,
     address:document.getElementById('coAddress').value,
     genre:document.getElementById('coGenre').value,
-    contractType:document.getElementById('coContractType').value,
+    contractType:(existingCorp&&existingCorp.contractType)||'',
     memo:document.getElementById('coMemo').value
   };
   if(isEdit){
