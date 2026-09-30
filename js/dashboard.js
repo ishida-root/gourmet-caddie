@@ -62,6 +62,7 @@ function submitSalesForm(){
   var existingId=(document.getElementById('sl-existing-store')||{}).value||'';
   var clientId=g('sl-client-id');
   if(!clientId){alert('得意先ID（楽々販売のID）を入力してください');return;}
+  if(!g('sl-name')){alert('店舗名を入力してください');return;}
 
   if(existingId){
     /* 既存店舗の更新：更新契約か他商品の商談か区別できないため、ステータスは変更しない */
@@ -86,8 +87,8 @@ function submitSalesForm(){
 
   var negotiating=!!(document.getElementById('sl-negotiating')&&document.getElementById('sl-negotiating').checked);
 
-  /* 新規店舗登録（必須は得意先IDのみ・他はあとで店舗編集からでも入力可） */
-  var name=g('sl-name')||('(得意先ID: '+clientId+')');
+  /* 新規店舗登録（必須は得意先ID・店舗名。他はあとで店舗編集からでも入力可） */
+  var name=g('sl-name');
   var sales=g('sl-sales');
   var s={
     id:uid(),
