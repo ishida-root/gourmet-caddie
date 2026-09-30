@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=171">
+<link rel="stylesheet" href="css/app.css?v=172">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -1389,7 +1389,7 @@
       <div class="fr1 field" style="margin-top:8px"><label style="font-size:12px">来店予定日の変更理由 <span style="font-size:11px;color:var(--text3);font-weight:400">（任意・日付を変更して保存するとリスケ履歴に記録されます）</span></label><input id="cVisitReason" type="text" placeholder="例: 体調不良のためリスケ"></div>
       <div id="cRescheduleHistory"></div>
     </div>
-    <div class="fr"><div class="field"><label>リーチ数</label><input id="cReach" type="number" placeholder="30000"></div><div class="field"><label>来店人数</label><input id="cVisitCount" type="number" min="0" placeholder="2"></div></div>
+    <div class="fr"><div class="field"><label>リーチ数</label><input id="cReach" type="number" placeholder="30000"></div><div class="field"><label>来店人数</label><input id="cVisitCount" type="number" min="0" placeholder="2" oninput="renderCastCostInfo()"></div></div>
     <div class="fr1 field">
       <label>投稿URL（媒体ごと） <span style="font-size:11px;color:var(--text3);font-weight:400">※媒体を選択すると入力欄が表示されます</span></label>
       <div id="cPostUrlBoxes" style="display:flex;flex-direction:column;gap:8px"></div>
@@ -1397,6 +1397,17 @@
     <div class="fr1 field"><label>成果メモ</label><textarea id="cResult" placeholder="反応・コメント・効果など..."></textarea></div>
     <div style="padding:12px;background:var(--bg3);border-radius:var(--r);margin-bottom:14px">
       <div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:8px">💴 原価情報（楽々販売入力用）</div>
+      <div style="display:flex;gap:10px;align-items:flex-end;margin-bottom:10px;flex-wrap:wrap">
+        <div>
+          <label style="font-size:11px;color:var(--text3);display:block;margin-bottom:4px">税区分（PR費用）</label>
+          <div style="display:flex;gap:4px">
+            <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;padding:4px 8px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg2)"><input type="radio" name="cTaxKindRadio" value="excl" onchange="renderCastCostInfo()" style="width:auto;margin:0" checked> 税別</label>
+            <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;padding:4px 8px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg2)"><input type="radio" name="cTaxKindRadio" value="incl" onchange="renderCastCostInfo()" style="width:auto;margin:0"> 税込</label>
+            <label style="display:flex;align-items:center;gap:4px;font-size:12px;cursor:pointer;padding:4px 8px;border-radius:var(--r);border:1px solid var(--border);background:var(--bg2)"><input type="radio" name="cTaxKindRadio" value="free" onchange="renderCastCostInfo()" style="width:auto;margin:0"> 不課税</label>
+          </div>
+        </div>
+        <div class="field" style="flex:0 0 140px"><label style="font-size:11px">交通費見込み額</label><input id="cTransport" type="number" placeholder="0" oninput="renderCastCostInfo()"></div>
+      </div>
       <div class="fr1 field"><label style="font-size:12px">売価（税抜・スポット案件のみ入力） <span style="font-size:11px;color:var(--text3);font-weight:400">例：インフルエンサーキャスティング スポット ¥240,000</span></label><input id="cSalePrice" type="number" placeholder="240000" oninput="renderCastCostInfo()"></div>
       <div id="castCostInfo"></div>
     </div>
@@ -1790,25 +1801,25 @@
 </div>
 
 
-<script src="js/vendor/pizzip.min.js?v=171"></script>
-<script src="js/vendor/docxtemplater.min.js?v=171"></script>
-<script src="js/vendor/xlsx.full.min.js?v=171"></script>
-<script src="js/config.js?v=171"></script>
-<script src="js/db.js?v=171"></script>
-<script src="js/utils.js?v=171"></script>
-<script src="js/settings.js?v=171"></script>
-<script src="js/stores.js?v=171"></script>
-<script src="js/schedule.js?v=171"></script>
-<script src="js/casting.js?v=171"></script>
-<script src="js/check.js?v=171"></script>
-<script src="js/accounting.js?v=171"></script>
-<script src="js/plans.js?v=171"></script>
-<script src="js/creators.js?v=171"></script>
-<script src="js/corps.js?v=171"></script>
-<script src="js/faqs.js?v=171"></script>
-<script src="js/orders.js?v=171"></script>
-<script src="js/hearing.js?v=171"></script>
-<script src="js/dashboard.js?v=171"></script>
-<script src="js/app.js?v=171"></script>
+<script src="js/vendor/pizzip.min.js?v=172"></script>
+<script src="js/vendor/docxtemplater.min.js?v=172"></script>
+<script src="js/vendor/xlsx.full.min.js?v=172"></script>
+<script src="js/config.js?v=172"></script>
+<script src="js/db.js?v=172"></script>
+<script src="js/utils.js?v=172"></script>
+<script src="js/settings.js?v=172"></script>
+<script src="js/stores.js?v=172"></script>
+<script src="js/schedule.js?v=172"></script>
+<script src="js/casting.js?v=172"></script>
+<script src="js/check.js?v=172"></script>
+<script src="js/accounting.js?v=172"></script>
+<script src="js/plans.js?v=172"></script>
+<script src="js/creators.js?v=172"></script>
+<script src="js/corps.js?v=172"></script>
+<script src="js/faqs.js?v=172"></script>
+<script src="js/orders.js?v=172"></script>
+<script src="js/hearing.js?v=172"></script>
+<script src="js/dashboard.js?v=172"></script>
+<script src="js/app.js?v=172"></script>
 </body>
 </html>

@@ -109,9 +109,11 @@ function openInvoiceModal(id,opts){
     if(lc){
       var ctxLabel=document.getElementById('invCastingCtxLabel');
       if(ctxLabel)ctxLabel.textContent=storeName(lc.storeId)+' × '+infName(lc.infId);
-      /* PR費用・来店人数セット（新規のときのみ。編集時は請求書側に保存済みの値を優先） */
+      /* PR費用・来店人数・交通費見込み・税区分セット（新規のときのみ。編集時は請求書側に保存済みの値を優先） */
       if(!id&&lc.fee){document.getElementById('invPrFee').value=lc.fee;calcInvTotal();}
       if(!id&&lc.visitCount&&visitCountEl)visitCountEl.value=lc.visitCount;
+      if(!id&&lc.transport){var invTransportEl=document.getElementById('invTransport');if(invTransportEl)invTransportEl.value=lc.transport;}
+      if(!id&&lc.taxKind){var invTaxKindEl=document.querySelector('input[name="invTaxKindRadio"][value="'+lc.taxKind+'"]');if(invTaxKindEl){invTaxKindEl.checked=true;calcInvTotal();}}
       /* セレクトが非表示でも、インボイス番号表示のためにinfIdは反映しておく */
       if(lc.infId)infSel.value=lc.infId;
     }
@@ -294,13 +296,17 @@ function saveInvoice(){
       saveItem('influencers',targetInf);
     }
   }
-  /* 来店人数：ここで入力・変更した内容はキャスティング側にも反映する
+  /* 来店人数・交通費・税区分：ここで入力・変更した内容はキャスティング側にも反映する
      （次回以降の飲食代アラートや、キャスティング編集画面での再入力の手間を省くため） */
   if(payeeType==='influencer'&&inv.castingId){
     var targetCasting=DB.castings.find(function(x){return x.id===inv.castingId;});
-    if(targetCasting&&Number(targetCasting.visitCount||0)!==inv.visitCount){
-      targetCasting.visitCount=inv.visitCount;
-      saveItem('castings',targetCasting);
+    if(targetCasting){
+      var invTaxKind=inv.taxRate===0?'free':(inv.taxMode==='incl'?'incl':'excl');
+      var changed=false;
+      if(Number(targetCasting.visitCount||0)!==inv.visitCount){targetCasting.visitCount=inv.visitCount;changed=true;}
+      if(Number(targetCasting.transport||0)!==Number(inv.transport||0)){targetCasting.transport=inv.transport;changed=true;}
+      if((targetCasting.taxKind||'excl')!==invTaxKind){targetCasting.taxKind=invTaxKind;changed=true;}
+      if(changed)saveItem('castings',targetCasting);
     }
   }
   if(!DB.invoices)DB.invoices=[];

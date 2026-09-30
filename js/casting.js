@@ -1787,16 +1787,23 @@ function castingCostInfo(castingId){
   if(inv&&typeof invExclTotal==='function'){
     return{cost:invExclTotal(inv),isActual:true};
   }
-  /* 未登録の場合：今まさに編集中のキャスティングなら入力中のPR費用欄（ライブ値）を、
-     それ以外（案件内の他のキャスティング）は保存済みのfeeを見込み原価として使う */
-  var fee;
+  /* 未登録の場合：今まさに編集中のキャスティングなら入力中のPR費用・税区分・交通費見込み額
+     （ライブ値）を、それ以外（案件内の他のキャスティング）は保存済みの値を使い、
+     実際の請求書と同じ計算式（税抜換算＋交通費）で見込み原価を出す */
+  var fee,taxKind,transport;
   if(castingId===editingCastId&&document.getElementById('cFee')){
     fee=Number(document.getElementById('cFee').value)||0;
+    taxKind=(document.querySelector('input[name="cTaxKindRadio"]:checked')||{}).value||'excl';
+    transport=Number(document.getElementById('cTransport')?document.getElementById('cTransport').value:0)||0;
   }else{
     var c=(DB.castings||[]).find(function(x){return x.id===castingId;});
     fee=c?Number(c.fee)||0:0;
+    taxKind=c?(c.taxKind||'excl'):'excl';
+    transport=c?Number(c.transport)||0:0;
   }
-  return{cost:fee,isActual:false};
+  var rate=taxKind==='free'?0:(TAX_RATE/100);
+  var taxExcl=taxKind==='incl'?Math.round(fee/(1+rate)):fee;
+  return{cost:taxExcl+transport,isActual:false};
 }
 function renderCastCostInfo(){
   var el=document.getElementById('castCostInfo');
@@ -1805,8 +1812,10 @@ function renderCastCostInfo(){
   if(!salePrice){el.innerHTML='';return;}
   var info=castingCostInfo(editingCastId);
   var profit=salePrice-info.cost;
-  el.innerHTML='<div style="font-size:13px;color:var(--text2);padding:3px 0">原価　<span style="font-size:11px;color:var(--text3)">'+(info.isActual?'（請求書登録済み・実額）':'（請求書未登録・PR費用からの見込み額）')+'</span>　'+fmtMoney(info.cost)+'</div>'
+  var visitCount=document.getElementById('cVisitCount')?document.getElementById('cVisitCount').value:'';
+  el.innerHTML='<div style="font-size:13px;color:var(--text2);padding:3px 0">原価　<span style="font-size:11px;color:var(--text3)">'+(info.isActual?'（請求書登録済み・実額）':'（請求書未登録・PR費用＋交通費からの見込み額）')+'</span>　'+fmtMoney(info.cost)+'</div>'
     +'<div style="font-size:13px;color:var(--text2);padding:3px 0">売価（税抜）　'+fmtMoney(salePrice)+'</div>'
+    +(visitCount?'<div style="font-size:12px;color:var(--text3);padding:3px 0">来店人数　'+esc(visitCount)+'人</div>':'')
     +'<div style="font-size:14px;font-weight:500;color:'+(profit>=0?'var(--green)':'var(--red)')+';padding:3px 0">粗利　'+fmtMoney(profit)+'</div>';
 }
 
@@ -1962,9 +1971,10 @@ function openCastingModal(opts){
   editingCastId=null;
   _curCastPostUrls={};
   setCInfValue('');
-  ['cFee','cReach','cVisitCount','cResult','cVisitDate','cDraftDate','cDate','cVisitReason','cSalePrice'].forEach(function(fid){
+  ['cFee','cReach','cVisitCount','cResult','cVisitDate','cDraftDate','cDate','cVisitReason','cSalePrice','cTransport'].forEach(function(fid){
     var el=document.getElementById(fid);if(el)el.value='';
   });
+  var cTaxExclEl=document.querySelector('input[name="cTaxKindRadio"][value="excl"]');if(cTaxExclEl)cTaxExclEl.checked=true;
   renderCastCostInfo();
   var ccb=document.getElementById('cContractSent');if(ccb)ccb.checked=false;
   var cConfirmedEl=document.getElementById('cConfirmed');if(cConfirmedEl)cConfirmedEl.checked=false;
@@ -2018,6 +2028,8 @@ function openCastingModal(opts){
         },50);
         set('cReach',ec.reach);set('cVisitCount',ec.visitCount);set('cResult',ec.result);
         set('cVisitDate',ec.visitDate);set('cDraftDate',ec.draftDate);set('cDate',ec.date);
+        set('cTransport',ec.transport);
+        var cTaxKindEl=document.querySelector('input[name="cTaxKindRadio"][value="'+(ec.taxKind||'excl')+'"]');if(cTaxKindEl)cTaxKindEl.checked=true;
         var ccbEdit=document.getElementById('cContractSent');if(ccbEdit)ccbEdit.checked=!!ec.contractSent;
         var cStatusEdit=document.getElementById('cStatus');if(cStatusEdit)cStatusEdit.value=ec.status||'active';
         var linkedVisitPost=DB.posts.find(function(p){return p.castingId===ec.id&&p.type==='inf_visit';});
@@ -2253,6 +2265,8 @@ function saveCasting(){
     postUrls:(function(){var o={};Object.keys(_curCastPostUrls).forEach(function(k){if(_curCastPostUrls[k])o[k]=_curCastPostUrls[k];});return o;})(),
     contractSent:!!(document.getElementById('cContractSent')&&document.getElementById('cContractSent').checked),
     status:document.getElementById('cStatus')?document.getElementById('cStatus').value:'active',
+    taxKind:(document.querySelector('input[name="cTaxKindRadio"]:checked')||{}).value||'excl',
+    transport:document.getElementById('cTransport')?document.getElementById('cTransport').value:'',
     liaisonNeeded:!!prevRecord.liaisonNeeded,
     reschedules:reschedules
   };
