@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=170">
+<link rel="stylesheet" href="css/app.css?v=171">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -691,12 +691,10 @@
       <!-- 営業時間・定休日 統合UI -->
       <div style="margin-bottom:12px;border:1px solid var(--border);border-radius:var(--r);overflow:hidden">
         <!-- 共通時間行 -->
-        <div style="padding:10px 12px;background:var(--bg3);display:flex;align-items:center;gap:10px;flex-wrap:wrap">
-          <span id="sHoursCommonLabel" style="font-size:12px;font-weight:500;color:var(--text2);min-width:60px">共通時間</span>
-          <div id="sHoursCommonPickers" style="display:inline-flex;align-items:center;gap:10px">
-            <div id="sHoursFromWrap" style="display:inline-flex"></div><input type="hidden" id="sHoursFrom">
-            <span style="font-size:13px;color:var(--text3)">〜</span>
-            <div id="sHoursToWrap" style="display:inline-flex"></div><input type="hidden" id="sHoursTo">
+        <div style="padding:10px 12px;background:var(--bg3);display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap">
+          <span id="sHoursCommonLabel" style="font-size:12px;font-weight:500;color:var(--text2);min-width:60px;padding-top:6px">共通時間 <span style="font-size:10px;color:var(--text3);font-weight:400">（複数登録可）</span></span>
+          <div id="sHoursCommonPickers" style="display:inline-flex;align-items:center;flex-wrap:wrap;gap:10px">
+            <div id="sHoursCommonRanges" style="display:inline-flex;align-items:center;flex-wrap:wrap;gap:6px"></div>
           </div>
           <span id="sHoursCommonUnused" style="display:none;font-size:12px;color:var(--text3)">（曜日ごとの設定を使用中のため未使用）</span>
           <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;margin-left:auto">
@@ -711,8 +709,7 @@
               <tr style="background:var(--bg3)">
                 <th style="font-size:11px;color:var(--text3);font-weight:400;padding:5px 10px;text-align:left;border-bottom:1px solid var(--border);width:60px">定休日</th>
                 <th style="font-size:11px;color:var(--text3);font-weight:400;padding:5px 8px;text-align:left;border-bottom:1px solid var(--border);width:40px">曜日</th>
-                <th style="font-size:11px;color:var(--text3);font-weight:400;padding:5px 8px;text-align:left;border-bottom:1px solid var(--border)">開始時間 <span style="color:var(--text3);font-weight:300">（空欄=共通）</span></th>
-                <th style="font-size:11px;color:var(--text3);font-weight:400;padding:5px 8px;text-align:left;border-bottom:1px solid var(--border)">終了時間</th>
+                <th colspan="2" style="font-size:11px;color:var(--text3);font-weight:400;padding:5px 8px;text-align:left;border-bottom:1px solid var(--border)">時間帯 <span style="color:var(--text3);font-weight:300">（複数登録可・空欄=共通時間）</span></th>
               </tr>
             </thead>
             <tbody id="perDayBody"></tbody>
@@ -1793,25 +1790,25 @@
 </div>
 
 
-<script src="js/vendor/pizzip.min.js?v=170"></script>
-<script src="js/vendor/docxtemplater.min.js?v=170"></script>
-<script src="js/vendor/xlsx.full.min.js?v=170"></script>
-<script src="js/config.js?v=170"></script>
-<script src="js/db.js?v=170"></script>
-<script src="js/utils.js?v=170"></script>
-<script src="js/settings.js?v=170"></script>
-<script src="js/stores.js?v=170"></script>
-<script src="js/schedule.js?v=170"></script>
-<script src="js/casting.js?v=170"></script>
-<script src="js/check.js?v=170"></script>
-<script src="js/accounting.js?v=170"></script>
-<script src="js/plans.js?v=170"></script>
-<script src="js/creators.js?v=170"></script>
-<script src="js/corps.js?v=170"></script>
-<script src="js/faqs.js?v=170"></script>
-<script src="js/orders.js?v=170"></script>
-<script src="js/hearing.js?v=170"></script>
-<script src="js/dashboard.js?v=170"></script>
-<script src="js/app.js?v=170"></script>
+<script src="js/vendor/pizzip.min.js?v=171"></script>
+<script src="js/vendor/docxtemplater.min.js?v=171"></script>
+<script src="js/vendor/xlsx.full.min.js?v=171"></script>
+<script src="js/config.js?v=171"></script>
+<script src="js/db.js?v=171"></script>
+<script src="js/utils.js?v=171"></script>
+<script src="js/settings.js?v=171"></script>
+<script src="js/stores.js?v=171"></script>
+<script src="js/schedule.js?v=171"></script>
+<script src="js/casting.js?v=171"></script>
+<script src="js/check.js?v=171"></script>
+<script src="js/accounting.js?v=171"></script>
+<script src="js/plans.js?v=171"></script>
+<script src="js/creators.js?v=171"></script>
+<script src="js/corps.js?v=171"></script>
+<script src="js/faqs.js?v=171"></script>
+<script src="js/orders.js?v=171"></script>
+<script src="js/hearing.js?v=171"></script>
+<script src="js/dashboard.js?v=171"></script>
+<script src="js/app.js?v=171"></script>
 </body>
 </html>
