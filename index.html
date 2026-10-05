@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=173">
+<link rel="stylesheet" href="css/app.css?v=174">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -696,38 +696,12 @@
       <div class="fr1 field"><label>法人</label><div style="display:flex;gap:6px"><select id="sCorpId" style="flex:1"><option value="">選択しない（個人・未設定）</option></select><button type="button" class="btn btn-sm" onclick="openCorpModal()" style="white-space:nowrap;flex-shrink:0">＋ 新規法人</button></div></div>
       <div class="fr1 field"><label>郵便番号 <span style="color:var(--text3);font-weight:400"></span></label><div style="display:flex;gap:6px"><input id="sZip" type="text" placeholder="例: 150-0043" maxlength="8" style="max-width:160px" oninput="autoFillAddress(this.value,'sPref','sArea')"><span style="font-size:13px;color:var(--text3);align-self:center" id="sZip-status"></span></div></div>
       <div class="fr"><div class="field"><label>都道府県</label><input id="sPref" type="text" placeholder="東京都"></div><div class="field"><label>市区町村・番地</label><input id="sArea" type="text" placeholder="渋谷区道玄坂..."></div></div>
-      <!-- 営業時間・定休日 統合UI -->
-      <div style="margin-bottom:12px;border:1px solid var(--border);border-radius:var(--r);overflow:hidden">
-        <!-- 共通時間行 -->
-        <div style="padding:10px 12px;background:var(--bg3);display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap">
-          <span id="sHoursCommonLabel" style="font-size:12px;font-weight:500;color:var(--text2);min-width:60px;padding-top:6px">共通時間 <span style="font-size:10px;color:var(--text3);font-weight:400">（複数登録可）</span></span>
-          <div id="sHoursCommonPickers" style="display:inline-flex;align-items:center;flex-wrap:wrap;gap:10px">
-            <div id="sHoursCommonRanges" style="display:inline-flex;align-items:center;flex-wrap:wrap;gap:6px"></div>
-          </div>
-          <span id="sHoursCommonUnused" style="display:none;font-size:12px;color:var(--text3)">（曜日ごとの設定を使用中のため未使用）</span>
-          <label style="display:flex;align-items:center;gap:5px;font-size:13px;cursor:pointer;margin-left:auto">
-            <input type="checkbox" id="sPerDay" onchange="togglePerDay()" style="width:auto;margin:0">
-            曜日ごとに設定
-          </label>
-        </div>
-        <!-- 曜日別テーブル（折りたたみ） -->
-        <div id="perDayTable" style="display:none">
-          <table style="width:100%;border-collapse:collapse">
-            <thead>
-              <tr style="background:var(--bg3)">
-                <th style="font-size:11px;color:var(--text3);font-weight:400;padding:5px 10px;text-align:left;border-bottom:1px solid var(--border);width:60px">定休日</th>
-                <th style="font-size:11px;color:var(--text3);font-weight:400;padding:5px 8px;text-align:left;border-bottom:1px solid var(--border);width:40px">曜日</th>
-                <th colspan="2" style="font-size:11px;color:var(--text3);font-weight:400;padding:5px 8px;text-align:left;border-bottom:1px solid var(--border)">時間帯 <span style="color:var(--text3);font-weight:300">（複数登録可・空欄=共通時間）</span></th>
-              </tr>
-            </thead>
-            <tbody id="perDayBody"></tbody>
-          </table>
-        </div>
-        <input id="sHours" type="hidden">
-        <input id="sHoliday" type="hidden">
-      </div>
+      <div class="fr1 field"><label>店舗電話番号 <span style="font-size:11px;color:var(--text3);font-weight:400">キャプション用（食べログ掲載の番号など、公開してよい番号）</span></label><input id="sShopTel" type="tel" placeholder="例: 06-1234-5678" style="max-width:240px"></div>
+      <div class="fr1 field"><label>営業時間 <span style="font-size:11px;color:var(--text3);font-weight:400">自由記述（そのままキャプションに入ります。曜日で違う場合・仕込み中の時間帯などもここにまとめて書けます）</span></label><textarea id="sHours" rows="3" placeholder="例: 毎日17:00〜24:00(L.O.23:30)"></textarea></div>
+      <div class="fr1 field"><label>定休日・営業に関する注記 <span style="font-size:11px;color:var(--text3);font-weight:400">自由記述（キャプションの「定休日」に入ります）</span></label><textarea id="sHoliday" rows="2" placeholder="例: 基本的になし&#10;※祝日は営業時間が異なる場合がございますので、お電話にてご確認ください。"></textarea></div>
       <div class="fr" style="margin-bottom:10px"><div class="field"><label>席数</label><input id="sSeats" type="number" placeholder="40"></div><div></div></div>
       <div class="fr"><div class="field"><label>食べログ URL</label><input id="sTabelog" type="url" placeholder="https://tabelog.com/..."></div><div class="field"><label>公式 HP</label><input id="sHp" type="url" placeholder="https://..."></div></div>
+      <div class="fr1 field"><label>ハッシュタグ <span style="font-size:11px;color:var(--text3);font-weight:400">キャプション用（#付きで空白区切り）</span></label><input id="sHashtags" type="text" placeholder="#梅田グルメ #居酒屋 #もつ焼き"></div>
       <div class="fr1 field"><label>備考</label><textarea id="sMemo" placeholder="特記事項..."></textarea></div>
       <div class="fr1 field"><label>⚠️ 注意点</label><textarea id="sCaution" placeholder="対応時に気をつけてほしいこと（例：担当変更予定あり、クレーム歴あり、定休日変則、など）"></textarea></div>
     </div>
@@ -1435,8 +1409,20 @@
 <!-- DETAIL MODAL -->
 <div class="modal-overlay" id="detailModal">
 <div class="modal" style="width:680px">
-  <div class="modal-header"><span class="modal-title" id="detailTitle">店舗詳細</span><button class="modal-close" onclick="closeModal('detailModal')">✕</button></div>
+  <div class="modal-header"><span class="modal-title" id="detailTitle">店舗詳細</span><div style="display:flex;gap:6px;align-items:center"><button class="btn btn-sm" id="detailCaptionBtn">📋 キャプション</button><button class="modal-close" onclick="closeModal('detailModal')">✕</button></div></div>
   <div class="modal-body" id="detailBody"></div>
+</div>
+</div>
+
+<!-- CAPTION MODAL（店舗情報のキャプション文。プレビューを直接編集してからコピーできる） -->
+<div class="modal-overlay" id="captionModal">
+<div class="modal" style="width:520px">
+  <div class="modal-header"><span class="modal-title">📋 キャプション</span><button class="modal-close" onclick="closeModal('captionModal')">✕</button></div>
+  <div class="modal-body">
+    <div style="font-size:12px;color:var(--text3);margin-bottom:8px">登録済みの店舗情報から作成しています。この画面で直接書き換えてからコピーもできます（保存はされません）。足りない項目は店舗の編集画面で入力すると反映されます。</div>
+    <textarea id="captionText" rows="14" style="width:100%;font-family:inherit;line-height:1.6"></textarea>
+    <div class="form-actions"><button class="btn" onclick="closeModal('captionModal')">閉じる</button><button class="btn btn-primary" id="captionCopyBtn" onclick="copyStoreCaption()">📋 コピー</button></div>
+  </div>
 </div>
 </div>
 
@@ -1808,25 +1794,25 @@
 </div>
 
 
-<script src="js/vendor/pizzip.min.js?v=173"></script>
-<script src="js/vendor/docxtemplater.min.js?v=173"></script>
-<script src="js/vendor/xlsx.full.min.js?v=173"></script>
-<script src="js/config.js?v=173"></script>
-<script src="js/db.js?v=173"></script>
-<script src="js/utils.js?v=173"></script>
-<script src="js/settings.js?v=173"></script>
-<script src="js/stores.js?v=173"></script>
-<script src="js/schedule.js?v=173"></script>
-<script src="js/casting.js?v=173"></script>
-<script src="js/check.js?v=173"></script>
-<script src="js/accounting.js?v=173"></script>
-<script src="js/plans.js?v=173"></script>
-<script src="js/creators.js?v=173"></script>
-<script src="js/corps.js?v=173"></script>
-<script src="js/faqs.js?v=173"></script>
-<script src="js/orders.js?v=173"></script>
-<script src="js/hearing.js?v=173"></script>
-<script src="js/dashboard.js?v=173"></script>
-<script src="js/app.js?v=173"></script>
+<script src="js/vendor/pizzip.min.js?v=174"></script>
+<script src="js/vendor/docxtemplater.min.js?v=174"></script>
+<script src="js/vendor/xlsx.full.min.js?v=174"></script>
+<script src="js/config.js?v=174"></script>
+<script src="js/db.js?v=174"></script>
+<script src="js/utils.js?v=174"></script>
+<script src="js/settings.js?v=174"></script>
+<script src="js/stores.js?v=174"></script>
+<script src="js/schedule.js?v=174"></script>
+<script src="js/casting.js?v=174"></script>
+<script src="js/check.js?v=174"></script>
+<script src="js/accounting.js?v=174"></script>
+<script src="js/plans.js?v=174"></script>
+<script src="js/creators.js?v=174"></script>
+<script src="js/corps.js?v=174"></script>
+<script src="js/faqs.js?v=174"></script>
+<script src="js/orders.js?v=174"></script>
+<script src="js/hearing.js?v=174"></script>
+<script src="js/dashboard.js?v=174"></script>
+<script src="js/app.js?v=174"></script>
 </body>
 </html>

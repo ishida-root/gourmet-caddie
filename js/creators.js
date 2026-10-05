@@ -65,8 +65,6 @@ function initDatePickers(){
   makeDatePicker('crBirthdayWrap','crBirthday',{yearFrom:1950,yearTo:new Date().getFullYear()-10,yearLabel:'年'});
   makeDatePicker('crInterviewDateWrap','crInterviewDate',{yearFrom:2020,yearTo:new Date().getFullYear()+1,yearLabel:'年'});
   makeDatePicker('sContractStartWrap','sContractStart',{yearFrom:2020,yearTo:new Date().getFullYear()+3,yearLabel:'年'});
-  makeTimePicker24('sHoursFromWrap','sHoursFrom',function(){updateHoursData();});
-  makeTimePicker24('sHoursToWrap','sHoursTo',function(){updateHoursData();});
 }
 
 

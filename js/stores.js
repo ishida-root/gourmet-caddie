@@ -206,307 +206,77 @@ function toggleKickoffSalesJoin(checked){
 
 
 /* ============================================================
-   営業時間・定休日 統合管理
-   保存形式（sHours hidden field に JSON文字列。ランチ/ディナーのような
-   分割営業時間に対応するため、共通時間・曜日ごとの時間ともに単一の
-   from/toではなく「時間帯の配列」で持つ）:
-   {"common":[{"from":"11:00","to":"16:00"},{"from":"16:00","to":"22:00"}],
-    "perDay":true,
-    "days":{"mon":{"closed":true},"sun":{"ranges":[{"from":"18:00","to":"23:00"}]},"hol":{"closed":true}}}
-   旧形式（common・各曜日ともに単一のfrom/to文字列またはオブジェクト）も
-   parseHoursData()で読み込み時に自動で配列形式へ変換する（後方互換）。
+   営業時間・定休日
+   営業時間は自由記述（テキスト）で保存する。アイドルタイムの仕込みなど曜日・時間帯が
+   複雑な店舗でも全日入力しなくて済み、入力内容はそのままキャプションに使う。
+   以前は構造化データ（JSON文字列）で保存していたため、旧データは読み込み時に
+   hoursToText()で読みやすい文章へ変換する（後方互換）。
    ============================================================ */
 var DAY_KEYS=['mon','tue','wed','thu','fri','sat','sun','hol'];
 var DAY_LABELS={'mon':'月','tue':'火','wed':'水','thu':'木','fri':'金','sat':'土','sun':'日','hol':'祝'};
-var HOURS_FROM_OPTS=['00:00','6:00','7:00','8:00','9:00','10:00','11:00','11:30','12:00','13:00','14:00','15:00','16:00','17:00','17:30','18:00','18:30','19:00','20:00'];
-var HOURS_TO_OPTS=['21:00','22:00','22:30','23:00','23:30','24:00','25:00','26:00','27:00','28:00','翌3:00','翌5:00'];
-var _pdListsRendered=false;
-
-function ensurePerDayDatalist(){
-  if(_pdListsRendered)return;
-  _pdListsRendered=true;
-  var frag=document.createDocumentFragment();
-  var dlf=document.createElement('datalist');dlf.id='pdFromList';
-  HOURS_FROM_OPTS.forEach(function(o){var opt=document.createElement('option');opt.value=o;dlf.appendChild(opt);});
-  var dlt=document.createElement('datalist');dlt.id='pdToList';
-  HOURS_TO_OPTS.forEach(function(o){var opt=document.createElement('option');opt.value=o;dlt.appendChild(opt);});
-  frag.appendChild(dlf);frag.appendChild(dlt);
-  document.body.appendChild(frag);
+function _hoursRangesText(v){
+  var arr=Array.isArray(v)?v:(v&&typeof v==='object'?[v]:(typeof v==='string'&&v?[{from:v.split('–')[0]||'',to:v.split('–')[1]||''}]:[]));
+  return arr.filter(function(r){return r&&(r.from||r.to);}).map(function(r){return(r.from||'?')+'–'+(r.to||'?');}).join('・');
 }
-
-function makeTimeInput(id, val, onchangeFn, listId){
-  /* wrapperのdivとhidden inputを返す（DOMに追加後にmakeTimePicker24を呼ぶ） */
-  return '<div id="wrap-'+id+'" style="display:inline-flex"></div>'
-    +'<input type="hidden" id="'+id+'" value="'+esc(val||'')+'">';
-}
-/* makeTimeInput後にピッカー初期化するコール（共通時間・曜日ごとの時間帯どちらのidも
-   trFrom-/trTo- で始まる共通の命名にしているため、1つのセレクタでまとめて拾える） */
-function initMadeTimePickers(){
-  document.querySelectorAll('[id^="wrap-trFrom-"],[id^="wrap-trTo-"]').forEach(function(wrap){
-    var hid=document.getElementById(wrap.id.replace("wrap-",""));
-    if(hid&&!wrap._pickerInit){
-      wrap._pickerInit=true;
-      makeTimePicker24(wrap.id, hid.id, function(){updateHoursData();});
-      var w=document.getElementById(wrap.id);
-      if(w&&w._setTime)w._setTime(hid.value||'');
-    }
-  });
-}
-
-/* 共通時間：ランチ/ディナーのような複数の時間帯を登録できるように、
-   1行=1時間帯のリストとして描画する */
-function renderCommonRanges(ranges){
-  var wrap=document.getElementById('sHoursCommonRanges');
-  if(!wrap)return;
-  ranges=(ranges&&ranges.length)?ranges:[{from:'',to:''}];
-  wrap.innerHTML=ranges.map(function(r,i){
-    return '<div style="display:inline-flex;align-items:center;gap:6px;margin:2px 10px 2px 0">'
-      +makeTimeInput('trFrom-common-'+i,r.from||'')
-      +'<span style="font-size:13px;color:var(--text3)">〜</span>'
-      +makeTimeInput('trTo-common-'+i,r.to||'')
-      +(ranges.length>1?'<button type="button" onclick="removeCommonRange('+i+')" style="border:none;background:transparent;color:var(--text3);cursor:pointer;font-size:13px" title="この時間帯を削除">✕</button>':'')
-    +'</div>';
-  }).join('')
-  +'<button type="button" class="btn btn-sm" onclick="addCommonRange()">＋ 時間帯を追加</button>';
-  setTimeout(initMadeTimePickers,0);
-}
-function getCommonRanges(){
-  var ranges=[];
-  var i=0;
-  while(true){
-    var f=document.getElementById('trFrom-common-'+i);
-    if(!f)break;
-    var t=document.getElementById('trTo-common-'+i);
-    var from=f.value,to=t?t.value:'';
-    if(from||to)ranges.push({from:from,to:to});
-    i++;
-  }
-  return ranges;
-}
-function addCommonRange(){
-  var ranges=getCommonRanges();
-  ranges.push({from:'',to:''});
-  renderCommonRanges(ranges);
-  updateHoursData();
-}
-function removeCommonRange(idx){
-  var ranges=getCommonRanges();
-  ranges.splice(idx,1);
-  renderCommonRanges(ranges);
-  updateHoursData();
-}
-
-function renderPerDayTable(savedDays){
-  var body=document.getElementById('perDayBody');
-  if(!body)return;
-  body.innerHTML=DAY_KEYS.map(function(key){
-    var d=savedDays&&savedDays[key]?savedDays[key]:{};
-    var closed=d.closed||false;
-    var ranges=(!closed&&d.ranges&&d.ranges.length)?d.ranges:[{from:'',to:''}];
-    var rowStyle=closed?'background:var(--red-bg)':'';
-    var rangesHtml=ranges.map(function(r,i){
-      return '<div style="display:flex;align-items:center;gap:6px;margin-bottom:2px">'
-        +makeTimeInput('trFrom-'+key+'-'+i,r.from||'')
-        +'<span style="font-size:12px;color:var(--text3)">〜</span>'
-        +makeTimeInput('trTo-'+key+'-'+i,r.to||'')
-        +(ranges.length>1?'<button type="button" onclick="removeDayRange(\''+key+'\','+i+')" style="border:none;background:transparent;color:var(--text3);cursor:pointer;font-size:12px" title="この時間帯を削除">✕</button>':'')
-      +'</div>';
-    }).join('')
-    +'<button type="button" onclick="addDayRange(\''+key+'\')" style="font-size:11px;padding:2px 6px;border:1px dashed var(--text3);border-radius:4px;background:transparent;color:var(--text3);cursor:pointer">＋ 追加</button>';
-    return '<tr id="pdr-'+key+'" style="border-bottom:1px solid var(--border);'+rowStyle+'">'
-      +'<td style="padding:6px 10px;text-align:center">'
-        +'<input type="checkbox" id="pdc-'+key+'" '+(closed?'checked':'')+' onchange="onDayClosedChange(\''+key+'\')" style="width:auto;margin:0">'
-      +'</td>'
-      +'<td style="padding:6px 8px;font-size:13px;font-weight:500;color:'+(closed?'var(--red)':'var(--text)')+'">'+DAY_LABELS[key]+'</td>'
-      +'<td colspan="2" style="padding:4px 8px">'
-        +(closed?'<span style="font-size:12px;color:var(--red)">定休日</span>':rangesHtml)
-      +'</td>'
-      +'</tr>';
-  }).join('');
-  /* ピッカー初期化（DOM追加後） */
-  setTimeout(initMadeTimePickers, 0);
-}
-
-function onDayClosedChange(key){
-  updateHoursData();
-  /* 行の背景・テキストを即時更新するために再描画 */
-  var days=getPerDayData();
-  renderPerDayTable(days);
-  /* チェック状態をDOMから再取得して再セット（再描画後にチェックが消えないよう） */
-  var el=document.getElementById('pdc-'+key);
-  if(el)el.checked=days[key]&&days[key].closed;
-}
-
-function addDayRange(key){
-  var days=getPerDayData();
-  if(!days[key]||days[key].closed)days[key]={ranges:[]};
-  if(!days[key].ranges)days[key].ranges=[];
-  days[key].ranges.push({from:'',to:''});
-  renderPerDayTable(days);
-  updateHoursData();
-}
-function removeDayRange(key,idx){
-  var days=getPerDayData();
-  if(days[key]&&days[key].ranges)days[key].ranges.splice(idx,1);
-  renderPerDayTable(days);
-  updateHoursData();
-}
-
-function getPerDayData(){
-  var days={};
-  DAY_KEYS.forEach(function(key){
-    var closedEl=document.getElementById('pdc-'+key);
-    if(!closedEl)return;
-    var closed=closedEl.checked;
-    if(closed){days[key]={closed:true};return;}
-    var ranges=[];
-    var i=0;
-    while(true){
-      var f=document.getElementById('trFrom-'+key+'-'+i);
-      if(!f)break;
-      var t=document.getElementById('trTo-'+key+'-'+i);
-      var from=f.value,to=t?t.value:'';
-      if(from||to)ranges.push({from:from,to:to});
-      i++;
-    }
-    days[key]={ranges:ranges};
-  });
-  return days;
-}
-
-/* 曜日ごとの設定がONの間、共通時間は使われない（各曜日の値が優先される）ため、
-   紛らわしい共通時間ピッカーを薄く・操作不可にして「未使用」であることを明示する */
-function updateHoursCommonUsable(){
-  var on=document.getElementById('sPerDay').checked;
-  var pickers=document.getElementById('sHoursCommonPickers');
-  var note=document.getElementById('sHoursCommonUnused');
-  if(pickers)pickers.style.cssText='display:inline-flex;align-items:center;gap:10px;flex-wrap:wrap;'+(on?'opacity:0.4;pointer-events:none':'');
-  if(note)note.style.display=on?'':'none';
-}
-function togglePerDay(){
-  ensurePerDayDatalist();
-  var on=document.getElementById('sPerDay').checked;
-  document.getElementById('perDayTable').style.display=on?'':'none';
-  updateHoursCommonUsable();
-  if(on){
-    var cur=parseHoursData(document.getElementById('sHours').value);
-    /* 共通時間を引き継いで各曜日の初期値にセット */
-    var commonRanges=getCommonRanges();
-    var existingDays=cur.days||{};
-    /* 既存daysデータがない曜日に共通時間をセット */
-    if(commonRanges.length){
-      DAY_KEYS.forEach(function(key){
-        if(!existingDays[key]){
-          existingDays[key]={ranges:commonRanges.map(function(r){return Object.assign({},r);})};
-        }
-      });
-    }
-    renderPerDayTable(existingDays);
-  }
-  updateHoursData();
-}
-
-function updateHoursData(){
-  var commonRanges=getCommonRanges();
-  var perDay=document.getElementById('sPerDay').checked;
-  var hoursEl=document.getElementById('sHours');
-  var holidayEl=document.getElementById('sHoliday');
-  if(!perDay){
-    hoursEl.value=commonRanges.length?JSON.stringify({common:commonRanges,perDay:false,days:{}}):'';
-    holidayEl.value='';
-  }else{
-    var days=getPerDayData();
-    var obj={common:commonRanges,perDay:true,days:days};
-    hoursEl.value=JSON.stringify(obj);
-    /* holiday フィールドを定休日曜日テキストで更新 */
-    var closedDays=DAY_KEYS.filter(function(k){return days[k]&&days[k].closed;})
-      .map(function(k){return DAY_LABELS[k]+'曜';});
-    if(closedDays.length){
-      holidayEl.value=closedDays.map(function(d){return d.replace('祝曜','祝日');}).join('・');
-    }else{
-      holidayEl.value='';
-    }
-  }
-}
-
-/* 旧形式（common・各曜日の時間が単一のfrom/to文字列またはオブジェクト）を
-   新形式（時間帯の配列）に読み替えるヘルパー */
-function _hoursRangesFrom(v){
-  if(Array.isArray(v))return v.filter(function(r){return r&&(r.from||r.to);});
-  if(v&&typeof v==='object'&&(v.from||v.to))return[{from:v.from||'',to:v.to||''}];
-  if(typeof v==='string'&&v){
-    var parts=v.split('–');
-    return[{from:parts[0]||'',to:parts[1]||''}];
-  }
-  return[];
-}
-function parseHoursData(val){
-  if(!val)return{common:[],perDay:false,days:{}};
+function hoursToText(val){
+  if(!val)return'';
+  if(val.charAt(0)!=='{')return val;
   var raw;
-  if(val.charAt(0)==='{'){
-    try{raw=JSON.parse(val);}catch(e){raw={common:val};}
-  }else{
-    raw={common:val};
-  }
-  var out={common:_hoursRangesFrom(raw.common),perDay:!!raw.perDay,days:{}};
-  var rawDays=raw.days||{};
-  DAY_KEYS.forEach(function(key){
-    var d=rawDays[key];
-    if(!d)return;
-    if(d.closed){out.days[key]={closed:true};return;}
-    out.days[key]={ranges:_hoursRangesFrom(d.ranges||d)};
-  });
-  return out;
-}
-
-/* ---- clearStoreForm / openStoreModal 用の復元 ---- */
-function restoreHoursUI(hoursVal){
-  var data=parseHoursData(hoursVal);
-  var perDayEl=document.getElementById('sPerDay');
-  var tableEl=document.getElementById('perDayTable');
-  renderCommonRanges(data.common);
-  if(data.perDay){
-    perDayEl.checked=true;
-    tableEl.style.display='';
-    renderPerDayTable(data.days||{});
-  }else{
-    perDayEl.checked=false;
-    tableEl.style.display='none';
-  }
-  document.getElementById('sHours').value=hoursVal||'';
-  updateHoursCommonUsable();
-}
-
-/* ---- 人間が読める営業時間サマリー（表示用） ---- */
-function _fmtRanges(ranges){
-  return(ranges||[]).map(function(r){return(r.from||'?')+'–'+(r.to||'?');}).join('・');
-}
-function formatHoursSummary(hoursVal){
-  var data=parseHoursData(hoursVal);
-  if(!data.perDay)return data.common&&data.common.length?_fmtRanges(data.common):'—';
-  var common=data.common&&data.common.length?_fmtRanges(data.common):'';
+  try{raw=JSON.parse(val);}catch(e){return val;}
+  var common=_hoursRangesText(raw.common);
+  if(!raw.perDay)return common;
   var lines=[];
   DAY_KEYS.forEach(function(key){
-    var d=data.days&&data.days[key];
+    var d=raw.days&&raw.days[key];
     if(!d)return;
-    var label=DAY_LABELS[key];
-    if(d.closed){lines.push(label+': 定休');}
-    else if(d.ranges&&d.ranges.length){lines.push(label+': '+_fmtRanges(d.ranges));}
+    if(d.closed){lines.push(DAY_LABELS[key]+': 定休');return;}
+    var t=_hoursRangesText(d.ranges||d);
+    if(t)lines.push(DAY_LABELS[key]+': '+t);
   });
-  if(!lines.length)return common||'—';
-  return (common?common+'\n':'')+lines.join(' / ');
+  if(!lines.length)return common;
+  return(common?common+'\n':'')+lines.join(' / ');
+}
+
+/* 店舗情報のキャプション文（Instagram投稿用）を作る。足りない項目は行ごと省く */
+function buildStoreCaption(s){
+  var line='──────────────';
+  var parts=[line,'【'+s.name+'】'];
+  var addr=(s.pref||'')+(s.area||'');
+  if(s.shopTel)parts.push('📞'+s.shopTel);
+  if(addr)parts.push('📍'+addr);
+  var hours=hoursToText(s.hours);
+  if(hours)parts.push('🕐'+hours);
+  if(s.holiday)parts.push('📅定休日:'+s.holiday);
+  if(s.hp)parts.push('🌐'+s.hp);
+  if(s.tabelog)parts.push('🍴'+s.tabelog);
+  parts.push(line);
+  var out=parts.join('\n');
+  if(s.hashtags)out+='\n\n'+s.hashtags;
+  return out;
+}
+function openStoreCaption(id){
+  var s=DB.stores.find(function(x){return x.id===id;});
+  if(!s)return;
+  document.getElementById('captionText').value=buildStoreCaption(s);
+  var btn=document.getElementById('captionCopyBtn');if(btn)btn.textContent='📋 コピー';
+  openModal('captionModal');
+}
+function copyStoreCaption(){
+  var ta=document.getElementById('captionText');
+  if(!ta)return;
+  ta.select();
+  var done=function(){
+    var btn=document.getElementById('captionCopyBtn');
+    if(btn){btn.textContent='✓ コピーしました';setTimeout(function(){btn.textContent='📋 コピー';},2000);}
+  };
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(ta.value).then(done);
+  else{document.execCommand('copy');done();}
 }
 
 function clearStoreForm(){
-  ['sName','sPref','sArea','sSeats','sTabelog','sHp','sMemo','sCaution','sIg','sIgFollowers','sFb','sTw','sTt','sYt','sMetaId','sCreator','sContractStart','sMonthlyFee','sDiscountPercent','sDiscountNote','sContactName','sContactRole','sContactLine','sSetupMemo','sNextAction','sNegotiatingMemo'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+  ['sName','sPref','sArea','sSeats','sTabelog','sHp','sMemo','sCaution','sIg','sIgFollowers','sFb','sTw','sTt','sYt','sMetaId','sCreator','sContractStart','sMonthlyFee','sDiscountPercent','sDiscountNote','sContactName','sContactRole','sContactLine','sSetupMemo','sNextAction','sNegotiatingMemo','sShopTel','sHashtags','sHours','sHoliday'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('sGenre').value='';
   var scorp=document.getElementById('sCorpId');if(scorp)scorp.value='';
-  document.getElementById('sHours').value='';
-  document.getElementById('sHoliday').value='';
-  renderCommonRanges([{from:'',to:''}]);
-  document.getElementById('sPerDay').checked=false;
-  document.getElementById('perDayTable').style.display='none';
-  updateHoursCommonUsable();
   document.getElementById('sMetaExp').value='none';
   document.getElementById('sContractTerm').value='3';
   document.getElementById('sStatus').value='pending';
@@ -579,8 +349,11 @@ function openStoreModal(id){
       }
       /* 退職済み担当者の表示 */
       refreshManagerDisplay(s);
-      /* 営業時間・定休日を復元 */
-      restoreHoursUI(s.hours||'');
+      /* 営業時間・定休日・公開電話・ハッシュタグを復元（旧形式の営業時間データは文章へ変換） */
+      document.getElementById('sHours').value=hoursToText(s.hours||'');
+      document.getElementById('sHoliday').value=s.holiday||'';
+      document.getElementById('sShopTel').value=s.shopTel||'';
+      document.getElementById('sHashtags').value=s.hashtags||'';
       showPlanPreview();
       if(s.hearing){Object.keys(s.hearing).forEach(function(k){var el=document.getElementById(k);if(el)el.value=s.hearing[k]||'';});}
       var naEl=document.getElementById('sNextAction');if(naEl)naEl.value=s.nextAction||'';
@@ -689,6 +462,8 @@ function saveStore(){
     area:document.getElementById('sArea').value,
     hours:document.getElementById('sHours').value,
     holiday:document.getElementById('sHoliday').value,
+    shopTel:document.getElementById('sShopTel').value.trim(),
+    hashtags:document.getElementById('sHashtags').value.trim(),
     seats:document.getElementById('sSeats').value,
     tabelog:document.getElementById('sTabelog').value,
     hp:document.getElementById('sHp').value,
@@ -938,15 +713,16 @@ function showDetail(id){
   var corp=DB.corporations&&s.corpId?DB.corporations.find(function(c){return c.id===s.corpId;}):null;
 
   /* 営業時間の表示 */
-  var hoursDisplay=formatHoursSummary(s.hours||s.hours||'');
-  if(!hoursDisplay||hoursDisplay==='—')hoursDisplay=s.hours||'—';
+  var hoursDisplay=hoursToText(s.hours||'');
+  var captionBtn=document.getElementById('detailCaptionBtn');
+  if(captionBtn)captionBtn.onclick=function(){openStoreCaption(id);};
 
   function row(label,val,link){
     if(!val&&val!==0)return'';
     var valHtml=link?'<a href="'+esc(val)+'" target="_blank" style="color:var(--accent)">'+esc(val)+'</a>':esc(String(val));
     return'<div style="display:flex;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);font-size:13px">'
       +'<span style="color:var(--text3);min-width:90px;flex-shrink:0">'+label+'</span>'
-      +'<span style="flex:1;word-break:break-all">'+valHtml+'</span></div>';
+      +'<span style="flex:1;word-break:break-all;white-space:pre-wrap">'+valHtml+'</span></div>';
   }
 
   document.getElementById('detailTitle').textContent=s.name;
@@ -1000,8 +776,10 @@ function showDetail(id){
     +'<div style="margin-bottom:14px">'
       +row('業種',s.genre)
       +row('エリア',(s.pref||'')+(s.area?' '+s.area:''))
+      +row('店舗電話',s.shopTel)
       +row('営業時間',hoursDisplay)
       +row('定休日',s.holiday)
+      +row('ハッシュタグ',s.hashtags)
       +row('席数',s.seats?s.seats+'席':null)
       +row('食べログ',s.tabelog,true)
       +row('公式HP',s.hp,true)
