@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=174">
+<link rel="stylesheet" href="css/app.css?v=175">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -701,7 +701,8 @@
       <div class="fr1 field"><label>定休日・営業に関する注記 <span style="font-size:11px;color:var(--text3);font-weight:400">自由記述（キャプションの「定休日」に入ります）</span></label><textarea id="sHoliday" rows="2" placeholder="例: 基本的になし&#10;※祝日は営業時間が異なる場合がございますので、お電話にてご確認ください。"></textarea></div>
       <div class="fr" style="margin-bottom:10px"><div class="field"><label>席数</label><input id="sSeats" type="number" placeholder="40"></div><div></div></div>
       <div class="fr"><div class="field"><label>食べログ URL</label><input id="sTabelog" type="url" placeholder="https://tabelog.com/..."></div><div class="field"><label>公式 HP</label><input id="sHp" type="url" placeholder="https://..."></div></div>
-      <div class="fr1 field"><label>ハッシュタグ <span style="font-size:11px;color:var(--text3);font-weight:400">キャプション用（#付きで空白区切り）</span></label><input id="sHashtags" type="text" placeholder="#梅田グルメ #居酒屋 #もつ焼き"></div>
+      <div class="fr"><div class="field"><label>エリア名 <span style="font-size:11px;color:var(--text3);font-weight:400">ハッシュタグ用</span></label><input id="sHashArea" type="text" placeholder="例: 梅田"></div><div class="field"><label>追加ハッシュタグ <span style="font-size:11px;color:var(--text3);font-weight:400">店舗ごとの2つ（#付き・空白区切り）</span></label><input id="sHashtags" type="text" placeholder="#もつ焼き #ホルモン"></div></div>
+      <div style="font-size:11px;color:var(--text3);margin:-4px 0 10px">キャプションには「#エリア名グルメ #エリア名＋業種 #店名」が自動で入り、その後ろに追加ハッシュタグが続きます。</div>
       <div class="fr1 field"><label>備考</label><textarea id="sMemo" placeholder="特記事項..."></textarea></div>
       <div class="fr1 field"><label>⚠️ 注意点</label><textarea id="sCaution" placeholder="対応時に気をつけてほしいこと（例：担当変更予定あり、クレーム歴あり、定休日変則、など）"></textarea></div>
     </div>
@@ -1794,25 +1795,25 @@
 </div>
 
 
-<script src="js/vendor/pizzip.min.js?v=174"></script>
-<script src="js/vendor/docxtemplater.min.js?v=174"></script>
-<script src="js/vendor/xlsx.full.min.js?v=174"></script>
-<script src="js/config.js?v=174"></script>
-<script src="js/db.js?v=174"></script>
-<script src="js/utils.js?v=174"></script>
-<script src="js/settings.js?v=174"></script>
-<script src="js/stores.js?v=174"></script>
-<script src="js/schedule.js?v=174"></script>
-<script src="js/casting.js?v=174"></script>
-<script src="js/check.js?v=174"></script>
-<script src="js/accounting.js?v=174"></script>
-<script src="js/plans.js?v=174"></script>
-<script src="js/creators.js?v=174"></script>
-<script src="js/corps.js?v=174"></script>
-<script src="js/faqs.js?v=174"></script>
-<script src="js/orders.js?v=174"></script>
-<script src="js/hearing.js?v=174"></script>
-<script src="js/dashboard.js?v=174"></script>
-<script src="js/app.js?v=174"></script>
+<script src="js/vendor/pizzip.min.js?v=175"></script>
+<script src="js/vendor/docxtemplater.min.js?v=175"></script>
+<script src="js/vendor/xlsx.full.min.js?v=175"></script>
+<script src="js/config.js?v=175"></script>
+<script src="js/db.js?v=175"></script>
+<script src="js/utils.js?v=175"></script>
+<script src="js/settings.js?v=175"></script>
+<script src="js/stores.js?v=175"></script>
+<script src="js/schedule.js?v=175"></script>
+<script src="js/casting.js?v=175"></script>
+<script src="js/check.js?v=175"></script>
+<script src="js/accounting.js?v=175"></script>
+<script src="js/plans.js?v=175"></script>
+<script src="js/creators.js?v=175"></script>
+<script src="js/corps.js?v=175"></script>
+<script src="js/faqs.js?v=175"></script>
+<script src="js/orders.js?v=175"></script>
+<script src="js/hearing.js?v=175"></script>
+<script src="js/dashboard.js?v=175"></script>
+<script src="js/app.js?v=175"></script>
 </body>
 </html>

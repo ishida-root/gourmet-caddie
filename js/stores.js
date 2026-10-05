@@ -237,6 +237,18 @@ function hoursToText(val){
   return(common?common+'\n':'')+lines.join(' / ');
 }
 
+/* ハッシュタグ：「#エリア名グルメ」「#エリア名＋業種」「#店名」を自動生成し、
+   店舗ごとに登録した追加ハッシュタグを後ろに並べる（エリア名・業種が未入力なら該当タグは省く） */
+function storeHashtags(s){
+  var strip=function(v){return String(v||'').replace(/[\s　#＃|｜・]/g,'');};
+  var area=strip(s.hashArea),genre=strip(s.genre),name=strip(s.name);
+  var tags=[];
+  if(area)tags.push('#'+area+'グルメ');
+  if(area&&genre)tags.push('#'+area+genre);
+  if(name)tags.push('#'+name);
+  var extra=String(s.hashtags||'').trim();
+  return tags.join(' ')+(extra?(tags.length?' ':'')+extra:'');
+}
 /* 店舗情報のキャプション文（Instagram投稿用）を作る。足りない項目は行ごと省く */
 function buildStoreCaption(s){
   var line='──────────────';
@@ -251,7 +263,8 @@ function buildStoreCaption(s){
   if(s.tabelog)parts.push('🍴'+s.tabelog);
   parts.push(line);
   var out=parts.join('\n');
-  if(s.hashtags)out+='\n\n'+s.hashtags;
+  var tags=storeHashtags(s);
+  if(tags)out+='\n\n'+tags;
   return out;
 }
 function openStoreCaption(id){
@@ -274,7 +287,7 @@ function copyStoreCaption(){
 }
 
 function clearStoreForm(){
-  ['sName','sPref','sArea','sSeats','sTabelog','sHp','sMemo','sCaution','sIg','sIgFollowers','sFb','sTw','sTt','sYt','sMetaId','sCreator','sContractStart','sMonthlyFee','sDiscountPercent','sDiscountNote','sContactName','sContactRole','sContactLine','sSetupMemo','sNextAction','sNegotiatingMemo','sShopTel','sHashtags','sHours','sHoliday'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+  ['sName','sPref','sArea','sSeats','sTabelog','sHp','sMemo','sCaution','sIg','sIgFollowers','sFb','sTw','sTt','sYt','sMetaId','sCreator','sContractStart','sMonthlyFee','sDiscountPercent','sDiscountNote','sContactName','sContactRole','sContactLine','sSetupMemo','sNextAction','sNegotiatingMemo','sShopTel','sHashArea','sHashtags','sHours','sHoliday'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('sGenre').value='';
   var scorp=document.getElementById('sCorpId');if(scorp)scorp.value='';
   document.getElementById('sMetaExp').value='none';
@@ -353,6 +366,7 @@ function openStoreModal(id){
       document.getElementById('sHours').value=hoursToText(s.hours||'');
       document.getElementById('sHoliday').value=s.holiday||'';
       document.getElementById('sShopTel').value=s.shopTel||'';
+      document.getElementById('sHashArea').value=s.hashArea||'';
       document.getElementById('sHashtags').value=s.hashtags||'';
       showPlanPreview();
       if(s.hearing){Object.keys(s.hearing).forEach(function(k){var el=document.getElementById(k);if(el)el.value=s.hearing[k]||'';});}
@@ -463,6 +477,7 @@ function saveStore(){
     hours:document.getElementById('sHours').value,
     holiday:document.getElementById('sHoliday').value,
     shopTel:document.getElementById('sShopTel').value.trim(),
+    hashArea:document.getElementById('sHashArea').value.trim(),
     hashtags:document.getElementById('sHashtags').value.trim(),
     seats:document.getElementById('sSeats').value,
     tabelog:document.getElementById('sTabelog').value,
@@ -779,7 +794,7 @@ function showDetail(id){
       +row('店舗電話',s.shopTel)
       +row('営業時間',hoursDisplay)
       +row('定休日',s.holiday)
-      +row('ハッシュタグ',s.hashtags)
+      +row('ハッシュタグ',storeHashtags(s))
       +row('席数',s.seats?s.seats+'席':null)
       +row('食べログ',s.tabelog,true)
       +row('公式HP',s.hp,true)
