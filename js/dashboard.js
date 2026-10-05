@@ -136,7 +136,7 @@ function openSalesCompleteModal(s,sales,plan,negotiating){
   var planName=plan?plan.name:'未設定';
   var notifyPromise=negotiating
     ?notifyChatworkNegotiating(s.name,sales)
-    :notifyChatwork(s.name,planName,sales,s.contactName,s.contactTel,s.contactEmail,s.corp);
+    :notifyChatwork(s.name,planName,sales,s.contactName,s.corp);
   notifyPromise.then(function(results){
     if(!statusEl)return;
     if(!results.length){statusEl.style.background='var(--bg3)';statusEl.style.color='var(--text2)';statusEl.textContent='SNS局への通知設定がありません（設定画面をご確認ください）';return;}

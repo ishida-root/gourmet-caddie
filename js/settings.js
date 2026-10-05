@@ -122,13 +122,11 @@ async function ghDispatch(roomId,message,type,toIds){
   }catch(e){return false;}
 }
 
-function buildSnsMessage(storeName,plan,salesBy,contactName,tel,email){
+function buildSnsMessage(storeName,plan,salesBy,contactName){
   return '[To:11138491][To:2904189]\n[info][title]📢 新規契約店舗 登録通知[/title]'
     +'\n店舗名：'+storeName
     +'\nプラン：'+plan
     +(contactName?'\n担当者：'+contactName:'')
-    +(tel?'\nTEL：'+tel:'')
-    +(email?'\nメール：'+email:'')
     +'\n営業担当：'+salesBy
     +'\n\n初期設定の準備をお願いします！[/info]';
 }
@@ -148,6 +146,34 @@ async function notifyChatworkNegotiating(storeName,salesBy){
     results.push({to:'SNS局',ok:ok});
   }
   return results;
+}
+/* 店舗情報の電話番号・メール（contactTel / contactEmail）を、保存済みの全店舗から完全に削除する。
+   入力欄は廃止済みで、今後は保存されない。既存分だけをここで一括消去する（ishida本人のみ実行可）。
+   元に戻せないため、削除前の内容をJSONバックアップとしてダウンロードしてから消す。 */
+async function purgeStoreContactInfo(){
+  var statusEl=document.getElementById('purgeContactStatus');
+  var setStatus=function(msg,color){if(statusEl){statusEl.textContent=msg;statusEl.style.color=color||'var(--text2)';}};
+  if(!(currentUser&&currentUser.email==='ishida@root-and-activation.co.jp'))return;
+  var targets=DB.stores.filter(function(s){return s.contactTel||s.contactEmail;});
+  if(!targets.length){setStatus('削除対象（電話番号・メールが入っている店舗）はありませんでした。','var(--green)');return;}
+  if(!confirm(targets.length+'店舗の電話番号・メールをデータベースから完全に削除します。\n元に戻せません。\n\n先に削除前の内容をバックアップファイルとして保存します。実行しますか？'))return;
+  var backup=targets.map(function(s){return{id:s.id,name:s.name,contactTel:s.contactTel||'',contactEmail:s.contactEmail||''};});
+  var blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='store_contact_backup_'+new Date().toISOString().slice(0,10)+'.json';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  setTimeout(function(){URL.revokeObjectURL(a.href);},1000);
+  if(!confirm('バックアップを保存しました。本当に削除を実行しますか？'))return;
+  var done=0;
+  for(var i=0;i<targets.length;i++){
+    delete targets[i].contactTel;
+    delete targets[i].contactEmail;
+    setStatus('削除中… '+(i+1)+' / '+targets.length);
+    await saveItem('stores',targets[i]);
+    done++;
+  }
+  setStatus('✓ '+done+'店舗から電話番号・メールを削除しました。バックアップファイルは安全な場所に保管するか、不要なら破棄してください。','var(--green)');
 }
 function buildCsTaskBody(corpName,storeName,planName,salesBy){
   return '◆'+(salesBy||'')
@@ -222,13 +248,13 @@ async function notifyFaqQuestion(question,askedBy,category){
 
 /* 楽々販売登録の運用を見直し中のため、CS宛タスク作成は一旦停止（SNS局への通知は継続） */
 var CW_CS_TASK_ENABLED=false;
-async function notifyChatwork(storeName,plan,salesBy,contactName,tel,email,corpName){
+async function notifyChatwork(storeName,plan,salesBy,contactName,corpName){
   var s=getCwSettings();
   var snsRoom=CW_SNS_ROOM||(s.snsRoomId||'');
   var csRoom=CW_CS_ROOM||(s.csRoomId||'');
   var results=[];
   if(snsRoom){
-    var snsMsg=buildSnsMessage(storeName,plan,salesBy,contactName,tel,email);
+    var snsMsg=buildSnsMessage(storeName,plan,salesBy,contactName);
     var ok1=await ghDispatch(snsRoom,snsMsg,'message','');
     results.push({to:'SNS局',ok:ok1});
   }
@@ -248,7 +274,7 @@ async function testChatwork(){
   var s=getCwSettings();
   if(!s.ghPat){statusEl.innerHTML='<span style="color:var(--red)">✗ GitHub Personal Access Tokenを入力してください</span>';return;}
   if(!s.snsRoomId&&!s.csRoomId){statusEl.innerHTML='<span style="color:var(--red)">✗ ルームIDを少なくとも1つ入力してください</span>';return;}
-  var results=await notifyChatwork('テスト店舗','パタープラン','テスト営業','テスト担当者','090-0000-0000','test@example.com','テスト法人');
+  var results=await notifyChatwork('テスト店舗','パタープラン','テスト営業','テスト担当者','テスト法人');
   var allOk=results.every(function(r){return r.ok;});
   var detail=results.map(function(r){return r.to+':'+(r.ok?'✓':'✗');}).join(' / ');
   statusEl.innerHTML=allOk
@@ -259,7 +285,7 @@ async function testChatwork(){
 function renderCwPreview(){
   var el=document.getElementById('cwPreview');
   if(!el)return;
-  var snsMsg=buildSnsMessage('◯◯焼肉 渋谷店','アイアンプラン','山田 花子','店長 鈴木','090-XXXX-XXXX','suzuki@example.com');
+  var snsMsg=buildSnsMessage('◯◯焼肉 渋谷店','アイアンプラン','山田 花子','店長 鈴木');
   el.textContent='【SNS局 → メッセージ】\n'+snsMsg;
 }
 

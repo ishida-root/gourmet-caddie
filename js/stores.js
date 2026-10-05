@@ -498,7 +498,7 @@ function formatHoursSummary(hoursVal){
 }
 
 function clearStoreForm(){
-  ['sName','sPref','sArea','sSeats','sTabelog','sHp','sMemo','sCaution','sIg','sIgFollowers','sFb','sTw','sTt','sYt','sMetaId','sCreator','sContractStart','sMonthlyFee','sDiscountPercent','sDiscountNote','sContactName','sContactRole','sContactTel','sContactEmail','sContactLine','sSetupMemo','sNextAction','sNegotiatingMemo'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+  ['sName','sPref','sArea','sSeats','sTabelog','sHp','sMemo','sCaution','sIg','sIgFollowers','sFb','sTw','sTt','sYt','sMetaId','sCreator','sContractStart','sMonthlyFee','sDiscountPercent','sDiscountNote','sContactName','sContactRole','sContactLine','sSetupMemo','sNextAction','sNegotiatingMemo'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('sGenre').value='';
   var scorp=document.getElementById('sCorpId');if(scorp)scorp.value='';
   document.getElementById('sHours').value='';
@@ -572,7 +572,7 @@ function openStoreModal(id){
   if(id){
     var s=DB.stores.find(function(x){return x.id===id;});
     if(s){
-      var map={sName:'name',sCorpId:'corpId',sGenre:'genre',sPref:'pref',sArea:'area',sZip:'zip',sSeats:'seats',sTabelog:'tabelog',sHp:'hp',sMemo:'memo',sCaution:'caution',sIg:'ig',sIgFollowers:'igFollowers',sFb:'fb',sTw:'tw',sTt:'tt',sYt:'yt',sMetaId:'metaId',sMetaExp:'metaExp',sCreator:'creator',sContractStart:'contractStart',sContractTerm:'contractTerm',sMonthlyFee:'monthlyFee',sDiscountPercent:'discountPercent',sDiscountNote:'discountNote',sStatus:'status',sContactName:'contactName',sContactRole:'contactRole',sContactTel:'contactTel',sContactEmail:'contactEmail',sContactLine:'contactLine',sOurManager:'ourManager',sReviewCycle:'reviewCycle',sVideos:'videos',sAdDelivery:'adDelivery',sSetupMemo:'setupMemo',sPlanId:'planId'};
+      var map={sName:'name',sCorpId:'corpId',sGenre:'genre',sPref:'pref',sArea:'area',sZip:'zip',sSeats:'seats',sTabelog:'tabelog',sHp:'hp',sMemo:'memo',sCaution:'caution',sIg:'ig',sIgFollowers:'igFollowers',sFb:'fb',sTw:'tw',sTt:'tt',sYt:'yt',sMetaId:'metaId',sMetaExp:'metaExp',sCreator:'creator',sContractStart:'contractStart',sContractTerm:'contractTerm',sMonthlyFee:'monthlyFee',sDiscountPercent:'discountPercent',sDiscountNote:'discountNote',sStatus:'status',sContactName:'contactName',sContactRole:'contactRole',sContactLine:'contactLine',sOurManager:'ourManager',sReviewCycle:'reviewCycle',sVideos:'videos',sAdDelivery:'adDelivery',sSetupMemo:'setupMemo',sPlanId:'planId'};
       Object.keys(map).forEach(function(elId){var el=document.getElementById(elId);if(el&&s[map[elId]]!==undefined)el.value=s[map[elId]];});
       if(document.getElementById('sOurManager')&&!document.getElementById('sOurManager').value&&s.salesBy){
         document.getElementById('sOurManager').value=s.salesBy;
@@ -711,8 +711,6 @@ function saveStore(){
     status:document.getElementById('sStatus').value,
     contactName:document.getElementById('sContactName').value,
     contactRole:document.getElementById('sContactRole').value,
-    contactTel:document.getElementById('sContactTel').value,
-    contactEmail:document.getElementById('sContactEmail').value,
     contactLine:document.getElementById('sContactLine').value,
     ourManager:document.getElementById('sOurManager').value,
     reviewCycle:document.getElementById('sReviewCycle').value,
@@ -765,7 +763,7 @@ function saveStore(){
     var planName=plan?plan.name:'未設定';
     notifyChatwork(
       s.name,planName,s.ourManager||'',
-      s.contactName||'',s.contactTel||'',s.contactEmail||'',
+      s.contactName||'',
       s.corp||''
     ).then(function(results){
       if(results.length){
@@ -1015,8 +1013,6 @@ function showDetail(id){
     +(corp||s.contactName?'<div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:8px">連絡先</div><div style="margin-bottom:14px">'
       +(corp?row('法人',corp.name):'')
       +row('担当者',(s.contactName||'')+(s.contactRole?' ('+s.contactRole+')':''))
-      +row('電話',s.contactTel)
-      +row('メール',s.contactEmail)
       +row('LINE',s.contactLine)
     +'</div>':'')
 

@@ -65,18 +65,6 @@ function updateCorpSelects(){
   if(nb)nb.textContent=DB.corporations.length;
 }
 
-function onCorpSelect(){
-  var corpId=document.getElementById('sCorpId').value;
-  if(!corpId)return;
-  var corp=DB.corporations.find(function(x){return x.id===corpId;});
-  if(!corp)return;
-  /* 契約タブの連絡先に自動引用（空欄のときのみ） */
-  var tel=document.getElementById('sContactTel');
-  var email=document.getElementById('sContactEmail');
-  if(tel&&!tel.value&&corp.tel)tel.value=corp.tel;
-  if(email&&!email.value&&corp.email)email.value=corp.email;
-}
-
 function openCorpDetail(id){
   var corp=DB.corporations.find(function(x){return x.id===id;});
   if(!corp)return;

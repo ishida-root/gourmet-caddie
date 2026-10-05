@@ -50,6 +50,8 @@ function navigate(page){
     loadChatworkSettings();renderCwPreview();loadUserList();loadTaxRateSetting();
     var ghCard=document.getElementById('ghPatCard');
     if(ghCard)ghCard.style.display=(currentUser&&currentUser.email==='ishida@root-and-activation.co.jp')?'':'none';
+    var purgeCard=document.getElementById('purgeContactCard');
+    if(purgeCard)purgeCard.style.display=(currentUser&&currentUser.email==='ishida@root-and-activation.co.jp')?'':'none';
   }
   if(page==='sales'){updateSalesPlanSelect();updateSalesPersonSelects();updateSalesExistingStoreSelect();}
   if(page==='dashboard')renderDashboard();
