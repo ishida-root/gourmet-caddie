@@ -1130,24 +1130,20 @@ function invFlowFor(inv){return inv.payeeType==='ad'?INV_FLOW_RECEIVABLE:INV_FLO
 /* 決済完了（支払い済み or 入金確認済み） */
 function invSettled(inv){return inv.payeeType==='ad'?inv.status==='received':inv.status==='done';}
 
+/* 進捗は「現在の状況」のバッジだけを表示する。次の段階がある場合は、バッジをクリックして
+   次へ進められる（従来の「薄く表示された次のステップをクリック」と同じ操作を現在のバッジに集約） */
 function renderInvFlow(inv){
   var FLOW=invFlowFor(inv);
   var cur=inv.status||'pending';
-  var curIdx=FLOW.findIndex(function(s){return s.key===cur;});
-  return'<div style="display:flex;align-items:center;gap:3px">'
-    +FLOW.map(function(step,i){
-      var done=i<=curIdx;
-      var isNext=i===curIdx+1;
-      var style='font-size:12px;padding:3px 7px;border-radius:5px;border:1px solid;white-space:nowrap;'
-        +'background:'+(done?step.bg:'var(--bg3)')
-        +';color:'+(done?step.color:'var(--text3)')
-        +';border-color:'+(done?step.border:'var(--border)')
-        +(isNext?';cursor:pointer;opacity:0.7':'');
-      var click=isNext?'onclick="advanceInvFlow(\''+inv.id+'\',\''+step.key+'\')"':'';
-      return'<span style="'+style+'" '+click+' title="'+(isNext?'クリックで次へ':'')+'">'+step.icon+' '+step.label+'</span>'
-        +(i<FLOW.length-1?'<span style="color:var(--text3);font-size:11px">›</span>':'');
-    }).join('')
-  +'</div>';
+  var curIdx=Math.max(0,FLOW.findIndex(function(s){return s.key===cur;}));
+  var step=FLOW[curIdx];
+  var next=FLOW[curIdx+1];
+  var style='font-size:12px;padding:3px 7px;border-radius:5px;border:1px solid;white-space:nowrap;'
+    +'background:'+step.bg+';color:'+step.color+';border-color:'+step.border
+    +(next?';cursor:pointer':'');
+  var click=next?' onclick="advanceInvFlow(\''+inv.id+'\',\''+next.key+'\')"':'';
+  var title=next?'クリックで「'+next.label+'」へ進める':'';
+  return'<span style="'+style+'"'+click+' title="'+title+'">'+step.icon+' '+step.label+'</span>';
 }
 
 /* 今後1週間のインフルエンサー来店予定：社内全体が一目で「何日何時に誰が来るか」を把握できるように */
