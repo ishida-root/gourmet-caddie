@@ -1285,6 +1285,11 @@ function advanceInvFlow(invId,newStatus){
   if(!DB.invoices)return;
   var inv=DB.invoices.find(function(x){return x.id===invId;});
   if(!inv)return;
+  /* 押し間違いで状況が進んでしまわないよう、確認ポップアップを挟む */
+  var FLOW=invFlowFor(inv);
+  var curStep=FLOW.find(function(s){return s.key===(inv.status||'pending');});
+  var nextStep=FLOW.find(function(s){return s.key===newStatus;});
+  if(!confirm('進捗を「'+(curStep?curStep.label:'')+'」から「'+(nextStep?nextStep.label:newStatus)+'」に進めますか？'))return;
   inv.status=newStatus;
   saveItem('invoices',inv);
   renderAccounting();
