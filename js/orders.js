@@ -44,21 +44,30 @@ function onOrderStoreChange(){
   if(sel.value)subjectEl.value=storeName(sel.value)+'　PR動画作成';
 }
 
-/* 発注番号の次候補（localStorageの連番。手動上書き可） */
+/* 発注番号「GC-年-連番」から、指定年の連番部分を取り出す（形式が違う・別の年なら0） */
+function orderSeqOf(num,year){
+  var m=String(num||'').match(/^GC-(\d{4})-(\d+)\s*$/);
+  return(m&&parseInt(m[1],10)===year)?parseInt(m[2],10):0;
+}
+/* 発注番号の次候補。連番は全端末共通の発注記録（DB.orders）の最大値から決める
+   （以前は端末ごとのlocalStorageだけだったため、別端末や連続作成で同じ番号が重複した）。
+   同じ端末で記録を削除しても番号が戻らないよう、localStorageの値も下限として併用する。手動上書き可。 */
 function orderNextNumber(){
-  var seq=0;
-  try{seq=parseInt(localStorage.getItem('gc_order_seq')||'0',10)||0;}catch(e){}
   var year=(new Date()).getFullYear();
+  var seq=0;
+  (DB.orders||[]).forEach(function(o){seq=Math.max(seq,orderSeqOf(o.number,year));});
+  try{seq=Math.max(seq,parseInt(localStorage.getItem('gc_order_seq_'+year)||'0',10)||0);}catch(e){}
   return 'GC-'+year+'-'+String(seq+1).padStart(4,'0');
 }
 /* 生成成功時に連番をコミット（手動上書き値も反映して単調増加を維持） */
 function orderCommitNumber(num){
   try{
-    var m=String(num||'').match(/(\d+)\s*$/);
-    if(!m)return;
-    var n=parseInt(m[1],10);
-    var cur=parseInt(localStorage.getItem('gc_order_seq')||'0',10)||0;
-    if(n>cur)localStorage.setItem('gc_order_seq',String(n));
+    var year=(new Date()).getFullYear();
+    var n=orderSeqOf(num,year);
+    if(!n)return;
+    var key='gc_order_seq_'+year;
+    var cur=parseInt(localStorage.getItem(key)||'0',10)||0;
+    if(n>cur)localStorage.setItem(key,String(n));
   }catch(e){}
 }
 
@@ -189,6 +198,12 @@ async function generateOrder(){
   if(!creator){setStatus('受託者名を入力してください','var(--red)');return;}
 
   var number=val('orderNumber');
+  /* 手動で入力した番号などが既存の発注記録と重複している場合は、作成前に確認する */
+  var dup=number&&(DB.orders||[]).find(function(o){return o.number===number;});
+  if(dup&&!confirm('発注番号「'+number+'」は既に使われています（'+(dup.subject||dup.creatorName||'')+'）。\nこのまま作成すると番号が重複します。作成しますか？')){
+    setStatus('発注番号を確認してください','var(--amber)');
+    return;
+  }
 
   /* 業務報酬：税別入力なら税込金額（10%）に換算してWordには常に「税込」で記載 */
   var feeDigits=val('orderFee').replace(/[^\d]/g,'');
@@ -255,12 +270,64 @@ async function generateOrder(){
     DB.orders.push(rec);
     saveItem('orders',rec);
 
+    /* 続けて作成しても同じ番号にならないよう、番号欄を次の番号に更新しておく */
+    var numEl=document.getElementById('orderNumber');
+    if(numEl)numEl.value=orderNextNumber();
     setStatus('✓ ダウンロードしました：'+fname,'var(--green)');
   }catch(e){
     console.error('[generateOrder]',e);
     var msg=(e&&e.properties&&e.properties.errors)?'テンプレートのプレースホルダにエラーがあります':(e.message||'生成に失敗しました');
     setStatus('エラー: '+msg,'var(--red)');
   }
+}
+
+/* 既存の発注記録で重複している発注番号だけを直す（ishida本人のみ実行可）。
+   同じ番号が複数ある場合、先に作成された1件はそのまま残し、後から作られた分を
+   その年の空いている次の連番に振り直す。発行済みWordの番号と変わる分は一覧で確認でき、
+   実行前に変更内容をJSONでバックアップする。再DLするWordにも新しい番号が入る。 */
+async function fixDuplicateOrderNumbers(){
+  var statusEl=document.getElementById('fixOrderNumStatus');
+  var setStatus=function(msg,color){if(statusEl){statusEl.textContent=msg;statusEl.style.color=color||'var(--text2)';}};
+  if(!(currentUser&&currentUser.email==='ishida@root-and-activation.co.jp'))return;
+  var orders=DB.orders||[];
+  var parse=function(num){return String(num||'').match(/^GC-(\d{4})-(\d+)\s*$/);};
+  var maxSeq={};
+  var byNum={};
+  orders.forEach(function(o){
+    var m=parse(o.number);
+    if(!m)return;
+    maxSeq[m[1]]=Math.max(maxSeq[m[1]]||0,parseInt(m[2],10));
+    (byNum[o.number]=byNum[o.number]||[]).push(o);
+  });
+  var changes=[];
+  Object.keys(byNum).forEach(function(num){
+    var list=byNum[num];
+    if(list.length<2)return;
+    var year=parse(num)[1];
+    list.sort(function(a,b){return new Date(a.createdAt)-new Date(b.createdAt);});
+    list.slice(1).forEach(function(o){
+      maxSeq[year]+=1;
+      changes.push({rec:o,from:o.number,to:'GC-'+year+'-'+String(maxSeq[year]).padStart(4,'0')});
+    });
+  });
+  if(!changes.length){setStatus('重複している発注番号はありませんでした。','var(--green)');return;}
+  var list=changes.map(function(c){return c.from+' → '+c.to+'（'+(c.rec.subject||c.rec.creatorName||'')+'）';}).join('\n');
+  if(!confirm('次の'+changes.length+'件の発注番号を振り直します。\n\n'+list+'\n\n先に変更前の内容をバックアップファイルとして保存します。実行しますか？'))return;
+  var backup=changes.map(function(c){return{id:c.rec.id,subject:c.rec.subject||'',creatorName:c.rec.creatorName||'',oldNumber:c.from,newNumber:c.to};});
+  var blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='order_number_fix_backup_'+new Date().toISOString().slice(0,10)+'.json';
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  setTimeout(function(){URL.revokeObjectURL(a.href);},1000);
+  for(var i=0;i<changes.length;i++){
+    var c=changes[i];
+    c.rec.number=c.to;
+    if(c.rec.templateData)c.rec.templateData.発注番号=c.to;
+    setStatus('更新中… '+(i+1)+' / '+changes.length);
+    await saveItem('orders',c.rec);
+  }
+  setStatus('✓ '+changes.length+'件の発注番号を連番に振り直しました。','var(--green)');
 }
 
 /* 保存済みの発注記録から.docxを再ダウンロード */

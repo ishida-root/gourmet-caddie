@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=177">
+<link rel="stylesheet" href="css/app.css?v=178">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -532,6 +532,14 @@
             <button class="btn" style="color:var(--red);border-color:var(--red-border)" onclick="purgeStoreContactInfo()">削除を実行</button>
           </div>
           <div id="purgeContactStatus" style="font-size:13px;margin-top:8px"></div>
+        </div>
+        <div class="card" id="fixOrderNumCard">
+          <div class="card-header"><span class="card-title">🔢 発注番号の重複を直す <span style="font-size:11px;color:var(--text3);font-weight:400">管理者のみ</span></span></div>
+          <div style="font-size:13px;color:var(--text3);margin-bottom:12px">同じ発注番号が複数ある場合、先に作成された1件はそのままにして、後から作られた分をその年の空いている次の連番に振り直します。変更される番号は実行前の確認画面で一覧表示され、変更前の内容はバックアップファイル（JSON）として保存されます。すでに渡したWordに印字された番号とは変わる分があります。</div>
+          <div style="display:flex;gap:8px;justify-content:flex-end">
+            <button class="btn" onclick="fixDuplicateOrderNumbers()">確認して実行</button>
+          </div>
+          <div id="fixOrderNumStatus" style="font-size:13px;margin-top:8px"></div>
         </div>
         <div class="card">
           <div class="card-header"><span class="card-title">👥 ユーザー管理</span></div>
@@ -1795,25 +1803,25 @@
 </div>
 
 
-<script src="js/vendor/pizzip.min.js?v=177"></script>
-<script src="js/vendor/docxtemplater.min.js?v=177"></script>
-<script src="js/vendor/xlsx.full.min.js?v=177"></script>
-<script src="js/config.js?v=177"></script>
-<script src="js/db.js?v=177"></script>
-<script src="js/utils.js?v=177"></script>
-<script src="js/settings.js?v=177"></script>
-<script src="js/stores.js?v=177"></script>
-<script src="js/schedule.js?v=177"></script>
-<script src="js/casting.js?v=177"></script>
-<script src="js/check.js?v=177"></script>
-<script src="js/accounting.js?v=177"></script>
-<script src="js/plans.js?v=177"></script>
-<script src="js/creators.js?v=177"></script>
-<script src="js/corps.js?v=177"></script>
-<script src="js/faqs.js?v=177"></script>
-<script src="js/orders.js?v=177"></script>
-<script src="js/hearing.js?v=177"></script>
-<script src="js/dashboard.js?v=177"></script>
-<script src="js/app.js?v=177"></script>
+<script src="js/vendor/pizzip.min.js?v=178"></script>
+<script src="js/vendor/docxtemplater.min.js?v=178"></script>
+<script src="js/vendor/xlsx.full.min.js?v=178"></script>
+<script src="js/config.js?v=178"></script>
+<script src="js/db.js?v=178"></script>
+<script src="js/utils.js?v=178"></script>
+<script src="js/settings.js?v=178"></script>
+<script src="js/stores.js?v=178"></script>
+<script src="js/schedule.js?v=178"></script>
+<script src="js/casting.js?v=178"></script>
+<script src="js/check.js?v=178"></script>
+<script src="js/accounting.js?v=178"></script>
+<script src="js/plans.js?v=178"></script>
+<script src="js/creators.js?v=178"></script>
+<script src="js/corps.js?v=178"></script>
+<script src="js/faqs.js?v=178"></script>
+<script src="js/orders.js?v=178"></script>
+<script src="js/hearing.js?v=178"></script>
+<script src="js/dashboard.js?v=178"></script>
+<script src="js/app.js?v=178"></script>
 </body>
 </html>
