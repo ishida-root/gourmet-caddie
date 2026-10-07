@@ -342,6 +342,24 @@ async function redownloadOrder(orderId){
   }
 }
 
+/* 依頼がキャンセルになった発注書：記録は削除せず「キャンセル」扱いにする。
+   記録が残るので、その発注番号は使用済みのまま（次の番号の計算にも含まれ、再利用されない）。 */
+function toggleOrderCancelled(orderId){
+  var rec=(DB.orders||[]).find(function(x){return x.id===orderId;});
+  if(!rec)return;
+  var msg=rec.cancelled
+    ?'「'+rec.number+'」のキャンセルを解除しますか？'
+    :'「'+rec.number+'」をキャンセル扱いにしますか？\n（記録は残り、この発注番号は使用済みのままになります）';
+  if(!confirm(msg))return;
+  rec.cancelled=!rec.cancelled;
+  saveItem('orders',rec);
+  if(rec.storeId&&document.getElementById('detailModal')&&document.getElementById('detailModal').classList.contains('open')){
+    showDetail(rec.storeId);
+  }else if(rec.creatorId&&document.getElementById('creatorDetailModal')&&document.getElementById('creatorDetailModal').classList.contains('open')){
+    openCreatorDetail(rec.creatorId);
+  }
+}
+
 function deleteOrder(orderId){
   if(!confirm('この発注記録を削除しますか？（ダウンロード済みのWordファイルには影響しません）'))return;
   var rec=(DB.orders||[]).find(function(x){return x.id===orderId;});
@@ -362,12 +380,14 @@ function renderOrderHistoryHtml(list){
   return'<div style="border-top:1px solid var(--border);margin-top:12px;padding-top:12px">'
     +'<div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:8px">📄 発注書履歴 ('+sorted.length+'件)</div>'
     +sorted.map(function(o){
-      return'<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--bg3);border-radius:var(--r);margin-bottom:4px">'
+      return'<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--bg3);border-radius:var(--r);margin-bottom:4px'+(o.cancelled?';opacity:.55':'')+'">'
         +'<span style="font-size:12px;color:var(--text3);white-space:nowrap">'+esc(o.number||'')+'</span>'
+        +(o.cancelled?'<span class="badge b-red" style="white-space:nowrap">🚫 キャンセル</span>':'')
         +'<span style="font-size:13px;color:var(--text2);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(o.subject||(o.creatorName?o.creatorName+'様':''))+'</span>'
         +(o.feeAmount?'<span style="font-size:12px;color:var(--accent);white-space:nowrap">¥'+Number(o.feeAmount).toLocaleString()+'</span>':'')
         +'<span style="font-size:11px;color:var(--text3);white-space:nowrap">'+fmtD((o.createdAt||'').split('T')[0])+'</span>'
         +'<button class="btn btn-sm" style="white-space:nowrap" onclick="event.stopPropagation();redownloadOrder(\''+o.id+'\')">再DL</button>'
+        +'<button class="btn btn-sm" style="white-space:nowrap" onclick="event.stopPropagation();toggleOrderCancelled(\''+o.id+'\')">'+(o.cancelled?'キャンセル解除':'キャンセル')+'</button>'
         +'<button class="btn-ghost-danger" style="white-space:nowrap" onclick="event.stopPropagation();deleteOrder(\''+o.id+'\')">削除</button>'
       +'</div>';
     }).join('')

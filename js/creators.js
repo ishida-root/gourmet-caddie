@@ -1,8 +1,12 @@
 ﻿var editingCreatorId=null;
 
-var CR_STATUS_LABELS={none:'未依頼',requesting:'依頼中',scheduling:'日程調整中',confirmed:'来店確定',editing:'編集中',delivered:'納品済み',cancelled:'キャンセル'};
-var CR_STATUS_BADGE={none:'b-gray',requesting:'b-blue',scheduling:'b-amber',confirmed:'b-green',editing:'b-purple',delivered:'b-green',cancelled:'b-red'};
-/* クリエイター編集モーダル：複数店舗の同時依頼状況を管理する行リスト */
+/* 依頼状況は「依頼している店舗」だけを登録する（ステータスの選択は廃止）。
+   過去に登録済みの行は、保存されているステータスに応じて次のように表示する：
+   依頼中系（依頼中・日程調整中・来店確定・編集中）＝店舗名 / 納品済み＝過去の依頼として店舗名 /
+   キャンセル＝🚫付きでグレーアウト / 未依頼＝「—」（表示しない） */
+var CR_ACTIVE_STATUSES=['requesting','scheduling','confirmed','editing'];
+var CR_PAST_LABELS={delivered:'納品済み',cancelled:'キャンセル',none:'未依頼'};
+/* クリエイター編集モーダル：複数店舗の同時依頼を管理する行リスト */
 var _crRequestRows=[];
 
 function crStoreOptionsHtml(selectedId){
@@ -16,12 +20,10 @@ function renderCreatorRequestRows(){
   if(!wrap)return;
   if(!_crRequestRows.length){wrap.innerHTML='<div style="font-size:12px;color:var(--text3);margin-bottom:8px">依頼中の店舗はありません</div>';return;}
   wrap.innerHTML=_crRequestRows.map(function(r,i){
-    return'<div class="fr" style="align-items:flex-end;margin-bottom:8px">'
-      +'<div class="field"><label>店舗</label><select onchange="updateCreatorRequestField('+i+',\'storeId\',this.value)">'+crStoreOptionsHtml(r.storeId)+'</select></div>'
-      +'<div class="field"><label>ステータス</label><select onchange="updateCreatorRequestField('+i+',\'status\',this.value)">'
-        +Object.keys(CR_STATUS_LABELS).map(function(k){return'<option value="'+k+'"'+(k===r.status?' selected':'')+'>'+CR_STATUS_LABELS[k]+'</option>';}).join('')
-      +'</select></div>'
-      +(r.status==='confirmed'?'<div class="field"><label>来店確定日</label><input type="date" value="'+esc(r.visitDate||'')+'" onchange="updateCreatorRequestField('+i+',\'visitDate\',this.value)"></div>':'')
+    var past=CR_PAST_LABELS[r.status];
+    return'<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'
+      +'<select style="flex:1" onchange="updateCreatorRequestField('+i+',\'storeId\',this.value)">'+crStoreOptionsHtml(r.storeId)+'</select>'
+      +(past?'<span class="badge b-gray" style="white-space:nowrap">'+(r.status==='none'?'—':past)+'</span>':'')
       +'<button type="button" class="btn-ghost-danger btn-sm" onclick="removeCreatorRequestRow('+i+')">削除</button>'
     +'</div>';
   }).join('');
@@ -38,17 +40,16 @@ function removeCreatorRequestRow(idx){
 function updateCreatorRequestField(idx,field,value){
   if(!_crRequestRows[idx])return;
   _crRequestRows[idx][field]=value;
-  if(field==='status')renderCreatorRequestRows();
 }
 
-/* 依頼中の店舗をまとめてバッジ表示（一覧・詳細で共用） */
+/* 依頼している店舗をバッジ表示（一覧・詳細で共用）。未依頼の行は表示しない */
 function crRequestsBadgesHtml(cr){
-  var reqs=(cr.crRequests||[]).filter(function(r){return r.status;});
-  if(!reqs.length)return'';
+  var reqs=(cr.crRequests||[]).filter(function(r){return r.status&&r.status!=='none';});
   return reqs.map(function(r){
-    var label=(r.storeId?storeName(r.storeId)+'：':'')+(CR_STATUS_LABELS[r.status]||r.status);
-    if(r.status==='confirmed'&&r.visitDate)label+=' '+fmtD(r.visitDate);
-    return'<span class="badge '+(CR_STATUS_BADGE[r.status]||'b-gray')+'">'+esc(label)+'</span>';
+    var label=r.storeId?storeName(r.storeId):'店舗未指定';
+    if(r.status==='cancelled')return'<span class="badge b-gray" style="opacity:.55;text-decoration:line-through">🚫 '+esc(label)+'</span>';
+    if(r.status==='delivered')return'<span class="badge b-gray">'+esc(label)+'</span>';
+    return'<span class="badge b-blue">'+esc(label)+'</span>';
   }).join(' ');
 }
 var CREATOR_SKILL_LABELS={crSkillPlan:'企画',crSkillShoot:'撮影',crSkillEdit:'編集',crSkillAnalyze:'投稿分析',crSkillFood:'外食知見',crSkillCooking:'料理撮影',crSkillStill:'フィード作成',crSkillComm:'コミュニケーション'};
