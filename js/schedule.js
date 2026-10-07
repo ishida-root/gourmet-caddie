@@ -1,6 +1,42 @@
 ﻿var editingPostId=null;
+/* 投稿確認・再生数の記録状態（保存まで一時保持） */
+var _pRec={};
+function _fmtRecDate(d){return d?d.replace(/-/g,'/'):'';}
+function _renderPostRec(){
+  var chk=document.querySelector('input[name="pPrRadio"]:checked');
+  var pr=chk?chk.value:'';
+  var q=function(i){return document.getElementById(i);};
+  q('pPrCheckedInfo').textContent=_pRec.prCheckedDate?'確認日 '+_fmtRecDate(_pRec.prCheckedDate):'';
+  q('pPrFixRow').style.display=pr==='no'?'':'none';
+  q('pPrFixInfo').textContent=_pRec.prFixRequestedDate?'依頼日 '+_fmtRecDate(_pRec.prFixRequestedDate):'';
+  q('pGoodInfo').textContent=_pRec.goodPointNotifiedDate?'連絡日 '+_fmtRecDate(_pRec.goodPointNotifiedDate):'';
+  var h=_pRec.viewsHistory||[];
+  q('pViewsHist').textContent=h.length?'履歴：'+h.map(function(x){return _fmtRecDate(x.date)+' '+Number(x.views).toLocaleString();}).join(' ／ '):'';
+}
+function onPrRadioChange(){
+  var chk=document.querySelector('input[name="pPrRadio"]:checked');
+  _pRec.prDisplay=chk?chk.value:'';
+  if(_pRec.prDisplay!==_pRec.prOrig){_pRec.prCheckedDate=jstToday();}
+  if(_pRec.prDisplay==='yes')_pRec.prFixRequestedDate='';
+  _renderPostRec();
+}
+function markPrFixRequested(){_pRec.prFixRequestedDate=jstToday();_renderPostRec();}
+function onGoodNotifiedChange(){
+  var on=document.getElementById('pGoodNotified').checked;
+  _pRec.goodPointNotifiedDate=on?(_pRec.goodOrigDate||jstToday()):'';
+  _renderPostRec();
+}
 function openPostModal(id){
   editingPostId=id||null;
+  _pRec={};
+  var _op=id?DB.posts.find(function(x){return x.id===id;}):null;
+  if(_op){
+    _pRec={prDisplay:_op.prDisplay||'',prOrig:_op.prDisplay||'',prCheckedDate:_op.prCheckedDate||'',prFixRequestedDate:_op.prFixRequestedDate||'',goodPointNotifiedDate:_op.goodPointNotifiedDate||'',goodOrigDate:_op.goodPointNotifiedDate||'',viewsHistory:(_op.viewsHistory||[]).slice()};
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('input[name="pPrRadio"]'),function(r){r.checked=(r.value===(_pRec.prDisplay||'__none__'));});
+  document.getElementById('pGoodNotified').checked=!!_pRec.goodPointNotifiedDate;
+  document.getElementById('pViews').value=_op&&_op.views!==undefined&&_op.views!==''?_op.views:'';
+  _renderPostRec();
   updatePostStoreSelect();
   /* クリエイターselectを構築 */
   var crSel=document.getElementById('pCreatorId');
@@ -131,6 +167,7 @@ function onPostTypeChange(){
   var isInf=val==='inf_visit'||val==='inf_post'||val==='inf_draft';
   document.getElementById('pInfRow').style.display=isInf?'':'none';
   document.getElementById('pPostFields').style.display=isInf?'none':'';
+  document.getElementById('pPrCheck').style.display=val==='inf_post'?'':'none';
   var titleEl=document.getElementById('postModalTitle');
   if(titleEl){
     if(val==='inf_visit')titleEl.textContent='来店予定を追加';
@@ -195,6 +232,27 @@ function savePost(){
     p.ad=document.getElementById('pAd').value;
     p.budget=document.getElementById('pBudget').value;
     var _crSel=document.getElementById('pCreatorId');p.creatorId=_crSel?_crSel.value:'';
+  }
+  /* 投稿確認（inf_postのみ）・再生数の履歴 */
+  if(type==='inf_post'){
+    var prChk=document.querySelector('input[name="pPrRadio"]:checked');
+    p.prDisplay=prChk?prChk.value:'';
+    p.prCheckedDate=p.prDisplay?(_pRec.prCheckedDate||jstToday()):'';
+    p.prFixRequestedDate=p.prDisplay==='no'?(_pRec.prFixRequestedDate||''):'';
+    var gn=document.getElementById('pGoodNotified').checked;
+    p.goodPointNotified=gn;
+    p.goodPointNotifiedDate=gn?(_pRec.goodPointNotifiedDate||jstToday()):'';
+  }
+  var vRaw=document.getElementById('pViews').value;
+  p.viewsHistory=(_pRec.viewsHistory||[]).slice();
+  if(vRaw!==''){
+    var vNum=Number(vRaw);
+    var lastV=p.viewsHistory[p.viewsHistory.length-1];
+    if(!lastV||lastV.views!==vNum){
+      if(lastV&&lastV.date===jstToday())lastV.views=vNum;else p.viewsHistory.push({date:jstToday(),views:vNum});
+    }
+    p.views=vNum;
+    p.viewsDate=p.viewsHistory[p.viewsHistory.length-1].date;
   }
   if(isEdit){
     var idx=DB.posts.findIndex(function(x){return x.id===id;});

@@ -38,6 +38,7 @@ function openInvoiceModal(id,opts){
   var taxExcl=document.querySelector('input[name="invTaxKindRadio"][value="excl"]');if(taxExcl)taxExcl.checked=true;
   document.getElementById('invReceivedDate').value='';
   document.getElementById('invStatus').value='pending';
+  var acctReset=document.getElementById('invAcctDate');if(acctReset)acctReset.value='';
   document.getElementById('invTotal').textContent='¥0';
   document.getElementById('invCastingId').value='';
   document.getElementById('invIsEstimate').checked=false;
@@ -55,6 +56,7 @@ function openInvoiceModal(id,opts){
       storeSel.value=inv.storeId||'';
       document.getElementById('invReceivedDate').value=inv.receivedDate||'';
       document.getElementById('invStatus').value=inv.status||'pending';
+      var acctFill=document.getElementById('invAcctDate');if(acctFill)acctFill.value=inv.accountingSubmittedDate||'';
       document.getElementById('invPrFee').value=inv.prFee||'';
       document.getElementById('invTransport').value=inv.transport||'';
       document.getElementById('invFood').value=inv.food||'';
@@ -276,6 +278,15 @@ function saveInvoice(){
       note:document.getElementById('invNote').value
     };
   }
+  /* 進捗の変更履歴・経理申請日（既存の値を引き継ぎ、変更があれば履歴に追記） */
+  var oldInv=isEdit?DB.invoices.find(function(x){return x.id===id;}):null;
+  var newStatus=inv.status;
+  inv.statusHistory=oldInv&&oldInv.statusHistory?oldInv.statusHistory.slice():[];
+  inv.accountingSubmittedDate=oldInv&&oldInv.accountingSubmittedDate||'';
+  inv.status=oldInv?(oldInv.status||'pending'):'';
+  setInvStatus(inv,newStatus);
+  var acctEl=document.getElementById('invAcctDate');
+  if(acctEl&&acctEl.value!==(oldInv&&oldInv.accountingSubmittedDate||''))inv.accountingSubmittedDate=acctEl.value;
   /* 税区分・税率（全種別共通）：税別／税込／不課税の3択ボタンから決定 */
   var kindEl=document.querySelector('input[name="invTaxKindRadio"]:checked');
   var kind=kindEl?kindEl.value:'excl';

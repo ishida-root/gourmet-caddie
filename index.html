@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=180">
+<link rel="stylesheet" href="css/app.css?v=182">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -218,7 +218,7 @@
           </div>
         </div>
         <div id="negotiatingBox" style="display:none;margin-bottom:16px;padding:12px 14px;background:var(--accent-bg);border:1px solid var(--accent-border);border-radius:var(--r)"></div>
-        <div class="table-wrap"><table><thead><tr><th>店舗名</th><th>業種</th><th>契約プラン</th><th>原価</th><th>契約期間</th><th>店舗担当</th><th>弊社担当</th><th>INF</th><th>今月請求</th><th>前月振返</th><th>案件進捗</th><th>ステータス</th><th></th></tr></thead><tbody id="storeTableBody"></tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>店舗名</th><th>業種</th><th>契約プラン</th><th>原価</th><th style="cursor:pointer" title="クリックで満了日順に並べ替え" onclick="toggleStoreEndSort()">契約期間／満了日 <span id="storeEndSortMark">⇅</span></th><th>店舗担当</th><th>弊社担当</th><th>INF</th><th>今月請求</th><th>前月振返</th><th>案件進捗</th><th>ステータス</th><th></th></tr></thead><tbody id="storeTableBody"></tbody></table></div>
       </div>
     </div>
 
@@ -723,6 +723,9 @@
     </div>
     <div class="tab-pane" id="stab2">
       <div class="fr"><div class="field"><label>契約開始日</label><div style="display:flex;gap:4px;align-items:center" id="sContractStartWrap"></div><input type="hidden" id="sContractStart"></div><div class="field"><label>契約期間</label><select id="sContractTerm"><option value="1">1ヶ月</option><option value="3">3ヶ月</option><option value="6">6ヶ月</option><option value="12">12ヶ月</option></select></div></div>
+      <div class="fr"><div class="field"><label>店舗の目標</label><select id="sGoalType"><option value="">（未設定）</option><option value="visit">来店増</option><option value="awareness">認知拡大</option><option value="other">その他</option></select></div><div class="field"><label>目標の補足（自由記述）</label><input id="sGoalNote" type="text" placeholder="例：平日ランチの来店を増やしたい"></div></div>
+      <div id="sGoalDateInfo" style="font-size:11px;color:var(--text3);margin:-6px 0 10px"></div>
+      <div class="fr1 field"><label>成果報告・更新提案の準備完了日<span style="color:var(--text3);font-weight:400"> 準備ができたら日付を入力（契約満了の2か月前が準備期限）</span></label><input type="date" id="sRenewalPrepDone"></div>
       <div class="fr1 field"><label>契約プラン</label><select id="sPlanId" onchange="onPlanSelect()"><option value="">プランを選択（任意）</option></select><div style="font-size:12px;color:var(--text3);margin-top:4px" id="sPlanPreview"></div></div>
       <div class="fr"><div class="field"><label>割引率（%）<span style="color:var(--text3);font-weight:400"> 系列複数店舗一括契約など</span></label><input id="sDiscountPercent" type="number" min="0" max="100" placeholder="例: 10" oninput="onPlanSelect()"></div><div class="field"><label>割引理由（任意）</label><input id="sDiscountNote" type="text" placeholder="例: 系列3店舗同時契約"></div></div>
       <div class="fr"><div class="field"><label>月額費用（円）<span style="color:var(--text3);font-weight:400"> ※プラン選択で自動入力（割引適用後）</span></label><input id="sMonthlyFee" type="number" placeholder="150000"></div><div class="field"><label>ステータス</label><select id="sStatus" onchange="onStoreStatusChange()"><option value="negotiating">商談中</option><option value="pending">準備中</option><option value="active">稼働中</option><option value="ended">終了</option></select></div></div>
@@ -884,6 +887,24 @@
       <div class="fr"><div class="field"><label>クリエイティブファイル名</label><input id="pCreative" type="text" placeholder="例: 渋谷店_v2.mp4"></div><div class="field"><label>広告配信</label><select id="pAd"><option value="yes">あり</option><option value="no">なし</option></select></div></div>
       <div class="fr"><div class="field"><label>広告予算（円 / 日）</label><input id="pBudget" type="number" placeholder="3000"></div><div class="field"></div></div>
     </div>
+    <div id="pPrCheck" style="display:none;border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:12px">
+      <div style="font-size:12px;font-weight:700;margin-bottom:6px">📋 投稿確認</div>
+      <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center;font-size:13px">
+        <span>PR表示：</span>
+        <label><input type="radio" name="pPrRadio" value="yes" onchange="onPrRadioChange()"> あり</label>
+        <label><input type="radio" name="pPrRadio" value="no" onchange="onPrRadioChange()"> なし</label>
+        <span id="pPrCheckedInfo" style="font-size:11px;color:var(--text2)"></span>
+      </div>
+      <div id="pPrFixRow" style="display:none;margin-top:8px;font-size:13px">
+        <button type="button" class="btn" onclick="markPrFixRequested()">✉️ 修正を依頼した</button>
+        <span id="pPrFixInfo" style="font-size:11px;color:var(--text2);margin-left:6px"></span>
+      </div>
+      <div style="margin-top:8px;font-size:13px">
+        <label><input type="checkbox" id="pGoodNotified" onchange="onGoodNotifiedChange()"> 良かった点を本人へ連絡した</label>
+        <span id="pGoodInfo" style="font-size:11px;color:var(--text2);margin-left:6px"></span>
+      </div>
+    </div>
+    <div class="fr1 field"><label>再生数（更新のたびに日付つきで履歴を残します）</label><input id="pViews" type="number" min="0" placeholder="例: 12000"><div id="pViewsHist" style="font-size:11px;color:var(--text2);margin-top:4px"></div></div>
     <div class="fr1 field"><label>メモ</label><input id="pNote" type="text" placeholder="備考・LP URLなど"></div>
     <div class="form-actions"><button class="btn" onclick="closeModal('postModal')">キャンセル</button><button class="btn btn-primary" onclick="savePost()">保存</button></div>
   </div>
@@ -1188,6 +1209,10 @@
           <option value="accounting_submitted">📊 経理申請</option>
           <option value="done">💸 支払い済み</option>
         </select>
+      </div>
+      <div class="field">
+        <label>経理申請日（ステータスを経理申請にすると自動記録・手動で修正可）</label>
+        <input type="date" id="invAcctDate">
       </div>
     </div>
     <div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:14px;margin-bottom:10px">
@@ -1592,6 +1617,7 @@
   </div>
   <div class="modal-body">
     <div class="fr1 field"><label>質問 *</label><input id="faqQuestion" type="text" placeholder="例：支払方法について"></div>
+    <div class="fr1 field"><label>質問を受けた日</label><input id="faqQuestionDate" type="date"></div>
     <div class="fr1 field"><label>カテゴリ（任意）</label><input id="faqCategory" type="text" list="faqCategoryList" placeholder="例：支払い、契約、素材など"></div>
     <div class="fr1 field"><label>回答 *</label><textarea id="faqAnswer" placeholder="回答内容を入力..." style="min-height:100px"></textarea></div>
     <div class="form-actions">
@@ -1820,25 +1846,25 @@
 </div>
 
 
-<script src="js/vendor/pizzip.min.js?v=180"></script>
-<script src="js/vendor/docxtemplater.min.js?v=180"></script>
-<script src="js/vendor/xlsx.full.min.js?v=180"></script>
-<script src="js/config.js?v=180"></script>
-<script src="js/db.js?v=180"></script>
-<script src="js/utils.js?v=180"></script>
-<script src="js/settings.js?v=180"></script>
-<script src="js/stores.js?v=180"></script>
-<script src="js/schedule.js?v=180"></script>
-<script src="js/casting.js?v=180"></script>
-<script src="js/check.js?v=180"></script>
-<script src="js/accounting.js?v=180"></script>
-<script src="js/plans.js?v=180"></script>
-<script src="js/creators.js?v=180"></script>
-<script src="js/corps.js?v=180"></script>
-<script src="js/faqs.js?v=180"></script>
-<script src="js/orders.js?v=180"></script>
-<script src="js/hearing.js?v=180"></script>
-<script src="js/dashboard.js?v=180"></script>
-<script src="js/app.js?v=180"></script>
+<script src="js/vendor/pizzip.min.js?v=182"></script>
+<script src="js/vendor/docxtemplater.min.js?v=182"></script>
+<script src="js/vendor/xlsx.full.min.js?v=182"></script>
+<script src="js/config.js?v=182"></script>
+<script src="js/db.js?v=182"></script>
+<script src="js/utils.js?v=182"></script>
+<script src="js/settings.js?v=182"></script>
+<script src="js/stores.js?v=182"></script>
+<script src="js/schedule.js?v=182"></script>
+<script src="js/casting.js?v=182"></script>
+<script src="js/check.js?v=182"></script>
+<script src="js/accounting.js?v=182"></script>
+<script src="js/plans.js?v=182"></script>
+<script src="js/creators.js?v=182"></script>
+<script src="js/corps.js?v=182"></script>
+<script src="js/faqs.js?v=182"></script>
+<script src="js/orders.js?v=182"></script>
+<script src="js/hearing.js?v=182"></script>
+<script src="js/dashboard.js?v=182"></script>
+<script src="js/app.js?v=182"></script>
 </body>
 </html>

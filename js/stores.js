@@ -287,6 +287,8 @@ function copyStoreCaption(){
 }
 
 function clearStoreForm(){
+  ['sGoalType','sGoalNote','sRenewalPrepDone'].forEach(function(i){var e=document.getElementById(i);if(e)e.value='';});
+  var gdi=document.getElementById('sGoalDateInfo');if(gdi)gdi.textContent='';
   ['sName','sPref','sArea','sSeats','sTabelog','sHp','sMemo','sCaution','sIg','sIgFollowers','sFb','sTw','sTt','sYt','sMetaId','sCreator','sContractStart','sMonthlyFee','sDiscountPercent','sDiscountNote','sContactName','sContactRole','sContactLine','sSetupMemo','sNextAction','sNegotiatingMemo','sShopTel','sHashArea','sHashtags','sHours','sHoliday'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
   document.getElementById('sGenre').value='';
   var scorp=document.getElementById('sCorpId');if(scorp)scorp.value='';
@@ -318,6 +320,7 @@ function renderStoreContractRows(){
       +'<div class="field"><label style="font-size:12px">プラン</label><select onchange="updateStoreContractField('+i+',\'planId\',this.value)">'+storeContractPlanOptionsHtml(r.planId)+'</select></div>'
       +'<div class="field"><label style="font-size:12px">金額（円）</label><input type="number" value="'+esc(r.monthlyFee||'')+'" oninput="updateStoreContractField('+i+',\'monthlyFee\',this.value)"></div>'
       +'<div class="field"><label style="font-size:12px">契約開始日</label><input type="date" value="'+esc(r.contractStart||'')+'" onchange="updateStoreContractField('+i+',\'contractStart\',this.value)"></div>'
+      +'<div class="field"><label style="font-size:12px">契約月数</label><input type="number" min="1" value="'+esc(r.contractTerm||'')+'" placeholder="空欄可" oninput="updateStoreContractField('+i+',\'contractTerm\',this.value)"></div>'
       +'<div class="field"><label style="font-size:12px">ステータス</label><select onchange="updateStoreContractField('+i+',\'status\',this.value)"><option value="active"'+(r.status==='active'?' selected':'')+'>契約中</option><option value="ended"'+(r.status==='ended'?' selected':'')+'>終了</option></select></div>'
       +'<button type="button" class="btn-ghost-danger btn-sm" onclick="removeStoreContractRow('+i+')">削除</button>'
     +'</div>';
@@ -355,11 +358,12 @@ function openStoreModal(id){
   if(id){
     var s=DB.stores.find(function(x){return x.id===id;});
     if(s){
-      var map={sName:'name',sCorpId:'corpId',sGenre:'genre',sPref:'pref',sArea:'area',sZip:'zip',sSeats:'seats',sTabelog:'tabelog',sHp:'hp',sMemo:'memo',sCaution:'caution',sIg:'ig',sIgFollowers:'igFollowers',sFb:'fb',sTw:'tw',sTt:'tt',sYt:'yt',sMetaId:'metaId',sMetaExp:'metaExp',sCreator:'creator',sContractStart:'contractStart',sContractTerm:'contractTerm',sMonthlyFee:'monthlyFee',sDiscountPercent:'discountPercent',sDiscountNote:'discountNote',sStatus:'status',sContactName:'contactName',sContactRole:'contactRole',sContactLine:'contactLine',sOurManager:'ourManager',sReviewCycle:'reviewCycle',sVideos:'videos',sAdDelivery:'adDelivery',sSetupMemo:'setupMemo',sPlanId:'planId'};
+      var map={sName:'name',sCorpId:'corpId',sGenre:'genre',sPref:'pref',sArea:'area',sZip:'zip',sSeats:'seats',sTabelog:'tabelog',sHp:'hp',sMemo:'memo',sCaution:'caution',sIg:'ig',sIgFollowers:'igFollowers',sFb:'fb',sTw:'tw',sTt:'tt',sYt:'yt',sMetaId:'metaId',sMetaExp:'metaExp',sCreator:'creator',sContractStart:'contractStart',sContractTerm:'contractTerm',sMonthlyFee:'monthlyFee',sDiscountPercent:'discountPercent',sDiscountNote:'discountNote',sStatus:'status',sContactName:'contactName',sContactRole:'contactRole',sContactLine:'contactLine',sOurManager:'ourManager',sReviewCycle:'reviewCycle',sVideos:'videos',sAdDelivery:'adDelivery',sSetupMemo:'setupMemo',sPlanId:'planId',sGoalType:'storeGoalType',sGoalNote:'storeGoalNote',sRenewalPrepDone:'renewalPrepDoneDate'};
       Object.keys(map).forEach(function(elId){var el=document.getElementById(elId);if(el&&s[map[elId]]!==undefined)el.value=s[map[elId]];});
       if(document.getElementById('sOurManager')&&!document.getElementById('sOurManager').value&&s.salesBy){
         document.getElementById('sOurManager').value=s.salesBy;
       }
+      var gdi2=document.getElementById('sGoalDateInfo');if(gdi2)gdi2.textContent=s.storeGoalRecordedDate?'目標の初回入力日：'+s.storeGoalRecordedDate:'';
       /* 退職済み担当者の表示 */
       refreshManagerDisplay(s);
       /* 営業時間・定休日・公開電話・ハッシュタグを復元（旧形式の営業時間データは文章へ変換） */
@@ -508,6 +512,10 @@ function saveStore(){
     adDelivery:document.getElementById('sAdDelivery').value,
     setupMemo:document.getElementById('sSetupMemo').value,
     planId:document.getElementById('sPlanId').value,
+    storeGoalType:document.getElementById('sGoalType').value,
+    storeGoalNote:document.getElementById('sGoalNote').value,
+    storeGoalRecordedDate:existing&&existing.storeGoalRecordedDate||'',
+    renewalPrepDoneDate:document.getElementById('sRenewalPrepDone').value,
     rakurakuRegistered:existing?existing.rakurakuRegistered:false,
     infContract:existing?existing.infContract:false,
     hearing:{hIssue:(function(){var e=document.getElementById('hIssue');return e?e.value:'';})(),hTargetWant:(function(){var e=document.getElementById('hTargetWant');return e?e.value:'';})(),hTargetNow:(function(){var e=document.getElementById('hTargetNow');return e?e.value:'';})(),hTiming:(function(){var e=document.getElementById('hTiming');return e?e.value:'';})(),hIdealCustomer:(function(){var e=document.getElementById('hIdealCustomer');return e?e.value:'';})(),hStrength:(function(){var e=document.getElementById('hStrength');return e?e.value:'';})(),hArea:(function(){var e=document.getElementById('hArea');return e?e.value:'';})(),hIgPurpose:(function(){var e=document.getElementById('hIgPurpose');return e?e.value:'';})(),hMenu:(function(){var e=document.getElementById('hMenu');return e?e.value:'';})(),hKpi:(function(){var e=document.getElementById('hKpi');return e?e.value:'';})(),hTargetAge:(function(){var e=document.getElementById('hTargetAge');return e?e.value:'';})(),hTargetGender:(function(){var e=document.getElementById('hTargetGender');return e?e.value:'';})(),hTargetRegion:(function(){var e=document.getElementById('hTargetRegion');return e?e.value:'';})(),hTargetInterest:(function(){var e=document.getElementById('hTargetInterest');return e?e.value:'';})(),hRefAccount:(function(){var e=document.getElementById('hRefAccount');return e?e.value:'';})(),hNg:(function(){var e=document.getElementById('hNg');return e?e.value:'';})(),hPastAd:(function(){var e=document.getElementById('hPastAd');return e?e.value:'';})(),hAccMgr:(function(){var e=document.getElementById('hAccMgr');return e?e.value:'';})(),hLoginShare:(function(){var e=document.getElementById('hLoginShare');return e?e.value:'';})(),hFbPage:(function(){var e=document.getElementById('hFbPage');return e?e.value:'';})(),hInPost:(function(){var e=document.getElementById('hInPost');return e?e.value:'';})(),hDmMgr:(function(){var e=document.getElementById('hDmMgr');return e?e.value:'';})(),hPostContent:(function(){var e=document.getElementById('hPostContent');return e?e.value:'';})(),hPostFlow:(function(){var e=document.getElementById('hPostFlow');return e?e.value:'';})(),hApprovalDays:(function(){var e=document.getElementById('hApprovalDays');return e?e.value:'';})(),hPhotoAsset:(function(){var e=document.getElementById('hPhotoAsset');return e?e.value:'';})(),hVideoAsset:(function(){var e=document.getElementById('hVideoAsset');return e?e.value:'';})(),hNewShoot:(function(){var e=document.getElementById('hNewShoot');return e?e.value:'';})(),hLogo:(function(){var e=document.getElementById('hLogo');return e?e.value:'';})(),hPastAsset:(function(){var e=document.getElementById('hPastAsset');return e?e.value:'';})(),hTonmana:(function(){var e=document.getElementById('hTonmana');return e?e.value:'';})(),hAdIg:(function(){var e=document.getElementById('hAdIg');return e?e.value:'';})(),hAdStart:(function(){var e=document.getElementById('hAdStart');return e?e.value:'';})(),hAdBudget:(function(){var e=document.getElementById('hAdBudget');return e?e.value:'';})(),hLpUrl:(function(){var e=document.getElementById('hLpUrl');return e?e.value:'';})(),hInfStart:(function(){var e=document.getElementById('hInfStart');return e?e.value:'';})(),hInfEnd:(function(){var e=document.getElementById('hInfEnd');return e?e.value:'';})(),hInfCount:(function(){var e=document.getElementById('hInfCount');return e?e.value:'';})(),hInfGenre:(function(){var e=document.getElementById('hInfGenre');return e?e.value:'';})(),hInfFollowers:(function(){var e=document.getElementById('hInfFollowers');return e?e.value:'';})(),hInfMust:(function(){var e=document.getElementById('hInfMust');return e?e.value:'';})(),hHashtag:(function(){var e=document.getElementById('hHashtag');return e?e.value:'';})(),hOpStart:(function(){var e=document.getElementById('hOpStart');return e?e.value:'';})(),hShootDate:(function(){var e=document.getElementById('hShootDate');return e?e.value:'';})(),hPostStart:(function(){var e=document.getElementById('hPostStart');return e?e.value:'';})(),hAdStart2:(function(){var e=document.getElementById('hAdStart2');return e?e.value:'';})(),hInfPostDate:(function(){var e=document.getElementById('hInfPostDate');return e?e.value:'';})(),hOther:(function(){var e=document.getElementById('hOther');return e?e.value:'';})()},
@@ -525,6 +533,8 @@ function saveStore(){
     castingPackages:castingPkgs,
     mainPlanAutoPkgId:mainAutoPkgId||''
   };
+  /* 店舗の目標を初めて入力した日（以後は変えない） */
+  if(!s.storeGoalRecordedDate&&(s.storeGoalType||s.storeGoalNote))s.storeGoalRecordedDate=jstToday();
   if(isEdit){
     var idx=DB.stores.findIndex(function(x){return x.id===id;});
     if(idx>=0){DB.stores[idx]=s;}else{DB.stores.push(s);}
@@ -586,6 +596,28 @@ function deleteStore(id){
   refreshAll();
   deleteItem('stores',id);
 }
+/* 契約満了日（開始日＋契約月数）と準備期限（満了日の2か月前）。既存のcontractEndDateを使用 */
+var _storeEndSort='';
+function _ymdLocal(d){return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());}
+function storeEndStr(s){var d=contractEndDate(s);return d&&!isNaN(d)?_ymdLocal(d):'';}
+function storePrepDeadlineStr(s){var d=contractEndDate(s);if(!d||isNaN(d))return'';var p=new Date(d.getTime());p.setMonth(p.getMonth()-2);return _ymdLocal(p);}
+function storeEndCellHtml(s){
+  var out='';
+  var e=storeEndStr(s);
+  if(e){
+    var prep=storePrepDeadlineStr(s);
+    var todayS=jstToday();
+    var warn=!s.renewalPrepDoneDate&&prep&&prep<=todayS&&e>=todayS;
+    out+='<div style="font-size:11px;color:var(--text2)">満了 '+e+'</div><div style="font-size:11px;color:'+(warn?'var(--red)':'var(--text3)')+'">準備期限 '+prep+(s.renewalPrepDoneDate?' ✓準備完了':(warn?' ⚠':''))+'</div>';
+  }
+  (s.additionalContracts||[]).forEach(function(r){
+    if(!r.contractStart||!r.contractTerm)return;
+    var d=contractEndDate(r);
+    if(d&&!isNaN(d))out+='<div style="font-size:11px;color:var(--text3)">追加契約 満了 '+_ymdLocal(d)+'</div>';
+  });
+  return out;
+}
+function toggleStoreEndSort(){_storeEndSort=_storeEndSort===''?'asc':_storeEndSort==='asc'?'desc':'';renderStoreTable();}
 function renderStoreTable(){
   var filter=document.getElementById('filterStatus').value;
   var search=(document.getElementById('globalSearch').value||'').toLowerCase();
@@ -641,6 +673,14 @@ function renderStoreTable(){
   if(!list.length&&!negList.length){tb.innerHTML='<tr><td colspan="13" class="empty-state">店舗がありません</td></tr>';return;}
   if(!list.length){tb.innerHTML='';return;}
   var metaLabels={none:'—',basic:'<span class="badge b-amber">基礎あり</span>',advanced:'<span class="badge b-green">豊富</span>'};
+  if(_storeEndSort){
+    list=list.slice().sort(function(a,b){
+      var ea=storeEndStr(a),eb=storeEndStr(b);
+      if(!ea&&!eb)return 0;if(!ea)return 1;if(!eb)return -1;
+      return _storeEndSort==='asc'?ea.localeCompare(eb):eb.localeCompare(ea);
+    });
+  }
+  var mk=document.getElementById('storeEndSortMark');if(mk)mk.textContent=_storeEndSort==='asc'?'▲':_storeEndSort==='desc'?'▼':'⇅';
   tb.innerHTML=list.map(function(s){
     var pct=progressPct(s);
     var plan=s.planId?DB.plans.find(function(x){return x.id===s.planId;}):null;
@@ -663,7 +703,7 @@ function renderStoreTable(){
       +'<td>'+esc(s.genre||'—')+'</td>'
       +'<td>'+planCell+'</td>'
       +'<td>'+costCell+'</td>'
-      +'<td class="td-mono">'+(s.contractStart||'—')+'<div style="font-size:11px;color:var(--text3)">'+(s.contractTerm?s.contractTerm+'ヶ月':'')+'</div></td>'
+      +'<td class="td-mono">'+(s.contractStart||'—')+'<div style="font-size:11px;color:var(--text3)">'+(s.contractTerm?s.contractTerm+'ヶ月':'')+'</div>'+storeEndCellHtml(s)+'</td>'
       +'<td>'+esc(s.contactName||'—')+'</td>'
       +'<td>'+mgrCell+'</td>'
       +'<td><button class="btn btn-sm" style="font-size:11px;padding:2px 8px;'+(s.infContract?'background:var(--purple-bg);color:var(--purple);border-color:var(--purple-border)':'background:var(--bg3);color:var(--text2)')+'" onclick="event.stopPropagation();toggleInfContract(\''+s.id+'\')">'+(s.infContract?'👤 あり':'なし')+'</button></td>'
@@ -772,6 +812,8 @@ function showDetail(id){
             +'<span>'+esc(p?p.name:'（プラン未設定）')+'</span>'
             +(r.monthlyFee?'<span style="color:var(--text3)">'+fmtMoney(r.monthlyFee)+'</span>':'')
             +(r.contractStart?'<span style="color:var(--text3)">'+fmtD(r.contractStart)+'〜</span>':'')
+            +(r.contractTerm?'<span style="color:var(--text3)">'+esc(r.contractTerm)+'ヶ月</span>':'')
+            +(function(){var d=(r.contractStart&&r.contractTerm)?contractEndDate(r):null;return d&&!isNaN(d)?'<span style="color:var(--text3)">満了 '+_ymdLocal(d)+'</span>':'';})()
           +'</div>';
         }).join('')
       +'</div>';
@@ -817,6 +859,10 @@ function showDetail(id){
       +row('クリエイター',(function(){var cr=DB.creators.find(function(x){return x.id===s.creator;});return cr?cr.crName:(s.creator||'—');})())
       +row('契約開始',s.contractStart)
       +row('契約期間',s.contractTerm?s.contractTerm+'ヶ月':null)
+      +row('契約満了日',storeEndStr(s)||null)
+      +row('更新提案の準備期限',storePrepDeadlineStr(s)||null)
+      +row('成果報告・更新提案の準備完了日',s.renewalPrepDoneDate||null)
+      +row('店舗の目標',(function(){var L={visit:'来店増',awareness:'認知拡大',other:'その他'};var t=(L[s.storeGoalType]||'')+(s.storeGoalNote?(s.storeGoalType?'：':'')+s.storeGoalNote:'');return t||null;})())
       +row('Meta広告ID',s.metaId)
       +row('Meta経験',s.metaExp==='none'?null:s.metaExp)
     +'</div>'

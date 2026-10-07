@@ -1275,7 +1275,7 @@ function markInvDone(invId){
   if(!DB.invoices)return;
   var inv=DB.invoices.find(function(x){return x.id===invId;});
   if(!inv)return;
-  inv.status=inv.payeeType==='ad'?'received':'done';
+  setInvStatus(inv,inv.payeeType==='ad'?'received':'done');
   saveItem('invoices',inv);
   refreshAll();
   if(currentPage==='accounting')renderAccounting();
@@ -1290,7 +1290,7 @@ function advanceInvFlow(invId,newStatus){
   var curStep=FLOW.find(function(s){return s.key===(inv.status||'pending');});
   var nextStep=FLOW.find(function(s){return s.key===newStatus;});
   if(!confirm('進捗を「'+(curStep?curStep.label:'')+'」から「'+(nextStep?nextStep.label:newStatus)+'」に進めますか？'))return;
-  inv.status=newStatus;
+  setInvStatus(inv,newStatus);
   saveItem('invoices',inv);
   renderAccounting();
 }
@@ -2269,6 +2269,7 @@ function saveCasting(){
     taxKind:(document.querySelector('input[name="cTaxKindRadio"]:checked')||{}).value||'excl',
     transport:document.getElementById('cTransport')?document.getElementById('cTransport').value:'',
     liaisonNeeded:!!prevRecord.liaisonNeeded,
+    reminders:(prevRecord.reminders||[]).slice(),
     reschedules:reschedules
   };
   if(isEdit){
@@ -3065,9 +3066,72 @@ function openCastingDetail(id){
           +'<div style="color:var(--text3);margin-bottom:4px">🔗 投稿URL</div>'
           +entries.map(function(e){return'<div style="overflow-wrap:anywhere;padding:2px 0"><span style="color:var(--text3)">'+esc(e.label)+'：</span><a href="'+esc(e.url)+'" target="_blank" rel="noopener" style="color:var(--accent)">'+esc(e.url)+'</a></div>';}).join('')
         +'</div>';
-      })();
+      })()
+      +'<div id="castReminderBox" style="margin-top:12px"></div>';
+    renderCastReminders(c.id);
   }
   openModal('castDetailModal');
+}
+
+/* リマインド送付の記録（1件のキャスティングに複数回記録できる。例：1週間前・前日）
+   送付先（店舗／インフルエンサー）と送付手段（任意）を残し、日付は後から修正できる */
+var CAST_REMINDER_TARGETS={store:'店舗',influencer:'インフルエンサー'};
+function renderCastReminders(castId){
+  var box=document.getElementById('castReminderBox');
+  if(!box)return;
+  var c=DB.castings.find(function(x){return x.id===castId;});
+  if(!c)return;
+  var canEdit=canEditCasting();
+  var list=c.reminders||[];
+  var h='<div style="padding:10px 12px;background:var(--bg3);border-radius:var(--r);font-size:12px">'
+    +'<div style="color:var(--text3);margin-bottom:6px">🔔 リマインド送付の記録</div>';
+  if(!list.length)h+='<div style="color:var(--text3);padding:2px 0">まだ記録がありません</div>';
+  list.forEach(function(r){
+    h+='<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:3px 0">'
+      +(canEdit
+        ?'<input type="date" value="'+esc(r.date||'')+'" onchange="updateCastReminderDate(\''+c.id+'\',\''+r.id+'\',this.value)" style="font-size:12px;padding:2px 4px;width:auto">'
+        :'<span>'+esc(r.date||'')+'</span>')
+      +'<span class="badge b-blue">'+esc(CAST_REMINDER_TARGETS[r.target]||r.target||'')+'</span>'
+      +(r.method?'<span style="color:var(--text2)">'+esc(r.method)+'</span>':'')
+      +(canEdit?'<button type="button" class="btn-ghost-danger btn-sm" onclick="deleteCastReminder(\''+c.id+'\',\''+r.id+'\')">削除</button>':'')
+    +'</div>';
+  });
+  if(canEdit){
+    h+='<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:8px;padding-top:8px;border-top:1px solid var(--border)">'
+      +'<select id="castRemTarget" style="width:auto;font-size:12px"><option value="store">店舗</option><option value="influencer">インフルエンサー</option></select>'
+      +'<input id="castRemMethod" list="castRemMethodList" type="text" placeholder="送付手段（任意）" style="width:150px;font-size:12px">'
+      +'<datalist id="castRemMethodList"><option value="Chatwork"><option value="LINE"><option value="DM"><option value="メール"></datalist>'
+      +'<button type="button" class="btn btn-sm" id="castRemAddBtn" onclick="addCastReminder(\''+c.id+'\')">リマインド送付を記録（今日）</button>'
+    +'</div>';
+  }
+  h+='</div>';
+  box.innerHTML=h;
+}
+function addCastReminder(castId){
+  if(!canEditCasting())return;
+  var c=DB.castings.find(function(x){return x.id===castId;});
+  if(!c)return;
+  if(!c.reminders)c.reminders=[];
+  c.reminders.push({id:uid(),date:jstToday(),target:document.getElementById('castRemTarget').value,method:document.getElementById('castRemMethod').value.trim()});
+  saveItem('castings',c);
+  renderCastReminders(castId);
+}
+function updateCastReminderDate(castId,remId,val){
+  if(!canEditCasting())return;
+  var c=DB.castings.find(function(x){return x.id===castId;});
+  var r=c&&(c.reminders||[]).find(function(x){return x.id===remId;});
+  if(!r)return;
+  r.date=val;
+  saveItem('castings',c);
+}
+function deleteCastReminder(castId,remId){
+  if(!canEditCasting())return;
+  var c=DB.castings.find(function(x){return x.id===castId;});
+  if(!c)return;
+  if(!confirm('このリマインド記録を削除しますか？'))return;
+  c.reminders=(c.reminders||[]).filter(function(x){return x.id!==remId;});
+  saveItem('castings',c);
+  renderCastReminders(castId);
 }
 function renderCasting(){
   updateCastFilterOptions();

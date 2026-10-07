@@ -5,6 +5,16 @@ function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').
 function fmtDT(d){if(!d)return'—';var dt=new Date(d);return(dt.getMonth()+1)+'/'+(dt.getDate())+' '+pad(dt.getHours())+':'+pad(dt.getMinutes());}
 function fmtD(d){if(!d)return'—';var dt=new Date(d);return dt.getFullYear()+'/'+(dt.getMonth()+1)+'/'+dt.getDate();}
 function pad(n){return String(n).padStart(2,'0');}
+/* 記録用の日付（日本時間 YYYY-MM-DD）。端末のタイムゾーンに左右されない */
+function jstToday(){var d=new Date(Date.now()+9*3600*1000);return d.getUTCFullYear()+'-'+pad(d.getUTCMonth()+1)+'-'+pad(d.getUTCDate());}
+/* 請求書の進捗変更：履歴(statusHistory)に残し、経理申請になった日を自動記録する */
+function setInvStatus(inv,newStatus){
+  if(!inv.statusHistory)inv.statusHistory=[];
+  if(inv.status===newStatus)return;
+  inv.status=newStatus;
+  inv.statusHistory.push({status:newStatus,date:jstToday()});
+  if(newStatus==='accounting_submitted')inv.accountingSubmittedDate=jstToday();
+}
 function fmtMoney(v){if(v===''||v===null||v===undefined)return'—';return Number(v).toLocaleString()+'円';}
 function storeName(id){var s=DB.stores.find(function(x){return x.id===id;});return s?s.name:'不明';}
 /* 契約終了（status='ended'）の店舗かどうか。ダッシュボード/事前チェックのアラートから除外するために使用 */

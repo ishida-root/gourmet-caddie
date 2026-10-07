@@ -69,12 +69,14 @@ function openFaqModal(id){
   document.getElementById('faqQuestion').value='';
   document.getElementById('faqCategory').value='';
   document.getElementById('faqAnswer').value='';
+  document.getElementById('faqQuestionDate').value=jstToday();
   if(id){
     var f=DB.faqs.find(function(x){return x.id===id;});
     if(f){
       document.getElementById('faqQuestion').value=f.question||'';
       document.getElementById('faqCategory').value=f.category||'';
       document.getElementById('faqAnswer').value=f.answer||'';
+      document.getElementById('faqQuestionDate').value=f.questionDate||'';
       if(titleEl&&!f.answer)titleEl.textContent='質問に回答する';
     }
   }
@@ -90,7 +92,9 @@ function saveFaq(){
   var isEdit=!!editingFaqId;
   var id=isEdit?editingFaqId:uid();
   var prev=isEdit?DB.faqs.find(function(x){return x.id===id;}):null;
-  var f={id:id,question:q,category:category,answer:a,askedBy:prev?prev.askedBy:'',createdAt:prev?prev.createdAt:new Date().toISOString()};
+  var f={id:id,question:q,category:category,answer:a,askedBy:prev?prev.askedBy:'',createdAt:prev?prev.createdAt:new Date().toISOString(),
+    questionDate:document.getElementById('faqQuestionDate').value||(prev&&prev.questionDate)||'',
+    editedAt:jstToday()};
   if(!DB.faqs)DB.faqs=[];
   if(isEdit){
     var idx=DB.faqs.findIndex(function(x){return x.id===id;});
@@ -122,7 +126,7 @@ function submitFaqQuestion(){
   if(!q){alert('質問内容を入力してください');return;}
   var category=document.getElementById('askFaqCategory').value.trim();
   var askedBy=(currentUser&&currentUser.email)?currentUser.email.split('@')[0]:'';
-  var f={id:uid(),question:q,category:category,answer:'',askedBy:askedBy,createdAt:new Date().toISOString()};
+  var f={id:uid(),question:q,category:category,answer:'',askedBy:askedBy,createdAt:new Date().toISOString(),questionDate:jstToday()};
   if(!DB.faqs)DB.faqs=[];
   DB.faqs.push(f);
   closeModal('askFaqModal');
