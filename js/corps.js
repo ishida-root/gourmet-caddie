@@ -4,13 +4,13 @@ function openCorpModal(id){
   editingCorpId=id||null;
   var titleEl=document.getElementById('corpModalTitle');
   if(titleEl)titleEl.textContent=id?'法人を編集':'法人を追加';
-  ['coName','coRep','coTel','coEmail','coAddress','coGenre','coMemo'].forEach(function(fid){
+  ['coName','coRep','coAddress','coGenre','coMemo'].forEach(function(fid){
     var el=document.getElementById(fid);if(el)el.value='';
   });
   if(id){
     var corp=DB.corporations.find(function(x){return x.id===id;});
     if(corp){
-      var map={coName:'name',coRep:'rep',coTel:'tel',coEmail:'email',coAddress:'address',coGenre:'genre',coMemo:'memo'};
+      var map={coName:'name',coRep:'rep',coAddress:'address',coGenre:'genre',coMemo:'memo'};
       Object.keys(map).forEach(function(fid){var el=document.getElementById(fid);if(el&&corp[map[fid]]!==undefined)el.value=corp[map[fid]]||'';});
     }
   }
@@ -28,8 +28,6 @@ function saveCorp(){
     id:id,
     name:name,
     rep:document.getElementById('coRep').value,
-    tel:document.getElementById('coTel').value,
-    email:document.getElementById('coEmail').value,
     address:document.getElementById('coAddress').value,
     genre:document.getElementById('coGenre').value,
     contractType:(existingCorp&&existingCorp.contractType)||'',
@@ -83,8 +81,7 @@ function openCorpDetail(id){
     +'<div class="grid2" style="margin-bottom:16px">'
       +'<div>'
         +(corp.rep?'<div style="font-size:13px;margin-bottom:4px">👤 '+esc(corp.rep)+'</div>':'')
-        +(corp.tel?'<div style="font-size:13px;margin-bottom:4px">📱 '+esc(corp.tel)+'</div>':'')
-        +(corp.email?'<div style="font-size:13px;margin-bottom:4px">✉ '+esc(corp.email)+'</div>':'')
+        +'<div style="font-size:12px;color:var(--text3);margin-bottom:4px">📱✉ 電話・メールは楽々販売で確認してください（店舗の得意先IDで検索）</div>'
       +'</div>'
       +'<div>'
         +(corp.address?'<div style="font-size:13px;margin-bottom:4px">📍 '+esc(corp.address)+'</div>':'')
@@ -172,7 +169,7 @@ function renderCorps(){
     return'<tr style="cursor:pointer" onclick="openCorpDetail(\''+corp.id+'\')">'
       +'<td><div style="font-weight:500;color:var(--accent)">'+esc(corp.name)+'</div>'+(corp.genre?'<div style="font-size:11px;color:var(--text3)">'+esc(corp.genre)+'</div>':'')+'</td>'
       +'<td style="font-size:13px">'+esc(corp.rep||'—')+'</td>'
-      +'<td style="font-size:13px;color:var(--text2)">'+esc(corp.tel||corp.email||'—')+'</td>'
+      +'<td style="font-size:13px;color:var(--text2)">'+'楽々販売で確認'+'</td>'
       +'<td style="text-align:center;font-weight:500">'+stores.length+'</td>'
       +'<td style="text-align:center"><span style="color:var(--green);font-weight:500">'+active.length+'</span></td>'
       +'<td class="td-mono">'+fmtMoney(totalRev)+'</td>'

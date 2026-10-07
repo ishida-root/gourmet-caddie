@@ -342,6 +342,59 @@ async function redownloadOrder(orderId){
   }
 }
 
+/* 発注記録の修正：Wordに印字される項目（templateData）をそのままテキストで編集する。
+   保存すると履歴の表示も更新され、「保存して再DL」で修正後のWordをダウンロードできる。 */
+var ORDER_EDIT_FIELDS=[
+  {key:'発注番号',label:'発注番号'},{key:'発注日',label:'発注日'},
+  {key:'受託者名',label:'受託者名'},{key:'契約日',label:'基本契約締結日'},
+  {key:'担当者',label:'担当者'},{key:'件名',label:'件名'},
+  {key:'制作内容',label:'制作内容'},{key:'企画書提出期限',label:'企画書提出期限'},
+  {key:'納期',label:'納期'},{key:'納品方法',label:'納品方法'},
+  {key:'検収営業日',label:'検収期間（営業日）'},{key:'報酬金額',label:'報酬金額（税込）'},
+  {key:'交通費',label:'交通費'},{key:'再委託',label:'再委託の可否'}
+];
+var _orderEditId=null;
+function openOrderEdit(orderId){
+  var rec=(DB.orders||[]).find(function(x){return x.id===orderId;});
+  if(!rec)return;
+  _orderEditId=orderId;
+  var td=rec.templateData||{};
+  document.getElementById('orderEditFields').innerHTML=ORDER_EDIT_FIELDS.map(function(f,i){
+    var val=td[f.key]!==undefined?td[f.key]:(f.key==='発注番号'?rec.number:(f.key==='受託者名'?rec.creatorName:(f.key==='件名'?rec.subject:'')));
+    return'<div class="fr1 field" style="margin-bottom:8px"><label style="font-size:12px">'+f.label+'</label><input id="oe_'+i+'" type="text" value="'+esc(val==null?'':String(val))+'"></div>';
+  }).join('');
+  var st=document.getElementById('orderEditStatus');if(st)st.textContent='';
+  openModal('orderEditModal');
+}
+async function saveOrderEdit(redownload){
+  var rec=(DB.orders||[]).find(function(x){return x.id===_orderEditId;});
+  if(!rec)return;
+  var st=document.getElementById('orderEditStatus');
+  var data=Object.assign({},rec.templateData||{});
+  ORDER_EDIT_FIELDS.forEach(function(f,i){data[f.key]=document.getElementById('oe_'+i).value.trim();});
+  if(!data.発注番号){if(st){st.textContent='発注番号を入力してください';st.style.color='var(--red)';}return;}
+  if(!data.受託者名){if(st){st.textContent='受託者名を入力してください';st.style.color='var(--red)';}return;}
+  var dup=(DB.orders||[]).find(function(o){return o.id!==rec.id&&o.number===data.発注番号;});
+  if(dup&&!confirm('発注番号「'+data.発注番号+'」は他の発注記録（'+(dup.subject||dup.creatorName||'')+'）で既に使われています。\nこのまま保存すると番号が重複します。保存しますか？'))return;
+  rec.templateData=data;
+  rec.number=data.発注番号;
+  rec.creatorName=data.受託者名;
+  rec.subject=data.件名;
+  var feeDigits=String(data.報酬金額||'').replace(/[^\d]/g,'');
+  rec.feeAmount=feeDigits?Number(feeDigits):0;
+  saveItem('orders',rec);
+  closeModal('orderEditModal');
+  if(rec.storeId&&document.getElementById('detailModal')&&document.getElementById('detailModal').classList.contains('open')){
+    showDetail(rec.storeId);
+  }else if(rec.creatorId&&document.getElementById('creatorDetailModal')&&document.getElementById('creatorDetailModal').classList.contains('open')){
+    openCreatorDetail(rec.creatorId);
+  }
+  if(redownload){
+    try{await buildAndDownloadOrderDocx(rec.templateData,rec.creatorName,rec.number);}
+    catch(e){console.error('[saveOrderEdit]',e);alert('再ダウンロードに失敗しました: '+(e.message||''));}
+  }
+}
+
 /* 依頼がキャンセルになった発注書：記録は削除せず「キャンセル」扱いにする。
    記録が残るので、その発注番号は使用済みのまま（次の番号の計算にも含まれ、再利用されない）。 */
 function toggleOrderCancelled(orderId){
@@ -386,6 +439,7 @@ function renderOrderHistoryHtml(list){
         +'<span style="font-size:13px;color:var(--text2);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(o.subject||(o.creatorName?o.creatorName+'様':''))+'</span>'
         +(o.feeAmount?'<span style="font-size:12px;color:var(--accent);white-space:nowrap">¥'+Number(o.feeAmount).toLocaleString()+'</span>':'')
         +'<span style="font-size:11px;color:var(--text3);white-space:nowrap">'+fmtD((o.createdAt||'').split('T')[0])+'</span>'
+        +'<button class="btn btn-sm" style="white-space:nowrap" onclick="event.stopPropagation();openOrderEdit(\''+o.id+'\')">修正</button>'
         +'<button class="btn btn-sm" style="white-space:nowrap" onclick="event.stopPropagation();redownloadOrder(\''+o.id+'\')">再DL</button>'
         +'<button class="btn btn-sm" style="white-space:nowrap" onclick="event.stopPropagation();toggleOrderCancelled(\''+o.id+'\')">'+(o.cancelled?'キャンセル解除':'キャンセル')+'</button>'
         +'<button class="btn-ghost-danger" style="white-space:nowrap" onclick="event.stopPropagation();deleteOrder(\''+o.id+'\')">削除</button>'

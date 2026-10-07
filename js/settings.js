@@ -154,10 +154,13 @@ async function purgeStoreContactInfo(){
   var statusEl=document.getElementById('purgeContactStatus');
   var setStatus=function(msg,color){if(statusEl){statusEl.textContent=msg;statusEl.style.color=color||'var(--text2)';}};
   if(!(currentUser&&currentUser.email==='ishida@root-and-activation.co.jp'))return;
-  var targets=DB.stores.filter(function(s){return s.contactTel||s.contactEmail;});
-  if(!targets.length){setStatus('削除対象（電話番号・メールが入っている店舗）はありませんでした。','var(--green)');return;}
-  if(!confirm(targets.length+'店舗の電話番号・メールをデータベースから完全に削除します。\n元に戻せません。\n\n先に削除前の内容をバックアップファイルとして保存します。実行しますか？'))return;
-  var backup=targets.map(function(s){return{id:s.id,name:s.name,contactTel:s.contactTel||'',contactEmail:s.contactEmail||''};});
+  var storeTargets=DB.stores.filter(function(s){return s.contactTel||s.contactEmail;});
+  var corpTargets=(DB.corporations||[]).filter(function(c){return c.tel||c.email;});
+  var targets=storeTargets.concat(corpTargets);
+  if(!targets.length){setStatus('削除対象（電話番号・メールが入っている店舗・法人）はありませんでした。','var(--green)');return;}
+  if(!confirm('店舗'+storeTargets.length+'件・法人'+corpTargets.length+'件の電話番号・メールをデータベースから完全に削除します。\n元に戻せません。\n\n先に削除前の内容をバックアップファイルとして保存します。実行しますか？'))return;
+  var backup=storeTargets.map(function(s){return{type:'store',id:s.id,name:s.name,contactTel:s.contactTel||'',contactEmail:s.contactEmail||''};})
+    .concat(corpTargets.map(function(c){return{type:'corporation',id:c.id,name:c.name,tel:c.tel||'',email:c.email||''};}));
   var blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});
   var a=document.createElement('a');
   a.href=URL.createObjectURL(blob);
@@ -167,13 +170,14 @@ async function purgeStoreContactInfo(){
   if(!confirm('バックアップを保存しました。本当に削除を実行しますか？'))return;
   var done=0;
   for(var i=0;i<targets.length;i++){
-    delete targets[i].contactTel;
-    delete targets[i].contactEmail;
+    var isCorp=i>=storeTargets.length;
+    if(isCorp){delete targets[i].tel;delete targets[i].email;}
+    else{delete targets[i].contactTel;delete targets[i].contactEmail;}
     setStatus('削除中… '+(i+1)+' / '+targets.length);
-    await saveItem('stores',targets[i]);
+    await saveItem(isCorp?'corporations':'stores',targets[i]);
     done++;
   }
-  setStatus('✓ '+done+'店舗から電話番号・メールを削除しました。バックアップファイルは安全な場所に保管するか、不要なら破棄してください。','var(--green)');
+  setStatus('✓ '+done+'件（店舗・法人）から電話番号・メールを削除しました。バックアップファイルは安全な場所に保管するか、不要なら破棄してください。','var(--green)');
 }
 function buildCsTaskBody(corpName,storeName,planName,salesBy){
   return '◆'+(salesBy||'')

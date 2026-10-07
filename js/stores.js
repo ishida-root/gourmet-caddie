@@ -803,11 +803,12 @@ function showDetail(id){
     +'</div>'
 
     /* 法人・連絡先 */
-    +(corp||s.contactName?'<div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:8px">連絡先</div><div style="margin-bottom:14px">'
+    +'<div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:8px">連絡先</div><div style="margin-bottom:14px">'
       +(corp?row('法人',corp.name):'')
       +row('担当者',(s.contactName||'')+(s.contactRole?' ('+s.contactRole+')':''))
+      +row('電話・メール','楽々販売で確認してください'+(s.clientId?'（得意先ID：'+s.clientId+'）':''))
       +row('LINE',s.contactLine)
-    +'</div>':'')
+    +'</div>'
 
     /* 弊社情報 */
     +'<div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:8px">弊社情報</div>'

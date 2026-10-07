@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=179">
+<link rel="stylesheet" href="css/app.css?v=180">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -526,8 +526,8 @@
           <div id="ghPatStatus" style="font-size:13px;margin-top:8px"></div>
         </div>
         <div class="card" id="purgeContactCard">
-          <div class="card-header"><span class="card-title">🧹 店舗の電話番号・メールを完全削除 <span style="font-size:11px;color:var(--text3);font-weight:400">管理者のみ</span></span></div>
-          <div style="font-size:13px;color:var(--text3);margin-bottom:12px">情報量を減らして漏洩リスクを下げるため、店舗情報の電話番号・メールの入力欄は廃止しました。すでに保存されている分をデータベースから完全に削除します。元に戻せないため、実行前に削除対象の内容をバックアップファイル（JSON）として保存します。</div>
+          <div class="card-header"><span class="card-title">🧹 店舗・法人の電話番号・メールを完全削除 <span style="font-size:11px;color:var(--text3);font-weight:400">管理者のみ</span></span></div>
+          <div style="font-size:13px;color:var(--text3);margin-bottom:12px">情報量を減らして漏洩リスクを下げるため、店舗（担当者）・法人の電話番号・メールの入力欄は廃止しました（連絡先は楽々販売で確認します）。すでに保存されている分をデータベースから完全に削除します。元に戻せないため、実行前に削除対象の内容をバックアップファイル（JSON）として保存します。</div>
           <div style="display:flex;gap:8px;justify-content:flex-end">
             <button class="btn" style="color:var(--red);border-color:var(--red-border)" onclick="purgeStoreContactInfo()">削除を実行</button>
           </div>
@@ -1481,6 +1481,23 @@
 </div>
 </div>
 
+<!-- ORDER EDIT MODAL (発注記録の修正。Wordに印字される各項目をそのまま編集する) -->
+<div class="modal-overlay" id="orderEditModal">
+<div class="modal" style="width:560px">
+  <div class="modal-header"><span class="modal-title">📄 発注書を修正</span><button class="modal-close" onclick="closeModal('orderEditModal')">✕</button></div>
+  <div class="modal-body">
+    <div style="font-size:12px;color:var(--text3);margin-bottom:10px">Wordに印字される内容を直接修正できます（日付などは「2026年10月7日」の形のまま書き換えてください）。</div>
+    <div id="orderEditFields"></div>
+    <div id="orderEditStatus" style="font-size:13px;min-height:18px;margin-top:4px"></div>
+    <div class="form-actions" style="border-top:1px solid var(--border);margin-top:12px;padding-top:14px">
+      <button class="btn" onclick="closeModal('orderEditModal')">閉じる</button>
+      <button class="btn" onclick="saveOrderEdit(false)">保存</button>
+      <button class="btn btn-primary" onclick="saveOrderEdit(true)">保存して再DL</button>
+    </div>
+  </div>
+</div>
+</div>
+
 
 <!-- GENRE MODAL -->
 <!-- 追加費用モーダル -->
@@ -1554,7 +1571,7 @@
   </div>
   <div class="modal-body">
     <div class="fr"><div class="field"><label>法人名 *</label><input id="coName" type="text" placeholder="株式会社〇〇"></div><div class="field"><label>代表者名</label><input id="coRep" type="text" placeholder="山田 太郎"></div></div>
-    <div class="fr"><div class="field"><label>電話番号</label><input id="coTel" type="tel" placeholder="03-XXXX-XXXX"></div><div class="field"><label>メール</label><input id="coEmail" type="email" placeholder="info@example.com"></div></div>
+    <div style="font-size:12px;color:var(--text3);margin-bottom:12px;padding:8px 10px;background:var(--bg3);border-radius:var(--r)">電話番号・メールはこの画面では登録しません。楽々販売で確認してください（店舗の得意先IDで検索）。</div>
     <div class="fr1 field"><label>住所</label><input id="coAddress" type="text" placeholder="東京都渋谷区..."></div>
     <div class="fr1 field"><label>業種</label><input id="coGenre" type="text" placeholder="焼肉・居酒屋など"></div>
     <div class="fr1 field"><label>備考</label><textarea id="coMemo" placeholder="チェーン展開の特徴、注意事項など..." style="min-height:52px"></textarea></div>
@@ -1803,25 +1820,25 @@
 </div>
 
 
-<script src="js/vendor/pizzip.min.js?v=179"></script>
-<script src="js/vendor/docxtemplater.min.js?v=179"></script>
-<script src="js/vendor/xlsx.full.min.js?v=179"></script>
-<script src="js/config.js?v=179"></script>
-<script src="js/db.js?v=179"></script>
-<script src="js/utils.js?v=179"></script>
-<script src="js/settings.js?v=179"></script>
-<script src="js/stores.js?v=179"></script>
-<script src="js/schedule.js?v=179"></script>
-<script src="js/casting.js?v=179"></script>
-<script src="js/check.js?v=179"></script>
-<script src="js/accounting.js?v=179"></script>
-<script src="js/plans.js?v=179"></script>
-<script src="js/creators.js?v=179"></script>
-<script src="js/corps.js?v=179"></script>
-<script src="js/faqs.js?v=179"></script>
-<script src="js/orders.js?v=179"></script>
-<script src="js/hearing.js?v=179"></script>
-<script src="js/dashboard.js?v=179"></script>
-<script src="js/app.js?v=179"></script>
+<script src="js/vendor/pizzip.min.js?v=180"></script>
+<script src="js/vendor/docxtemplater.min.js?v=180"></script>
+<script src="js/vendor/xlsx.full.min.js?v=180"></script>
+<script src="js/config.js?v=180"></script>
+<script src="js/db.js?v=180"></script>
+<script src="js/utils.js?v=180"></script>
+<script src="js/settings.js?v=180"></script>
+<script src="js/stores.js?v=180"></script>
+<script src="js/schedule.js?v=180"></script>
+<script src="js/casting.js?v=180"></script>
+<script src="js/check.js?v=180"></script>
+<script src="js/accounting.js?v=180"></script>
+<script src="js/plans.js?v=180"></script>
+<script src="js/creators.js?v=180"></script>
+<script src="js/corps.js?v=180"></script>
+<script src="js/faqs.js?v=180"></script>
+<script src="js/orders.js?v=180"></script>
+<script src="js/hearing.js?v=180"></script>
+<script src="js/dashboard.js?v=180"></script>
+<script src="js/app.js?v=180"></script>
 </body>
 </html>
