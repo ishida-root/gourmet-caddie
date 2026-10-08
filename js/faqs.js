@@ -94,6 +94,8 @@ function saveFaq(){
   var prev=isEdit?DB.faqs.find(function(x){return x.id===id;}):null;
   var f={id:id,question:q,category:category,answer:a,askedBy:prev?prev.askedBy:'',createdAt:prev?prev.createdAt:new Date().toISOString(),
     questionDate:document.getElementById('faqQuestionDate').value||(prev&&prev.questionDate)||'',
+    /* 初めて保存した日：上書きしない。既存でfirstPublishedAtが無ければcreatedAt（日本時間の日付）を引き継ぎ、無ければ空欄 */
+    firstPublishedAt:prev?(prev.firstPublishedAt||(prev.createdAt?new Date(new Date(prev.createdAt).getTime()+9*3600*1000).toISOString().slice(0,10):'')):jstToday(),
     editedAt:jstToday()};
   if(!DB.faqs)DB.faqs=[];
   if(isEdit){

@@ -16,7 +16,8 @@ function _renderPostRec(){
 function onPrRadioChange(){
   var chk=document.querySelector('input[name="pPrRadio"]:checked');
   _pRec.prDisplay=chk?chk.value:'';
-  if(_pRec.prDisplay!==_pRec.prOrig){_pRec.prCheckedDate=jstToday();}
+  /* 確認日は最初に確認した日を残す（選択を変えても上書きしない） */
+  if(_pRec.prDisplay&&!_pRec.prCheckedDate)_pRec.prCheckedDate=jstToday();
   if(_pRec.prDisplay==='yes')_pRec.prFixRequestedDate='';
   _renderPostRec();
 }
@@ -31,7 +32,7 @@ function openPostModal(id){
   _pRec={};
   var _op=id?DB.posts.find(function(x){return x.id===id;}):null;
   if(_op){
-    _pRec={prDisplay:_op.prDisplay||'',prOrig:_op.prDisplay||'',prCheckedDate:_op.prCheckedDate||'',prFixRequestedDate:_op.prFixRequestedDate||'',goodPointNotifiedDate:_op.goodPointNotifiedDate||'',goodOrigDate:_op.goodPointNotifiedDate||'',viewsHistory:(_op.viewsHistory||[]).slice()};
+    _pRec={prDisplay:_op.prDisplay||'',prOrig:_op.prDisplay||'',prCheckedDate:_op.prCheckedDate||'',prHistory:(_op.prHistory||[]).slice(),prFixRequestedDate:_op.prFixRequestedDate||'',goodPointNotifiedDate:_op.goodPointNotifiedDate||'',goodOrigDate:_op.goodPointNotifiedDate||'',viewsHistory:(_op.viewsHistory||[]).slice()};
   }
   Array.prototype.forEach.call(document.querySelectorAll('input[name="pPrRadio"]'),function(r){r.checked=(r.value===(_pRec.prDisplay||'__none__'));});
   document.getElementById('pGoodNotified').checked=!!_pRec.goodPointNotifiedDate;
@@ -237,7 +238,13 @@ function savePost(){
   if(type==='inf_post'){
     var prChk=document.querySelector('input[name="pPrRadio"]:checked');
     p.prDisplay=prChk?prChk.value:'';
-    p.prCheckedDate=p.prDisplay?(_pRec.prCheckedDate||jstToday()):'';
+    p.prCheckedDate=_pRec.prCheckedDate||(p.prDisplay?jstToday():'');
+    /* 選択を変えたときは履歴に足す（同じ日に変え直した場合は直前の記録を置き換え） */
+    p.prHistory=(_pRec.prHistory||[]).slice();
+    if(p.prDisplay&&p.prDisplay!==_pRec.prOrig){
+      var lastH=p.prHistory[p.prHistory.length-1];
+      if(lastH&&lastH.date===jstToday())lastH.prDisplay=p.prDisplay;else p.prHistory.push({date:jstToday(),prDisplay:p.prDisplay});
+    }
     p.prFixRequestedDate=p.prDisplay==='no'?(_pRec.prFixRequestedDate||''):'';
     var gn=document.getElementById('pGoodNotified').checked;
     p.goodPointNotified=gn;
