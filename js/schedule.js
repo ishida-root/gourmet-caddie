@@ -36,6 +36,9 @@ function openPostModal(id){
   }
   Array.prototype.forEach.call(document.querySelectorAll('input[name="pPrRadio"]'),function(r){r.checked=(r.value===(_pRec.prDisplay||'__none__'));});
   document.getElementById('pGoodNotified').checked=!!_pRec.goodPointNotifiedDate;
+  /* 実際の投稿日：未入力なら予定日（dateの日付部分）を表示するだけ。保存はPR表示を選んだ／日付を直したときのみ */
+  _pRec.actualOrig=_op&&_op.actualPostDate||'';
+  document.getElementById('pActualDate').value=_pRec.actualOrig||(_op&&_op.date?String(_op.date).slice(0,10):'');
   document.getElementById('pViews').value=_op&&_op.views!==undefined&&_op.views!==''?_op.views:'';
   _renderPostRec();
   updatePostStoreSelect();
@@ -248,6 +251,8 @@ function savePost(){
     p.prFixRequestedDate=p.prDisplay==='no'?(_pRec.prFixRequestedDate||''):'';
     var gn=document.getElementById('pGoodNotified').checked;
     p.goodPointNotified=gn;
+    var actVal=document.getElementById('pActualDate').value;
+    p.actualPostDate=(p.prDisplay||_pRec.actualEdited)?(actVal||String(dt).slice(0,10)):(_pRec.actualOrig||'');
     p.goodPointNotifiedDate=gn?(_pRec.goodPointNotifiedDate||jstToday()):'';
   }
   var vRaw=document.getElementById('pViews').value;
