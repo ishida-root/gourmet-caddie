@@ -404,6 +404,7 @@ function openStoreModal(id){
 function saveStore(){
   var name=document.getElementById('sName').value.trim();
   if(!name){alert('店舗名を入力してください');return;}
+  ensureGenreRegistered(document.getElementById('sGenre').value);
   var isEdit=!!editingStoreId;
   var id=isEdit?editingStoreId:uid();
   var existing=isEdit?DB.stores.find(function(x){return x.id===id;}):null;

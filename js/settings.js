@@ -10,6 +10,50 @@ function updateGenreDatalist(){
   if(!dl)return;
   dl.innerHTML=GENRES.map(function(g){return'<option value="'+esc(g)+'">';}).join('');
 }
+/* 店舗の業種入力：入力に合わせて候補を絞り込み、候補にない語はその場で業種リストに追加できる */
+var _genreDdItems=[];
+function renderGenreDropdown(){
+  var dd=document.getElementById('sGenreDropdown'),inp=document.getElementById('sGenre');
+  if(!dd||!inp)return;
+  var q=inp.value.trim();
+  var ql=q.toLowerCase();
+  var hits=GENRES.filter(function(g){return !ql||g.toLowerCase().indexOf(ql)>=0;});
+  _genreDdItems=hits.map(function(g){return{v:g,add:false};});
+  if(q&&GENRES.indexOf(q)<0)_genreDdItems.push({v:q,add:true});
+  if(!_genreDdItems.length){dd.style.display='none';return;}
+  dd.innerHTML=_genreDdItems.map(function(it,i){
+    return'<div onmousedown="event.preventDefault();pickGenre('+i+')" style="padding:8px 12px;cursor:pointer;font-size:13px;'+(it.add?'color:var(--accent);border-top:1px solid var(--border)':'')+'" onmouseover="this.style.background=\'var(--bg3)\'" onmouseout="this.style.background=\'\'">'
+      +(it.add?'＋ 「'+esc(it.v)+'」を新しい業種として追加':esc(it.v))+'</div>';
+  }).join('');
+  dd.style.display='';
+}
+function hideGenreDropdown(){var dd=document.getElementById('sGenreDropdown');if(dd)dd.style.display='none';}
+function pickGenre(i){
+  var it=_genreDdItems[i];
+  if(!it)return;
+  if(it.add)ensureGenreRegistered(it.v);
+  document.getElementById('sGenre').value=it.v;
+  hideGenreDropdown();
+}
+/* 業種リストにない語なら登録する（店舗保存時にも使う） */
+function ensureGenreRegistered(v){
+  v=(v||'').trim();
+  if(!v||GENRES.indexOf(v)>=0)return;
+  GENRES.push(v);
+  saveGenres();
+  updateGenreDatalist();
+}
+function genreInputKey(e){
+  if(e.key==='Enter'){
+    e.preventDefault();
+    var inp=document.getElementById('sGenre'),q=inp.value.trim();
+    var exact=_genreDdItems.findIndex(function(it){return it.v===q&&!it.add;});
+    if(exact>=0)pickGenre(exact);
+    else if(_genreDdItems.length===1)pickGenre(0);
+    else if(_genreDdItems.some(function(it){return it.add;}))pickGenre(_genreDdItems.length-1);
+    else if(_genreDdItems.length)pickGenre(0);
+  }else if(e.key==='Escape')hideGenreDropdown();
+}
 function openGenreModal(){
   renderGenreTags();
   openModal('genreModal');

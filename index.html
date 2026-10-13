@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=184">
+<link rel="stylesheet" href="css/app.css?v=185">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -700,7 +700,7 @@
       <button class="tab-btn" onclick="switchStoreTab(5)">📋 案件進捗</button>
     </div>
     <div class="tab-pane active" id="stab0">
-      <div class="fr"><div class="field"><label>店舗名 *</label><input id="sName" type="text" placeholder="例: 炭火焼 竹山 渋谷店"></div><div class="field"><label>業種 <button type="button" onclick="openGenreModal()" style="font-size:11px;padding:2px 7px;margin-left:6px;background:var(--bg3);border:1px solid var(--border2);border-radius:4px;cursor:pointer;color:var(--text2)">＋ 編集</button></label><input id="sGenre" type="text" list="genreList" placeholder="例: 焼肉"><datalist id="genreList"></datalist></div></div>
+      <div class="fr"><div class="field"><label>店舗名 *</label><input id="sName" type="text" placeholder="例: 炭火焼 竹山 渋谷店"></div><div class="field"><label>業種 <button type="button" onclick="openGenreModal()" style="font-size:11px;padding:2px 7px;margin-left:6px;background:var(--bg3);border:1px solid var(--border2);border-radius:4px;cursor:pointer;color:var(--text2)">＋ 編集</button></label><div style="position:relative"><input id="sGenre" type="text" autocomplete="off" placeholder="入力して検索（なければ追加できます）" oninput="renderGenreDropdown()" onfocus="renderGenreDropdown()" onblur="setTimeout(hideGenreDropdown,150)" onkeydown="genreInputKey(event)"><div id="sGenreDropdown" style="display:none;position:absolute;z-index:30;left:0;right:0;top:100%;margin-top:2px;max-height:220px;overflow:auto;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);box-shadow:0 4px 12px rgba(0,0,0,.12)"></div></div></div></div>
       <div class="fr1 field"><label>法人</label><div style="display:flex;gap:6px"><select id="sCorpId" style="flex:1"><option value="">選択しない（個人・未設定）</option></select><button type="button" class="btn btn-sm" onclick="openCorpModal()" style="white-space:nowrap;flex-shrink:0">＋ 新規法人</button></div></div>
       <div class="fr1 field"><label>郵便番号 <span style="color:var(--text3);font-weight:400"></span></label><div style="display:flex;gap:6px"><input id="sZip" type="text" placeholder="例: 150-0043" maxlength="8" style="max-width:160px" oninput="autoFillAddress(this.value,'sPref','sArea')"><span style="font-size:13px;color:var(--text3);align-self:center" id="sZip-status"></span></div></div>
       <div class="fr"><div class="field"><label>都道府県</label><input id="sPref" type="text" placeholder="東京都"></div><div class="field"><label>市区町村・番地</label><input id="sArea" type="text" placeholder="渋谷区道玄坂..."></div></div>
@@ -1847,25 +1847,25 @@
 </div>
 
 
-<script src="js/vendor/pizzip.min.js?v=184"></script>
-<script src="js/vendor/docxtemplater.min.js?v=184"></script>
-<script src="js/vendor/xlsx.full.min.js?v=184"></script>
-<script src="js/config.js?v=184"></script>
-<script src="js/db.js?v=184"></script>
-<script src="js/utils.js?v=184"></script>
-<script src="js/settings.js?v=184"></script>
-<script src="js/stores.js?v=184"></script>
-<script src="js/schedule.js?v=184"></script>
-<script src="js/casting.js?v=184"></script>
-<script src="js/check.js?v=184"></script>
-<script src="js/accounting.js?v=184"></script>
-<script src="js/plans.js?v=184"></script>
-<script src="js/creators.js?v=184"></script>
-<script src="js/corps.js?v=184"></script>
-<script src="js/faqs.js?v=184"></script>
-<script src="js/orders.js?v=184"></script>
-<script src="js/hearing.js?v=184"></script>
-<script src="js/dashboard.js?v=184"></script>
-<script src="js/app.js?v=184"></script>
+<script src="js/vendor/pizzip.min.js?v=185"></script>
+<script src="js/vendor/docxtemplater.min.js?v=185"></script>
+<script src="js/vendor/xlsx.full.min.js?v=185"></script>
+<script src="js/config.js?v=185"></script>
+<script src="js/db.js?v=185"></script>
+<script src="js/utils.js?v=185"></script>
+<script src="js/settings.js?v=185"></script>
+<script src="js/stores.js?v=185"></script>
+<script src="js/schedule.js?v=185"></script>
+<script src="js/casting.js?v=185"></script>
+<script src="js/check.js?v=185"></script>
+<script src="js/accounting.js?v=185"></script>
+<script src="js/plans.js?v=185"></script>
+<script src="js/creators.js?v=185"></script>
+<script src="js/corps.js?v=185"></script>
+<script src="js/faqs.js?v=185"></script>
+<script src="js/orders.js?v=185"></script>
+<script src="js/hearing.js?v=185"></script>
+<script src="js/dashboard.js?v=185"></script>
+<script src="js/app.js?v=185"></script>
 </body>
 </html>
