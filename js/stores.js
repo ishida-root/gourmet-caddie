@@ -666,7 +666,7 @@ function renderStoreTable(){
   }
   var list=DB.stores.filter(function(s){if(s.status==='negotiating')return false;if(filter&&s.status!==filter)return false;if(!matchSales(s))return false;if(!matchCorp(s))return false;if(search&&!(s.name||'').toLowerCase().includes(search)&&!(s.genre||'').toLowerCase().includes(search))return false;return true;});
   var tb=document.getElementById('storeTableBody');
-  if(!list.length&&!negList.length){tb.innerHTML='<tr><td colspan="11" class="empty-state">店舗がありません</td></tr>';return;}
+  if(!list.length&&!negList.length){tb.innerHTML='<tr><td colspan="8" class="empty-state">店舗がありません</td></tr>';return;}
   if(!list.length){tb.innerHTML='';return;}
   var metaLabels={none:'—',basic:'<span class="badge b-amber">基礎あり</span>',advanced:'<span class="badge b-green">豊富</span>'};
   if(_storeEndSort){
@@ -700,9 +700,6 @@ function renderStoreTable(){
       +'<td>'+costCell+'</td>'
       +'<td class="td-mono">'+(s.contractStart||'—')+'<div style="font-size:11px;color:var(--text3)">'+(s.contractTerm?s.contractTerm+'ヶ月':'')+'</div>'+storeEndCellHtml(s)+'</td>'
       +'<td>'+mgrCell+'</td>'
-      +'<td><button class="btn btn-sm" style="font-size:11px;padding:2px 8px;'+(s.infContract?'background:var(--purple-bg);color:var(--purple);border-color:var(--purple-border)':'background:var(--bg3);color:var(--text2)')+'" onclick="event.stopPropagation();toggleInfContract(\''+s.id+'\')">'+(s.infContract?'👤 あり':'なし')+'</button></td>'
-      +(function(){var done=isMonthlyDone(s,'adBilling');return'<td><button class="btn btn-sm" style="font-size:11px;padding:2px 8px;'+(done?'background:var(--green-bg);color:var(--green);border-color:var(--green-border)':'background:var(--bg3);color:var(--text2)')+'" onclick="event.stopPropagation();toggleMonthlyDone(\''+s.id+'\',\'adBilling\')">'+(done?'✓ 済':'未')+'</button></td>';})()
-      +(function(){var pmk=prevMonthKey();var done=isMonthlyDone(s,'monthlyReview',pmk);return'<td><button class="btn btn-sm" title="'+pmk+'分の振り返り" style="font-size:11px;padding:2px 8px;'+(done?'background:var(--green-bg);color:var(--green);border-color:var(--green-border)':'background:var(--bg3);color:var(--text2)')+'" onclick="event.stopPropagation();toggleMonthlyDone(\''+s.id+'\',\'monthlyReview\',\''+pmk+'\')">'+(done?'✓ 済':'未')+'</button></td>';})()
       +'<td>'+statusBadge(s.status)+'</td>'
       +'<td style="white-space:nowrap"><button class="btn btn-sm" onclick="openStoreModal(\''+s.id+'\')" style="margin-right:4px">編集</button><button class="btn-ghost-danger" onclick="deleteStore(\''+s.id+'\')">削除</button></td>'
       +'</tr>';
