@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=187">
+<link rel="stylesheet" href="css/app.css?v=188">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -218,7 +218,7 @@
           </div>
         </div>
         <div id="negotiatingBox" style="display:none;margin-bottom:16px;padding:12px 14px;background:var(--accent-bg);border:1px solid var(--accent-border);border-radius:var(--r)"></div>
-        <div class="table-wrap"><table><thead><tr><th>店舗名</th><th>業種</th><th>契約プラン</th><th>原価</th><th style="cursor:pointer" title="クリックで満了日順に並べ替え" onclick="toggleStoreEndSort()">契約期間／満了日 <span id="storeEndSortMark">⇅</span></th><th>弊社担当</th><th>INF</th><th>今月請求</th><th>前月振返</th><th>案件進捗</th><th>ステータス</th><th></th></tr></thead><tbody id="storeTableBody"></tbody></table></div>
+        <div class="table-wrap"><table><thead><tr><th>店舗名</th><th>業種</th><th>契約プラン</th><th>原価</th><th style="cursor:pointer" title="クリックで満了日順に並べ替え" onclick="toggleStoreEndSort()">契約期間／満了日 <span id="storeEndSortMark">⇅</span></th><th>弊社担当</th><th>INF</th><th>今月請求</th><th>前月振返</th><th>ステータス</th><th></th></tr></thead><tbody id="storeTableBody"></tbody></table></div>
       </div>
     </div>
 
@@ -290,14 +290,6 @@
           <span id="chk-creative-count" style="font-size:12px;color:var(--text3)"></span>
         </div>
         <div id="chk-creative"></div>
-      </div>
-      <!-- 案件進捗 未完了 -->
-      <div class="card" style="margin-bottom:12px">
-        <div class="card-header">
-          <span class="card-title">⚙ 案件進捗が未完了の店舗</span>
-          <span id="chk-setup-count" style="font-size:12px;color:var(--text3)"></span>
-        </div>
-        <div id="chk-setup"></div>
       </div>
       <!-- インフルエンサー進捗 -->
       <div class="card">
@@ -697,7 +689,6 @@
       <button class="tab-btn" onclick="switchStoreTab(2)">契約・担当</button>
       <button class="tab-btn" onclick="switchStoreTab(3)">ヒアリング</button>
       <button class="tab-btn" onclick="switchStoreTab(4)">📷 撮影予定</button>
-      <button class="tab-btn" onclick="switchStoreTab(5)">📋 案件進捗</button>
     </div>
     <div class="tab-pane active" id="stab0">
       <div class="fr"><div class="field"><label>店舗名 *</label><input id="sName" type="text" placeholder="例: 炭火焼 竹山 渋谷店"></div><div class="field"><label>業種 <button type="button" onclick="openGenreModal()" style="font-size:11px;padding:2px 7px;margin-left:6px;background:var(--bg3);border:1px solid var(--border2);border-radius:4px;cursor:pointer;color:var(--text2)">＋ 編集</button></label><div style="position:relative"><input id="sGenre" type="text" autocomplete="off" placeholder="入力して検索（なければ追加できます）" oninput="renderGenreDropdown()" onfocus="renderGenreDropdown()" onblur="setTimeout(hideGenreDropdown,150)" onkeydown="genreInputKey(event)"><div id="sGenreDropdown" style="display:none;position:absolute;z-index:30;left:0;right:0;top:100%;margin-top:2px;max-height:220px;overflow:auto;background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);box-shadow:0 4px 12px rgba(0,0,0,.12)"></div></div></div></div>
@@ -819,10 +810,6 @@
         <button class="btn btn-sm btn-primary" onclick="openShootingModal()">＋ 撮影予定を追加</button>
       </div>
       <div id="shootingList" style="display:flex;flex-direction:column;gap:6px"></div>
-    </div>
-
-    <div class="tab-pane" id="stab5">
-      <div id="progressSteps"></div>
     </div>
 
     <div class="form-actions"><button class="btn" onclick="closeModal('storeModal')">キャンセル</button><button class="btn btn-primary" onclick="saveStore()">保存</button></div>
@@ -1841,25 +1828,25 @@
 </div>
 
 
-<script src="js/vendor/pizzip.min.js?v=187"></script>
-<script src="js/vendor/docxtemplater.min.js?v=187"></script>
-<script src="js/vendor/xlsx.full.min.js?v=187"></script>
-<script src="js/config.js?v=187"></script>
-<script src="js/db.js?v=187"></script>
-<script src="js/utils.js?v=187"></script>
-<script src="js/settings.js?v=187"></script>
-<script src="js/stores.js?v=187"></script>
-<script src="js/schedule.js?v=187"></script>
-<script src="js/casting.js?v=187"></script>
-<script src="js/check.js?v=187"></script>
-<script src="js/accounting.js?v=187"></script>
-<script src="js/plans.js?v=187"></script>
-<script src="js/creators.js?v=187"></script>
-<script src="js/corps.js?v=187"></script>
-<script src="js/faqs.js?v=187"></script>
-<script src="js/orders.js?v=187"></script>
-<script src="js/hearing.js?v=187"></script>
-<script src="js/dashboard.js?v=187"></script>
-<script src="js/app.js?v=187"></script>
+<script src="js/vendor/pizzip.min.js?v=188"></script>
+<script src="js/vendor/docxtemplater.min.js?v=188"></script>
+<script src="js/vendor/xlsx.full.min.js?v=188"></script>
+<script src="js/config.js?v=188"></script>
+<script src="js/db.js?v=188"></script>
+<script src="js/utils.js?v=188"></script>
+<script src="js/settings.js?v=188"></script>
+<script src="js/stores.js?v=188"></script>
+<script src="js/schedule.js?v=188"></script>
+<script src="js/casting.js?v=188"></script>
+<script src="js/check.js?v=188"></script>
+<script src="js/accounting.js?v=188"></script>
+<script src="js/plans.js?v=188"></script>
+<script src="js/creators.js?v=188"></script>
+<script src="js/corps.js?v=188"></script>
+<script src="js/faqs.js?v=188"></script>
+<script src="js/orders.js?v=188"></script>
+<script src="js/hearing.js?v=188"></script>
+<script src="js/dashboard.js?v=188"></script>
+<script src="js/app.js?v=188"></script>
 </body>
 </html>

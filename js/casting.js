@@ -1203,27 +1203,6 @@ function renderTodoList(){
       current={label:'追加費用 未対応：'+esc(pendingFee.description)+'（'+fmtMoney(pendingFee.amount)+'）',color:'amber',nav:navStore.replace('STOREID',s.id)};
     }
 
-    /* 2. 案件進捗：次の未完了ステップ */
-    if(!current){
-      var prog=s.progress||{};
-      var steps=progressStepsFor(s);
-      for(var i=0;i<steps.length;i++){
-        var step=steps[i];
-        var p=prog[step.key]||{};
-        var done=step.accounts?isAccountsDone(p):(p.status==='done'||p.status==='na');
-        if(done)continue;
-        if(step.key==='kickoff'&&p.salesJoin){
-          current={label:'キックオフ 営業同席希望あり（未実施）',color:'red',nav:navStore.replace('STOREID',s.id)};
-        }else if(step.accounts){
-          var missing=step.accounts.filter(function(n){return!(p.accountChecks||{})[n];});
-          current={label:'アカウント未連携：'+missing.join('・'),color:'amber',nav:navStore.replace('STOREID',s.id)};
-        }else{
-          current={label:step.label+' 未完了',color:'amber',nav:navStore.replace('STOREID',s.id)};
-        }
-        break;
-      }
-    }
-
     /* 3. 投稿スケジュール：最も近い（または最も超過している）未完了の予定 */
     if(!current){
       var pending=DB.posts.filter(function(p){

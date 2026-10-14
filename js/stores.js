@@ -666,7 +666,7 @@ function renderStoreTable(){
   }
   var list=DB.stores.filter(function(s){if(s.status==='negotiating')return false;if(filter&&s.status!==filter)return false;if(!matchSales(s))return false;if(!matchCorp(s))return false;if(search&&!(s.name||'').toLowerCase().includes(search)&&!(s.genre||'').toLowerCase().includes(search))return false;return true;});
   var tb=document.getElementById('storeTableBody');
-  if(!list.length&&!negList.length){tb.innerHTML='<tr><td colspan="12" class="empty-state">店舗がありません</td></tr>';return;}
+  if(!list.length&&!negList.length){tb.innerHTML='<tr><td colspan="11" class="empty-state">店舗がありません</td></tr>';return;}
   if(!list.length){tb.innerHTML='';return;}
   var metaLabels={none:'—',basic:'<span class="badge b-amber">基礎あり</span>',advanced:'<span class="badge b-green">豊富</span>'};
   if(_storeEndSort){
@@ -678,7 +678,6 @@ function renderStoreTable(){
   }
   var mk=document.getElementById('storeEndSortMark');if(mk)mk.textContent=_storeEndSort==='asc'?'▲':_storeEndSort==='desc'?'▼':'⇅';
   tb.innerHTML=list.map(function(s){
-    var pct=progressPct(s);
     var plan=s.planId?DB.plans.find(function(x){return x.id===s.planId;}):null;
     var planCell=plan?'<div style="font-size:13px;font-weight:400">'+esc(plan.name)+'</div><div style="font-size:12px;color:var(--text3)">'+fmtMoney(plan.price)+'</div>':'<span style="color:var(--text3)">—</span>';
     var costInfo=storeCostInfo(s);
@@ -704,7 +703,6 @@ function renderStoreTable(){
       +'<td><button class="btn btn-sm" style="font-size:11px;padding:2px 8px;'+(s.infContract?'background:var(--purple-bg);color:var(--purple);border-color:var(--purple-border)':'background:var(--bg3);color:var(--text2)')+'" onclick="event.stopPropagation();toggleInfContract(\''+s.id+'\')">'+(s.infContract?'👤 あり':'なし')+'</button></td>'
       +(function(){var done=isMonthlyDone(s,'adBilling');return'<td><button class="btn btn-sm" style="font-size:11px;padding:2px 8px;'+(done?'background:var(--green-bg);color:var(--green);border-color:var(--green-border)':'background:var(--bg3);color:var(--text2)')+'" onclick="event.stopPropagation();toggleMonthlyDone(\''+s.id+'\',\'adBilling\')">'+(done?'✓ 済':'未')+'</button></td>';})()
       +(function(){var pmk=prevMonthKey();var done=isMonthlyDone(s,'monthlyReview',pmk);return'<td><button class="btn btn-sm" title="'+pmk+'分の振り返り" style="font-size:11px;padding:2px 8px;'+(done?'background:var(--green-bg);color:var(--green);border-color:var(--green-border)':'background:var(--bg3);color:var(--text2)')+'" onclick="event.stopPropagation();toggleMonthlyDone(\''+s.id+'\',\'monthlyReview\',\''+pmk+'\')">'+(done?'✓ 済':'未')+'</button></td>';})()
-      +'<td><div style="display:flex;align-items:center;gap:6px"><div class="pbar-wrap" style="width:52px"><div class="pbar" style="background:'+(pct===100?'var(--green)':'var(--accent)')+';width:'+pct+'%"></div></div><span style="font-size:11px;color:var(--text3)">'+pct+'%</span></div></td>'
       +'<td>'+statusBadge(s.status)+'</td>'
       +'<td style="white-space:nowrap"><button class="btn btn-sm" onclick="openStoreModal(\''+s.id+'\')" style="margin-right:4px">編集</button><button class="btn-ghost-danger" onclick="deleteStore(\''+s.id+'\')">削除</button></td>'
       +'</tr>';
@@ -758,7 +756,6 @@ function showDetail(id){
   if(!s)return;
   var myPosts=DB.posts.filter(function(p){return p.storeId===id;}).sort(function(a,b){return new Date(a.date)-new Date(b.date);});
   var myCast=DB.castings.filter(function(c){return c.storeId===id;});
-  var pct=progressPct(s);
   var plan=DB.plans.find(function(p){return p.id===s.planId;});
   var corp=DB.corporations&&s.corpId?DB.corporations.find(function(c){return c.id===s.corpId;}):null;
 
@@ -910,31 +907,6 @@ function showDetail(id){
     /* 要望 */
     +(s.request?'<div style="margin-bottom:14px;padding:10px 12px;background:var(--amber-bg);border:1px solid var(--amber-border);border-radius:var(--r);font-size:13px;white-space:pre-wrap">'+esc(s.request)+'</div>':'')
 
-    /* 案件進捗 */
-    +(function(){
-      var steps=progressStepsFor(s);var prog=s.progress||{};
-      return'<div style="margin-bottom:14px">'
-        +'<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">'
-          +'<span style="font-size:12px;font-weight:500;color:var(--text2)">案件進捗</span>'
-          +'<div class="pbar-wrap" style="flex:1"><div class="pbar" style="background:'+(pct===100?'var(--green)':'var(--accent)')+';width:'+pct+'%"></div></div>'
-          +'<span style="font-size:12px;color:var(--text3)">'+pct+'%</span>'
-        +'</div>'
-        +'<div style="display:flex;gap:4px;flex-wrap:wrap">'
-          +steps.map(function(step){
-            var p=prog[step.key]||{};
-            var done=step.accounts?isAccountsDone(p):(p.status==='done'||p.status==='na');
-            var isRecurring=RECURRING_STEP_KEYS.indexOf(step.key)>=0;
-            var histCount=isRecurring?((p.history&&p.history.length)?p.history.length:(p.status==='done'&&p.date?1:0)):0;
-            var countBadge=(isRecurring&&histCount>0)?'<span style="font-size:10px;color:'+(done?'var(--green)':'var(--text3)')+';margin-left:2px">（'+histCount+'回）</span>':'';
-            return'<div style="display:flex;align-items:center;gap:4px;padding:4px 8px;border-radius:var(--r);background:'+(done?'var(--green-bg)':'var(--bg3)')+';border:1px solid '+(done?'var(--green-border)':'var(--border)')+'">'
-              +'<span style="font-size:11px;color:'+(done?'var(--green)':'var(--text3)')+'">'+(done?'✓':'○')+'</span>'
-              +'<span style="font-size:11px;color:'+(done?'var(--text)':'var(--text3)')+'">'+esc(step.label)+'</span>'
-              +countBadge
-            +'</div>';
-          }).join('')
-        +'</div>'
-      +'</div>';
-    })()
 
     /* 投稿履歴 */
     +'<div style="font-size:12px;font-weight:500;color:var(--text2);margin-bottom:8px">投稿履歴 ('+myPosts.length+'件)</div>'
