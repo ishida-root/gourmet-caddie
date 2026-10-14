@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=186">
+<link rel="stylesheet" href="css/app.css?v=187">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -527,7 +527,7 @@
         </div>
         <div class="card" id="purgeContactCard">
           <div class="card-header"><span class="card-title">🧹 店舗・法人の電話番号・メール、店舗担当者情報を完全削除 <span style="font-size:11px;color:var(--text3);font-weight:400">管理者のみ</span></span></div>
-          <div style="font-size:13px;color:var(--text3);margin-bottom:12px">情報量を減らして漏洩リスクを下げるため、店舗・法人の電話番号・メールと、店舗担当者（担当者名・役職・LINE ID）の入力欄は廃止しました（連絡先は楽々販売で確認します）。すでに保存されている分をデータベースから完全に削除します。元に戻せないため、実行前に削除対象の内容をバックアップファイル（JSON）として保存します。</div>
+          <div style="font-size:13px;color:var(--text3);margin-bottom:12px">情報量を減らして漏洩リスクを下げるため、店舗・法人の電話番号・メールと、店舗担当者（担当者名・役職・LINE ID）・成果振り返り頻度の入力欄は廃止しました（連絡先は楽々販売で確認します）。すでに保存されている分をデータベースから完全に削除します。元に戻せないため、実行前に削除対象の内容をバックアップファイル（JSON）として保存します。</div>
           <div style="display:flex;gap:8px;justify-content:flex-end">
             <button class="btn" style="color:var(--red);border-color:var(--red-border)" onclick="purgeStoreContactInfo()">削除を実行</button>
           </div>
@@ -746,7 +746,6 @@
             </div>
             <div id="sManagerHistory" style="font-size:11px;color:var(--text3);margin-top:4px"></div>
           </div>
-          <div class="field"><label>成果振り返り頻度</label><select id="sReviewCycle"><option value="monthly">毎月</option><option value="bimonthly">2ヶ月ごと</option><option value="quarterly">四半期</option></select></div>
         </div>
       </div>
       <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px">
@@ -1842,25 +1841,25 @@
 </div>
 
 
-<script src="js/vendor/pizzip.min.js?v=186"></script>
-<script src="js/vendor/docxtemplater.min.js?v=186"></script>
-<script src="js/vendor/xlsx.full.min.js?v=186"></script>
-<script src="js/config.js?v=186"></script>
-<script src="js/db.js?v=186"></script>
-<script src="js/utils.js?v=186"></script>
-<script src="js/settings.js?v=186"></script>
-<script src="js/stores.js?v=186"></script>
-<script src="js/schedule.js?v=186"></script>
-<script src="js/casting.js?v=186"></script>
-<script src="js/check.js?v=186"></script>
-<script src="js/accounting.js?v=186"></script>
-<script src="js/plans.js?v=186"></script>
-<script src="js/creators.js?v=186"></script>
-<script src="js/corps.js?v=186"></script>
-<script src="js/faqs.js?v=186"></script>
-<script src="js/orders.js?v=186"></script>
-<script src="js/hearing.js?v=186"></script>
-<script src="js/dashboard.js?v=186"></script>
-<script src="js/app.js?v=186"></script>
+<script src="js/vendor/pizzip.min.js?v=187"></script>
+<script src="js/vendor/docxtemplater.min.js?v=187"></script>
+<script src="js/vendor/xlsx.full.min.js?v=187"></script>
+<script src="js/config.js?v=187"></script>
+<script src="js/db.js?v=187"></script>
+<script src="js/utils.js?v=187"></script>
+<script src="js/settings.js?v=187"></script>
+<script src="js/stores.js?v=187"></script>
+<script src="js/schedule.js?v=187"></script>
+<script src="js/casting.js?v=187"></script>
+<script src="js/check.js?v=187"></script>
+<script src="js/accounting.js?v=187"></script>
+<script src="js/plans.js?v=187"></script>
+<script src="js/creators.js?v=187"></script>
+<script src="js/corps.js?v=187"></script>
+<script src="js/faqs.js?v=187"></script>
+<script src="js/orders.js?v=187"></script>
+<script src="js/hearing.js?v=187"></script>
+<script src="js/dashboard.js?v=187"></script>
+<script src="js/app.js?v=187"></script>
 </body>
 </html>

@@ -198,12 +198,12 @@ async function purgeStoreContactInfo(){
   var statusEl=document.getElementById('purgeContactStatus');
   var setStatus=function(msg,color){if(statusEl){statusEl.textContent=msg;statusEl.style.color=color||'var(--text2)';}};
   if(!(currentUser&&currentUser.email==='ishida@root-and-activation.co.jp'))return;
-  var storeTargets=DB.stores.filter(function(s){return s.contactTel||s.contactEmail||s.contactName||s.contactRole||s.contactLine;});
+  var storeTargets=DB.stores.filter(function(s){return s.contactTel||s.contactEmail||s.contactName||s.contactRole||s.contactLine||s.reviewCycle;});
   var corpTargets=(DB.corporations||[]).filter(function(c){return c.tel||c.email;});
   var targets=storeTargets.concat(corpTargets);
   if(!targets.length){setStatus('削除対象（電話番号・メール・店舗担当者情報が入っている店舗・法人）はありませんでした。','var(--green)');return;}
-  if(!confirm('店舗'+storeTargets.length+'件・法人'+corpTargets.length+'件の電話番号・メール・店舗担当者情報（担当者名・役職・LINE ID）をデータベースから完全に削除します。\n元に戻せません。\n\n先に削除前の内容をバックアップファイルとして保存します。実行しますか？'))return;
-  var backup=storeTargets.map(function(s){return{type:'store',id:s.id,name:s.name,contactTel:s.contactTel||'',contactEmail:s.contactEmail||'',contactName:s.contactName||'',contactRole:s.contactRole||'',contactLine:s.contactLine||''};})
+  if(!confirm('店舗'+storeTargets.length+'件・法人'+corpTargets.length+'件の電話番号・メール・店舗担当者情報（担当者名・役職・LINE ID）・成果振り返り頻度をデータベースから完全に削除します。\n元に戻せません。\n\n先に削除前の内容をバックアップファイルとして保存します。実行しますか？'))return;
+  var backup=storeTargets.map(function(s){return{type:'store',id:s.id,name:s.name,contactTel:s.contactTel||'',contactEmail:s.contactEmail||'',contactName:s.contactName||'',contactRole:s.contactRole||'',contactLine:s.contactLine||'',reviewCycle:s.reviewCycle||''};})
     .concat(corpTargets.map(function(c){return{type:'corporation',id:c.id,name:c.name,tel:c.tel||'',email:c.email||''};}));
   var blob=new Blob([JSON.stringify(backup,null,2)],{type:'application/json'});
   var a=document.createElement('a');
@@ -216,7 +216,7 @@ async function purgeStoreContactInfo(){
   for(var i=0;i<targets.length;i++){
     var isCorp=i>=storeTargets.length;
     if(isCorp){delete targets[i].tel;delete targets[i].email;}
-    else{delete targets[i].contactTel;delete targets[i].contactEmail;delete targets[i].contactName;delete targets[i].contactRole;delete targets[i].contactLine;}
+    else{delete targets[i].contactTel;delete targets[i].contactEmail;delete targets[i].contactName;delete targets[i].contactRole;delete targets[i].contactLine;delete targets[i].reviewCycle;}
     setStatus('削除中… '+(i+1)+' / '+targets.length);
     await saveItem(isCorp?'corporations':'stores',targets[i]);
     done++;

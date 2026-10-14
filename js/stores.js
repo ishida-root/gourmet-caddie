@@ -295,7 +295,6 @@ function clearStoreForm(){
   document.getElementById('sMetaExp').value='none';
   document.getElementById('sContractTerm').value='3';
   document.getElementById('sStatus').value='pending';
-  document.getElementById('sReviewCycle').value='monthly';
   document.getElementById('sAdDelivery').value='yes';
   document.getElementById('sVideos').value='2';
   document.getElementById('sPlanId').value='';
@@ -358,7 +357,7 @@ function openStoreModal(id){
   if(id){
     var s=DB.stores.find(function(x){return x.id===id;});
     if(s){
-      var map={sName:'name',sCorpId:'corpId',sGenre:'genre',sPref:'pref',sArea:'area',sZip:'zip',sSeats:'seats',sTabelog:'tabelog',sHp:'hp',sMemo:'memo',sCaution:'caution',sIg:'ig',sIgFollowers:'igFollowers',sFb:'fb',sTw:'tw',sTt:'tt',sYt:'yt',sMetaId:'metaId',sMetaExp:'metaExp',sCreator:'creator',sContractStart:'contractStart',sContractTerm:'contractTerm',sMonthlyFee:'monthlyFee',sDiscountPercent:'discountPercent',sDiscountNote:'discountNote',sStatus:'status',sOurManager:'ourManager',sReviewCycle:'reviewCycle',sVideos:'videos',sAdDelivery:'adDelivery',sSetupMemo:'setupMemo',sPlanId:'planId',sGoalType:'storeGoalType',sGoalNote:'storeGoalNote',sRenewalPrepDone:'renewalPrepDoneDate'};
+      var map={sName:'name',sCorpId:'corpId',sGenre:'genre',sPref:'pref',sArea:'area',sZip:'zip',sSeats:'seats',sTabelog:'tabelog',sHp:'hp',sMemo:'memo',sCaution:'caution',sIg:'ig',sIgFollowers:'igFollowers',sFb:'fb',sTw:'tw',sTt:'tt',sYt:'yt',sMetaId:'metaId',sMetaExp:'metaExp',sCreator:'creator',sContractStart:'contractStart',sContractTerm:'contractTerm',sMonthlyFee:'monthlyFee',sDiscountPercent:'discountPercent',sDiscountNote:'discountNote',sStatus:'status',sOurManager:'ourManager',sVideos:'videos',sAdDelivery:'adDelivery',sSetupMemo:'setupMemo',sPlanId:'planId',sGoalType:'storeGoalType',sGoalNote:'storeGoalNote',sRenewalPrepDone:'renewalPrepDoneDate'};
       Object.keys(map).forEach(function(elId){var el=document.getElementById(elId);if(el&&s[map[elId]]!==undefined)el.value=s[map[elId]];});
       if(document.getElementById('sOurManager')&&!document.getElementById('sOurManager').value&&s.salesBy){
         document.getElementById('sOurManager').value=s.salesBy;
@@ -505,7 +504,6 @@ function saveStore(){
     discountNote:document.getElementById('sDiscountNote').value,
     status:document.getElementById('sStatus').value,
     ourManager:document.getElementById('sOurManager').value,
-    reviewCycle:document.getElementById('sReviewCycle').value,
     videos:document.getElementById('sVideos').value,
     adDelivery:document.getElementById('sAdDelivery').value,
     setupMemo:document.getElementById('sSetupMemo').value,
