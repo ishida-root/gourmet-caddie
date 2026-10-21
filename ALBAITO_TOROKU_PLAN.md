@@ -144,3 +144,27 @@ function scheduledSync() {
    正規化ID・ハンドル・表示メッセージの3列が入っていれば成功
 3. 表のシート側のVLOOKUP数式で、既存IDを入力すると「⚠️ 登録済み（〇〇）」、
    未登録のIDだと「未登録」と出ることを確認する
+
+---
+
+## Supabase仕様変更メモ（2026-10-30 から）
+
+Supabase からのお知らせ（2026-10-20 受信）。**既存のテーブルは影響なし**（今の権限のまま動く）。
+**2026-10-30 以降に `public` スキーマへ新しく作るテーブルは、明示的な `GRANT` がないと API（supabase-js / PostgREST / GraphQL）からアクセスできない**（「permission denied」エラーになる）。
+
+### やることが変わる場面
+- アルバイト登録用の入力テーブルなど、**新しいテーブルを作るとき**。今あるテーブル（stores / invoices / castings / posts / faqs / jointplans など）は対応不要。
+
+### 新テーブル作成時のSQL（テーブル作成と同じタイミングで実行）
+`anon`（ログインなし）には権限を付けない。ツールのキーは公開されているため、付けると誰でも読み書きできてしまう。
+
+```sql
+grant select, insert, update, delete on public.テーブル名 to authenticated;
+grant select, insert, update, delete on public.テーブル名 to service_role;
+-- anon には付けない（ログインなしで読ませたいテーブルだけ、select のみ個別に判断）
+```
+
+### 作成後の確認
+- ログインした状態で、ツールから読み書きできることを確認する。
+- `handle-check.html`（ログインなしで influencers を読む）のように、ログインなしで読ませる必要があるページを新しく作る場合だけ、そのテーブルの `anon` への `select` を検討する。
+- RLS（行レベルのセキュリティ）のポリシーも別途必要。GRANT だけでは読み書きできない（上の「前提として分かった重要な事実（セキュリティ）」を参照）。
