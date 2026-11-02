@@ -413,6 +413,17 @@ function renderAccounting(){
   var totalAll=0,totalInf=0,totalCr=0,totalAd=0;
   summaryList.forEach(function(inv){var t=invInclTotal(inv);totalAll+=t;if(inv.payeeType==='creator')totalCr+=t;else if(inv.payeeType==='ad')totalAd+=t;else totalInf+=t;});
   var setVal=function(id,v){var el=document.getElementById(id);if(el)el.textContent=v;};
+  /* 経費まとめ：飲食費（インフルエンサー）／交通費（インフルエンサー・クリエイター）／その他（クリエイター） */
+  var expFood=0,expTransport=0,expOther=0;
+  summaryList.forEach(function(inv){
+    if(inv.payeeType==='ad')return;
+    if(inv.payeeType==='creator'){expTransport+=Number(inv.crTransport)||0;expOther+=Number(inv.other)||0;}
+    else{expTransport+=Number(inv.transport)||0;expFood+=Number(inv.food)||0;}
+  });
+  setVal('acc-exp-total','¥'+(expFood+expTransport+expOther).toLocaleString());
+  setVal('acc-exp-food','¥'+expFood.toLocaleString());
+  setVal('acc-exp-transport','¥'+expTransport.toLocaleString());
+  setVal('acc-exp-other','¥'+expOther.toLocaleString());
   setVal('acc-count',list.length);
   setVal('acc-total','¥'+totalAll.toLocaleString());
   setVal('acc-inf','¥'+totalInf.toLocaleString());
