@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=190">
+<link rel="stylesheet" href="css/app.css?v=191">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -438,6 +438,14 @@
         <div class="stat-card"><div class="stat-val" id="acc-exp-food">¥0</div><div class="stat-label">飲食費（インフルエンサー）</div></div>
         <div class="stat-card"><div class="stat-val" id="acc-exp-transport">¥0</div><div class="stat-label">交通費</div></div>
         <div class="stat-card"><div class="stat-val" id="acc-exp-other">¥0</div><div class="stat-label">その他（クリエイター）</div></div>
+      </div>
+      <div class="card" style="margin-bottom:18px;padding:12px 14px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <span style="font-size:12px;font-weight:500;color:var(--text2)">経費の内訳</span>
+          <button class="btn btn-sm" id="accExpModeMonth" onclick="setAccExpMode('month')">月別</button>
+          <button class="btn btn-sm" id="accExpModeStore" onclick="setAccExpMode('store')">店舗別</button>
+        </div>
+        <div style="max-height:260px;overflow:auto"><table style="width:100%;border-collapse:collapse;font-size:13px"><thead id="accExpHead"></thead><tbody id="accExpBody"></tbody></table></div>
       </div>
       <!-- サマリー -->
       <div class="stats-row" style="grid-template-columns:repeat(5,1fr)">
@@ -1836,25 +1844,25 @@
 </div>
 
 
-<script src="js/vendor/pizzip.min.js?v=190"></script>
-<script src="js/vendor/docxtemplater.min.js?v=190"></script>
-<script src="js/vendor/xlsx.full.min.js?v=190"></script>
-<script src="js/config.js?v=190"></script>
-<script src="js/db.js?v=190"></script>
-<script src="js/utils.js?v=190"></script>
-<script src="js/settings.js?v=190"></script>
-<script src="js/stores.js?v=190"></script>
-<script src="js/schedule.js?v=190"></script>
-<script src="js/casting.js?v=190"></script>
-<script src="js/check.js?v=190"></script>
-<script src="js/accounting.js?v=190"></script>
-<script src="js/plans.js?v=190"></script>
-<script src="js/creators.js?v=190"></script>
-<script src="js/corps.js?v=190"></script>
-<script src="js/faqs.js?v=190"></script>
-<script src="js/orders.js?v=190"></script>
-<script src="js/hearing.js?v=190"></script>
-<script src="js/dashboard.js?v=190"></script>
-<script src="js/app.js?v=190"></script>
+<script src="js/vendor/pizzip.min.js?v=191"></script>
+<script src="js/vendor/docxtemplater.min.js?v=191"></script>
+<script src="js/vendor/xlsx.full.min.js?v=191"></script>
+<script src="js/config.js?v=191"></script>
+<script src="js/db.js?v=191"></script>
+<script src="js/utils.js?v=191"></script>
+<script src="js/settings.js?v=191"></script>
+<script src="js/stores.js?v=191"></script>
+<script src="js/schedule.js?v=191"></script>
+<script src="js/casting.js?v=191"></script>
+<script src="js/check.js?v=191"></script>
+<script src="js/accounting.js?v=191"></script>
+<script src="js/plans.js?v=191"></script>
+<script src="js/creators.js?v=191"></script>
+<script src="js/corps.js?v=191"></script>
+<script src="js/faqs.js?v=191"></script>
+<script src="js/orders.js?v=191"></script>
+<script src="js/hearing.js?v=191"></script>
+<script src="js/dashboard.js?v=191"></script>
+<script src="js/app.js?v=191"></script>
 </body>
 </html>

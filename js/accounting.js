@@ -359,6 +359,49 @@ function toggleAccShowSettled(){
   renderAccounting();
 }
 
+/* 経費の内訳（月別／店舗別）。月は請求書の受領日（広告費は対象月）、未登録は「受領日未登録」にまとめる */
+var accExpMode='month';
+var _accExpList=[];
+function setAccExpMode(m){accExpMode=m;renderAccExpenseBreakdown(_accExpList);}
+function renderAccExpenseBreakdown(list){
+  _accExpList=list||[];
+  var head=document.getElementById('accExpHead'),body=document.getElementById('accExpBody');
+  if(!head||!body)return;
+  var rows={};
+  _accExpList.forEach(function(inv){
+    if(inv.payeeType==='ad')return;
+    var food=0,tr=0,oth=0;
+    if(inv.payeeType==='creator'){tr=Number(inv.crTransport)||0;oth=Number(inv.other)||0;}
+    else{tr=Number(inv.transport)||0;food=Number(inv.food)||0;}
+    if(!food&&!tr&&!oth)return;
+    var key=accExpMode==='month'?(invMonthOf(inv)||'受領日未登録'):(inv.storeId||'');
+    var r=rows[key]||(rows[key]={food:0,tr:0,oth:0});
+    r.food+=food;r.tr+=tr;r.oth+=oth;
+  });
+  var keys=Object.keys(rows).sort(function(a,b){
+    if(accExpMode==='month'){
+      if(a==='受領日未登録')return -1;if(b==='受領日未登録')return 1;
+      return b.localeCompare(a);
+    }
+    return(rows[b].food+rows[b].tr+rows[b].oth)-(rows[a].food+rows[a].tr+rows[a].oth);
+  });
+  var on='background:var(--accent-bg);color:var(--accent);border-color:var(--accent-border)';
+  var mb=document.getElementById('accExpModeMonth'),sb=document.getElementById('accExpModeStore');
+  if(mb)mb.style.cssText=accExpMode==='month'?on:'';
+  if(sb)sb.style.cssText=accExpMode==='store'?on:'';
+  var th='padding:6px 10px;font-weight:400;color:var(--text2);text-align:right;border-bottom:1px solid var(--border)';
+  head.innerHTML='<tr><th style="'+th.replace('text-align:right','text-align:left')+'">'+(accExpMode==='month'?'月':'店舗')+'</th><th style="'+th+'">飲食費</th><th style="'+th+'">交通費</th><th style="'+th+'">その他</th><th style="'+th+'">合計</th></tr>';
+  if(!keys.length){body.innerHTML='<tr><td colspan="5" style="padding:10px;color:var(--text3)">経費はありません</td></tr>';return;}
+  var td='padding:6px 10px;text-align:right;border-bottom:1px solid var(--border)';
+  body.innerHTML=keys.map(function(k){
+    var r=rows[k];
+    var label=accExpMode==='month'?k:(k?storeName(k):'店舗未設定');
+    return'<tr><td style="'+td.replace('text-align:right','text-align:left')+'">'+esc(label)+'</td>'
+      +'<td style="'+td+'">'+fmtMoney(r.food)+'</td><td style="'+td+'">'+fmtMoney(r.tr)+'</td><td style="'+td+'">'+fmtMoney(r.oth)+'</td>'
+      +'<td style="'+td+';font-weight:500">'+fmtMoney(r.food+r.tr+r.oth)+'</td></tr>';
+  }).join('');
+}
+
 function renderAccounting(){
   if(!DB.invoices)DB.invoices=[];
   var getV=function(id){var el=document.getElementById(id);return el?el.value:'';};
@@ -424,6 +467,7 @@ function renderAccounting(){
   setVal('acc-exp-food','¥'+expFood.toLocaleString());
   setVal('acc-exp-transport','¥'+expTransport.toLocaleString());
   setVal('acc-exp-other','¥'+expOther.toLocaleString());
+  renderAccExpenseBreakdown(summaryList);
   setVal('acc-count',list.length);
   setVal('acc-total','¥'+totalAll.toLocaleString());
   setVal('acc-inf','¥'+totalInf.toLocaleString());
