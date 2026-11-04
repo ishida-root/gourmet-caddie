@@ -230,6 +230,9 @@ async function generateOrder(){
   /* 店舗セレクトの選択を発注記録の紐づけ先に反映 */
   var storeSel=document.getElementById('orderStore');
   if(storeSel)_orderCtx.storeId=storeSel.value||'';
+  /* 受託者（クリエイター）の選択も紐づけ先に反映する。
+     これまでは「クリエイター詳細から開いた」ときしか紐づかなかったため、選択された名前から特定する */
+  _orderCtx.creatorId=orderResolveCreatorId(creator,_orderCtx.creatorId);
 
   var data={
     発注番号:number,
@@ -285,6 +288,60 @@ async function generateOrder(){
    同じ番号が複数ある場合、先に作成された1件はそのまま残し、後から作られた分を
    その年の空いている次の連番に振り直す。発行済みWordの番号と変わる分は一覧で確認でき、
    実行前に変更内容をJSONでバックアップする。再DLするWordにも新しい番号が入る。 */
+/* 受託者名から、クリエイター管理の登録を特定する（本名または活動名が完全一致し、1人に決まる場合のみ） */
+function orderCreatorLabel(cr){return cr.crRealName||cr.crName||'';}
+function orderResolveCreatorId(name,prevId){
+  var list=(DB.creators||[]).filter(function(c){return orderCreatorLabel(c)===name||(c.crName&&c.crName===name)||(c.crRealName&&c.crRealName===name);});
+  if(list.length===1)return list[0].id;
+  if(prevId&&list.some(function(c){return c.id===prevId;}))return prevId;
+  return '';
+}
+/* 過去の発注記録のうち、紐づけが空のものを補完する（空欄を埋めるだけで、すでに入っている値は変えない）
+   クリエイター：受託者名が登録と一致し1人に決まるもの
+   店舗：件名が「店舗名＋全角スペース」で始まり、店舗が1つに決まるもの */
+function orderLinkCandidates(){
+  var res={creator:[],store:[],unresolved:[]};
+  (DB.orders||[]).forEach(function(o){
+    var cid=o.creatorId,sid=o.storeId,changed=false;
+    if(!cid){
+      var cr=orderResolveCreatorId(o.creatorName||'','');
+      if(cr){res.creator.push({rec:o,id:cr});cid=cr;}
+    }
+    if(!sid){
+      var subj=o.subject||'';
+      var ms=(DB.stores||[]).filter(function(st){return st.name&&subj.indexOf(st.name+'　')===0;});
+      if(ms.length>1){var longest=ms.reduce(function(a,b){return b.name.length>a.name.length?b:a;});ms=ms.filter(function(x){return x.name.length===longest.name.length;});}
+      if(ms.length===1){res.store.push({rec:o,id:ms[0].id});sid=ms[0].id;}
+    }
+    if(!cid||!sid)res.unresolved.push(o);
+  });
+  return res;
+}
+async function linkOrdersToStoreCreator(){
+  var statusEl=document.getElementById('linkOrdersStatus');
+  var setStatus=function(m,c){if(statusEl){statusEl.textContent=m;statusEl.style.color=c||'var(--text2)';}};
+  if(!(currentUser&&currentUser.email==='ishida@root-and-activation.co.jp'))return;
+  var c=orderLinkCandidates();
+  var targets=[];
+  c.creator.concat(c.store).forEach(function(t){if(targets.indexOf(t.rec)<0)targets.push(t.rec);});
+  if(!targets.length){setStatus('補完できる発注記録はありません（紐づけが空で、名前から特定できるものがありません）。'+(c.unresolved.length?'未設定のまま残る発注記録：'+c.unresolved.length+'件':''),'var(--green)');return;}
+  var lines=targets.map(function(o){
+    var cr=c.creator.find(function(t){return t.rec===o;}),st=c.store.find(function(t){return t.rec===o;});
+    return o.number+'　'+(cr?'クリエイター→'+orderCreatorLabel(DB.creators.find(function(x){return x.id===cr.id;})):'')+(cr&&st?' ／ ':'')+(st?'店舗→'+storeName(st.id):'');
+  });
+  if(!confirm('次の'+targets.length+'件の発注記録に、店舗・クリエイターの紐づけを補完します。\n（空欄を埋めるだけで、入っている値は変えません）\n\n'+lines.slice(0,25).join('\n')+(lines.length>25?'\n…ほか'+(lines.length-25)+'件':'')+'\n\n実行しますか？'))return;
+  var done=0;
+  for(var i=0;i<targets.length;i++){
+    var o=targets[i];
+    var cr=c.creator.find(function(t){return t.rec===o;}),st=c.store.find(function(t){return t.rec===o;});
+    if(cr)o.creatorId=cr.id;
+    if(st)o.storeId=st.id;
+    setStatus('補完中… '+(i+1)+' / '+targets.length);
+    await saveItem('orders',o);
+    done++;
+  }
+  setStatus('✓ '+done+'件の発注記録に紐づけを補完しました。'+(c.unresolved.length?'名前から特定できず未設定のまま：'+c.unresolved.length+'件':''),'var(--green)');
+}
 async function fixDuplicateOrderNumbers(){
   var statusEl=document.getElementById('fixOrderNumStatus');
   var setStatus=function(msg,color){if(statusEl){statusEl.textContent=msg;statusEl.style.color=color||'var(--text2)';}};

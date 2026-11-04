@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-title" content="グルメキャディ">
 <meta name="application-name" content="グルメキャディ">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/app.css?v=191">
+<link rel="stylesheet" href="css/app.css?v=192">
 </head>
 <body>
 <script>(function(){try{var s=localStorage.getItem('gc_theme');var dark=s==='dark'||(s===null&&window.matchMedia&&window.matchMedia('(prefers-color-scheme: dark)').matches);if(dark)document.body.classList.add('dark');}catch(e){}})();</script>
@@ -540,6 +540,14 @@
             <button class="btn" style="color:var(--red);border-color:var(--red-border)" onclick="purgeStoreContactInfo()">削除を実行</button>
           </div>
           <div id="purgeContactStatus" style="font-size:13px;margin-top:8px"></div>
+        </div>
+        <div class="card" id="linkOrdersCard">
+          <div class="card-header"><span class="card-title">🔗 過去の発注書を店舗・クリエイターに紐づける <span style="font-size:11px;color:var(--text3);font-weight:400">管理者のみ</span></span></div>
+          <div style="font-size:13px;color:var(--text3);margin-bottom:12px">これまでに作成した発注書のうち、店舗やクリエイターとの紐づけが空のものを補完します。受託者名が登録済みのクリエイターと一致し1人に決まる場合と、件名が「店舗名＋全角スペース」で始まり店舗が1つに決まる場合だけが対象です。空欄を埋めるだけで、すでに入っている紐づけは変えません。実行前に対象の一覧を確認できます。</div>
+          <div style="display:flex;gap:8px;justify-content:flex-end">
+            <button class="btn" onclick="linkOrdersToStoreCreator()">確認して実行</button>
+          </div>
+          <div id="linkOrdersStatus" style="font-size:13px;margin-top:8px"></div>
         </div>
         <div class="card" id="fixOrderNumCard">
           <div class="card-header"><span class="card-title">🔢 発注番号の重複を直す <span style="font-size:11px;color:var(--text3);font-weight:400">管理者のみ</span></span></div>
@@ -1844,25 +1852,25 @@
 </div>
 
 
-<script src="js/vendor/pizzip.min.js?v=191"></script>
-<script src="js/vendor/docxtemplater.min.js?v=191"></script>
-<script src="js/vendor/xlsx.full.min.js?v=191"></script>
-<script src="js/config.js?v=191"></script>
-<script src="js/db.js?v=191"></script>
-<script src="js/utils.js?v=191"></script>
-<script src="js/settings.js?v=191"></script>
-<script src="js/stores.js?v=191"></script>
-<script src="js/schedule.js?v=191"></script>
-<script src="js/casting.js?v=191"></script>
-<script src="js/check.js?v=191"></script>
-<script src="js/accounting.js?v=191"></script>
-<script src="js/plans.js?v=191"></script>
-<script src="js/creators.js?v=191"></script>
-<script src="js/corps.js?v=191"></script>
-<script src="js/faqs.js?v=191"></script>
-<script src="js/orders.js?v=191"></script>
-<script src="js/hearing.js?v=191"></script>
-<script src="js/dashboard.js?v=191"></script>
-<script src="js/app.js?v=191"></script>
+<script src="js/vendor/pizzip.min.js?v=192"></script>
+<script src="js/vendor/docxtemplater.min.js?v=192"></script>
+<script src="js/vendor/xlsx.full.min.js?v=192"></script>
+<script src="js/config.js?v=192"></script>
+<script src="js/db.js?v=192"></script>
+<script src="js/utils.js?v=192"></script>
+<script src="js/settings.js?v=192"></script>
+<script src="js/stores.js?v=192"></script>
+<script src="js/schedule.js?v=192"></script>
+<script src="js/casting.js?v=192"></script>
+<script src="js/check.js?v=192"></script>
+<script src="js/accounting.js?v=192"></script>
+<script src="js/plans.js?v=192"></script>
+<script src="js/creators.js?v=192"></script>
+<script src="js/corps.js?v=192"></script>
+<script src="js/faqs.js?v=192"></script>
+<script src="js/orders.js?v=192"></script>
+<script src="js/hearing.js?v=192"></script>
+<script src="js/dashboard.js?v=192"></script>
+<script src="js/app.js?v=192"></script>
 </body>
 </html>

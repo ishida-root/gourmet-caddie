@@ -52,6 +52,8 @@ function navigate(page){
     if(ghCard)ghCard.style.display=(currentUser&&currentUser.email==='ishida@root-and-activation.co.jp')?'':'none';
     var purgeCard=document.getElementById('purgeContactCard');
     if(purgeCard)purgeCard.style.display=(currentUser&&currentUser.email==='ishida@root-and-activation.co.jp')?'':'none';
+    var linkOrdersCard=document.getElementById('linkOrdersCard');
+    if(linkOrdersCard)linkOrdersCard.style.display=(currentUser&&currentUser.email==='ishida@root-and-activation.co.jp')?'':'none';
     var fixOrderCard=document.getElementById('fixOrderNumCard');
     if(fixOrderCard)fixOrderCard.style.display=(currentUser&&currentUser.email==='ishida@root-and-activation.co.jp')?'':'none';
   }
